@@ -1,12 +1,18 @@
 [tool.poetry]
 name = "gsplot"
-version = "0.1.0"
-description = ""
-authors = ["Soichiro Yamane <soichiro.yamane.19970619@gmail.com>"]
+version = "0.0.1"
+description = "Provide a simple way to plot scientific data with matplotlib"
+authors = [
+  "Giordano Mattoni <email>",
+  "Soichiro Yamane <soichiro.yamane.19970619@gmail.com>",
+]
 readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.11"
+matplotlib = "^3.9.0"
+numpy = "^1.26.4"
+pandas = "^2.2.2"
 
 
 [build-system]

@@ -1,0 +1,1 @@
+{"cmd": "from gsplot import *\n\ngsplot.plts.SuperPlotSave()", "cmd_opts": " --cell_id=NONE", "import_complete": 1, "terminal": "nvimterm"}
