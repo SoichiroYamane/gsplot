@@ -1,19 +1,19 @@
-import pytest
-
 # import gsplot as gs
 import gsplot as gs
 import matplotlib.pyplot as plt
 import matplotlib as mpl
+import matplotlib.ticker as plticker
+
+axes = gs.axes(store=0, mosaic="AABB;CCDD", clear=True)
 
 
-# fig = gs.figure(0, size=(10, 10), unit="pt", mosaic="AA", clear=True)
+gs.style.Labels(
+    [
+        ["x", "ysdfasdfasdfasdfasdfasdf"],
+        ["x", "y"],
+        ["x", "y"],
+        ["x", "y"],
+    ],
+)
 
-
-mpl.use("MacOSX")
-axes = gs.plts.Axes(0, size=(500, 500), unit="pt", mosaic="A", clear=True)
-
-test_axes = gs.plts._Axes()
-print(test_axes.axes)
-
-
-plt.show()
+gs.plts.Show()

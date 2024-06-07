@@ -1,5 +1,3 @@
-import pytest
-
 # import gsplot as gs
 import gsplot as gs
 import matplotlib.pyplot as plt

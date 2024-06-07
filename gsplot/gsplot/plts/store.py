@@ -3,36 +3,61 @@ from typing import Union
 
 class Store:
     """
-    Store class to manage the saving of plots.
+    A singleton class used to manage a store flag.
+
+    ...
 
     Attributes
     ----------
-    store : bool or int (0 or 1)
-        If True or 1, save the plot to a file. If False or 0, do not save the plot. Default is False.
+    _instance : Store
+        the single instance of the Store class
+    _store : bool or int
+        a flag indicating whether to store or not
+
+    Methods
+    -------
+    store:
+        Property that gets or sets the _store attribute.
     """
 
-    _store = None
+    _instance = None
 
-    def __init__(self, store: Union[bool, int] = False):
+    def __new__(cls, *args, **kwargs):
         """
-        Parameters
-        ----------
-        store : bool or int (0 or 1), optional
-            If True or 1, save the plot to a file. If False or 0, do not save the plot. Default is False.
+        Creates a new instance of the Store class if one does not already exist.
         """
-        self.store = store
+        if cls._instance is None:
+            cls._instance = super(Store, cls).__new__(cls)
+            cls._instance._store = False
+        return cls._instance
 
     @property
     def store(self):
-        return Store._store
+        """
+        Gets the _store attribute.
+
+        Returns
+        -------
+        bool or int
+            The store flag.
+        """
+        return self._instance._store
 
     @store.setter
     def store(self, store: Union[bool, int]):
+        """
+        Sets the _store attribute.
+
+        Parameters
+        ----------
+        store : bool or int
+            The new store flag.
+
+        Raises
+        ------
+        ValueError
+            If store is not a boolean or 0 or 1.
+        """
         if not isinstance(store, (bool, int)) or store not in [0, 1]:
             raise ValueError("Store must be a boolean or 0 or 1.")
-        Store._store = store
-
-
-if __name__ == "__main__":
-    store = Store(1)
-    print(store.store)
+        self._instance._store = store
