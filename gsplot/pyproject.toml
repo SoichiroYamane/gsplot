@@ -15,6 +15,18 @@ numpy = "^1.26.4"
 pandas = "^2.2.2"
 
 
+[tool.poetry.group.deb.dependencies]
+sphinx = "^7.3.7"
+
+
+[tool.poetry.group.dev.dependencies]
+flake8 = "^7.0.0"
+black = "^24.4.2"
+pre-commit = "^3.7.1"
+sphinx = "^7.3.7"
+furo = "^2024.5.6"
+sphinx-rtd-theme = "^2.0.0"
+
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"

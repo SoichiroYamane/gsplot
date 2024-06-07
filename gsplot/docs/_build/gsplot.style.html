@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>gsplot.style package &mdash; gsplot  documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="_static/jquery.js?v=5d32c60e"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="_static/documentation_options.js?v=5929fcd5"></script>
+        <script src="_static/doctools.js?v=9a2dae69"></script>
+        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            gsplot
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <!-- Local TOC -->
+              <div class="local-toc"><ul>
+<li><a class="reference internal" href="#">gsplot.style package</a><ul>
+<li><a class="reference internal" href="#submodules">Submodules</a></li>
+<li><a class="reference internal" href="#module-gsplot.style.label">gsplot.style.label module</a><ul>
+<li><a class="reference internal" href="#gsplot.style.label.AddIndexToAxes"><code class="docutils literal notranslate"><span class="pre">AddIndexToAxes</span></code></a><ul>
+<li><a class="reference internal" href="#gsplot.style.label.AddIndexToAxes._axes"><code class="docutils literal notranslate"><span class="pre">AddIndexToAxes._axes</span></code></a></li>
+<li><a class="reference internal" href="#gsplot.style.label.AddIndexToAxes.add_index"><code class="docutils literal notranslate"><span class="pre">AddIndexToAxes.add_index()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#gsplot.style.label.Labels"><code class="docutils literal notranslate"><span class="pre">Labels</span></code></a><ul>
+<li><a class="reference internal" href="#gsplot.style.label.Labels._kwargs"><code class="docutils literal notranslate"><span class="pre">Labels._kwargs</span></code></a></li>
+<li><a class="reference internal" href="#gsplot.style.label.Labels.args"><code class="docutils literal notranslate"><span class="pre">Labels.args</span></code></a></li>
+<li><a class="reference internal" href="#gsplot.style.label.Labels.__axes"><code class="docutils literal notranslate"><span class="pre">Labels.__axes</span></code></a></li>
+<li><a class="reference internal" href="#gsplot.style.label.Labels.main"><code class="docutils literal notranslate"><span class="pre">Labels.main()</span></code></a></li>
+<li><a class="reference internal" href="#gsplot.style.label.Labels.xlabels_off"><code class="docutils literal notranslate"><span class="pre">Labels.xlabels_off()</span></code></a></li>
+<li><a class="reference internal" href="#gsplot.style.label.Labels.xticks"><code class="docutils literal notranslate"><span class="pre">Labels.xticks()</span></code></a></li>
+<li><a class="reference internal" href="#gsplot.style.label.Labels.ylabels_off"><code class="docutils literal notranslate"><span class="pre">Labels.ylabels_off()</span></code></a></li>
+<li><a class="reference internal" href="#gsplot.style.label.Labels.yticks"><code class="docutils literal notranslate"><span class="pre">Labels.yticks()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-gsplot.style.ticks">gsplot.style.ticks module</a><ul>
+<li><a class="reference internal" href="#gsplot.style.ticks.MinorTicks"><code class="docutils literal notranslate"><span class="pre">MinorTicks</span></code></a><ul>
+<li><a class="reference internal" href="#gsplot.style.ticks.MinorTicks.__axes"><code class="docutils literal notranslate"><span class="pre">MinorTicks.__axes</span></code></a></li>
+<li><a class="reference internal" href="#gsplot.style.ticks.MinorTicks.minor_ticks_all"><code class="docutils literal notranslate"><span class="pre">MinorTicks.minor_ticks_all()</span></code></a></li>
+<li><a class="reference internal" href="#gsplot.style.ticks.MinorTicks.minor_ticks_off"><code class="docutils literal notranslate"><span class="pre">MinorTicks.minor_ticks_off()</span></code></a></li>
+<li><a class="reference internal" href="#gsplot.style.ticks.MinorTicks.minor_ticks_on"><code class="docutils literal notranslate"><span class="pre">MinorTicks.minor_ticks_on()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-gsplot.style">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</div>
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">gsplot</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">gsplot.style package</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/gsplot.style.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="gsplot-style-package">
+<h1>gsplot.style package<a class="headerlink" href="#gsplot-style-package" title="Link to this heading"></a></h1>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Link to this heading"></a></h2>
+</section>
+<section id="module-gsplot.style.label">
+<span id="gsplot-style-label-module"></span><h2>gsplot.style.label module<a class="headerlink" href="#module-gsplot.style.label" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="gsplot.style.label.AddIndexToAxes">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">gsplot.style.label.</span></span><span class="sig-name descname"><span class="pre">AddIndexToAxes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">axes</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#gsplot.style.label.AddIndexToAxes" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>A class used to add index to the axes of a plot.</p>
+<p>…</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="gsplot.style.label.AddIndexToAxes._axes">
+<span class="sig-name descname"><span class="pre">_axes</span></span><a class="headerlink" href="#gsplot.style.label.AddIndexToAxes._axes" title="Link to this definition"></a></dt>
+<dd><p>a list of axes to which the index will be added</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">add_index():</span></span></dt>
+<dd><p>Adds an index to each axis in the _axes attribute.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="gsplot.style.label.AddIndexToAxes.add_index">
+<span class="sig-name descname"><span class="pre">add_index</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#gsplot.style.label.AddIndexToAxes.add_index" title="Link to this definition"></a></dt>
+<dd><p>Adds an index to each axis in the _axes attribute. The index is a letter from ‘a’ to ‘z’.
+The position of the index is determined by the bounding box of the axis.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="gsplot.style.label.Labels">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">gsplot.style.label.</span></span><span class="sig-name descname"><span class="pre">Labels</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">lab_lims</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#gsplot.style.label.Labels" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>A class used to manage labels and ticks on a plot.</p>
+<p>…</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="gsplot.style.label.Labels._kwargs">
+<span class="sig-name descname"><span class="pre">_kwargs</span></span><a class="headerlink" href="#gsplot.style.label.Labels._kwargs" title="Link to this definition"></a></dt>
+<dd><p>a dictionary of keyword arguments passed to the class</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="gsplot.style.label.Labels.args">
+<span class="sig-name descname"><span class="pre">args</span></span><a class="headerlink" href="#gsplot.style.label.Labels.args" title="Link to this definition"></a></dt>
+<dd><p>a tuple of positional arguments passed to the class</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>tuple</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="gsplot.style.label.Labels.__axes">
+<span class="sig-name descname"><span class="pre">__axes</span></span><a class="headerlink" href="#gsplot.style.label.Labels.__axes" title="Link to this definition"></a></dt>
+<dd><p>an instance of the _Axes class</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>_Axes</p>
+</dd>
+</dl>
+</dd></dl>
+
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">labels</span> <span class="o">=</span> <span class="n">Labels</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">lab_lims</span><span class="o">=</span><span class="p">[</span>
+<span class="gp">... </span>        <span class="p">[</span><span class="s2">&quot;x_label1&quot;</span><span class="p">,</span> <span class="s2">&quot;y_label1&quot;</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;x_min1&quot;</span><span class="p">,</span> <span class="s2">&quot;x_max1&quot;</span><span class="p">],</span> <span class="p">[</span><span class="s2">&quot;y_min1&quot;</span><span class="p">,</span> <span class="s2">&quot;y_max1&quot;</span><span class="p">]],</span>
+<span class="gp">... </span>        <span class="p">[</span><span class="s2">&quot;x_label2&quot;</span><span class="p">,</span> <span class="s2">&quot;y_label2&quot;</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;x_min2&quot;</span><span class="p">,</span> <span class="s2">&quot;x_max2&quot;</span><span class="p">],</span> <span class="p">[</span><span class="s2">&quot;y_min2&quot;</span><span class="p">,</span> <span class="s2">&quot;y_max2&quot;</span><span class="p">]],</span>
+<span class="gp">... </span>        <span class="c1"># Add more lists for more axes</span>
+<span class="gp">... </span>    <span class="p">]</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">labels</span><span class="o">.</span><span class="n">main</span><span class="p">()</span>  <span class="c1"># Call the main method to apply the labels and limits to the axes</span>
+</pre></div>
+</div>
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">xticks(base=None,</span> <span class="pre">num_minor=None):</span></span></dt>
+<dd><p>Sets the x-ticks on the current axis.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">yticks(base=None,</span> <span class="pre">num_minor=None):</span></span></dt>
+<dd><p>Sets the y-ticks on the current axis.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">xlabels_off(axis):</span></span></dt>
+<dd><p>Turns off x-labels on the given axis.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">ylabels_off(axis):</span></span></dt>
+<dd><p>Turns off y-labels on the given axis.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">_ticks_all():</span></span></dt>
+<dd><p>Adds minor ticks to all axes if minor_ticks_all is True.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">_add_labels():</span></span></dt>
+<dd><p>Adds labels to the axes based on the lab_lims attribute.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">_tight_layout():</span></span></dt>
+<dd><p>Adjusts the padding between and around the subplots.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">_add_index():</span></span></dt>
+<dd><p>Adds an index to each axis if add_index is True.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">main():</span></span></dt>
+<dd><p>Executes the main functionality of the class.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="gsplot.style.label.Labels.main">
+<span class="sig-name descname"><span class="pre">main</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#gsplot.style.label.Labels.main" title="Link to this definition"></a></dt>
+<dd><p>Executes the main functionality of the class. This includes adding minor ticks, labels, adjusting layout, and adding index.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="gsplot.style.label.Labels.xlabels_off">
+<span class="sig-name descname"><span class="pre">xlabels_off</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">axis</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#gsplot.style.label.Labels.xlabels_off" title="Link to this definition"></a></dt>
+<dd><p>Turns off x-labels on the given axis.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>axis</strong> (<a class="reference internal" href="gsplot.plts.html#gsplot.plts.axes.Axes" title="gsplot.plts.axes.Axes"><em>Axes</em></a>) – the axis on which to turn off x-labels</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="gsplot.style.label.Labels.xticks">
+<span class="sig-name descname"><span class="pre">xticks</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">num_minor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#gsplot.style.label.Labels.xticks" title="Link to this definition"></a></dt>
+<dd><p>Sets the x-ticks on the current axis.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>base</strong> (<em>float</em><em>, </em><em>optional</em>) – The base step between each major tick.</p></li>
+<li><p><strong>num_minor</strong> (<em>int</em><em>, </em><em>optional</em>) – The number of minor ticks between each pair of major ticks.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="gsplot.style.label.Labels.ylabels_off">
+<span class="sig-name descname"><span class="pre">ylabels_off</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">axis</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#gsplot.style.label.Labels.ylabels_off" title="Link to this definition"></a></dt>
+<dd><p>Turns off y-labels on the given axis.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>axis</strong> (<a class="reference internal" href="gsplot.plts.html#gsplot.plts.axes.Axes" title="gsplot.plts.axes.Axes"><em>Axes</em></a>) – the axis on which to turn off y-labels</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="gsplot.style.label.Labels.yticks">
+<span class="sig-name descname"><span class="pre">yticks</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">num_minor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#gsplot.style.label.Labels.yticks" title="Link to this definition"></a></dt>
+<dd><p>Sets the y-ticks on the current axis.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>base</strong> (<em>float</em><em>, </em><em>optional</em>) – The base step between each major tick.</p></li>
+<li><p><strong>num_minor</strong> (<em>int</em><em>, </em><em>optional</em>) – The number of minor ticks between each pair of major ticks.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-gsplot.style.ticks">
+<span id="gsplot-style-ticks-module"></span><h2>gsplot.style.ticks module<a class="headerlink" href="#module-gsplot.style.ticks" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="gsplot.style.ticks.MinorTicks">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">gsplot.style.ticks.</span></span><span class="sig-name descname"><span class="pre">MinorTicks</span></span><a class="headerlink" href="#gsplot.style.ticks.MinorTicks" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>A class used to manage the minor ticks on a plot’s axes.</p>
+<p>…</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="gsplot.style.ticks.MinorTicks.__axes">
+<span class="sig-name descname"><span class="pre">__axes</span></span><a class="headerlink" href="#gsplot.style.ticks.MinorTicks.__axes" title="Link to this definition"></a></dt>
+<dd><p>a list of axes</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">minor_ticks_off(axis):</span></span></dt>
+<dd><p>Turns off minor ticks on the given axis.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">minor_ticks_on(axis):</span></span></dt>
+<dd><p>Turns on minor ticks on the given axis.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">minor_ticks_all():</span></span></dt>
+<dd><p>Turns on minor ticks on all axes.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="gsplot.style.ticks.MinorTicks.minor_ticks_all">
+<span class="sig-name descname"><span class="pre">minor_ticks_all</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#gsplot.style.ticks.MinorTicks.minor_ticks_all" title="Link to this definition"></a></dt>
+<dd><p>Turns on minor ticks on all axes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>None</strong></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="gsplot.style.ticks.MinorTicks.minor_ticks_off">
+<span class="sig-name descname"><span class="pre">minor_ticks_off</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">axis</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#gsplot.style.ticks.MinorTicks.minor_ticks_off" title="Link to this definition"></a></dt>
+<dd><p>Turns off minor ticks on the given axis.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>axis</strong> (<em>matplotlib.axes.Axes</em>) – The axis on which to turn off minor ticks.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="gsplot.style.ticks.MinorTicks.minor_ticks_on">
+<span class="sig-name descname"><span class="pre">minor_ticks_on</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">axis</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#gsplot.style.ticks.MinorTicks.minor_ticks_on" title="Link to this definition"></a></dt>
+<dd><p>Turns on minor ticks on the given axis.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>axis</strong> (<em>matplotlib.axes.Axes</em>) – The axis on which to turn on minor ticks.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-gsplot.style">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-gsplot.style" title="Link to this heading"></a></h2>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Giordano Mattoni, Soichiro Yamane.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
