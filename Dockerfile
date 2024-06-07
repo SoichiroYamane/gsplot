@@ -12,5 +12,6 @@ RUN pip install poetry
 WORKDIR /root/opt
 COPY pyproject.toml .
 
-RUN poetry add matplotlib numpy pandas pytest
+RUN poetry add matplotlib numpy pandas pytest sphinx sphinx-rtd-theme 
+RUN poetry config virtualenvs.in-project true
 
