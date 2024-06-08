@@ -70,7 +70,10 @@ class LoadParams:
         self.config_fname = ".gsplot.json"
         self.config_path = f"{self.home}/{self.config_fname}"
 
-        self._init_load()
+        try:
+            self._init_load()
+        except:
+            pass
 
     def _init_load(self):
         params = self.load_params()
@@ -87,12 +90,15 @@ class LoadParams:
 
     def load_params(self):
         try:
-            with open(self.config_path, "r") as f:
-                params = json.load(f)
+            try:
+                with open(self.config_path, "r") as f:
+                    params = json.load(f)
 
-            Params.params = params
-            return params
+                Params.params = params
+                return params
 
-        # get error of syntax error of json file
-        except Exception as e:
-            raise ValueError(f"Error in reading ~/.gsplot.json: {e}")
+            # get error of syntax error of json file
+            except Exception as e:
+                raise ValueError(f"Error in reading ~/.gsplot.json: {e}")
+        except:
+            pass

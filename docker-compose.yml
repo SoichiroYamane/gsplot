@@ -6,5 +6,8 @@ services:
     container_name: 'python3'
     working_dir: '/root/'
     tty: true
+    environment:
+      - DISPLAY
+      - QT_X11_NO_MITSHM=1
     volumes:
       - .:/root/opt

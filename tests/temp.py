@@ -21,7 +21,7 @@ gs.Line().plot(
     0,
     x2,
     y2,
-    label="y = x^3",
+    label=r"y = $x^3 \int x \lambda \theta_{\rm K}$",
 )
 
 gs.style.Labels(
@@ -33,7 +33,7 @@ gs.style.Labels(
 
 # test = gs.style.legend.Legend(0).legend()
 gs.style.legend_colormap.LegendColormap(
-    0, label="test", max=0.5, min=0.1
+    0, label="test", max=1, min=0
 ).add_legend_colormap()
 
 
