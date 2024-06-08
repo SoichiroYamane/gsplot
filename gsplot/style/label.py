@@ -70,7 +70,7 @@ class Labels:
     ----------
     _kwargs : dict
         a dictionary of keyword arguments passed to the class
-    args : tuple
+    _args : tuple
         a tuple of positional arguments passed to the class
     __axes : _Axes
         an instance of the _Axes class
@@ -130,28 +130,22 @@ class Labels:
             kwargs : dict
                 a dictionary of keyword arguments
         """
-        keys = [
-            "lab_lims",
-            "x_pad",
-            "y_pad",
-            "minor_ticks_all",
-            "tight_layout",
-            "add_index",
-        ]
-        defaults = [
-            lab_lims if lab_lims is not None else [],
-            1,
-            1,
-            True,
-            True,
-            False,
-        ]
+        defaults = {
+            "lab_lims": lab_lims if lab_lims is not None else [],
+            "x_pad": 1,
+            "y_pad": 1,
+            "minor_ticks_all": True,
+            "tight_layout": True,
+            "add_index": False,
+        }
 
         params = Params().getitem("labels")
-        attribute_setter = AttributeSetter(keys, defaults, params, **kwargs)
 
+        attribute_setter = AttributeSetter(defaults, params, **kwargs)
+
+        self._args = args
         self._kwargs = attribute_setter.set_attributes(self)
-        self.args = args
+
         self.__axes = _Axes()
 
         self.main()
@@ -258,7 +252,7 @@ class Labels:
         if self.tight_layout:
             try:
                 plt.tight_layout(
-                    w_pad=self.x_pad, h_pad=self.y_pad, *self.args, **self._kwargs
+                    w_pad=self.x_pad, h_pad=self.y_pad, *self._args, **self._kwargs
                 )
             except:
                 plt.tight_layout(w_pad=self.x_pad, h_pad=self.y_pad)

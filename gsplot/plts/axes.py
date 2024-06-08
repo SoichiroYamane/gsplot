@@ -2,7 +2,9 @@ from typing import Union
 from enum import Enum
 
 from ..params.params import Params
+from ..params.params import LoadParams
 from ..base.base import AttributeSetter
+from ..plot.base_plot import NumLines
 
 import matplotlib.pyplot as plt
 from .store import Store
@@ -203,12 +205,22 @@ class Axes(_Axes):
                 a dictionary of keyword arguments
         """
 
-        keys = ["store", "size", "unit", "mosaic", "clear", "ion"]
-        defaults = [False, [300, 300], "pt", "A", True, False]
+        defaults = {
+            "store": False,
+            "size": [300, 300],
+            "unit": "pt",
+            "mosaic": "A",
+            "clear": True,
+            "ion": False,
+        }
 
+        # Load the parameters from the configuration file (~/.gsplot.json)
+        LoadParams().load_params()
         params = Params().getitem("axes")
 
-        attribute_setter = AttributeSetter(keys, defaults, params, **kwargs)
+        attribute_setter = AttributeSetter(defaults, params, **kwargs)
+
+        self._args = args
         self._kwargs = attribute_setter.set_attributes(self)
 
         self._store_class = Store()
@@ -218,9 +230,9 @@ class Axes(_Axes):
         self.unit = Unit[self.unit.upper()]
         self.unit_conv = UnitConv()
 
-        self.args = args
+        NumLines.reset()
 
-        self._open_figure(*self.args, **self._kwargs)
+        self._open_figure(*self._args, **self._kwargs)
 
     @property
     def axes(self):
@@ -235,7 +247,7 @@ class Axes(_Axes):
 
         return self.__axes.axes
 
-    def _open_figure(self, *args, **kwargs):
+    def _open_figure(self):
         """
         Opens a new figure and sets its size and axes.
 
@@ -251,6 +263,7 @@ class Axes(_Axes):
             ValueError
                 If the mosaic attribute is not specified.
         """
+
         if self.clear:
             plt.clf()
         if self.ion:
@@ -260,7 +273,7 @@ class Axes(_Axes):
         conv_size = tuple(
             map(lambda size: self.unit_conv.convert(size, self.unit), self.size)
         )
-        plt.gcf().set_size_inches(*conv_size, **kwargs)
+        plt.gcf().set_size_inches(*conv_size, **self._kwargs)
 
         if self.mosaic != "":
             structures = [

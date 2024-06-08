@@ -1,3 +1,4 @@
+from ..data.path import Path
 import os
 import json
 
@@ -42,18 +43,18 @@ class Params:
     def __new__(cls, *args, **kwargs):
         if cls._instance is None:
             cls._instance = super(Params, cls).__new__(cls)
-            cls._instance.params = {}
+            cls._instance._params = {}
         return cls._instance
 
     @property
     def params(self):
-        return self._instance.params
+        return self._instance._params
 
     @params.setter
     def params(self, params):
         if not isinstance(params, dict):
             raise TypeError(f"Expected type dict, got {type(params).__name__}")
-        self._instance.params = params
+        self._instance._params = params
 
     def getitem(self, key):
         try:
@@ -63,25 +64,35 @@ class Params:
             return {}
 
 
-try:
-    try:
-        with open(f"{home}/.gsplot.json", "r") as f:
-            params = json.load(f)
+class LoadParams:
+    def __init__(self):
+        self.home = Path().get_home()
+        self.config_fname = ".gsplot.json"
+        self.config_path = f"{self.home}/{self.config_fname}"
+
+        self._init_load()
+
+    def _init_load(self):
+        params = self.load_params()
+
+        rcparams = params["rcParams"]
+
+        if "backends" in rcparams:
+            val_bes = rcparams["backends"]
+            mpl.use(val_bes)
+
+        for key in rcparams:
+            if key != "backends":
+                rcParams[key] = rcparams[key]
+
+    def load_params(self):
+        try:
+            with open(self.config_path, "r") as f:
+                params = json.load(f)
+
             Params.params = params
-            rcparams = params["rcParams"]
+            return params
 
-            if "backends" in rcparams:
-                val_bes = rcparams["backends"]
-                mpl.use(val_bes)
-
-            for key in rcparams:
-                if key != "backends":
-                    rcParams[key] = rcparams[key]
-
-            test = Params.params
-
-    # get error of syntax error of json file
-    except Exception as e:
-        raise ValueError(f"Error in reading ~/.gsplot.json: {e}")
-except:
-    pass
+        # get error of syntax error of json file
+        except Exception as e:
+            raise ValueError(f"Error in reading ~/.gsplot.json: {e}")

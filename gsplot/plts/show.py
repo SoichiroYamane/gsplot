@@ -48,24 +48,19 @@ class Show:
                 a dictionary of keyword arguments
         """
 
-        keys = [
-            "name",
-            "ft_list",
-            "dpi",
-            "show",
-        ]
-        defaults = [
-            "gsplot",
-            ["png", "pdf"],
-            600,
-            True,
-        ]
+        defaults = {
+            "name": "gsplot",
+            "ft_list": ["png", "pdf"],
+            "dpi": 600,
+            "show": True,
+        }
 
         params = Params().getitem("show")
 
-        attribute_setter = AttributeSetter(keys, defaults, params, **kwargs)
+        attribute_setter = AttributeSetter(defaults, params, **kwargs)
+
+        self._args = args
         self._kwargs = attribute_setter.set_attributes(self)
-        self.args = args
 
         self.__store = Store()
         self.__axes = _Axes()
@@ -95,7 +90,7 @@ class Show:
                         fname,
                         bbox_inches="tight",
                         dpi=self.dpi,
-                        *self.args,
+                        *self._args,
                         **self._kwargs,
                     )
             except:
