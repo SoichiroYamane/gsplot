@@ -1,4 +1,4 @@
-from ..plts.axes import _Axes
+from ..plts.axes import AxesSingleton
 
 import matplotlib.pyplot as plt
 import matplotlib.ticker as plticker
@@ -34,7 +34,8 @@ class MinorTicks:
             None
         """
 
-        self.__axes = _Axes().axes
+        self.__axes = AxesSingleton()
+        self._axes = self.__axes.axes
 
     def minor_ticks_off(
         self,
@@ -49,7 +50,7 @@ class MinorTicks:
             The axis_index on which to turn off minor ticks.
         """
 
-        axis = self.__axes[axis_index]
+        axis = self._axes[axis_index]
         axis.xaxis.set_minor_locator(plt.NullLocator())
         axis.yaxis.set_minor_locator(plt.NullLocator())
 
@@ -63,7 +64,20 @@ class MinorTicks:
             The axis_index on which to turn on minor ticks.
         """
 
-        axis = self.__axes[axis_index]
+        axis = self._axes[axis_index]
+        axis.xaxis.set_minor_locator(plticker.AutoMinorLocator())
+        axis.yaxis.set_minor_locator(plticker.AutoMinorLocator())
+
+    def minor_ticks_on_by_axis(self, axis):
+        """
+        Turns on minor ticks on the given axis.
+
+        Parameters
+        ----------
+        axis : Axes
+            The axis on which to turn on minor ticks.
+        """
+
         axis.xaxis.set_minor_locator(plticker.AutoMinorLocator())
         axis.yaxis.set_minor_locator(plticker.AutoMinorLocator())
 
@@ -77,7 +91,7 @@ class MinorTicks:
             The axis_index on which to turn on minor ticks.
         """
 
-        axis = self.__axes[axis_index]
+        axis = self._axes[axis_index]
         axis.xaxis.set_minor_locator(plticker.AutoMinorLocator())
 
     def minor_ticks_y(self, axis_index: int):
@@ -90,7 +104,7 @@ class MinorTicks:
             The axis_index on which to turn on minor ticks.
         """
 
-        axis = self.__axes[axis_index]
+        axis = self._axes[axis_index]
         axis.yaxis.set_minor_locator(plticker.AutoMinorLocator())
 
     def minor_ticks_all(self):
@@ -102,5 +116,5 @@ class MinorTicks:
             None
         """
 
-        for axis in self.__axes:
-            self.minor_ticks_on(axis)
+        for axis in self._axes:
+            self.minor_ticks_on_by_axis(axis)

@@ -1,6 +1,6 @@
 from ..params.params import Params
 from ..base.base import AttributeSetter
-from ..plts.axes import _Axes
+from ..plts.axes import AxesSingleton
 
 import matplotlib.pyplot as plt
 from matplotlib.legend import Legend as Lg
@@ -10,7 +10,7 @@ class Legend:
     def __init__(self, axis_index, *args, **kwargs):
         self.axis_index = axis_index
 
-        self.__axes = _Axes()
+        self.__axes = AxesSingleton()
         self._axis = self.__axes.axes[self.axis_index]
 
         defaults = {

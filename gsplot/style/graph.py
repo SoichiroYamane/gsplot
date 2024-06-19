@@ -1,7 +1,23 @@
+from ..plts.axes_base import AxesSingleton, AxesRangeSingleton, AxisLayout
+
+
+class SquareAxes:
+    def __init__(self):
+        self.__axes = AxesSingleton()
+        self._axes = self.__axes.axes
+
+    def set_square(self, axis_index: int):
+        axis = self._axes[axis_index]
+        axis.set_box_aspect(1)
+
+    def set_square_all(self):
+        for axis_index in range(len(self._axes)):
+            self.set_square(axis_index)
+
+
+class 
+
 """
-def Yama_square_figure(plts):
-    for plts_i in plts:
-        plts_i.set_box_aspect(1)
 
 
 def GioWhiteGraph(graph):

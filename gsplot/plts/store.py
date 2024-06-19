@@ -1,7 +1,7 @@
 from typing import Union
 
 
-class Store:
+class StoreSingleton:
     """
     A singleton class used to manage a store flag.
 
@@ -9,8 +9,8 @@ class Store:
 
     Attributes
     ----------
-    _instance : Store
-        the single instance of the Store class
+    _instance : StoreSingleton
+        the single instance of the StoreSingleton class
     _store : bool or int
         a flag indicating whether to store or not
 
@@ -24,10 +24,10 @@ class Store:
 
     def __new__(cls, *args, **kwargs):
         """
-        Creates a new instance of the Store class if one does not already exist.
+        Creates a new instance of the StoreSingleton class if one does not already exist.
         """
         if cls._instance is None:
-            cls._instance = super(Store, cls).__new__(cls)
+            cls._instance = super(StoreSingleton, cls).__new__(cls)
             cls._instance._store = False
         return cls._instance
 

@@ -1,23 +1,21 @@
 from ..params.params import Params
 from ..base.base import AttributeSetter
-from ..plts.axes import _Axes
-
-from .base_plot import NumLines
-from .base_plot import AutoColor
+from ..plts.axes_base import AxesSingleton, AxesRangeSingleton
+from ..color.colormap import Colormap
+from .line_base import NumLines
+from .line_base import AutoColor
 
 from matplotlib import colors
+import numpy as np
 
 
 class Line:
-    def __init__(self):
-        self.cycle_color = AutoColor().get_color()
-
-    @NumLines.count
-    def plot(self, axis_index, xdata, ydata, *args, **kwargs):
+    def __init__(self, axis_index, xdata, ydata, *args, **kwargs):
         self.axis_index = axis_index
-        self.xdata = xdata
-        self.ydata = ydata
+        self.xdata = np.array(xdata)
+        self.ydata = np.array(ydata)
 
+        self.cycle_color = AutoColor(self.axis_index).get_color()
         kwargs = self._handle_kwargs(kwargs)
         params = self._handle_kwargs(Params().getitem("line"))
 
@@ -27,12 +25,15 @@ class Line:
         self._args = args
         self._kwargs = attribute_setter.set_attributes(self)
 
-        self.__axes = _Axes()
-        self._axis = self.__axes.axes[self.axis_index]
-
+        self.__axes = AxesSingleton()
+        self._axis = self.__axes.axes
+        self.axis = self._axis[self.axis_index]
         self._set_colors()
 
-        self._axis.plot(
+    @NumLines.count
+    @AxesRangeSingleton.update
+    def plot(self):
+        self.axis.plot(
             self.xdata,
             self.ydata,
             color=self._color,
@@ -84,13 +85,13 @@ class Line:
         }
 
     def _set_colors(self):
-        self._color = self.modify_color_alpha(self.color, self.alpha_all)
-        self._color_mec = self.modify_color_alpha(self.markeredgecolor, self.alpha_all)
-        self._color_mfc = self.modify_color_alpha(
+        self._color = self._modify_color_alpha(self.color, self.alpha_all)
+        self._color_mec = self._modify_color_alpha(self.markeredgecolor, self.alpha_all)
+        self._color_mfc = self._modify_color_alpha(
             self.markerfacecolor, self.alpha * self.alpha_all
         )
 
-    def modify_color_alpha(self, color=None, alpha=None) -> tuple:
+    def _modify_color_alpha(self, color=None, alpha=None) -> tuple:
         rgb = list(colors.to_rgba(color))
         rgb[3] = alpha
         return tuple(rgb)

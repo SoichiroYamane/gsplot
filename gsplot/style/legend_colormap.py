@@ -1,4 +1,4 @@
-from ..plts.axes import _Axes
+from ..plts.axes import AxesSingleton
 from ..color.colormap import Colormap
 from .legend import Legend
 
@@ -46,7 +46,7 @@ class LegendColormap:
         self,
         axis_index,
         cmap="viridis",
-        label="",
+        label=None,
         num_stripes=8,
         min=0,
         max=1,
@@ -62,7 +62,7 @@ class LegendColormap:
         self.max = max
         self.reverse = reverse
 
-        self.__axes = _Axes()
+        self.__axes = AxesSingleton()
         self._axis = self.__axes.axes[self.axis_index]
 
         self._args = args

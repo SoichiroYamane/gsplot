@@ -1,5 +1,5 @@
-from .store import Store
-from .axes import _Axes
+from .store import StoreSingleton
+from .axes import AxesSingleton
 from .axes import Axes
 
 from .show import Show

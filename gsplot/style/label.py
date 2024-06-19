@@ -1,6 +1,11 @@
 from ..params.params import Params
 from ..base.base import AttributeSetter
-from ..plts.axes import _Axes
+from ..plts.axes_base import (
+    AxesSingleton,
+    AxisRangeController,
+    AxesRangeSingleton,
+    AxisRangeManager,
+)
 from .ticks import MinorTicks
 
 
@@ -72,8 +77,8 @@ class Labels:
         a dictionary of keyword arguments passed to the class
     _args : tuple
         a tuple of positional arguments passed to the class
-    __axes : _Axes
-        an instance of the _Axes class
+    __axes : AxesSingleton
+        an instance of the AxesSingleton class
 
     Example
     -------
@@ -132,8 +137,8 @@ class Labels:
         """
         defaults = {
             "lab_lims": lab_lims if lab_lims is not None else [],
-            "x_pad": 1,
-            "y_pad": 1,
+            "x_pad": 0,
+            "y_pad": 0,
             "minor_ticks_all": True,
             "tight_layout": True,
             "add_index": False,
@@ -146,11 +151,12 @@ class Labels:
         self._args = args
         self._kwargs = attribute_setter.set_attributes(self)
 
-        self.__axes = _Axes()
+        self.__axes = AxesSingleton()
+        self._axes = self.__axes.axes
 
         self.main()
 
-    def xticks(base=None, num_minor=None):
+    def xticks(axis, base=None, num_minor=None):
         """
         Sets the x-ticks on the current axis.
 
@@ -162,11 +168,11 @@ class Labels:
                 The number of minor ticks between each pair of major ticks.
         """
         if base != None:
-            plt.gca().xaxis.set_major_locator(plticker.MultipleLocator(base=base))
+            axis.xaxis.set_major_locator(plticker.MultipleLocator(base=base))
         if num_minor != None:
-            plt.gca().xaxis.set_minor_locator(plticker.AutoMinorLocator(num_minor))
+            axis.xaxis.set_minor_locator(plticker.AutoMinorLocator(num_minor))
 
-    def yticks(base=None, num_minor=None):
+    def yticks(axis, base=None, num_minor=None):
         """
         Sets the y-ticks on the current axis.
 
@@ -178,9 +184,9 @@ class Labels:
                 The number of minor ticks between each pair of major ticks.
         """
         if base != None:
-            plt.gca().yaxis.set_major_locator(plticker.MultipleLocator(base=base))
+            axis.yaxis.set_major_locator(plticker.MultipleLocator(base=base))
         if num_minor != None:
-            plt.gca().yaxis.set_minor_locator(plticker.AutoMinorLocator(num_minor))
+            axis.yaxis.set_minor_locator(plticker.AutoMinorLocator(num_minor))
 
     def xlabels_off(self, axis):
         """
@@ -191,7 +197,7 @@ class Labels:
             axis : Axes
                 the axis on which to turn off x-labels
         """
-        axis.xlabel("")
+        axis.set_xlabel("")
         axis.tick_params(labelbottom=False)
 
     def ylabels_off(self, axis):
@@ -203,7 +209,7 @@ class Labels:
             axis : Axes
                 the axis on which to turn off y-labels
         """
-        axis.ylabel("")
+        axis.set_ylabel("")
         axis.tick_params(labelleft=False)
 
     def _ticks_all(self):
@@ -211,22 +217,24 @@ class Labels:
             MinorTicks().minor_ticks_all()
 
     def _add_labels(self):
+        final_axes_range = self._get_final_axes_range()
         for i, (x_lab, y_lab, *lims) in enumerate(self.lab_lims):
             # Change axis pointer only if there are multiple axes
-            axis = self.__axes.axes[i]
+            axis = self._axes[i]
             if len(self.lab_lims) > 1:
                 plt.sca(axis)
             if x_lab == "":
-                self.xlabels_off()
+                self.xlabels_off(axis)
             else:
-                plt.xlabel(x_lab)
+                axis.set_xlabel(x_lab)
+                pass
             if y_lab == "":
-                self.ylabels_off()
+                self.ylabels_off(axis)
             else:
-                plt.ylabel(y_lab)
+                axis.set_ylabel(y_lab)
+                pass
             if len(lims) > 0:  # Limits are specified
                 [x_lims, y_lims] = lims
-                set_lims = dict()
                 for lim, val in zip(
                     ["xmin", "xmax", "ymin", "ymax"],
                     [x_lims[0], x_lims[1], y_lims[0], y_lims[1]],
@@ -237,17 +245,80 @@ class Labels:
                     if type(x_lims[2]) == str:
                         plt.xscale(x_lims[2])
                     else:
-                        self.GioXticks(num_minor=x_lims[2])
+                        self.xticks(axis, num_minor=x_lims[2])
                         if len(x_lims) > 3:
-                            self.xticks(base=x_lims[3])
+                            self.xticks(axis, base=x_lims[3])
                 if len(y_lims) > 2:
                     if type(y_lims[2]) == str:
                         plt.yscale(y_lims[2])
                     else:
-                        self.GioYticks(num_minor=y_lims[2])
+                        self.yticks(axis, num_minor=y_lims[2])
                         if len(y_lims) > 3:
-                            self.yticks(base=y_lims[3])
+                            self.yticks(axis, base=y_lims[3])
+            else:
+                final_axis_range = final_axes_range[i]
+                plt.axis(
+                    xmin=final_axis_range[0][0],
+                    xmax=final_axis_range[0][1],
+                    ymin=final_axis_range[1][0],
+                    ymax=final_axis_range[1][1],
+                )
 
+        self._get_final_axes_range()
+
+    def _calculate_padding_range(self, range: np.ndarray) -> np.ndarray:
+        PADDING_FACTOR = 0.05
+        span = range[1] - range[0]
+        return range + np.array([-PADDING_FACTOR, PADDING_FACTOR]) * span
+
+    def _get_wider_range(self, range1: np.ndarray, range2: np.ndarray) -> np.ndarray:
+        new_range = np.array([min(range1[0], range2[0]), max(range1[1], range2[1])])
+        return new_range
+
+    def _get_axes_range_current(self) -> list:
+        axes_range_current = []
+        for axis_index in range(len(self._axes)):
+            xrange = AxisRangeController(axis_index).get_axis_xrange()
+            yrange = AxisRangeController(axis_index).get_axis_yrange()
+            axes_range_current.append([xrange, yrange])
+        return axes_range_current
+
+    def _get_final_axes_range(self) -> list:
+        axes_range_singleton = AxesRangeSingleton().axes_range
+        axes_range_current = self._get_axes_range_current()
+
+        final_axes_range = []
+        for axis_index, (xrange, yrange) in enumerate(axes_range_current):
+            xrange_singleton = axes_range_singleton[axis_index][0]
+            yrange_singleton = axes_range_singleton[axis_index][1]
+
+            is_init_axis = AxisRangeManager(axis_index).is_init_axis()
+
+            if is_init_axis and xrange_singleton is not None:
+                new_xrange = xrange_singleton
+            elif not is_init_axis and xrange_singleton is not None:
+                new_xrange = self._get_wider_range(xrange, xrange_singleton)
+            else:
+                new_xrange = xrange
+
+            if is_init_axis and yrange_singleton is not None:
+                new_yrange = yrange_singleton
+            elif not is_init_axis and yrange_singleton is not None:
+                new_yrange = self._get_wider_range(yrange, yrange_singleton)
+            else:
+                new_yrange = yrange
+
+            new_xrange = self._calculate_padding_range(new_xrange)
+            new_yrange = self._calculate_padding_range(new_yrange)
+
+            final_axes_range.append([new_xrange, new_yrange])
+        return final_axes_range
+
+    def _get_wider_range(self, range1: np.ndarray, range2: np.ndarray) -> np.ndarray:
+        new_range = np.array([min(range1[0], range2[0]), max(range1[1], range2[1])])
+        return new_range
+
+    #! Xpad and Ypad will change the size of the axis
     def _tight_layout(self):
         if self.tight_layout:
             try:
@@ -257,9 +328,10 @@ class Labels:
             except:
                 plt.tight_layout(w_pad=self.x_pad, h_pad=self.y_pad)
 
+    #! Adding index will change the size of axis
     def _add_index(self):
         if self.add_index:
-            AddIndexToAxes(self.__axes.axes).add_index()
+            AddIndexToAxes(self._axes).add_index()
 
     def main(self):
         """
@@ -269,3 +341,4 @@ class Labels:
         self._add_labels()
         self._tight_layout()
         self._add_index()
+        pass

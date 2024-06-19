@@ -1,12 +1,13 @@
 from ..params.params import Params
 from ..base.base import AttributeSetter
 
-from .axes import _Axes
-from .store import Store
+from .axes import AxesSingleton
+from .store import StoreSingleton
 
 import matplotlib.pyplot as plt
 
 
+# TODO: fix main
 class Show:
     """
     A class used to manage the display and storage of a plot.
@@ -19,15 +20,15 @@ class Show:
         a dictionary of keyword arguments passed to the class
     args : tuple
         a tuple of positional arguments passed to the class
-    __store : Store
-        an instance of the Store class
-    __axes : _Axes
-        an instance of the _Axes class
+    __store : StoreSingleton
+        an instance of the StoreSingleton class
+    __axes : AxesSingleton
+        an instance of the AxesSingleton class
 
     Methods
     -------
     _store_fig():
-        Stores the figure in the specified file types if the store flag is set.
+        StoreSingletons the figure in the specified file types if the store flag is set.
     main():
         Executes the main functionality of the class.
     """
@@ -62,8 +63,8 @@ class Show:
         self._args = args
         self._kwargs = attribute_setter.set_attributes(self)
 
-        self.__store = Store()
-        self.__axes = _Axes()
+        self.__store = StoreSingleton()
+        self.__axes = AxesSingleton()
 
         # run main
         self.main()

@@ -1,78 +1,18 @@
 from typing import Union
 from enum import Enum
 
+from .axes_base import AxesSingleton
+
 from ..params.params import Params
 from ..params.params import LoadParams
 from ..base.base import AttributeSetter
-from ..plot.base_plot import NumLines
+from ..plot.line_base import NumLines
 
 import matplotlib.pyplot as plt
-from .store import Store
+from .store import StoreSingleton
 
-
-class _Axes:
-    """
-    A singleton class used to manage a list of axes.
-
-    ...
-
-    Attributes
-    ----------
-    _instance : _Axes
-        the single instance of the _Axes class
-    _axes : list
-        a list of axes
-
-    Methods
-    -------
-    axes:
-        Property that gets or sets the _axes attribute.
-    """
-
-    _instance = None
-
-    def __new__(cls, *args, **kwargs):
-        """
-        Creates a new instance of the _Axes class if one does not already exist.
-        """
-
-        if cls._instance is None:
-            cls._instance = super(_Axes, cls).__new__(cls)
-            cls._instance._axes = []
-        return cls._instance
-
-    @property
-    def axes(self):
-        """
-        Gets the _axes attribute.
-
-        Returns
-        -------
-        list
-            The list of axes.
-        """
-
-        return self._instance._axes
-
-    @axes.setter
-    def axes(self, axes: list):
-        """
-        Sets the _axes attribute.
-
-        Parameters
-        ----------
-        axes : list
-            The new list of axes.
-
-        Raises
-        ------
-        TypeError
-            If axes is not a list.
-        """
-
-        if not isinstance(axes, list):
-            raise TypeError(f"Expected type list, got {type(axes).__name__}")
-        self._instance._axes = axes
+# from .axes_range_singleton import AxesRangeSingleton
+from .axes_base import AxesRangeSingleton
 
 
 class Unit(Enum):
@@ -160,7 +100,7 @@ class UnitConv:
         return value * self.conversion_factors[unit]
 
 
-class Axes(_Axes):
+class Axes(AxesSingleton):
     """
     A class used to create axes of a plot via mosaic.
 
@@ -170,10 +110,10 @@ class Axes(_Axes):
     ----------
     _kwargs : dict
         a dictionary of keyword arguments passed to the class
-    _store_class : Store
-        an instance of the Store class
-    __axes : _Axes
-        an instance of the _Axes class
+    _store_class : StoreSingleton
+        an instance of the StoreSingleton class
+    __axes : AxesSingleton
+        an instance of the AxesSingleton class
     unit : Unit
         the unit of measurement for the size of the figure
     unit_conv : UnitConv
@@ -223,14 +163,15 @@ class Axes(_Axes):
         self._args = args
         self._kwargs = attribute_setter.set_attributes(self)
 
-        self._store_class = Store()
+        self._store_class = StoreSingleton()
         self._store_class.store = self.store
 
-        self.__axes = _Axes()
+        self.__axes = AxesSingleton()
         self.unit = Unit[self.unit.upper()]
         self.unit_conv = UnitConv()
 
-        NumLines.reset()
+        NumLines().reset()
+        AxesRangeSingleton().reset()
 
         self._open_figure(*self._args, **self._kwargs)
 
@@ -264,12 +205,18 @@ class Axes(_Axes):
                 If the mosaic attribute is not specified.
         """
 
-        if self.clear:
-            plt.clf()
         if self.ion:
             plt.ion()
 
-        # Set the size of the figure in the unit
+        # # get all axes
+        # axes = plt.gcf().get_axes()
+        # for ax in axes:
+        #     ax.remove()
+        # # print(axes)
+
+        if self.clear:
+            plt.gcf().clear()
+
         conv_size = tuple(
             map(lambda size: self.unit_conv.convert(size, self.unit), self.size)
         )
@@ -280,5 +227,8 @@ class Axes(_Axes):
                 p[1] for p in (sorted(plt.gcf().subplot_mosaic(self.mosaic).items()))
             ]
             self.__axes.axes = structures
+
+            # To ensure that the axes are tightly packed, otherwise axes sizes will be different after tight_layout is called
+            plt.tight_layout()
         else:
             raise ValueError("Mosaic must be specified.")
