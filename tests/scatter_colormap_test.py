@@ -6,7 +6,7 @@ import matplotlib.ticker as plticker
 import numpy as np
 
 
-axes = gs.axes(size=[4, 4], mosaic="AB")
+axes = gs.axes(mosaic="AB", store=1)
 print(plt.gcf())
 print(plt.gca())
 
@@ -20,9 +20,12 @@ xdata = np.linspace(0, 10, 100)
 ydata = np.sin(xdata) * 0.01
 
 
-gs.plot.line_colormap.LineColormap(
-    0, xdata, ydata, xdata, linestyle="--", cmap="inferno", label="test2"
-).plot_line_colormap()
+# gs.plot.line_colormap.LineColormap(
+#     0, xdata, ydata, xdata, linestyle="--", cmap="inferno", label="test2"
+# ).plot_line_colormap()
+gs.plot.scatter_colormap.ScatterColormap(
+    0, xdata, ydata, xdata, cmap="inferno", label="test2"
+).plot()
 gs.plot.line_colormap.LineColormap(1, xdata, ydata, xdata).plot_line_colormap()
 
 
@@ -53,6 +56,8 @@ gs.style.legend_colormap.LegendColormap(
     1, max=1, min=0, num_stripes=100
 ).add_legend_colormap()
 
+gs.style.graph.GraphWhite().set_white_axis(0)
+gs.style.graph.GraphTransparent().set_transparent(0)
 
 gs.style.Labels(
     [

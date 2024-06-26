@@ -27,6 +27,7 @@ class Line:
 
         self.__axes = AxesSingleton()
         self._axis = self.__axes.axes
+        # TODO: add warning if axis_index is out of range
         self.axis = self._axis[self.axis_index]
         self._set_colors()
 

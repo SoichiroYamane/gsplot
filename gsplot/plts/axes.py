@@ -100,7 +100,7 @@ class UnitConv:
         return value * self.conversion_factors[unit]
 
 
-class Axes(AxesSingleton):
+class Axes:
     """
     A class used to create axes of a plot via mosaic.
 
@@ -145,13 +145,22 @@ class Axes(AxesSingleton):
                 a dictionary of keyword arguments
         """
 
+        # Initialize attributes
+        self.store = False
+        self.size = [300, 300]
+        self.unit = "pt"
+        self.mosaic = "A"
+        self.clear = True
+        self.ion = False
+
+        # Define default values
         defaults = {
-            "store": False,
-            "size": [300, 300],
-            "unit": "pt",
-            "mosaic": "A",
-            "clear": True,
-            "ion": False,
+            "store": self.store,
+            "size": self.size,
+            "unit": self.unit,
+            "mosaic": self.mosaic,
+            "clear": self.clear,
+            "ion": self.ion,
         }
 
         # Load the parameters from the configuration file (~/.gsplot.json)
@@ -161,22 +170,23 @@ class Axes(AxesSingleton):
         attribute_setter = AttributeSetter(defaults, params, **kwargs)
 
         self._args = args
-        self._kwargs = attribute_setter.set_attributes(self)
+        self._kwargs: dict = attribute_setter.set_attributes(self)
 
         self._store_class = StoreSingleton()
         self._store_class.store = self.store
 
         self.__axes = AxesSingleton()
-        self.unit = Unit[self.unit.upper()]
+        self.unit_enum = Unit[self.unit.upper()]
         self.unit_conv = UnitConv()
 
         NumLines().reset()
-        AxesRangeSingleton().reset()
 
         self._open_figure(*self._args, **self._kwargs)
 
+        AxesRangeSingleton().reset(self.__axes.axes)
+
     @property
-    def axes(self):
+    def get_axes(self):
         """
         Gets the _axes attribute.
 
@@ -218,7 +228,7 @@ class Axes(AxesSingleton):
             plt.gcf().clear()
 
         conv_size = tuple(
-            map(lambda size: self.unit_conv.convert(size, self.unit), self.size)
+            map(lambda size: self.unit_conv.convert(size, self.unit_enum), self.size)
         )
         plt.gcf().set_size_inches(*conv_size, **self._kwargs)
 

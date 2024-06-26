@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import matplotlib as mpl
 import matplotlib.ticker as plticker
 
-axes = gs.axes()
+axes = gs.axes(mosaic="AB")
 
 x = [1, 2, 3, 4, 5]
 y = [1, 4, 9, 16, 25]
@@ -17,6 +17,7 @@ gs.Line(
     y,
     label="y = x^2",
 ).plot()
+
 gs.Line(
     0,
     x2,
@@ -27,7 +28,11 @@ gs.Line(
 gs.style.Labels(
     [
         ["x", "y"],
+        ["x", "y"],
     ],
+    add_index=True,
+    x_pad=2,
+    y_pad=2,
 )
 
 

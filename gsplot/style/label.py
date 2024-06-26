@@ -137,8 +137,8 @@ class Labels:
         """
         defaults = {
             "lab_lims": lab_lims if lab_lims is not None else [],
-            "x_pad": 0,
-            "y_pad": 0,
+            "x_pad": 2,
+            "y_pad": 2,
             "minor_ticks_all": True,
             "tight_layout": True,
             "add_index": False,
@@ -275,22 +275,22 @@ class Labels:
         new_range = np.array([min(range1[0], range2[0]), max(range1[1], range2[1])])
         return new_range
 
-    def _get_axes_range_current(self) -> list:
-        axes_range_current = []
+    def _get_axes_ranges_current(self) -> list:
+        axes_ranges_current = []
         for axis_index in range(len(self._axes)):
             xrange = AxisRangeController(axis_index).get_axis_xrange()
             yrange = AxisRangeController(axis_index).get_axis_yrange()
-            axes_range_current.append([xrange, yrange])
-        return axes_range_current
+            axes_ranges_current.append([xrange, yrange])
+        return axes_ranges_current
 
     def _get_final_axes_range(self) -> list:
-        axes_range_singleton = AxesRangeSingleton().axes_range
-        axes_range_current = self._get_axes_range_current()
+        axes_ranges_singleton = AxesRangeSingleton().axes_ranges
+        axes_ranges_current = self._get_axes_ranges_current()
 
-        final_axes_range = []
-        for axis_index, (xrange, yrange) in enumerate(axes_range_current):
-            xrange_singleton = axes_range_singleton[axis_index][0]
-            yrange_singleton = axes_range_singleton[axis_index][1]
+        final_axes_ranges = []
+        for axis_index, (xrange, yrange) in enumerate(axes_ranges_current):
+            xrange_singleton = axes_ranges_singleton[axis_index][0]
+            yrange_singleton = axes_ranges_singleton[axis_index][1]
 
             is_init_axis = AxisRangeManager(axis_index).is_init_axis()
 
@@ -311,8 +311,8 @@ class Labels:
             new_xrange = self._calculate_padding_range(new_xrange)
             new_yrange = self._calculate_padding_range(new_yrange)
 
-            final_axes_range.append([new_xrange, new_yrange])
-        return final_axes_range
+            final_axes_ranges.append([new_xrange, new_yrange])
+        return final_axes_ranges
 
     def _get_wider_range(self, range1: np.ndarray, range2: np.ndarray) -> np.ndarray:
         new_range = np.array([min(range1[0], range2[0]), max(range1[1], range2[1])])

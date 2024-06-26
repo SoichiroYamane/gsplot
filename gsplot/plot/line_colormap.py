@@ -9,6 +9,7 @@ from matplotlib.collections import LineCollection
 import numpy as np
 
 
+# TODO: add Params function to LineColormap
 class LineColormap:
     def __init__(
         self,
@@ -27,7 +28,7 @@ class LineColormap:
     ):
         self.axis_index = axis_index
         self.__axes = AxesSingleton()
-        self._axis = self.__axes.axes[self.axis_index]
+        self._axis = self.__axes.get_axis(self.axis_index)
 
         self.xdata = np.array(xdata)
         self.ydata = np.array(ydata)
@@ -194,6 +195,8 @@ class LineColormapDashed:
 
         self.xspan = xspan_data if xspan is None else xspan
         self.yspan = yspan_data if yspan is None else yspan
+
+        AxisLayout(self.axis_index).get_axis_size()
 
         # unit is inches
         self.xaxis_inches, self.yaxis_inches = AxisLayout(
