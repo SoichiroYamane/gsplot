@@ -2,10 +2,7 @@
 name = "gsplot"
 version = "0.0.1"
 description = "Provide a simple way to plot scientific data with matplotlib"
-authors = [
-  "Giordano Mattoni <email>",
-  "Soichiro Yamane <soichiro.yamane.19970619@gmail.com>",
-]
+authors = ["Giordano Mattoni <email>","Soichiro Yamane <soichiro.yamane.19970619@gmail.com>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
@@ -13,6 +10,9 @@ python = "^3.11"
 matplotlib = "^3.9.0"
 numpy = "^1.26.4"
 pandas = "^2.2.2"
+pytest-watch = "^4.2.0"
+pyright = "^1.1.369"
+mypy = "^1.10.1"
 
 
 [tool.poetry.group.deb.dependencies]
