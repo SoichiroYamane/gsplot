@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import matplotlib as mpl
 import matplotlib.ticker as plticker
 
+
 axes = gs.axes(mosaic="AB")
 
 x = [1, 2, 3, 4, 5]
@@ -25,6 +26,7 @@ gs.Line(
     label=r"y = $x^3 \int x \lambda \theta_{\rm K}$",
 ).plot()
 
+
 gs.style.Labels(
     [
         ["x", "y"],
@@ -42,4 +44,4 @@ gs.style.legend_colormap.LegendColormap(
 ).add_legend_colormap()
 
 
-gs.plts.Show()
+gs.figure.Show()
