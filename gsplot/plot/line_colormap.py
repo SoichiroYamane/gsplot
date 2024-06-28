@@ -1,6 +1,6 @@
 from ..params.params import Params
 from ..base.base import AttributeSetter
-from ..plts.axes_base import AxesSingleton, AxesRangeSingleton, AxisLayout
+from ..figure.axes_base import AxesSingleton, AxesRangeSingleton, AxisLayout
 from ..style.legend_colormap import LegendColormap
 
 

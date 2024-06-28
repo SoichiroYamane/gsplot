@@ -1,6 +1,6 @@
 from ..params.params import Params
 from ..base.base import AttributeSetter
-from ..plts.axes_base import (
+from ..figure.axes_base import (
     AxesSingleton,
     AxisRangeController,
     AxesRangeSingleton,

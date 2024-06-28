@@ -1,6 +1,6 @@
 from ..params.params import Params
 from ..base.base import AttributeSetter
-from ..plts.axes_base import AxesSingleton, AxesRangeSingleton
+from ..figure.axes_base import AxesSingleton, AxesRangeSingleton
 from ..color.colormap import Colormap
 from .line_base import NumLines
 from .line_base import AutoColor

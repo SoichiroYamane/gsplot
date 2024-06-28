@@ -1,6 +1,6 @@
 from ..params.params import Params
 from ..base.base import AttributeSetter
-from ..plts.axes import AxesSingleton
+from ..figure.axes import AxesSingleton
 
 import matplotlib.pyplot as plt
 from matplotlib.legend import Legend as Lg

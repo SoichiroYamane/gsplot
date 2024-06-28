@@ -1,6 +1,6 @@
-# from .plts.store import Store
-# from .plts.figure import Axes
-# from .plts.figure import Figure
+# from .figure.store import Store
+# from .figure.figure import Axes
+# from .figure.figure import Figure
 from .params.params import Params
 from .params.params import LoadParams
 
@@ -19,4 +19,4 @@ from .plot.scatter_colormap import *
 
 from .gsplot import axes
 
-from .plts.axes_base import *
+from .figure.axes_base import *

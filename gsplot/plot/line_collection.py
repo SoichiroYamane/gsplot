@@ -1,6 +1,6 @@
-# from ..plts.axes import _Axes
-# from ..plts.axes_tool import AxisRangeController
-# from ..plts.axes_tool import AxisRangeManager
+# from ..figure.axes import _Axes
+# from ..figure.axes_tool import AxisRangeController
+# from ..figure.axes_tool import AxisRangeManager
 #
 # import numpy as np
 #

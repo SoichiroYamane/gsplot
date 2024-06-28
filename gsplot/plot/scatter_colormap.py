@@ -1,6 +1,6 @@
 from ..params.params import Params
 from ..base.base import AttributeSetter
-from ..plts.axes import AxesSingleton, AxesRangeSingleton
+from ..figure.axes import AxesSingleton, AxesRangeSingleton
 from ..style.legend_colormap import LegendColormap
 
 import numpy as np
@@ -96,7 +96,7 @@ class ScatterColormap:
 
 
 # def Yama_colormap_plot(
-#     plts_i,
+#     figure_i,
 #     datax,
 #     datay,
 #     colordata,
@@ -111,7 +111,7 @@ class ScatterColormap:
 #     cl_min = min(colordata)
 #     cl_data = colordata
 #     color_bar = (cl_data - cl_min) / (cl_max - cl_min)
-#     plts_i.scatter(
+#     figure_i.scatter(
 #         datax,
 #         datay,
 #         c=color_bar,

@@ -1,4 +1,4 @@
-from ..plts.axes_base import AxesSingleton
+from ..figure.axes_base import AxesSingleton
 from matplotlib import rcParams
 
 

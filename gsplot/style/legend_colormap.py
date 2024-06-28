@@ -1,4 +1,4 @@
-from ..plts.axes import AxesSingleton
+from ..figure.axes import AxesSingleton
 from ..color.colormap import Colormap
 from .legend import Legend
 
