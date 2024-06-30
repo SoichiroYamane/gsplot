@@ -5,7 +5,7 @@ class StoreSingleton:
 
     _instance = None
 
-    def __new__(cls):
+    def __new__(cls) -> "StoreSingleton":
         if cls._instance is None:
             cls._instance = super(StoreSingleton, cls).__new__(cls)
             cls._instance._initialize_store()

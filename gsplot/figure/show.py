@@ -1,11 +1,10 @@
 from typing import List, Union
 
+import matplotlib.pyplot as plt
+
 from ..params.params import Params
 from ..base.base import AttributeSetter
-
 from .store import StoreSingleton
-
-import matplotlib.pyplot as plt
 
 
 # TODO: fix main

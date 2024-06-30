@@ -10,7 +10,7 @@ from .figure_tool import FigureLayout
 class AxesSingleton:
     _instance: Optional["AxesSingleton"] = None
 
-    def __new__(cls):
+    def __new__(cls) -> "AxesSingleton":
         if cls._instance is None:
             cls._instance = super(AxesSingleton, cls).__new__(cls)
             cls._instance._initialize_axes()
@@ -33,7 +33,7 @@ class AxesSingleton:
         self._axes = axes
 
     def get_axis(self, axis_index: int) -> Axes:
-        def ordinal_suffix(n):
+        def ordinal_suffix(n: int) -> str:
             if 11 <= n % 100 <= 13:
                 suffix = "th"
             else:
@@ -52,7 +52,7 @@ class AxesSingleton:
 class AxesRangeSingleton:
     _instance: Optional["AxesRangeSingleton"] = None
 
-    def __new__(cls):
+    def __new__(cls) -> "AxesRangeSingleton":
         if cls._instance is None:
             cls._instance = super(AxesRangeSingleton, cls).__new__(cls)
             cls._instance._initialize_axes_ranges()
@@ -90,7 +90,7 @@ class AxesRangeSingleton:
 
     @classmethod
     def update(cls, func: Any) -> Any:
-        def wrapper(self, *args, **kwargs) -> Any:
+        def wrapper(self, *args: Any, **kwargs: Any) -> Any:
             axis_index: int = self.axis_index
             xdata: np.ndarray = self.xdata
             ydata: np.ndarray = self.ydata
