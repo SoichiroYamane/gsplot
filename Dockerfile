@@ -13,7 +13,7 @@ RUN pip install poetry
 WORKDIR /root/opt
 COPY pyproject.toml .
 
-RUN poetry add matplotlib numpy pandas pytest pytest-watch sphinx sphinx-rtd-theme ipython
+RUN poetry add matplotlib numpy pandas pytest pytest-watch sphinx sphinx-rtd-theme ipython furo
 RUN poetry config virtualenvs.in-project true
 
 COPY . .

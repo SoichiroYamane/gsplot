@@ -2,6 +2,7 @@ from ..data.path import Path
 import os
 import json
 
+from typing import List, Any, Optional, Dict
 
 from matplotlib import rcParams
 import matplotlib as mpl
@@ -38,67 +39,120 @@ home = os.path.expanduser("~")
 
 
 class Params:
-    _instance = None
+    _instance: Optional["Params"] = None
 
-    def __new__(cls, *args, **kwargs):
+    def __new__(cls) -> "Params":
         if cls._instance is None:
             cls._instance = super(Params, cls).__new__(cls)
-            cls._instance._params = {}
+            cls._instance._initialize_params()
         return cls._instance
 
+    def _initialize_params(self) -> None:
+        self._params: Dict[str, Any] = {}
+
     @property
-    def params(self):
-        return self._instance._params
+    def params(self) -> Dict[str, Any]:
+        return self._params
 
     @params.setter
-    def params(self, params):
+    def params(self, params: Dict[str, Any]) -> None:
         if not isinstance(params, dict):
             raise TypeError(f"Expected type dict, got {type(params).__name__}")
-        self._instance._params = params
+        self._params = params
 
-    def getitem(self, key):
+    def get_item(self, key: str) -> Dict[str, Any]:
         try:
-            key_params = Params.params[key]
-            return key_params
-        except:
-            return {}
+            params_instance = Params()
+            key_params = params_instance.params.get(key, {})
+            if isinstance(key_params, dict):
+                return key_params
+            else:
+                raise ValueError("Expected a dictionary")
+        except Exception:
+            return dict[str, Any]()
+
+
+# class LoadParams:
+#     def __init__(self) -> None:
+#         self.home = Path().get_home()
+#         self.config_fname = ".gsplot.json"
+#         self.config_path = f"{self.home}/{self.config_fname}"
+#
+#         try:
+#             self._init_load()
+#         except Exception:
+#             pass
+#
+#     def _init_load(self):
+#         params = self.load_params()
+#
+#         rcparams = params["rcParams"]
+#
+#         if "backends" in rcparams:
+#             val_bes = rcparams["backends"]
+#             mpl.use(val_bes)
+#
+#         for key in rcparams:
+#             if key != "backends":
+#                 rcParams[key] = rcparams[key]
+#
+#     def load_params(self):
+#         try:
+#             try:
+#                 with open(self.config_path, "r") as f:
+#                     params = json.load(f)
+#
+#                 instance_Params = Params()
+#                 instance_Params.params = params
+#                 return params
+#
+#             # get error of syntax error of json file
+#             except Exception as e:
+#                 raise ValueError(f"Error in reading ~/.gsplot.json: {e}")
+#         except:
+#             pass
+#
 
 
 class LoadParams:
-    def __init__(self):
-        self.home = Path().get_home()
-        self.config_fname = ".gsplot.json"
-        self.config_path = f"{self.home}/{self.config_fname}"
+    def __init__(self) -> None:
+        self.home: str = Path().get_home()
+        self.config_fname: str = ".gsplot.json"
+        self.config_path: str = f"{self.home}/{self.config_fname}"
 
         try:
             self._init_load()
-        except:
+        except Exception:
             pass
 
-    def _init_load(self):
-        params = self.load_params()
+    def _init_load(self) -> None:
+        params: Dict[str, Any] = self.load_params()
 
-        rcparams = params["rcParams"]
+        rcparams: Dict[str, Any] = params["rcParams"]
 
         if "backends" in rcparams:
-            val_bes = rcparams["backends"]
+            val_bes: str = rcparams["backends"]
             mpl.use(val_bes)
 
         for key in rcparams:
             if key != "backends":
                 rcParams[key] = rcparams[key]
 
-    def load_params(self):
+    def load_params(self) -> Dict[str, Any]:
         try:
-            try:
-                with open(self.config_path, "r") as f:
-                    params = json.load(f)
+            with open(self.config_path, "r") as f:
+                params: Dict[str, Any] = json.load(f)
 
-                Params.params = params
-                return params
+            instance_Params: Params = Params()
+            instance_Params.params = params
+            return params
 
-            # get error of syntax error of json file
-            except Exception as e:
-                raise ValueError(f"Error in reading ~/.gsplot.json: {e}")
-        except:
-            pass
+        # get error of syntax error of json file
+        except Exception as e:
+            raise ValueError(f"Error in reading ~/.gsplot.json: {e}")
+
+
+def get_json_params() -> Dict[str, Any]:
+    instance_Params = Params()
+    params = instance_Params.params
+    return params

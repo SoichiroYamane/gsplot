@@ -19,7 +19,7 @@ class Legend:
             "handlers": None,
         }
 
-        params = Params().getitem("legend")
+        params = Params().get_item("legend")
 
         attribute_setter = AttributeSetter(defaults, params, **kwargs)
 

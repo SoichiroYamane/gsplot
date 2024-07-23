@@ -17,7 +17,7 @@ class Line:
 
         self.cycle_color = AutoColor(self.axis_index).get_color()
         kwargs = self._handle_kwargs(kwargs)
-        params = self._handle_kwargs(Params().getitem("line"))
+        params = self._handle_kwargs(Params().get_item("line"))
 
         defaults = self._get_defaults(kwargs)
         attribute_setter = AttributeSetter(defaults, params, **kwargs)

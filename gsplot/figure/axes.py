@@ -2,11 +2,11 @@ from enum import Enum
 from typing import Dict, List, Tuple, Any, Union
 
 import matplotlib.pyplot as plt
+from matplotlib.axes import Axes
 
 from .axes_base import AxesSingleton, AxesRangeSingleton
 from .store import StoreSingleton
 from ..base.base import AttributeSetter
-from ..params.params import Params, LoadParams
 from ..plot.line_base import NumLines
 
 
@@ -36,37 +36,29 @@ class UnitConv:
 
 
 class AxesHandler:
+
     def __init__(
         self,
-        *args: Tuple[Any],
-        **kwargs: Dict[str, Any],
+        store: bool = False,
+        size: List[int] = [5, 5],
+        unit: str = "in",
+        mosaic: str = "A",
+        clear: bool = True,
+        ion: bool = False,
+        *args: Any,
+        **kwargs: Any,
     ):
-        # Initialize attributes
-        self.store: bool = False
-        self.size: List[int] = [5, 5]
-        self.unit: str = "in"
-        self.mosaic: str = "A"
-        self.clear: bool = True
-        self.ion: bool = False
+        self.store: bool = store
+        self.size: List[int] = size
+        self.unit: str = unit
+        self.mosaic: str = mosaic
+        self.clear: bool = clear
+        self.ion: bool = ion
+        self.args: Any = args
+        self.kwargs: Any = kwargs
 
-        # Define default values
-        defaults: Dict[str, Union[bool, List[int], str]] = {
-            "store": self.store,
-            "size": self.size,
-            "unit": self.unit,
-            "mosaic": self.mosaic,
-            "clear": self.clear,
-            "ion": self.ion,
-        }
-
-        # Load the parameters from the configuration file (~/.gsplot.json)
-        LoadParams().load_params()
-        params: Dict[str, Any] = Params().getitem("axes")
-
-        attribute_setter = AttributeSetter(defaults, params, **kwargs)
-
-        self._args: Tuple[Any, ...] = args
-        self._kwargs: Dict[str, Any] = attribute_setter.set_attributes(self)
+        attributer = AttributeSetter()
+        self.kwargs = attributer.set_attributes(self, locals(), key="axes")
 
         self._store_class = StoreSingleton()
         self._store_class.store = self.store
@@ -77,12 +69,12 @@ class AxesHandler:
 
         NumLines().reset()
 
-        self._open_figure(*self._args, **self._kwargs)
+        self._open_figure()
 
         AxesRangeSingleton().reset(self.__axes.axes)
 
     @property
-    def get_axes(self) -> Any:
+    def get_axes(self) -> List[Axes]:
         return self.__axes.axes
 
     def _open_figure(self) -> None:
@@ -99,7 +91,7 @@ class AxesHandler:
             self.unit_conv.convert(self.size[0], self.unit_enum),
             self.unit_conv.convert(self.size[1], self.unit_enum),
         )
-        plt.gcf().set_size_inches(*conv_size, **self._kwargs)
+        plt.gcf().set_size_inches(*conv_size, *self.args, **self.kwargs)
 
         if self.mosaic != "":
             axes: List[Any] = [
@@ -111,3 +103,30 @@ class AxesHandler:
             plt.tight_layout()
         else:
             raise ValueError("Mosaic must be specified.")
+
+
+def axes(
+    store: bool = False,
+    size: List[int] = [5, 5],
+    unit: str = "in",
+    mosaic: str = "A",
+    clear: bool = True,
+    ion: bool = False,
+    *args: Any,
+    **kwargs: Any,
+) -> List[Axes]:
+    """
+    This function creates an AxesHandler object and returns the axes.
+    """
+    __axes_handler = AxesHandler(
+        store,
+        size,
+        unit,
+        mosaic,
+        clear,
+        ion,
+        *args,
+        **kwargs,
+    )
+
+    return __axes_handler.get_axes

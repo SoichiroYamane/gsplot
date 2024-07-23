@@ -1,4 +1,4 @@
-from typing import List, Union
+from typing import List, Union, Any
 
 import matplotlib.pyplot as plt
 
@@ -7,38 +7,29 @@ from ..base.base import AttributeSetter
 from .store import StoreSingleton
 
 
-# TODO: fix main
 class Show:
 
     def __init__(
         self,
-        *args,
-        **kwargs,
+        name: str = "gsplot",
+        ft_list: List[str] = ["png", "pdf"],
+        dpi: float = 600,
+        show: bool = True,
+        *args: Any,
+        **kwargs: Any,
     ):
 
-        self.name: str = "gsplot"
-        self.ft_list: List[str] = ["png", "pdf"]
-        self.dpi: float = 600
-        self.show: bool = True
+        self.name: str = name
+        self.ft_list: List[str] = ft_list
+        self.dpi: float = dpi
+        self.show: bool = show
+        self.args: Any = args
+        self.kwargs: Any = kwargs
 
-        defaults = {
-            "name": self.name,
-            "ft_list": self.ft_list,
-            "dpi": self.dpi,
-            "show": self.show,
-        }
-
-        params: dict = Params().getitem("show")
-
-        attribute_setter: AttributeSetter = AttributeSetter(defaults, params, **kwargs)
-
-        self._args = args
-        self._kwargs: dict = attribute_setter.set_attributes(self)
+        attributer = AttributeSetter()
+        self.kwargs = attributer.set_attributes(self, locals(), key="show")
 
         self.__store: StoreSingleton = StoreSingleton()
-
-        # run main
-        self.main()
 
         if self.show:
             plt.show()
@@ -55,8 +46,8 @@ class Show:
                         fname,
                         bbox_inches="tight",
                         dpi=self.dpi,
-                        *self._args,
-                        **self._kwargs,
+                        *self.args,
+                        **self.kwargs,
                     )
 
             except Exception as e:
@@ -68,5 +59,7 @@ class Show:
         store: Union[bool, int] = self.__store.store
         return store
 
-    def main(self) -> None:
-        self._store_fig()
+
+def show(*args, **kwargs) -> None:
+    show = Show(*args, **kwargs)
+    show._store_fig()

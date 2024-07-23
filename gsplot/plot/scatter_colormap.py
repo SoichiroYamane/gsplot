@@ -26,7 +26,7 @@ class ScatterColormap:
         self.cmap_norm = self._get_cmap_norm()
 
         kwargs = self._handle_kwargs(kwargs)
-        params = self._handle_kwargs(Params().getitem("scatter_colormap"))
+        params = self._handle_kwargs(Params().get_item("scatter_colormap"))
 
         defaults = self._get_defaults(kwargs)
         attribute_setter = AttributeSetter(defaults, params, **kwargs)

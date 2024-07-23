@@ -144,7 +144,7 @@ class Labels:
             "add_index": False,
         }
 
-        params = Params().getitem("labels")
+        params = Params().get_item("labels")
 
         attribute_setter = AttributeSetter(defaults, params, **kwargs)
 

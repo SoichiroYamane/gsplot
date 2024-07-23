@@ -1,22 +1,15 @@
-# from .figure.store import Store
-# from .figure.figure import Axes
-# from .figure.figure import Figure
-from .params.params import Params
-from .params.params import LoadParams
+from .figure.axes import axes
+from .figure.figure_tool import get_figure_size
+from .figure.show import show
+
+from .params.params import get_json_params
+from .color.colormap import get_cmap
 
 
-from .style.label import *
-from .style.legend import *
-from .style.legend_colormap import *
-from .style.ticks import *
-from .style.graph import *
-
-# from .style.canvas import *
-from .color.colormap import *
-from .plot.line import *
-from .plot.line_colormap import *
-from .plot.scatter_colormap import *
-
-from .gsplot import axes
-
-from .figure.axes_base import *
+__all__ = [
+    "axes",
+    "get_figure_size",
+    "show",
+    "get_json_params",
+    "get_cmap",
+]

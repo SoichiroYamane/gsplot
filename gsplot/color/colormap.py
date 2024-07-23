@@ -4,7 +4,7 @@ from typing import Optional
 
 
 class Colormap:
-    DEFAULT_N = 10
+    DEFAULT_N: int = 10
 
     def __init__(
         self,
@@ -12,7 +12,7 @@ class Colormap:
         N: Optional[int] = None,
         ndarray: Optional[np.ndarray] = None,
         normalize: bool = True,
-    ):
+    ) -> None:
         self.cmap: str = cmap
         self.cmap_ndarray: np.ndarray = self._initialize_cmap_ndarray(N, ndarray)
         self.normalize: bool = normalize
@@ -38,3 +38,12 @@ class Colormap:
     @staticmethod
     def _normalize(ndarray: np.ndarray) -> np.ndarray:
         return (ndarray - np.min(ndarray)) / (np.max(ndarray) - np.min(ndarray))
+
+
+def get_cmap(
+    cmap: str = "viridis",
+    N: int = 10,
+    ndarray: Optional[np.ndarray] = None,
+    normalize: bool = True,
+) -> np.ndarray:
+    return Colormap(cmap, N, ndarray, normalize).get_split_cmap()
