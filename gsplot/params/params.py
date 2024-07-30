@@ -2,7 +2,7 @@ from ..data.path import Path
 import os
 import json
 
-from typing import List, Any, Optional, Dict
+from typing import Any, Optional, Dict
 
 from matplotlib import rcParams
 import matplotlib as mpl
@@ -70,48 +70,6 @@ class Params:
                 raise ValueError("Expected a dictionary")
         except Exception:
             return dict[str, Any]()
-
-
-# class LoadParams:
-#     def __init__(self) -> None:
-#         self.home = Path().get_home()
-#         self.config_fname = ".gsplot.json"
-#         self.config_path = f"{self.home}/{self.config_fname}"
-#
-#         try:
-#             self._init_load()
-#         except Exception:
-#             pass
-#
-#     def _init_load(self):
-#         params = self.load_params()
-#
-#         rcparams = params["rcParams"]
-#
-#         if "backends" in rcparams:
-#             val_bes = rcparams["backends"]
-#             mpl.use(val_bes)
-#
-#         for key in rcparams:
-#             if key != "backends":
-#                 rcParams[key] = rcparams[key]
-#
-#     def load_params(self):
-#         try:
-#             try:
-#                 with open(self.config_path, "r") as f:
-#                     params = json.load(f)
-#
-#                 instance_Params = Params()
-#                 instance_Params.params = params
-#                 return params
-#
-#             # get error of syntax error of json file
-#             except Exception as e:
-#                 raise ValueError(f"Error in reading ~/.gsplot.json: {e}")
-#         except:
-#             pass
-#
 
 
 class LoadParams:

@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Dict, List, Tuple, Any, Union
+from typing import Dict, List, Tuple, Any
 
 import matplotlib.pyplot as plt
 from matplotlib.axes import Axes
@@ -20,8 +20,7 @@ class Unit(Enum):
 
 
 class UnitConv:
-    # TODO Calculate the conversion factors from inches
-    def __init__(self):
+    def __init__(self) -> None:
         self.conversion_factors: Dict[Unit, float] = {
             Unit.MM: 1 / 25.4,
             Unit.CM: 1 / 2.54,
@@ -47,7 +46,7 @@ class AxesHandler:
         ion: bool = False,
         *args: Any,
         **kwargs: Any,
-    ):
+    ) -> None:
         self.store: bool = store
         self.size: List[int] = size
         self.unit: str = unit

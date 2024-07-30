@@ -1,39 +1,182 @@
 from ..params.params import Params
 from ..base.base import AttributeSetter
 from ..figure.axes_base import AxesSingleton, AxesRangeSingleton
-from ..color.colormap import Colormap
 from .line_base import NumLines
 from .line_base import AutoColor
+from typing import Union, Any, List, Dict, Callable
+
 
 from matplotlib import colors
 import numpy as np
 
+import inspect
+from functools import update_wrapper
+import numbers
 
-class Line:
-    def __init__(self, axis_index, xdata, ydata, *args, **kwargs):
-        self.axis_index = axis_index
-        self.xdata = np.array(xdata)
-        self.ydata = np.array(ydata)
 
-        self.cycle_color = AutoColor(self.axis_index).get_color()
-        kwargs = self._handle_kwargs(kwargs)
-        params = self._handle_kwargs(Params().get_item("line"))
+class GetPassedArgs:
+    def __init__(self, func: Callable[..., Any]) -> None:
+        update_wrapper(self, func)
+        self.func = func
+        self.passed_variables: Dict[str, Any] = {}
 
-        defaults = self._get_defaults(kwargs)
-        attribute_setter = AttributeSetter(defaults, params, **kwargs)
+    def __call__(self, *args: Any, **kwargs: Any) -> Any:
+        sig = inspect.signature(self.func)
+        bound_args = sig.bind_partial(*args, **kwargs)
+        bound_args.apply_defaults()
+        self.passed_variables = {
+            k: v
+            for k, v in bound_args.arguments.items()
+            if v != sig.parameters[k].default or k in kwargs
+        }
+        return self.func(*args, **kwargs)
 
-        self._args = args
-        self._kwargs = attribute_setter.set_attributes(self)
+
+class Plot:
+    def __init__(
+        self,
+        axis_index: int,
+        xdata: Union[List[float], np.ndarray],
+        ydata: Union[List[float], np.ndarray],
+        color: Union[str, None] = None,
+        marker: Any = "o",
+        markersize: Union[float, int] = 7.0,
+        markeredgewidth: Union[float, int] = 1.5,
+        markeredgecolor: Union[str, None] = None,
+        markerfacecolor: Union[str, None] = None,
+        linestyle: Any = "--",
+        linewidth: Union[float, int] = 1.0,
+        alpha: Union[float, int] = 0.2,
+        alpha_all: Union[float, int] = 1.0,
+        label: Union[str, None] = None,
+        passed_variables: Dict[str, Any] = {},
+        *args: Any,
+        **kwargs: Any,
+    ) -> None:
+        self.axis_index: int = axis_index
+        self.xdata: np.ndarray = np.array(xdata)
+        self.ydata: np.ndarray = np.array(ydata)
+
+        self.color: Union[str, None] = color
+        self.marker: Any = marker
+        self.markersize: float | int = markersize
+        self.markeredgewidth: float | int = markeredgewidth
+        self.markeredgecolor: Union[str, None] = markeredgecolor
+        self.markerfacecolor: Union[str, None] = markerfacecolor
+        self.linestyle: Any = linestyle
+        self.linewidth: float | int = linewidth
+        self.alpha: float | int = alpha
+        self.alpha_all: float | int = alpha_all
+        self.label: Union[str, None] = label
+        self.passed_variables: Dict[str, Any] = passed_variables
+        self.args: Any = args
+        self.kwargs: Any = kwargs
+
+        attributer = AttributeSetter()
+        self.kwargs_params = attributer.set_attributes(self, locals(), key="line")
 
         self.__axes = AxesSingleton()
         self._axis = self.__axes.axes
-        # TODO: add warning if axis_index is out of range
+
+        if not 0 <= self.axis_index < len(self._axis):
+            raise IndexError(
+                f"axis_index {self.axis_index} is out of range. Valid axis indices are from 0 to {len(self._axis)-1}."
+            )
         self.axis = self._axis[self.axis_index]
-        self._set_colors()
+
+    def _handle_kwargs(self) -> None:
+        alias_map = {
+            "ms": "markersize",
+            "mew": "markeredgewidth",
+            "ls": "linestyle",
+            "lw": "linewidth",
+            "c": "color",
+            "mec": "markeredgecolor",
+            "mfc": "markerfacecolor",
+        }
+
+        # check duplicate keys in config file
+        params = Params().get_item("plot")
+
+        for alias, key in alias_map.items():
+            if alias in params:
+                if key in params:
+                    raise ValueError(f"Both '{alias}' and '{key}' are in params.")
+
+        #######################################
+        # check duplicate keys on passed_args#
+        # get default values from passed_args
+        _ignore_key_list = ["axis_index", "xdata", "ydata", "args", "kwargs"]
+        _passed_variables_default = self.passed_variables.copy()
+        for key in _ignore_key_list:
+            del _passed_variables_default[key]
+
+        # check duplicate key in passed_variables
+        for alias, key in alias_map.items():
+            if alias in self.kwargs:
+                if key in _passed_variables_default:
+                    raise ValueError(f"Both '{alias}' and '{key}' are in kwargs.")
+                _passed_variables_default[key] = self.kwargs[alias]
+                del self.kwargs[alias]
+
+        #######################################
+        # decompose _kwargs_params
+        _params_defaults = {}
+        for alias, key in alias_map.items():
+            if alias in self.kwargs_params:
+                _params_defaults[key] = self.kwargs_params[alias]
+                del self.kwargs_params[alias]
+
+        #######################################
+        # concatenate kwargs from passed_args and config file
+        _default = _params_defaults.copy()
+        _default.update(_passed_variables_default)
+
+        _kwargs = self.kwargs_params.copy()
+        _kwargs.update(self.kwargs)
+
+        self._kwargs = _kwargs
+
+        # set _default values as instances
+        for key, value in _default.items():
+            setattr(self, key, value)
+
+    def _set_colors(self) -> None:
+        cycle_color = AutoColor(self.axis_index).get_color()
+        if isinstance(cycle_color, np.ndarray):
+            cycle_color = colors.to_hex(
+                tuple(cycle_color)
+            )  # convert numpy array to tuple
+        default_color = cycle_color if self.color is None else self.color
+
+        self._color = self._modify_color_alpha(default_color, self.alpha_all)
+        self._color_mec = self._modify_color_alpha(
+            self.markeredgecolor if self.markeredgecolor is not None else default_color,
+            self.alpha_all,
+        )
+        self._color_mfc = self._modify_color_alpha(
+            self.markerfacecolor if self.markerfacecolor is not None else default_color,
+            self.alpha * self.alpha_all,
+        )
+
+    def _modify_color_alpha(
+        self, color: Union[str, None], alpha: Union[float, int, None]
+    ) -> tuple:
+        if color is None or alpha is None:
+            raise ValueError("Both color and alpha must be provided")
+
+        if not isinstance(alpha, numbers.Real):
+            raise ValueError("Alpha must be a float")
+
+        rgb = list(colors.to_rgba(color))
+        rgb[3] = float(alpha)
+        return tuple(rgb)
 
     @NumLines.count
     @AxesRangeSingleton.update
     def plot(self):
+        self._handle_kwargs()
+        self._set_colors()
         self.axis.plot(
             self.xdata,
             self.ydata,
@@ -46,53 +189,68 @@ class Line:
             markeredgecolor=self._color_mec,
             markerfacecolor=self._color_mfc,
             label=self.label,
-            *self._args,
+            *self.args,
             **self._kwargs,
         )
 
-    def _handle_kwargs(self, kwargs):
-        alias_map = {
-            "ms": "markersize",
-            "mew": "markeredgewidth",
-            "ls": "linestyle",
-            "lw": "linewidth",
-            "c": "color",
-            "mec": "markeredgecolor",
-            "mfc": "markerfacecolor",
-        }
 
-        for alias, key in alias_map.items():
-            if alias in kwargs:
-                if key in kwargs:
-                    raise ValueError(f"Both '{alias}' and '{key}' are in kwargs.")
-                kwargs[key] = kwargs[alias]
-                del kwargs[alias]
-        return kwargs
+@GetPassedArgs
+def plot(
+    axis_index: int,
+    xdata: Union[List[float], np.ndarray],
+    ydata: Union[List[float], np.ndarray],
+    color: Union[str, None] = None,
+    marker: Any = "o",
+    markersize: Union[float, int] = 7.0,
+    markeredgewidth: Union[float, int] = 1.5,
+    markeredgecolor: Union[str, None] = None,
+    markerfacecolor: Union[str, None] = None,
+    linestyle: Any = "--",
+    linewidth: Union[float, int] = 1.0,
+    alpha: Union[float, int] = 0.2,
+    alpha_all: Union[float, int] = 1.0,
+    label: Union[str, None] = None,
+    *args: Any,
+    **kwargs: Any,
+):
+    """
+    Plot function with the following parameters:
 
-    def _get_defaults(self, kwargs):
-        default_color = self.cycle_color if "color" not in kwargs else kwargs["color"]
-        return {
-            "color": default_color,
-            "marker": "o",
-            "markersize": 7,
-            "markeredgewidth": 1.5,
-            "markeredgecolor": default_color,
-            "markerfacecolor": default_color,
-            "linestyle": "--",
-            "linewidth": 1,
-            "alpha": 0.2,
-            "alpha_all": 1,
-            "label": None,
-        }
+    axis_index: The index of the axis on which to plot the data.
+    xdata, ydata: The data to be plotted. These can be lists or numpy arrays.
+    color: The color of the plot. If not specified, a default color will be used.
+    marker: The marker style. Default is 'o'.
+    markersize: The size of the markers. Default is 7.0.
+    markeredgewidth: The width of the marker edges. Default is 1.5.
+    markeredgecolor: The color of the marker edge. If not specified, a default color will be used.
+    markerfacecolor: The color of the marker face. If not specified, a default color will be used.
+    linestyle: The style of the line. Default is '--'.
+    linewidth: The width of the line. Default is 1.0.
+    alpha: The alpha blending value, between 0 (transparent) and 1 (opaque). Default is 0.2.
+    alpha_all: The alpha blending value for all elements. Default is 1.0.
+    label: The label for the plot. If not specified, no label will be added.
+    *args, **kwargs: Additional arguments and keyword arguments to be passed to the function.
+    """
+    passed_variables = plot.passed_variables
 
-    def _set_colors(self):
-        self._color = self._modify_color_alpha(self.color, self.alpha_all)
-        self._color_mec = self._modify_color_alpha(self.markeredgecolor, self.alpha_all)
-        self._color_mfc = self._modify_color_alpha(
-            self.markerfacecolor, self.alpha * self.alpha_all
-        )
+    line = Plot(
+        axis_index,
+        xdata,
+        ydata,
+        color,
+        marker,
+        markersize,
+        markeredgewidth,
+        markeredgecolor,
+        markerfacecolor,
+        linestyle,
+        linewidth,
+        alpha,
+        alpha_all,
+        label,
+        passed_variables,
+        *args,
+        **kwargs,
+    )
 
-    def _modify_color_alpha(self, color=None, alpha=None) -> tuple:
-        rgb = list(colors.to_rgba(color))
-        rgb[3] = alpha
-        return tuple(rgb)
+    line.plot()

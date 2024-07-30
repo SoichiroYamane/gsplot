@@ -2,7 +2,6 @@ from typing import List, Union, Any
 
 import matplotlib.pyplot as plt
 
-from ..params.params import Params
 from ..base.base import AttributeSetter
 from .store import StoreSingleton
 
@@ -60,6 +59,13 @@ class Show:
         return store
 
 
-def show(*args, **kwargs) -> None:
-    show = Show(*args, **kwargs)
-    show._store_fig()
+def show(
+    fname: str = "gsplot",
+    ft_list: List[str] = ["png", "pdf"],
+    dpi: float = 600,
+    show: bool = True,
+    *args: Any,
+    **kwargs: Any,
+) -> None:
+    _show = Show(fname, ft_list, dpi, show, *args, **kwargs)
+    _show._store_fig()

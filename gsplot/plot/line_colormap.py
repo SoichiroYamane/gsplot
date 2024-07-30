@@ -121,6 +121,37 @@ class LineColormap:
             ).add_legend_colormap()
 
 
+# TODO: fix this part
+def plot_line_colormap(
+    axis_index: int,
+    xdata: np.ndarray,
+    ydata: np.ndarray,
+    cmapdata: np.ndarray,
+    cmap: str = "viridis",
+    linewidth=1,
+    linestyle="solid",
+    linepattern=None,
+    scale=None,
+    label=None,
+    *args,
+    **kwargs,
+):
+    LineColormap(
+        axis_index,
+        xdata,
+        ydata,
+        cmapdata,
+        cmap,
+        linewidth,
+        linestyle,
+        linepattern,
+        scale,
+        label,
+        *args,
+        **kwargs,
+    ).plot_line_colormap()
+
+
 class LineColormapBase:
     def __init__(self):
         pass
