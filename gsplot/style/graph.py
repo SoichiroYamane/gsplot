@@ -1,9 +1,8 @@
-from ..figure.axes_base import AxesSingleton
+from typing import List
 from matplotlib import rcParams
-
 from matplotlib.axes import Axes
 
-from typing import List
+from ..figure.axes_base import AxesSingleton
 
 
 class GraphSquare:
@@ -15,9 +14,9 @@ class GraphSquare:
         axis: Axes = self._axes[axis_index]
         axis.set_box_aspect(1)
 
-    def set_square_all(self):
-        for axis_index in range(len(self._axes)):
-            self.set_square(axis_index)
+    def set_square_all(self) -> None:
+        for axis in self._axes:
+            axis.set_box_aspect(1)
 
 
 def graph_square(axis_index: int) -> None:
@@ -91,8 +90,8 @@ def graph_white_axis_all() -> None:
 
 class GraphTransparent:
     def __init__(self) -> None:
-        self.__axes = AxesSingleton()
-        self._axes = self.__axes.axes
+        self.__axes: AxesSingleton = AxesSingleton()
+        self._axes: List[Axes] = self.__axes.axes
 
         rcParams.update(
             {

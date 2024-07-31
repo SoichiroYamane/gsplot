@@ -5,6 +5,8 @@ axes = gs.axes(store=False, mosaic="AB")
 
 gs.plot(axis_index=0, xdata=[0, 100], ydata=[0, 100], label="a")
 
+gs.plot(axis_index=0, xdata=[0, 50], ydata=[0, 10], label="b")
+
 
 gs.label(
     [
@@ -15,10 +17,10 @@ gs.label(
     add_index=True,
 )
 
-# axes[0].legend(loc="upper left")
-
 
 gs.legend(
     axis_index=0,
-    loc="bottom right",
+    loc="lower right",
 )
+
+test = gs.legend_get_handlers(axis_index=0)

@@ -1,3 +1,10 @@
+from typing import cast, List, Optional, Tuple, Any, Union
+import matplotlib.pyplot as plt
+import matplotlib.ticker as plticker
+import numpy as np
+from matplotlib.backends.backend_agg import FigureCanvasAgg
+from matplotlib.axes import Axes
+from matplotlib.transforms import Bbox
 from ..base.base import AttributeSetter
 from ..figure.axes_base import (
     AxesSingleton,
@@ -8,24 +15,13 @@ from ..figure.axes_base import (
 from .ticks import MinorTicks
 
 
-import matplotlib.pyplot as plt
-import matplotlib.ticker as plticker
-import numpy as np
-from matplotlib.backends.backend_agg import FigureCanvasAgg
-from matplotlib.axes import Axes
-from matplotlib.transforms import Bbox
-from typing import cast, List, Optional, Tuple, Any
-
-
 class AddIndexToAxes:
-    def __init__(self):
+    def __init__(self) -> None:
         self.__axes: AxesSingleton = AxesSingleton()
         self._axes: List[Axes] = self.__axes.axes
 
-    def add_index(self):
+    def add_index(self) -> None:
         for i, axis in enumerate(self._axes):
-
-            # search Get text bounding box, independent of backend, transforms.Bbox.bounds python
             renderer = cast(FigureCanvasAgg, plt.gcf().canvas).get_renderer()
             tight_bbox: Optional[Bbox] = axis.get_tightbbox(renderer)
             coords: Optional[Tuple[float, float, float, float]] = None
@@ -51,11 +47,10 @@ class AddIndexToAxes:
                 print("No bounding box available.")
 
 
-def label_add_index():
+def label_add_index() -> None:
     AddIndexToAxes().add_index()
 
 
-# strictly speaking, this is axis
 class Label:
     def __init__(
         self,
@@ -172,7 +167,7 @@ class Label:
         new_range = np.array([min(range1[0], range2[0]), max(range1[1], range2[1])])
         return new_range
 
-    def _get_axes_ranges_current(self) -> list:
+    def _get_axes_ranges_current(self) -> List[List[np.ndarray]]:
         axes_ranges_current = []
         for axis_index in range(len(self._axes)):
             xrange = AxisRangeController(axis_index).get_axis_xrange()
@@ -180,7 +175,7 @@ class Label:
             axes_ranges_current.append([xrange, yrange])
         return axes_ranges_current
 
-    def _get_final_axes_range(self) -> list:
+    def _get_final_axes_range(self) -> List[List[np.ndarray]]:
         axes_ranges_singleton = AxesRangeSingleton().axes_ranges
         axes_ranges_current = self._get_axes_ranges_current()
 

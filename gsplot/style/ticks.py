@@ -1,11 +1,9 @@
-from ..figure.axes import AxesSingleton
-
-from matplotlib.axes import Axes
-
-import matplotlib.ticker as plticker
-from matplotlib.ticker import NullLocator
-
 from typing import List
+from matplotlib.axes import Axes
+from matplotlib.ticker import NullLocator
+import matplotlib.ticker as plticker
+
+from ..figure.axes import AxesSingleton
 
 
 class MinorTicks:

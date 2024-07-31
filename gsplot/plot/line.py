@@ -1,22 +1,27 @@
+import inspect
+import numbers
+import numpy as np
+from matplotlib import colors
+from matplotlib.typing import ColorType
+from functools import update_wrapper
+from typing import Union, Any, List, Dict, Callable
+from typing_extensions import TypedDict
+
 from ..params.params import Params
 from ..base.base import AttributeSetter
 from ..figure.axes_base import AxesSingleton, AxesRangeSingleton
 from .line_base import NumLines
 from .line_base import AutoColor
-from typing import Union, Any, List, Dict, Callable
 
 
-from matplotlib import colors
-import numpy as np
-
-import inspect
-from functools import update_wrapper
-import numbers
+class WrapperWithAttributes(TypedDict):
+    passed_variables: dict[str, Any]
 
 
 class GetPassedArgs:
-    def __init__(self, func: Callable[..., Any]) -> None:
+    def __init__(self, func) -> None:
         update_wrapper(self, func)
+
         self.func = func
         self.passed_variables: Dict[str, Any] = {}
 
@@ -27,9 +32,18 @@ class GetPassedArgs:
         self.passed_variables = {
             k: v
             for k, v in bound_args.arguments.items()
-            if v != sig.parameters[k].default or k in kwargs
+            if not isinstance(v, np.ndarray)
+            and (v != sig.parameters[k].default)
+            or (
+                isinstance(v, np.ndarray) and not (v == sig.parameters[k].default).all()
+            )
+            or k in kwargs
         }
         return self.func(*args, **kwargs)
+
+
+def get_passed_args(f: Callable) -> Callable:
+    return GetPassedArgs(f)
 
 
 class Plot:
@@ -38,12 +52,12 @@ class Plot:
         axis_index: int,
         xdata: Union[List[float], np.ndarray],
         ydata: Union[List[float], np.ndarray],
-        color: Union[str, None] = None,
+        color: Union[ColorType, None] = None,
         marker: Any = "o",
         markersize: Union[float, int] = 7.0,
         markeredgewidth: Union[float, int] = 1.5,
-        markeredgecolor: Union[str, None] = None,
-        markerfacecolor: Union[str, None] = None,
+        markeredgecolor: Union[ColorType, None] = None,
+        markerfacecolor: Union[ColorType, None] = None,
         linestyle: Any = "--",
         linewidth: Union[float, int] = 1.0,
         alpha: Union[float, int] = 0.2,
@@ -57,12 +71,12 @@ class Plot:
         self.xdata: np.ndarray = np.array(xdata)
         self.ydata: np.ndarray = np.array(ydata)
 
-        self.color: Union[str, None] = color
+        self.color: Union[ColorType, None] = color
         self.marker: Any = marker
         self.markersize: float | int = markersize
         self.markeredgewidth: float | int = markeredgewidth
-        self.markeredgecolor: Union[str, None] = markeredgecolor
-        self.markerfacecolor: Union[str, None] = markerfacecolor
+        self.markeredgecolor: Union[ColorType, None] = markeredgecolor
+        self.markerfacecolor: Union[ColorType, None] = markerfacecolor
         self.linestyle: Any = linestyle
         self.linewidth: float | int = linewidth
         self.alpha: float | int = alpha
@@ -141,13 +155,32 @@ class Plot:
         for key, value in _default.items():
             setattr(self, key, value)
 
+    # def _set_colors(self) -> None:
+    #     cycle_color = AutoColor(self.axis_index).get_color()
+    #     if isinstance(cycle_color, np.ndarray):
+    #         cycle_color = colors.to_hex(
+    #             tuple(cycle_color)
+    #         )  # convert numpy array to tuple
+    #     default_color = cycle_color if self.color is None else self.color
+    #
+    #     self._color = self._modify_color_alpha(default_color, self.alpha_all)
+    #     self._color_mec = self._modify_color_alpha(
+    #         self.markeredgecolor if self.markeredgecolor is not None else default_color,
+    #         self.alpha_all,
+    #     )
+    #     self._color_mfc = self._modify_color_alpha(
+    #         self.markerfacecolor if self.markerfacecolor is not None else default_color,
+    #         self.alpha * self.alpha_all,
+    #     )
+
     def _set_colors(self) -> None:
-        cycle_color = AutoColor(self.axis_index).get_color()
+        cycle_color: Union[np.ndarray, str] = AutoColor(self.axis_index).get_color()
         if isinstance(cycle_color, np.ndarray):
             cycle_color = colors.to_hex(
                 tuple(cycle_color)
             )  # convert numpy array to tuple
-        default_color = cycle_color if self.color is None else self.color
+
+        default_color: ColorType = cycle_color if self.color is None else self.color
 
         self._color = self._modify_color_alpha(default_color, self.alpha_all)
         self._color_mec = self._modify_color_alpha(
@@ -160,7 +193,7 @@ class Plot:
         )
 
     def _modify_color_alpha(
-        self, color: Union[str, None], alpha: Union[float, int, None]
+        self, color: ColorType, alpha: Union[float, int, None]
     ) -> tuple:
         if color is None or alpha is None:
             raise ValueError("Both color and alpha must be provided")
@@ -194,7 +227,7 @@ class Plot:
         )
 
 
-@GetPassedArgs
+@get_passed_args
 def plot(
     axis_index: int,
     xdata: Union[List[float], np.ndarray],
@@ -231,7 +264,8 @@ def plot(
     label: The label for the plot. If not specified, no label will be added.
     *args, **kwargs: Additional arguments and keyword arguments to be passed to the function.
     """
-    passed_variables = plot.passed_variables
+
+    passed_variables = plot.passed_variables  # type: ignore
 
     line = Plot(
         axis_index,

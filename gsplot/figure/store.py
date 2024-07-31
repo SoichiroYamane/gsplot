@@ -25,4 +25,5 @@ class StoreSingleton:
             raise ValueError("Store must be a boolean or integer.")
         if isinstance(value, int) and value not in [0, 1]:
             raise ValueError("Store must be 0 or 1 if integer.")
+
         self._store = value

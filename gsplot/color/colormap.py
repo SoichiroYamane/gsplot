@@ -33,11 +33,13 @@ class Colormap:
             cmap_data = self._normalize(self.cmap_ndarray)
         else:
             cmap_data = self.cmap_ndarray
-        return mpl.colormaps.get_cmap(self.cmap)(cmap_data)
+        return np.array(mpl.colormaps.get_cmap(self.cmap)(cmap_data))
 
     @staticmethod
     def _normalize(ndarray: np.ndarray) -> np.ndarray:
-        return (ndarray - np.min(ndarray)) / (np.max(ndarray) - np.min(ndarray))
+        return np.array(
+            (ndarray - np.min(ndarray)) / (np.max(ndarray) - np.min(ndarray))
+        )
 
 
 def get_cmap(

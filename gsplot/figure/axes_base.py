@@ -88,6 +88,16 @@ class AxesRangeSingleton:
         new_range = np.array([min(range1[0], range2[0]), max(range1[1], range2[1])])
         return new_range
 
+    def get_max_wo_inf(self, array: np.ndarray) -> float:
+        array = np.array(array)
+        array = array[array != np.inf]
+        return float(np.nanmax(array))
+
+    def get_min_wo_inf(self, array: np.ndarray) -> float:
+        array = np.array(array)
+        array = array[array != -np.inf]
+        return float(np.nanmin(array))
+
     @classmethod
     def update(cls, func: Any) -> Any:
         def wrapper(self, *args: Any, **kwargs: Any) -> Any:
@@ -101,8 +111,12 @@ class AxesRangeSingleton:
             xrange, yrange = AxisRangeHandler(
                 axis_index, xdata, ydata
             ).get_new_axis_range()
-            xrange = np.array([np.nanmin(xdata), np.nanmax(xdata)])
-            yrange = np.array([np.nanmin(ydata), np.nanmax(ydata)])
+            xrange = np.array(
+                [cls().get_min_wo_inf(xdata), cls().get_max_wo_inf(xdata)]
+            )
+            yrange = np.array(
+                [cls().get_min_wo_inf(ydata), cls().get_max_wo_inf(ydata)]
+            )
 
             xrange_singleton = cls().axes_ranges[axis_index][0]
             yrange_singleton = cls().axes_ranges[axis_index][1]

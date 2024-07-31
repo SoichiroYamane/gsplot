@@ -1,10 +1,11 @@
+from typing import Any, Dict, List, Tuple
+from matplotlib.axes import Axes
+from matplotlib.artist import Artist
+from matplotlib.legend import Legend as Lg
+from matplotlib.legend_handler import HandlerBase
+
 from ..base.base import AttributeSetter
 from ..figure.axes import AxesSingleton
-
-from matplotlib.axes import Axes
-from matplotlib.legend import Legend as Lg
-
-from typing import Any, List
 
 
 class Legend:
@@ -31,7 +32,9 @@ class Legend:
         self._axes: List[Axes] = self.__axes.axes
         self._axis: Axes = self._axes[self.axis_index]
 
-    def get_legend_handlers(self) -> tuple:
+    def get_legend_handlers(
+        self,
+    ) -> Tuple[List[Artist], List[str], Dict[Artist, HandlerBase]]:
         handles, labels = self._axis.get_legend_handles_labels()
 
         handler_map = Lg(

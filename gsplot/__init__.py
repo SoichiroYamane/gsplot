@@ -27,6 +27,14 @@ from .style.label import label
 from .style.label import label_add_index
 
 from .style.legend import legend, legend_handlers, legend_reverse, legend_get_handlers
+from .style.ticks import (
+    ticks_off,
+    ticks_on,
+    ticks_on_by_axis,
+    ticks_x,
+    ticks_y,
+    ticks_all,
+)
 
 
 __all__ = [
@@ -67,4 +75,11 @@ __all__ = [
     "legend_handlers",
     "legend_reverse",
     "legend_get_handlers",
+    # style/ticks.py
+    "ticks_off",
+    "ticks_on",
+    "ticks_on_by_axis",
+    "ticks_x",
+    "ticks_y",
+    "ticks_all",
 ]
