@@ -1,57 +1,23 @@
-import inspect
 import numbers
 import numpy as np
 from matplotlib import colors
 from matplotlib.typing import ColorType
-from functools import update_wrapper
-from typing import Union, Any, List, Dict, Callable
-from typing_extensions import TypedDict
+from typing import Union, Any, List, Dict
 
 from ..params.params import Params
 from ..base.base import AttributeSetter
+from ..base.base_passed_args import get_passed_args
 from ..figure.axes_base import AxesSingleton, AxesRangeSingleton
 from .line_base import NumLines
 from .line_base import AutoColor
 
 
-class WrapperWithAttributes(TypedDict):
-    passed_variables: dict[str, Any]
-
-
-class GetPassedArgs:
-    def __init__(self, func) -> None:
-        update_wrapper(self, func)
-
-        self.func = func
-        self.passed_variables: Dict[str, Any] = {}
-
-    def __call__(self, *args: Any, **kwargs: Any) -> Any:
-        sig = inspect.signature(self.func)
-        bound_args = sig.bind_partial(*args, **kwargs)
-        bound_args.apply_defaults()
-        self.passed_variables = {
-            k: v
-            for k, v in bound_args.arguments.items()
-            if not isinstance(v, np.ndarray)
-            and (v != sig.parameters[k].default)
-            or (
-                isinstance(v, np.ndarray) and not (v == sig.parameters[k].default).all()
-            )
-            or k in kwargs
-        }
-        return self.func(*args, **kwargs)
-
-
-def get_passed_args(f: Callable) -> Callable:
-    return GetPassedArgs(f)
-
-
-class Plot:
+class Line:
     def __init__(
         self,
         axis_index: int,
-        xdata: Union[List[float], np.ndarray],
-        ydata: Union[List[float], np.ndarray],
+        xdata: Union[List[float | int], np.ndarray],
+        ydata: Union[List[float | int], np.ndarray],
         color: Union[ColorType, None] = None,
         marker: Any = "o",
         markersize: Union[float, int] = 7.0,
@@ -68,8 +34,9 @@ class Plot:
         **kwargs: Any,
     ) -> None:
         self.axis_index: int = axis_index
-        self.xdata: np.ndarray = np.array(xdata)
-        self.ydata: np.ndarray = np.array(ydata)
+
+        self._xdata: Union[List[float | int], np.ndarray] = xdata
+        self._ydata: Union[List[float | int], np.ndarray] = ydata
 
         self.color: Union[ColorType, None] = color
         self.marker: Any = marker
@@ -88,6 +55,9 @@ class Plot:
 
         attributer = AttributeSetter()
         self.kwargs_params = attributer.set_attributes(self, locals(), key="line")
+
+        self.xdata: np.ndarray = np.array(self._xdata)
+        self.ydata: np.ndarray = np.array(self._ydata)
 
         self.__axes = AxesSingleton()
         self._axis = self.__axes.axes
@@ -109,23 +79,28 @@ class Plot:
             "mfc": "markerfacecolor",
         }
 
-        # check duplicate keys in config file
-        params = Params().get_item("plot")
+        # ╭──────────────────────────────────────────────────────────╮
+        # │ check duplicate keys in config file                      │
+        # ╰──────────────────────────────────────────────────────────╯
+        params = Params().get_item("line")
 
         for alias, key in alias_map.items():
             if alias in params:
                 if key in params:
                     raise ValueError(f"Both '{alias}' and '{key}' are in params.")
 
-        #######################################
-        # check duplicate keys on passed_args#
-        # get default values from passed_args
+        # ╭──────────────────────────────────────────────────────────╮
+        # │ check duplicate keys on passed_args#                     │
+        # │ get default values from passed_args                      │
+        # ╰──────────────────────────────────────────────────────────╯
         _ignore_key_list = ["axis_index", "xdata", "ydata", "args", "kwargs"]
         _passed_variables_default = self.passed_variables.copy()
         for key in _ignore_key_list:
             del _passed_variables_default[key]
 
-        # check duplicate key in passed_variables
+        # ╭──────────────────────────────────────────────────────────╮
+        # │ check duplicate key in passed_variables                  │
+        # ╰──────────────────────────────────────────────────────────╯
         for alias, key in alias_map.items():
             if alias in self.kwargs:
                 if key in _passed_variables_default:
@@ -133,16 +108,18 @@ class Plot:
                 _passed_variables_default[key] = self.kwargs[alias]
                 del self.kwargs[alias]
 
-        #######################################
-        # decompose _kwargs_params
+        # ╭──────────────────────────────────────────────────────────╮
+        # │ decompose _kwargs_params                                 │
+        # ╰──────────────────────────────────────────────────────────╯
         _params_defaults = {}
         for alias, key in alias_map.items():
             if alias in self.kwargs_params:
                 _params_defaults[key] = self.kwargs_params[alias]
                 del self.kwargs_params[alias]
 
-        #######################################
-        # concatenate kwargs from passed_args and config file
+        # ╭──────────────────────────────────────────────────────────╮
+        # │ concatenate kwargs from passed_args and config file      │
+        # ╰──────────────────────────────────────────────────────────╯
         _default = _params_defaults.copy()
         _default.update(_passed_variables_default)
 
@@ -151,7 +128,9 @@ class Plot:
 
         self._kwargs = _kwargs
 
-        # set _default values as instances
+        # ╭──────────────────────────────────────────────────────────╮
+        # │ set _default values as instances                         │
+        # ╰──────────────────────────────────────────────────────────╯
         for key, value in _default.items():
             setattr(self, key, value)
 
@@ -228,7 +207,7 @@ class Plot:
 
 
 @get_passed_args
-def plot(
+def line(
     axis_index: int,
     xdata: Union[List[float], np.ndarray],
     ydata: Union[List[float], np.ndarray],
@@ -265,9 +244,9 @@ def plot(
     *args, **kwargs: Additional arguments and keyword arguments to be passed to the function.
     """
 
-    passed_variables = plot.passed_variables  # type: ignore
+    passed_variables = line.passed_variables  # type: ignore
 
-    line = Plot(
+    _line = Line(
         axis_index,
         xdata,
         ydata,
@@ -287,4 +266,4 @@ def plot(
         **kwargs,
     )
 
-    line.plot()
+    _line.plot()
