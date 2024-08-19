@@ -91,9 +91,9 @@ class LegendColormap:
 
         Legend(
             self.axis_index,
-            handles=handles,
-            labels=labels,
-            handlers=handlers,
+            handles,
+            labels,
+            handlers,
             *self._args,
             **self._kwargs,
-        ).legend()
+        ).legend_handlers()
