@@ -64,7 +64,7 @@ gs.show()
 ```
 
 The output is shown below:
-[![alt](pictures/figure.png)](href "Basic Usage of gsplot")
+[![alt](pictures/figure.png =250x)](href "Basic Usage of gsplot")
 
 ### Advanced Features
 
