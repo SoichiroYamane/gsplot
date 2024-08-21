@@ -11,6 +11,22 @@ from ..plot.line_base import NumLines
 
 
 class Unit(Enum):
+    """
+    Enumeration of supported units for measurement conversions.
+
+    Attributes
+    ----------
+    MM : str
+        Millimeters (mm).
+    CM : str
+        Centimeters (cm).
+    IN : str
+        Inches (in).
+    PT : str
+        Points (pt).
+    INVALID : str
+        An invalid or unrecognized unit.
+    """
 
     MM = "mm"
     CM = "cm"
@@ -20,7 +36,25 @@ class Unit(Enum):
 
 
 class UnitConv:
+    """
+    A class for converting values between different units of measurement.
+
+    Attributes
+    ----------
+    conversion_factors : Dict[Unit, float]
+        A dictionary mapping units to their corresponding conversion factors relative to inches.
+
+    Methods
+    -------
+    convert(value: float, unit: Unit) -> float
+        Converts the given value to inches based on the specified unit.
+    """
+
     def __init__(self) -> None:
+        """
+        Initializes the UnitConv class with predefined conversion factors.
+        """
+
         self.conversion_factors: Dict[Unit, float] = {
             Unit.MM: 1 / 25.4,
             Unit.CM: 1 / 2.54,
@@ -29,12 +63,88 @@ class UnitConv:
         }
 
     def convert(self, value: float, unit: Unit) -> float:
+        """
+        Converts the given value to inches based on the specified unit.
+
+        Parameters
+        ----------
+        value : float
+            The value to be converted.
+        unit : Unit
+            The unit of the value to be converted.
+
+        Returns
+        -------
+        float
+            The converted value in inches.
+
+        Raises
+        ------
+        ValueError
+            If the provided unit is not recognized or is invalid.
+        """
+
         if unit not in self.conversion_factors:
             raise ValueError("Invalid unit")
         return value * self.conversion_factors[unit]
 
 
 class AxesHandler:
+    """
+    A class for handling the creation and management of matplotlib Axes objects,
+    including configuration of figure size, units, and layout using mosaic.
+
+    Parameters
+    ----------
+    store : bool, optional
+        Whether to store the current figure (default is False).
+    size : List[int], optional
+        The size of the figure in the specified unit (default is [5, 5]).
+    unit : str, optional
+        The unit of the figure size (default is "in"). Must be one of 'mm', 'cm', 'in', 'pt'.
+    mosaic : str, optional
+        The layout of the subplot using a mosaic string (default is "A").
+    clear : bool, optional
+        Whether to clear the current figure before creating a new one (default is True).
+    ion : bool, optional
+        Whether to turn on interactive mode in matplotlib (default is False).
+    *args : Any
+        Additional positional arguments for figure creation.
+    **kwargs : Any
+        Additional keyword arguments for figure creation.
+
+    Attributes
+    ----------
+    store : bool
+        Whether to store the current figure.
+    size : List[int]
+        The size of the figure in the specified unit.
+    unit : str
+        The unit of the figure size.
+    mosaic : str
+        The layout of the subplot using a mosaic string.
+    clear : bool
+        Whether to clear the current figure before creating a new one.
+    ion : bool
+        Whether to turn on interactive mode in matplotlib.
+    args : Any
+        Additional positional arguments for figure creation.
+    kwargs : Any
+        Additional keyword arguments for figure creation.
+    unit_enum : Unit
+        The unit enum corresponding to the specified unit.
+    unit_conv : UnitConv
+        The UnitConv object used for converting units.
+    __axes : AxesSingleton
+        The singleton instance of Axes to manage subplot axes.
+
+    Methods
+    -------
+    get_axes -> List[Axes]
+        Returns the list of Axes objects created in the current figure.
+    _open_figure() -> None
+        Opens a new figure, configures its size, and arranges subplots based on the mosaic string.
+    """
 
     def __init__(
         self,
@@ -74,9 +184,26 @@ class AxesHandler:
 
     @property
     def get_axes(self) -> List[Axes]:
+        """
+        Returns the list of Axes objects created in the current figure.
+
+        Returns
+        -------
+        List[Axes]
+            A list of Axes objects in the current figure.
+        """
         return self.__axes.axes
 
     def _open_figure(self) -> None:
+        """
+        Opens a new figure, configures its size, and arranges subplots based on the mosaic string.
+
+        Raises
+        ------
+        ValueError
+            If the figure size list does not contain exactly two elements.
+            If the mosaic string is not specified.
+        """
         if self.ion:
             plt.ion()
 
@@ -115,7 +242,36 @@ def axes(
     **kwargs: Any,
 ) -> List[Axes]:
     """
-    This function creates an AxesHandler object and returns the axes.
+    Creates and returns a list of matplotlib Axes objects based on the provided configuration.
+
+    Parameters
+    ----------
+    store : bool, optional
+        Whether to store the current figure (default is False).
+    size : List[int], optional
+        The size of the figure in the specified unit (default is [5, 5]).
+    unit : str, optional
+        The unit of the figure size (default is "in"). Must be one of 'mm', 'cm', 'in', 'pt'.
+    mosaic : str, optional
+        The layout of the subplot using a mosaic string (default is "A").
+    clear : bool, optional
+        Whether to clear the current figure before creating a new one (default is True).
+    ion : bool, optional
+        Whether to turn on interactive mode in matplotlib (default is False).
+    *args : Any
+        Additional positional arguments for figure creation.
+    **kwargs : Any
+        Additional keyword arguments for figure creation.
+
+    Returns
+    -------
+    List[Axes]
+        A list of matplotlib Axes objects created based on the specified configuration.
+
+    Examples
+    --------
+    >>> import gsplot as gs
+    >>> axes = gs.axes(size=[6, 4], mosaic="AB;CD")
     """
     __axes_handler = AxesHandler(
         store,

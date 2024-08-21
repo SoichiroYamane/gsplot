@@ -10,8 +10,10 @@ from .figure.show import show
 
 from .params.params import get_json_params
 
-from .plot.line import plot
-from .plot.line_colormap import plot_line_colormap
+from .plot.line import line
+from .plot.line_colormap import line_colormap
+from .plot.scatter import scatter
+from .plot.scatter_colormap import scatter_colormap
 
 from .style.graph import graph_square, graph_square_all
 from .style.graph import (
@@ -27,6 +29,7 @@ from .style.label import label
 from .style.label import label_add_index
 
 from .style.legend import legend, legend_handlers, legend_reverse, legend_get_handlers
+from .style.legend_colormap import legend_colormap
 from .style.ticks import (
     ticks_off,
     ticks_on,
@@ -55,9 +58,13 @@ __all__ = [
     # params/params.py
     "get_json_params",
     # plot/line.py
-    "plot",
+    "line",
     # plot/line_colormap.py
-    "plot_line_colormap",
+    "line_colormap",
+    # plot/scatter.py
+    "scatter",
+    # plot/scatter_colormap.py
+    "scatter_colormap",
     # style/graph.py
     "graph_square",
     "graph_square_all",
@@ -75,6 +82,8 @@ __all__ = [
     "legend_handlers",
     "legend_reverse",
     "legend_get_handlers",
+    # style/legend_colormap.py
+    "legend_colormap",
     # style/ticks.py
     "ticks_off",
     "ticks_on",

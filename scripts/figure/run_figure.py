@@ -1,17 +1,27 @@
 import gsplot as gs
 
-
-gs.axes(
-    mosaic="AB",
-    clear=True,
-    ion=True,
+# Create list of axes
+axes = gs.axes(
     store=True,
     size=[5, 5],
-    unit="in",
+    mosaic="AB;CD",
+    clear= False,
+    ion=True,
 )
 
-test = gs.get_json_params()
+# plot a line on the first axis: corresponding to A
+gs.line(
+    axis_index=0,
+    xdata=[1, 2, 3],
+    ydata=[1, 1, 1],
+)
 
-# AxesHandlerTest(store=True, mosaic="A", size=[10, 5], test="test")
-test2 = gs.get_cmap()
-# gs.show()
+gs.label(
+    [
+        ["$A_x$", "$A_y$"],
+        ["$B_x$", "$B_y$"],
+        ["$C_x$", "$C_y$"],
+        ["$D_x$", "$D_y$"],
+    ]
+)
+gs.show()

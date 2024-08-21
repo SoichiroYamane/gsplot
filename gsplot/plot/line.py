@@ -13,6 +13,63 @@ from .line_base import AutoColor
 
 
 class Line:
+    """
+    A class for creating and plotting a line on a specified matplotlib axis.
+
+    Parameters
+    ----------
+    axis_index : int
+        The index of the axis on which to plot the line.
+    xdata : Union[List[float, int], np.ndarray]
+        The data for the x-axis.
+    ydata : Union[List[float, int], np.ndarray]
+        The data for the y-axis.
+    color : Union[ColorType, None], optional
+        The color of the line (default is None, which uses the color cycle).
+    marker : Any, optional
+        The marker style (default is "o").
+    markersize : Union[float, int], optional
+        The size of the markers (default is 7.0).
+    markeredgewidth : Union[float, int], optional
+        The width of the marker edges (default is 1.5).
+    markeredgecolor : Union[ColorType, None], optional
+        The color of the marker edges (default is None).
+    markerfacecolor : Union[ColorType, None], optional
+        The color of the marker faces (default is None).
+    linestyle : Any, optional
+        The style of the line (default is "--").
+    linewidth : Union[float, int], optional
+        The width of the line (default is 1.0).
+    alpha : Union[float, int], optional
+        The transparency of the line (default is 0.2).
+    alpha_all : Union[float, int], optional
+        The overall transparency affecting all elements (default is 1.0).
+    label : Union[str, None], optional
+        The label for the line (default is None).
+    passed_variables : Dict[str, Any], optional
+        A dictionary of passed variables, typically used for internal tracking (default is {}).
+    *args : Any
+        Additional positional arguments passed to the matplotlib plot function.
+    **kwargs : Any
+        Additional keyword arguments passed to the matplotlib plot function.
+
+    Attributes
+    ----------
+    axis : Axes
+        The matplotlib axis on which the line is plotted.
+    kwargs_params : Dict[str, Any]
+        The final set of parameters after merging with configuration and passed arguments.
+    xdata : np.ndarray
+        The x-axis data as a NumPy array.
+    ydata : np.ndarray
+        The y-axis data as a NumPy array.
+
+    Methods
+    -------
+    plot()
+        Plots the line on the specified axis.
+    """
+
     def __init__(
         self,
         axis_index: int,
@@ -59,6 +116,9 @@ class Line:
         self.xdata: np.ndarray = np.array(self._xdata)
         self.ydata: np.ndarray = np.array(self._ydata)
 
+        self._handle_kwargs()
+        self._set_colors()
+
         self.__axes = AxesSingleton()
         self._axis = self.__axes.axes
 
@@ -68,7 +128,17 @@ class Line:
             )
         self.axis = self._axis[self.axis_index]
 
+    # TODO: Move this function to base directory
     def _handle_kwargs(self) -> None:
+        """
+        Handles and processes keyword arguments, including resolving alias conflicts and merging defaults.
+
+        Raises
+        ------
+        ValueError
+            If duplicate keys are found in the configuration or passed arguments.
+        """
+
         alias_map = {
             "ms": "markersize",
             "mew": "markeredgewidth",
@@ -134,25 +204,11 @@ class Line:
         for key, value in _default.items():
             setattr(self, key, value)
 
-    # def _set_colors(self) -> None:
-    #     cycle_color = AutoColor(self.axis_index).get_color()
-    #     if isinstance(cycle_color, np.ndarray):
-    #         cycle_color = colors.to_hex(
-    #             tuple(cycle_color)
-    #         )  # convert numpy array to tuple
-    #     default_color = cycle_color if self.color is None else self.color
-    #
-    #     self._color = self._modify_color_alpha(default_color, self.alpha_all)
-    #     self._color_mec = self._modify_color_alpha(
-    #         self.markeredgecolor if self.markeredgecolor is not None else default_color,
-    #         self.alpha_all,
-    #     )
-    #     self._color_mfc = self._modify_color_alpha(
-    #         self.markerfacecolor if self.markerfacecolor is not None else default_color,
-    #         self.alpha * self.alpha_all,
-    #     )
-
     def _set_colors(self) -> None:
+        """
+        Sets the colors for the line, marker edges, and marker faces, including applying alpha transparency.
+        """
+
         cycle_color: Union[np.ndarray, str] = AutoColor(self.axis_index).get_color()
         if isinstance(cycle_color, np.ndarray):
             cycle_color = colors.to_hex(
@@ -174,6 +230,27 @@ class Line:
     def _modify_color_alpha(
         self, color: ColorType, alpha: Union[float, int, None]
     ) -> tuple:
+        """
+        Modifies the alpha transparency of the provided color.
+
+        Parameters
+        ----------
+        color : ColorType
+            The color to modify.
+        alpha : Union[float, int, None]
+            The alpha transparency to apply.
+
+        Returns
+        -------
+        tuple
+            A tuple representing the RGBA color with the modified alpha.
+
+        Raises
+        ------
+        ValueError
+            If either the color or alpha is not provided, or if alpha is not a real number.
+        """
+
         if color is None or alpha is None:
             raise ValueError("Both color and alpha must be provided")
 
@@ -187,8 +264,30 @@ class Line:
     @NumLines.count
     @AxesRangeSingleton.update
     def plot(self):
-        self._handle_kwargs()
-        self._set_colors()
+        """
+        Plots the line on the specified axis.
+
+        This method uses the matplotlib `plot` function to draw the line on the axis specified
+        by `axis_index`. It applies various styles such as color, marker, linestyle, and others
+        that were configured during the initialization of the `Line` object.
+
+        The method is decorated with `NumLines.count` to track the number of lines plotted,
+        and with `AxesRangeSingleton.update` to update the axis range based on the plotted data.
+
+        Parameters
+        ----------
+        None
+
+        Returns
+        -------
+        None
+
+        Notes
+        -----
+        This method is designed to be called automatically when plotting a line. It should not
+        need to be called directly in most use cases.
+        """
+
         self.axis.plot(
             self.xdata,
             self.ydata,
@@ -226,24 +325,56 @@ def line(
     **kwargs: Any,
 ):
     """
-    Plot function with the following parameters:
+    Plots a line on a specified matplotlib axis.
 
-    axis_index: The index of the axis on which to plot the data.
-    xdata, ydata: The data to be plotted. These can be lists or numpy arrays.
-    color: The color of the plot. If not specified, a default color will be used.
-    marker: The marker style. Default is 'o'.
-    markersize: The size of the markers. Default is 7.0.
-    markeredgewidth: The width of the marker edges. Default is 1.5.
-    markeredgecolor: The color of the marker edge. If not specified, a default color will be used.
-    markerfacecolor: The color of the marker face. If not specified, a default color will be used.
-    linestyle: The style of the line. Default is '--'.
-    linewidth: The width of the line. Default is 1.0.
-    alpha: The alpha blending value, between 0 (transparent) and 1 (opaque). Default is 0.2.
-    alpha_all: The alpha blending value for all elements. Default is 1.0.
-    label: The label for the plot. If not specified, no label will be added.
-    *args, **kwargs: Additional arguments and keyword arguments to be passed to the function.
+    This function creates a `Line` object and plots it on the specified axis. It supports various
+    customization options for the line's appearance, such as color, marker style, line style, and transparency.
+
+    Parameters
+    ----------
+    axis_index : int
+        The index of the axis on which to plot the line.
+    xdata : Union[List[float], np.ndarray]
+        The data for the x-axis.
+    ydata : Union[List[float], np.ndarray]
+        The data for the y-axis.
+    color : Union[str, None], optional
+        The color of the line (default is None, which uses the color cycle).
+    marker : Any, optional
+        The marker style (default is "o").
+    markersize : Union[float, int], optional
+        The size of the markers (default is 7.0).
+    markeredgewidth : Union[float, int], optional
+        The width of the marker edges (default is 1.5).
+    markeredgecolor : Union[str, None], optional
+        The color of the marker edges (default is None).
+    markerfacecolor : Union[str, None], optional
+        The color of the marker faces (default is None).
+    linestyle : Any, optional
+        The style of the line (default is "--").
+    linewidth : Union[float, int], optional
+        The width of the line (default is 1.0).
+    alpha : Union[float, int], optional
+        The transparency of the line (default is 0.2).
+    alpha_all : Union[float, int], optional
+        The overall transparency affecting all elements (default is 1.0).
+    label : Union[str, None], optional
+        The label for the line (default is None).
+    *args : Any
+        Additional positional arguments passed to the matplotlib plot function.
+    **kwargs : Any
+        Additional keyword arguments passed to the matplotlib plot function.
+
+    Returns
+    -------
+    None
+
+    Notes
+    -----
+    The function is decorated with `get_passed_args`, which allows it to track and manage the
+    arguments passed to it. This is useful for handling configuration settings and defaults
+    from other sources.
     """
-
     passed_variables = line.passed_variables  # type: ignore
 
     _line = Line(

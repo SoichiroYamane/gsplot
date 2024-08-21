@@ -14,6 +14,60 @@ from ..style.legend_colormap import LegendColormap
 
 
 class LineColormap:
+    """
+    A class for plotting lines with color maps on a matplotlib axis.
+
+    The `LineColormap` class is designed to plot lines where the color varies along the line according to a colormap.
+    It supports different line styles and patterns, allowing for complex visualizations.
+
+    Parameters
+    ----------
+    axis_index : int
+        The index of the axis on which to plot the line.
+    xdata : Union[List[float, int], np.ndarray]
+        The data for the x-axis.
+    ydata : Union[List[float, int], np.ndarray]
+        The data for the y-axis.
+    cmapdata : Union[List[float, int], np.ndarray]
+        The data to be used for the colormap.
+    cmap : str, optional
+        The colormap to use (default is "viridis").
+    linewidth : Union[int, float], optional
+        The width of the line (default is 1).
+    linestyle : str, optional
+        The style of the line (default is "solid").
+    linepattern : Optional[List[Union[float, int]]], optional
+        A list defining the pattern of dashes and gaps (default is None).
+    label : Optional[str], optional
+        The label for the line (default is None).
+    num_points : int, optional
+        The number of points to use for plotting (default is 1000).
+    passed_variables : Dict[str, Any], optional
+        Additional variables passed to the line plotting functions (default is {}).
+    *args : Any
+        Additional positional arguments.
+    **kwargs : Any
+        Additional keyword arguments.
+
+    Attributes
+    ----------
+    axis : Axes
+        The matplotlib axis on which the line is plotted.
+    kwargs_params : Dict[str, Any]
+        The final set of parameters after merging with configuration and passed arguments.
+    xdata : np.ndarray
+        The x-axis data as a NumPy array.
+    ydata : np.ndarray
+        The y-axis data as a NumPy array.
+    cmapdata : np.ndarray
+        The data used for the colormap.
+
+    Methods
+    -------
+    plot_line_colormap() -> None
+        Plots the line using the specified colormap and line style.
+    """
+
     def __init__(
         self,
         axis_index: int,
@@ -67,6 +121,15 @@ class LineColormap:
             self._set_legend()
 
     def _check_linestyle(self) -> None:
+        """
+        Validates and sets the line style for the plot.
+
+        Raises
+        ------
+        ValueError
+            If an invalid line style is specified.
+        """
+
         # Define the allowed line styles
         ls_dict = {
             "solid": "solid",
@@ -84,6 +147,25 @@ class LineColormap:
         setattr(self, "linestyle", ls_dict[self.linestyle])
 
     def _check_linepattern(self, linepattern: None | List[float | int]) -> NDArray[Any]:
+        """
+        Validates and converts the line pattern to a NumPy array.
+
+        Parameters
+        ----------
+        linepattern : Optional[List[Union[float, int]]]
+            The pattern of dashes and gaps for the line.
+
+        Returns
+        -------
+        np.ndarray
+            The validated line pattern as a NumPy array.
+
+        Raises
+        ------
+        ValueError
+            If the line pattern is invalid.
+        """
+
         if linepattern is not None:
             if not isinstance(linepattern, (list, tuple)) or len(linepattern) != 2:
                 raise ValueError(
@@ -94,7 +176,17 @@ class LineColormap:
         _linepattern: NDArray[Any] = np.array(linepattern)
         return _linepattern
 
+    # TODO: Move this function to base directory
     def _handle_kwargs(self) -> None:
+        """
+        Processes and validates keyword arguments for the line plot.
+
+        Raises
+        ------
+        ValueError
+            If duplicate keys are found in the configuration or passed arguments.
+        """
+
         alias_map = {
             "lw": "linewidth",
             "ls": "linestyle",
@@ -163,6 +255,13 @@ class LineColormap:
             setattr(self, key, value)
 
     def plot_line_colormap(self) -> None:
+        """
+        Plots the line using the specified colormap and line style.
+
+        This method handles different line styles, such as solid and dashed lines,
+        and applies the colormap to the line.
+        """
+
         # Linestyle section
         if self.linestyle == "solid":
             LineColormapSolid(
@@ -194,6 +293,12 @@ class LineColormap:
             ).plot_dash_colormap()
 
     def _set_legend(self) -> None:
+        """
+        Sets the legend for the colormap line.
+
+        This method adjusts the legend based on the number of points in the colormap data.
+        """
+
         if self.num_points == 0:
             NUM_STRIPES = len(self.cmapdata)
         else:
@@ -224,6 +329,50 @@ def line_colormap(
     *args,
     **kwargs,
 ) -> None:
+    """
+    Plots a line on a specified matplotlib axis with a colormap applied.
+
+    This function uses the `LineColormap` class to create a line plot where the color varies
+    along the line according to a specified colormap. It supports different line styles, patterns,
+    and other customization options.
+
+    Parameters
+    ----------
+    axis_index : int
+        The index of the axis on which to plot the line.
+    xdata : Union[List[float], np.ndarray]
+        The data for the x-axis.
+    ydata : Union[List[float], np.ndarray]
+        The data for the y-axis.
+    cmapdata : Union[List[float], np.ndarray]
+        The data to be used for the colormap.
+    cmap : str, optional
+        The colormap to use (default is "viridis").
+    linewidth : Union[int, float], optional
+        The width of the line (default is 1).
+    linestyle : str, optional
+        The style of the line (default is "solid").
+    linepattern : Optional[List[Union[float, int]]], optional
+        A list defining the pattern of dashes and gaps (default is None).
+    label : Optional[str], optional
+        The label for the line (default is None).
+    num_points : int, optional
+        The number of points to use for plotting (default is 1000).
+        If set to 0, the number of stripes in the colormap data will be used.
+    *args : Any
+        Additional positional arguments passed to the colormap plotting function.
+    **kwargs : Any
+        Additional keyword arguments passed to the colormap plotting function.
+
+    Returns
+    -------
+    None
+
+    Notes
+    -----
+    The `num_points` parameter is critical in determining the resolution of the plotted line. If `num_points` is 0,
+    the function will use the number of stripes in `cmapdata` as the number of points.
+    """
 
     passed_variables = line_colormap.passed_variables  # type: ignore
     LineColormap(
@@ -244,13 +393,49 @@ def line_colormap(
 
 
 class LineColormapBase:
+    """
+    A base class for creating line segments and color maps for line plotting.
+
+    The `LineColormapBase` class provides utility functions for creating line segments
+    and generating color maps that can be used for line plots with varying colors along the line.
+
+    Methods
+    -------
+    _create_segment(xdata: NDArray[Any], ydata: NDArray[Any]) -> NDArray[np.float64]
+        Creates line segments from x and y data points for plotting.
+    _create_cmap(cmapdata: NDArray[Any]) -> Normalize
+        Creates a normalization object for mapping data points to colors.
+    """
+
     def _create_segment(
         self, xdata: NDArray[Any], ydata: NDArray[Any]
     ) -> NDArray[np.float64]:
-        # Create a set of line segments so that we can color them individually
-        # This creates the points as an N x 1 x 2 array so that we can stack points
-        # together easily to get the segments. The segments array for line collection
-        # needs to be (numlines) x (points per line) x 2 (for x and y)
+        """
+        Creates line segments from x and y data points for plotting.
+
+        Parameters
+        ----------
+        xdata : NDArray[Any]
+            The x-axis data points.
+        ydata : NDArray[Any]
+            The y-axis data points.
+
+        Returns
+        -------
+        NDArray[np.float64]
+            An array of line segments, each represented as a pair of points (x, y).
+        """
+
+        # ╭──────────────────────────────────────────────────────────╮
+        # │ Create a set of line segments so that we can color them  │
+        # │ individually                                             │
+        # │ This creates the points as an N x 1 x 2 array so that    │
+        # │ we can stack points                                      │
+        # │ together easily to get the segments. The segments array  │
+        # │ for line collection                                      │
+        # │ needs to be (numlines) x (points per line) x 2 (for x    │
+        # │ and y)                                                   │
+        # ╰──────────────────────────────────────────────────────────╯
         points = np.array([xdata, ydata], dtype=np.float64).T.reshape(-1, 1, 2)
         segments: NDArray[np.float64] = np.concatenate(
             [points[:-1], points[1:]], axis=1
@@ -258,12 +443,58 @@ class LineColormapBase:
         return segments
 
     def _create_cmap(self, cmapdata: NDArray[Any]) -> Normalize:
+        """
+        Creates a normalization object for mapping data points to colors.
+
+        Parameters
+        ----------
+        cmapdata : NDArray[Any]
+            The data points to be used for creating the colormap.
+
+        Returns
+        -------
+        Normalize
+            A normalization object that maps the data points to the colormap.
+        """
+
         # Create a continuous norm to map from data points to colors
         norm = Normalize(cmapdata.min(), cmapdata.max())
         return norm
 
 
 class LineColormapSolid:
+    """
+    A class for plotting a solid line with a colormap applied along its length.
+
+    The `LineColormapSolid` class is responsible for plotting a solid line where the color
+    varies along the line according to the provided colormap data. It supports interpolation
+    of the line points to create a smooth gradient effect.
+
+    Parameters
+    ----------
+    axis_index : int
+        The index of the axis on which to plot the line.
+    xdata : np.ndarray
+        The data for the x-axis.
+    ydata : np.ndarray
+        The data for the y-axis.
+    cmapdata : np.ndarray
+        The data to be used for the colormap.
+    cmap : str
+        The colormap to use (default is "viridis").
+    linewidth : Union[int, float]
+        The width of the line (default is 1).
+    num_points : int
+        The number of points to interpolate for the line (default is 1000).
+
+    Methods
+    -------
+    normal_interpolate_points(num_points: int) -> tuple
+        Interpolates the x, y, and colormap data points to create a smooth line.
+    plot_line_colormap_solid() -> None
+        Plots the solid line with the colormap applied.
+    """
+
     def __init__(
         self,
         axis_index: int,
@@ -287,6 +518,23 @@ class LineColormapSolid:
         self.num_points: int = num_points
 
     def normal_interpolate_points(self, num_points: int) -> tuple:
+        """
+        Interpolates the x, y, and colormap data points to create a smooth line.
+
+        This method interpolates the data points to create a smooth gradient along the line,
+        based on the specified number of points.
+
+        Parameters
+        ----------
+        num_points : int
+            The number of points to interpolate along the line.
+
+        Returns
+        -------
+        tuple
+            A tuple containing the interpolated x, y, and colormap data.
+        """
+
         xdiff = np.diff(self.xdata)
         ydiff = np.diff(self.ydata)
         distances = np.sqrt(xdiff**2 + ydiff**2)
@@ -309,6 +557,17 @@ class LineColormapSolid:
 
     @AxesRangeSingleton.update
     def plot_line_colormap_solid(self) -> None:
+        """
+        Plots the solid line with the colormap applied.
+
+        This method creates the line segments, applies the colormap, and adds the line
+        collection to the specified axis.
+
+        Returns
+        -------
+        None
+        """
+
         if self.num_points != 0:
             self.xdata, self.ydata, self.cmapdata = self.normal_interpolate_points(
                 self.num_points
@@ -325,6 +584,44 @@ class LineColormapSolid:
 
 
 class LineColormapDashed:
+    """
+    A class for plotting a dashed line with a colormap applied along its length.
+
+    The `LineColormapDashed` class is responsible for plotting a dashed line where the color
+    varies along the line according to the provided colormap data. It accounts for the scaling
+    of the line based on the axis dimensions and interpolates points to create a uniform dashed pattern.
+
+    Parameters
+    ----------
+    axis_index : int
+        The index of the axis on which to plot the line.
+    xdata : np.ndarray
+        The data for the x-axis.
+    ydata : np.ndarray
+        The data for the y-axis.
+    cmapdata : np.ndarray
+        The data to be used for the colormap.
+    cmap : str
+        The colormap to use (default is "viridis").
+    linewidth : Union[int, float]
+        The width of the line (default is 1).
+    length_solid : Union[int, float]
+        The length of the solid part of the dash (default is 1).
+    length_gap : Union[int, float]
+        The length of the gap between dashes (default is 1).
+    xspan : np.ndarray, optional
+        The span of the x-axis data (default is calculated from `xdata`).
+    yspan : np.ndarray, optional
+        The span of the y-axis data (default is calculated from `ydata`).
+
+    Methods
+    -------
+    normal_interpolate_points(num_points: int) -> tuple
+        Interpolates the x, y, and colormap data points to create a smooth line.
+    plot_dash_colormap() -> None
+        Plots the dashed line with the colormap applied.
+    """
+
     def __init__(
         self,
         axis_index: int,
@@ -371,6 +668,23 @@ class LineColormapDashed:
         self._create_uniform_coordinates()
 
     def normal_interpolate_points(self, num_points: int) -> tuple:
+        """
+        Interpolates the x, y, and colormap data points to create a smooth line.
+
+        This method interpolates the data points to create a smooth gradient along the line,
+        based on the specified number of points.
+
+        Parameters
+        ----------
+        num_points : int
+            The number of points to interpolate along the line.
+
+        Returns
+        -------
+        tuple
+            A tuple containing the interpolated x, y, and colormap data.
+        """
+
         xdiff = np.diff(self.xdata)
         ydiff = np.diff(self.ydata)
         distances = np.sqrt(xdiff**2 + ydiff**2)
@@ -392,6 +706,18 @@ class LineColormapDashed:
         return x_interpolated, y_interpolated, cmap_interpolated
 
     def _get_data_span(self) -> np.ndarray:
+        """
+        Calculates the span (range) of the x and y data.
+
+        This method computes the difference between the maximum and minimum values
+        of the x and y data, returning the span of each.
+
+        Returns
+        -------
+        np.ndarray
+            An array containing the span of the x and y data.
+        """
+
         xmax, xmin = np.max(self.xdata), np.min(self.xdata)
         ymax, ymin = np.max(self.ydata), np.min(self.ydata)
         xspan = xmax - xmin
@@ -399,6 +725,13 @@ class LineColormapDashed:
         return np.array([xspan, yspan])
 
     def _create_uniform_coordinates(self) -> None:
+        """
+        Creates uniform coordinates for the dashed line based on axis scaling.
+
+        This method scales the x and y data according to the axis dimensions, interpolates the
+        points, and prepares the coordinates for plotting a uniform dashed line.
+        """
+
         self.scaled_xdata = self.xdata * self.xscale
         self.scaled_ydata = self.ydata * self.yscale
 
@@ -422,6 +755,17 @@ class LineColormapDashed:
 
     @AxesRangeSingleton.update
     def plot_dash_colormap(self) -> None:
+        """
+        Plots the dashed line with the colormap applied.
+
+        This method creates the dashed line segments, applies the colormap, and adds the line
+        collection to the specified axis.
+
+        Returns
+        -------
+        None
+        """
+
         current_length = 0
         draw_dash = True
         idx_start = 0
