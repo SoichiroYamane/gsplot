@@ -1,6 +1,5 @@
 import gsplot as gs
 import matplotlib.pyplot as plt
-
 from gsplot.figure.axes_base import AxisTargetHandler
 
 fig, axs = plt.subplots(2, 2)
