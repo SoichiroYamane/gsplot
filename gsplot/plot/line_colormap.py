@@ -6,7 +6,7 @@ from matplotlib.collections import LineCollection
 from typing import List, Union, Any, Dict
 
 
-from ..params.params import Params
+from ..config.config import Config
 from ..base.base import AttributeSetter
 from ..base.base_passed_args import get_passed_args
 from ..figure.axes_base import AxesSingleton, AxesRangeSingleton, AxisLayout
@@ -24,11 +24,11 @@ class LineColormap:
     ----------
     axis_index : int
         The index of the axis on which to plot the line.
-    xdata : Union[List[float, int], np.ndarray]
+    xdata : Union[list[float, int], np.ndarray]
         The data for the x-axis.
-    ydata : Union[List[float, int], np.ndarray]
+    ydata : Union[list[float, int], np.ndarray]
         The data for the y-axis.
-    cmapdata : Union[List[float, int], np.ndarray]
+    cmapdata : Union[list[float, int], np.ndarray]
         The data to be used for the colormap.
     cmap : str, optional
         The colormap to use (default is "viridis").
@@ -36,13 +36,13 @@ class LineColormap:
         The width of the line (default is 1).
     linestyle : str, optional
         The style of the line (default is "solid").
-    linepattern : Optional[List[Union[float, int]]], optional
+    linepattern : Optional[list[Union[float, int]]], optional
         A list defining the pattern of dashes and gaps (default is None).
     label : Optional[str], optional
         The label for the line (default is None).
     num_points : int, optional
         The number of points to use for plotting (default is 1000).
-    passed_variables : Dict[str, Any], optional
+    passed_variables : dict[str, Any], optional
         Additional variables passed to the line plotting functions (default is {}).
     *args : Any
         Additional positional arguments.
@@ -53,7 +53,7 @@ class LineColormap:
     ----------
     axis : Axes
         The matplotlib axis on which the line is plotted.
-    kwargs_params : Dict[str, Any]
+    kwargs_params : dict[str, Any]
         The final set of parameters after merging with configuration and passed arguments.
     xdata : np.ndarray
         The x-axis data as a NumPy array.
@@ -71,16 +71,16 @@ class LineColormap:
     def __init__(
         self,
         axis_index: int,
-        xdata: Union[List[float | int], np.ndarray],
-        ydata: Union[List[float | int], np.ndarray],
-        cmapdata: Union[List[float | int], np.ndarray],
+        xdata: Union[list[float | int], np.ndarray],
+        ydata: Union[list[float | int], np.ndarray],
+        cmapdata: Union[list[float | int], np.ndarray],
         cmap: str = "viridis",
         linewidth: int | float = 1,
         linestyle: str = "solid",
-        linepattern: None | List[float | int] = None,
+        linepattern: None | list[float | int] = None,
         label: None | str = None,
         num_points: int = 1000,
-        passed_variables: Dict[str, Any] = {},
+        passed_variables: dict[str, Any] = {},
         *args: Any,
         **kwargs: Any,
     ) -> None:
@@ -88,21 +88,21 @@ class LineColormap:
         self.__axes: AxesSingleton = AxesSingleton()
         self._axis: Axes = self.__axes.get_axis(self.axis_index)
 
-        self._xdata: Union[List[float | int], np.ndarray] = xdata
-        self._ydata: Union[List[float | int], np.ndarray] = ydata
-        self._cmapdata: Union[List[float | int], np.ndarray] = cmapdata
+        self._xdata: Union[list[float | int], np.ndarray] = xdata
+        self._ydata: Union[list[float | int], np.ndarray] = ydata
+        self._cmapdata: Union[list[float | int], np.ndarray] = cmapdata
         self.cmap: str = cmap
         self.linewidth: int | float = linewidth
 
         self.linestyle: str = linestyle
-        self.linepattern: None | List[float | int] = linepattern
+        self.linepattern: None | list[float | int] = linepattern
         self.label: None | str = label
         self.num_points: int = num_points
-        self.passed_variables: Dict[str, Any] = passed_variables
+        self.passed_variables: dict[str, Any] = passed_variables
         self.args: Any = args
         self.kwargs: Any = kwargs
 
-        self.DEFAULT_PATTERN: None | List[float | int] = None
+        self.DEFAULT_PATTERN: None | list[float | int] = None
 
         attributer = AttributeSetter()
         self.kwargs_params = attributer.set_attributes(
@@ -146,13 +146,13 @@ class LineColormap:
 
         setattr(self, "linestyle", ls_dict[self.linestyle])
 
-    def _check_linepattern(self, linepattern: None | List[float | int]) -> NDArray[Any]:
+    def _check_linepattern(self, linepattern: None | list[float | int]) -> NDArray[Any]:
         """
         Validates and converts the line pattern to a NumPy array.
 
         Parameters
         ----------
-        linepattern : Optional[List[Union[float, int]]]
+        linepattern : Optional[list[Union[float, int]]]
             The pattern of dashes and gaps for the line.
 
         Returns
@@ -195,7 +195,7 @@ class LineColormap:
         # ╭──────────────────────────────────────────────────────────╮
         # │ check duplicate keys in config file                      │
         # ╰──────────────────────────────────────────────────────────╯
-        params = Params().get_item("line_colormap")
+        params = Config().get_config_entry_option("line_colormap")
 
         for alias, key in alias_map.items():
             if alias in params:
@@ -314,16 +314,16 @@ class LineColormap:
 
 
 # !TODO:  check the statement of num_points
-@get_passed_args
+# @get_passed_args
 def line_colormap(
     axis_index: int,
-    xdata: Union[List[float], np.ndarray],
-    ydata: Union[List[float], np.ndarray],
-    cmapdata: Union[List[float], np.ndarray],
+    xdata: Union[list[float], np.ndarray],
+    ydata: Union[list[float], np.ndarray],
+    cmapdata: Union[list[float], np.ndarray],
     cmap: str = "viridis",
     linewidth: int | float = 1,
     linestyle: str = "solid",
-    linepattern: None | List[float | int] = None,
+    linepattern: None | list[float | int] = None,
     label: None | str = None,
     num_points: int = 1000,
     *args,
@@ -340,11 +340,11 @@ def line_colormap(
     ----------
     axis_index : int
         The index of the axis on which to plot the line.
-    xdata : Union[List[float], np.ndarray]
+    xdata : Union[list[float], np.ndarray]
         The data for the x-axis.
-    ydata : Union[List[float], np.ndarray]
+    ydata : Union[list[float], np.ndarray]
         The data for the y-axis.
-    cmapdata : Union[List[float], np.ndarray]
+    cmapdata : Union[list[float], np.ndarray]
         The data to be used for the colormap.
     cmap : str, optional
         The colormap to use (default is "viridis").
@@ -352,7 +352,7 @@ def line_colormap(
         The width of the line (default is 1).
     linestyle : str, optional
         The style of the line (default is "solid").
-    linepattern : Optional[List[Union[float, int]]], optional
+    linepattern : Optional[list[Union[float, int]]], optional
         A list defining the pattern of dashes and gaps (default is None).
     label : Optional[str], optional
         The label for the line (default is None).

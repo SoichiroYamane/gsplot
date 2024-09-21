@@ -26,10 +26,17 @@ extensions = [
 templates_path = ["_templates"]
 exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
 add_module_names = False
+# autodoc_inherit_docstrings = True
 modindex_common_prefix = ["gsplot."]
 
 # -- Options for HTML output -------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
 
-html_theme = "furo"
+html_theme = "pydata_sphinx_theme"
+# html_theme = "sphinx_book_theme"
+# html_theme = "sphinx_rtd_theme"
+html_theme_options = {
+    "default_mode": "light",
+    # "use_repository_button": True,
+}
 html_static_path = ["_static"]

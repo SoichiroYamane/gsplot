@@ -31,7 +31,7 @@ class AddIndexToAxes:
 
     def __init__(self) -> None:
         self.__axes: AxesSingleton = AxesSingleton()
-        self._axes: List[Axes] = self.__axes.axes
+        self._axes: list[Axes] = self.__axes.axes
 
     def add_index(self) -> None:
         """
@@ -48,7 +48,7 @@ class AddIndexToAxes:
         for i, axis in enumerate(self._axes):
             renderer = cast(FigureCanvasAgg, plt.gcf().canvas).get_renderer()
             tight_bbox: Optional[Bbox] = axis.get_tightbbox(renderer)
-            coords: Optional[Tuple[float, float, float, float]] = None
+            coords: Optional[tuple[float, float, float, float]] = None
 
             if tight_bbox is not None:
                 coords = tight_bbox.bounds
@@ -96,7 +96,7 @@ class Label:
 
     Parameters
     ----------
-    lab_lims : List[Any]
+    lab_lims : list[Any]
         A list of labels and limits for the axes.
     x_pad : int, optional
         Padding for the x-axis when applying tight layout (default is 2).
@@ -121,7 +121,7 @@ class Label:
 
     def __init__(
         self,
-        lab_lims: List[Any],
+        lab_lims: list[Any],
         x_pad: int = 2,
         y_pad: int = 2,
         minor_ticks_all: bool = True,
@@ -131,7 +131,7 @@ class Label:
         **kwargs: Any,
     ) -> None:
 
-        self.lab_lims: List[Any] = lab_lims
+        self.lab_lims: list[Any] = lab_lims
         self.x_pad: int = x_pad
         self.y_pad: int = y_pad
         self.minor_ticks_all: bool = minor_ticks_all
@@ -144,7 +144,7 @@ class Label:
         self.kwargs = attributer.set_attributes(self, locals(), key="label")
 
         self.__axes: AxesSingleton = AxesSingleton()
-        self._axes: List[Axes] = self.__axes.axes
+        self._axes: list[Axes] = self.__axes.axes
 
     def xticks(
         self, axis: Axes, base: float | None = None, num_minor: int | None = None
@@ -346,13 +346,13 @@ class Label:
         new_range = np.array([min(range1[0], range2[0]), max(range1[1], range2[1])])
         return new_range
 
-    def _get_axes_ranges_current(self) -> List[List[np.ndarray]]:
+    def _get_axes_ranges_current(self) -> list[list[np.ndarray]]:
         """
         Retrieves the current axis ranges for all axes in the figure.
 
         Returns
         -------
-        List[List[np.ndarray]]
+        list[list[np.ndarray]]
             A list of lists containing the x and y ranges for each axis.
         """
 
@@ -363,13 +363,13 @@ class Label:
             axes_ranges_current.append([xrange, yrange])
         return axes_ranges_current
 
-    def _get_final_axes_range(self) -> List[List[np.ndarray]]:
+    def _get_final_axes_range(self) -> list[list[np.ndarray]]:
         """
         Determines the final axis ranges, considering initial and current axis ranges.
 
         Returns
         -------
-        List[List[np.ndarray]]
+        list[list[np.ndarray]]
             A list of lists containing the final x and y ranges for each axis.
         """
 
@@ -456,7 +456,7 @@ class Label:
 
 
 def label(
-    lab_lims: List[Any],
+    lab_lims: list[Any],
     x_pad: int = 2,
     y_pad: int = 2,
     minor_ticks_all: bool = True,
@@ -470,7 +470,7 @@ def label(
 
     Parameters
     ----------
-    lab_lims : List[Any]
+    lab_lims : list[Any]
         A list of labels and limits for the axes.
     x_pad : int, optional
         Padding for the x-axis when applying tight layout (default is 2).

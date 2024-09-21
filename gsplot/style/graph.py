@@ -22,7 +22,7 @@ class GraphSquare:
 
     def __init__(self) -> None:
         self.__axes: AxesSingleton = AxesSingleton()
-        self._axes: List[Axes] = self.__axes.axes
+        self._axes: list[Axes] = self.__axes.axes
 
     def set_square(self, axis_index: int) -> None:
         """
@@ -104,7 +104,7 @@ class GraphWhite:
 
     def __init__(self) -> None:
         self.__axes: AxesSingleton = AxesSingleton()
-        self._axes: List[Axes] = self.__axes.axes
+        self._axes: list[Axes] = self.__axes.axes
 
     def set_white(self, axis_index: int) -> None:
         """
@@ -280,7 +280,7 @@ class GraphTransparent:
 
     def __init__(self) -> None:
         self.__axes: AxesSingleton = AxesSingleton()
-        self._axes: List[Axes] = self.__axes.axes
+        self._axes: list[Axes] = self.__axes.axes
 
         rcParams.update(
             {

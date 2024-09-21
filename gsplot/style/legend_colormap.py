@@ -87,7 +87,7 @@ class HandlerColormap(HandlerBase):
 
         Returns
         -------
-        List[Rectangle]
+        list[Rectangle]
             A list of Rectangle artists representing the colormap stripes.
         """
 
@@ -167,18 +167,18 @@ class LegendColormap:
 
     def get_legend_handlers_colormap(
         self,
-    ) -> Tuple[List[Rectangle], List[str | None], Dict[Rectangle, HandlerColormap]]:
+    ) -> tuple[list[Rectangle], list[str | None], dict[Rectangle, HandlerColormap]]:
         """
         Retrieve the handles, labels, and handler map for the colormap legend.
 
         Returns
         -------
-        Tuple[List[Rectangle], List[str | None], Dict[Rectangle, HandlerColormap]]
+        tuple[list[Rectangle], list[str | None], dict[Rectangle, HandlerColormap]]
             Handles, labels, and handler map for the colormap legend.
         """
 
         handle = [Rectangle((0, 0), 1, 1)]
-        label: List[str | None] = [self.label]
+        label: list[str | None] = [self.label]
         _handler = HandlerColormap(
             cmap=self.cmap,
             num_stripes=self.num_stripes,
@@ -186,7 +186,7 @@ class LegendColormap:
             vmin=self.vmin,
             vmax=self.vmax,
         )
-        handler: Dict[Rectangle, HandlerColormap] = {handle[0]: _handler}
+        handler: dict[Rectangle, HandlerColormap] = {handle[0]: _handler}
         return handle, label, handler
 
     def add_legend_colormap(self):
@@ -216,7 +216,7 @@ class LegendColormap:
         labels += label_cmap_filtered
 
         # Ensure handlers and handler_cmap have compatible types
-        handler_cmap_casted: Dict[Artist, HandlerBase] = {
+        handler_cmap_casted: dict[Artist, HandlerBase] = {
             k: v for k, v in handler_cmap.items()
         }
         handlers.update(handler_cmap_casted)

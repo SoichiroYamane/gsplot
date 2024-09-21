@@ -3,12 +3,12 @@ from .color.colormap import get_cmap
 from .data.load import load_file
 from .data.path import get_home, get_pwd, move_to_pwd
 
-
+from .base.base_passed_args import foo_bar
 from .figure.axes import axes
 from .figure.figure_tool import get_figure_size
 from .figure.show import show
 
-from .params.params import get_json_params
+from .config.config import get_config_dict
 
 from .plot.line import line
 from .plot.line_colormap import line_colormap
@@ -41,6 +41,7 @@ from .style.ticks import (
 
 
 __all__ = [
+    "foo_bar",
     # color/colormap.py
     "get_cmap",
     # data/load.py
@@ -55,8 +56,8 @@ __all__ = [
     "get_figure_size",
     # figure/show.py
     "show",
-    # params/params.py
-    "get_json_params",
+    # config/config.py
+    "get_config_dict",
     # plot/line.py
     "line",
     # plot/line_colormap.py

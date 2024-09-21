@@ -1,20 +1,19 @@
 import gsplot as gs
+import matplotlib.pyplot as plt
 
 # Create list of axes
 axes = gs.axes(
-    store=True,
-    size=[5, 5],
+    store=False,
     mosaic="AB;CD",
-    clear= False,
-    ion=True,
 )
 
 # plot a line on the first axis: corresponding to A
 gs.line(
-    axis_index=0,
-    xdata=[1, 2, 3],
-    ydata=[1, 1, 1],
+    idx=0,
+    x=[1, 2, 3],
+    y=[1, 1, 1],
 )
+
 
 gs.label(
     [

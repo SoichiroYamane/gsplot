@@ -15,7 +15,7 @@ class NumLines:
     ----------
     _instance : Optional[NumLines]
         The singleton instance of the `NumLines` class.
-    _num_lines : List[int]
+    _num_lines : list[int]
         A list that tracks the number of lines for each axis.
 
     Methods
@@ -47,7 +47,7 @@ class NumLines:
         """
 
         # Explicitly initialize the instance variable with a type hint
-        self._num_lines: List[int] = [0]
+        self._num_lines: list[int] = [0]
 
     def update_num_lines(self, axis_index: int) -> None:
         """
@@ -64,13 +64,13 @@ class NumLines:
             self._num_lines.extend([0] * (axis_index - length + 1))
 
     @property
-    def num_lines(self) -> List[int]:
+    def num_lines(self) -> list[int]:
         """
         Returns the current list of line counts for all axes.
 
         Returns
         -------
-        List[int]
+        list[int]
             A list where each element represents the number of lines plotted on the corresponding axis.
         """
 
@@ -127,7 +127,7 @@ class NumLines:
         """
 
         def wrapper(self, *args, **kwargs):
-            cls().increment(self.axis_index)
+            cls().increment(self.axis_target)
             result = func(self, *args, **kwargs)
             return result
 

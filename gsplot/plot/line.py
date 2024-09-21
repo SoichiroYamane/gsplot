@@ -1,12 +1,15 @@
 import numbers
 import numpy as np
 from matplotlib import colors
-from matplotlib.typing import ColorType
-from typing import Union, Any, List, Dict
+from matplotlib.typing import ColorType, MarkerType, LineStyleType
+from matplotlib.axes import Axes
+from numpy.typing import ArrayLike
+from typing import Union, Any
+import time
 
-from ..params.params import Params
-from ..base.base import AttributeSetter
-from ..base.base_passed_args import get_passed_args
+from ..config.config import Config
+from ..base.base import get_passed_params, ParamsGetter, CreateClassParams
+from ..base.base_alias_validator import AliasValidator
 from ..figure.axes_base import AxesSingleton, AxesRangeSingleton
 from .line_base import NumLines
 from .line_base import AutoColor
@@ -20,9 +23,9 @@ class Line:
     ----------
     axis_index : int
         The index of the axis on which to plot the line.
-    xdata : Union[List[float, int], np.ndarray]
+    xdata : Union[list[float, int], np.ndarray]
         The data for the x-axis.
-    ydata : Union[List[float, int], np.ndarray]
+    ydata : Union[list[float, int], np.ndarray]
         The data for the y-axis.
     color : Union[ColorType, None], optional
         The color of the line (default is None, which uses the color cycle).
@@ -46,7 +49,7 @@ class Line:
         The overall transparency affecting all elements (default is 1.0).
     label : Union[str, None], optional
         The label for the line (default is None).
-    passed_variables : Dict[str, Any], optional
+    passed_variables : dict[str, Any], optional
         A dictionary of passed variables, typically used for internal tracking (default is {}).
     *args : Any
         Additional positional arguments passed to the matplotlib plot function.
@@ -57,7 +60,7 @@ class Line:
     ----------
     axis : Axes
         The matplotlib axis on which the line is plotted.
-    kwargs_params : Dict[str, Any]
+    kwargs_params : dict[str, Any]
         The final set of parameters after merging with configuration and passed arguments.
     xdata : np.ndarray
         The x-axis data as a NumPy array.
@@ -72,144 +75,59 @@ class Line:
 
     def __init__(
         self,
-        axis_index: int,
-        xdata: Union[List[float | int], np.ndarray],
-        ydata: Union[List[float | int], np.ndarray],
-        color: Union[ColorType, None] = None,
-        marker: Any = "o",
-        markersize: Union[float, int] = 7.0,
-        markeredgewidth: Union[float, int] = 1.5,
-        markeredgecolor: Union[ColorType, None] = None,
-        markerfacecolor: Union[ColorType, None] = None,
-        linestyle: Any = "--",
-        linewidth: Union[float, int] = 1.0,
-        alpha: Union[float, int] = 0.2,
-        alpha_all: Union[float, int] = 1.0,
-        label: Union[str, None] = None,
-        passed_variables: Dict[str, Any] = {},
+        axis_target: int | Axes,
+        x: ArrayLike,
+        y: ArrayLike,
+        color: ColorType | None = None,
+        marker: MarkerType = "o",
+        markersize: int | float = 7.0,
+        markeredgewidth: int | float = 1.5,
+        markeredgecolor: ColorType | None = None,
+        markerfacecolor: ColorType | None = None,
+        linestyle: LineStyleType = "--",
+        linewidth: int | float = 1.0,
+        alpha: int | float = 0.2,
+        alpha_all: int | float = 1.0,
+        label: str | None = None,
         *args: Any,
         **kwargs: Any,
     ) -> None:
-        self.axis_index: int = axis_index
+        self.axis_target: int | Axes = axis_target
 
-        self._xdata: Union[List[float | int], np.ndarray] = xdata
-        self._ydata: Union[List[float | int], np.ndarray] = ydata
+        self._x: ArrayLike = x
+        self._y: ArrayLike = y
 
-        self.color: Union[ColorType, None] = color
-        self.marker: Any = marker
-        self.markersize: float | int = markersize
-        self.markeredgewidth: float | int = markeredgewidth
-        self.markeredgecolor: Union[ColorType, None] = markeredgecolor
-        self.markerfacecolor: Union[ColorType, None] = markerfacecolor
-        self.linestyle: Any = linestyle
-        self.linewidth: float | int = linewidth
-        self.alpha: float | int = alpha
-        self.alpha_all: float | int = alpha_all
-        self.label: Union[str, None] = label
-        self.passed_variables: Dict[str, Any] = passed_variables
+        self.color: ColorType | None = color
+        self.marker: MarkerType = marker
+        self.markersize: int | float = markersize
+        self.markeredgewidth: int | float = markeredgewidth
+        self.markeredgecolor: ColorType | None = markeredgecolor
+        self.markerfacecolor: ColorType | None = markerfacecolor
+        self.linestyle: LineStyleType = linestyle
+        self.linewidth: int | float = linewidth
+        self.alpha: int | float = alpha
+        self.alpha_all: int | float = alpha_all
+        self.label: str | None = label
         self.args: Any = args
         self.kwargs: Any = kwargs
 
-        attributer = AttributeSetter()
-        self.kwargs_params = attributer.set_attributes(self, locals(), key="line")
+        # Ensure x and y data are NumPy arrays
+        self.x: np.ndarray = np.array(self._x)
+        self.y: np.ndarray = np.array(self._y)
 
-        self.xdata: np.ndarray = np.array(self._xdata)
-        self.ydata: np.ndarray = np.array(self._ydata)
-
-        self._handle_kwargs()
         self._set_colors()
 
         self.__axes = AxesSingleton()
         self._axis = self.__axes.axes
 
-        if not 0 <= self.axis_index < len(self._axis):
-            raise IndexError(
-                f"axis_index {self.axis_index} is out of range. Valid axis indices are from 0 to {len(self._axis)-1}."
-            )
-        self.axis = self._axis[self.axis_index]
-
-    # TODO: Move this function to base directory
-    def _handle_kwargs(self) -> None:
-        """
-        Handles and processes keyword arguments, including resolving alias conflicts and merging defaults.
-
-        Raises
-        ------
-        ValueError
-            If duplicate keys are found in the configuration or passed arguments.
-        """
-
-        alias_map = {
-            "ms": "markersize",
-            "mew": "markeredgewidth",
-            "ls": "linestyle",
-            "lw": "linewidth",
-            "c": "color",
-            "mec": "markeredgecolor",
-            "mfc": "markerfacecolor",
-        }
-
-        # ╭──────────────────────────────────────────────────────────╮
-        # │ check duplicate keys in config file                      │
-        # ╰──────────────────────────────────────────────────────────╯
-        params = Params().get_item("line")
-
-        for alias, key in alias_map.items():
-            if alias in params:
-                if key in params:
-                    raise ValueError(f"Both '{alias}' and '{key}' are in params.")
-
-        # ╭──────────────────────────────────────────────────────────╮
-        # │ check duplicate keys on passed_args#                     │
-        # │ get default values from passed_args                      │
-        # ╰──────────────────────────────────────────────────────────╯
-        _ignore_key_list = ["axis_index", "xdata", "ydata", "args", "kwargs"]
-        _passed_variables_default = self.passed_variables.copy()
-        for key in _ignore_key_list:
-            del _passed_variables_default[key]
-
-        # ╭──────────────────────────────────────────────────────────╮
-        # │ check duplicate key in passed_variables                  │
-        # ╰──────────────────────────────────────────────────────────╯
-        for alias, key in alias_map.items():
-            if alias in self.kwargs:
-                if key in _passed_variables_default:
-                    raise ValueError(f"Both '{alias}' and '{key}' are in kwargs.")
-                _passed_variables_default[key] = self.kwargs[alias]
-                del self.kwargs[alias]
-
-        # ╭──────────────────────────────────────────────────────────╮
-        # │ decompose _kwargs_params                                 │
-        # ╰──────────────────────────────────────────────────────────╯
-        _params_defaults = {}
-        for alias, key in alias_map.items():
-            if alias in self.kwargs_params:
-                _params_defaults[key] = self.kwargs_params[alias]
-                del self.kwargs_params[alias]
-
-        # ╭──────────────────────────────────────────────────────────╮
-        # │ concatenate kwargs from passed_args and config file      │
-        # ╰──────────────────────────────────────────────────────────╯
-        _default = _params_defaults.copy()
-        _default.update(_passed_variables_default)
-
-        _kwargs = self.kwargs_params.copy()
-        _kwargs.update(self.kwargs)
-
-        self._kwargs = _kwargs
-
-        # ╭──────────────────────────────────────────────────────────╮
-        # │ set _default values as instances                         │
-        # ╰──────────────────────────────────────────────────────────╯
-        for key, value in _default.items():
-            setattr(self, key, value)
+        # if not 0 <= self.axis_index < len(self._axis):
+        #     raise IndexError(
+        #         f"axis_index {self.axis_index} is out of range. Valid axis indices are from 0 to {len(self._axis)-1}."
+        #     )
+        self.axis = self._axis[self.axis_target]
 
     def _set_colors(self) -> None:
-        """
-        Sets the colors for the line, marker edges, and marker faces, including applying alpha transparency.
-        """
-
-        cycle_color: Union[np.ndarray, str] = AutoColor(self.axis_index).get_color()
+        cycle_color: Union[np.ndarray, str] = AutoColor(self.axis_target).get_color()
         if isinstance(cycle_color, np.ndarray):
             cycle_color = colors.to_hex(
                 tuple(cycle_color)
@@ -230,26 +148,6 @@ class Line:
     def _modify_color_alpha(
         self, color: ColorType, alpha: Union[float, int, None]
     ) -> tuple:
-        """
-        Modifies the alpha transparency of the provided color.
-
-        Parameters
-        ----------
-        color : ColorType
-            The color to modify.
-        alpha : Union[float, int, None]
-            The alpha transparency to apply.
-
-        Returns
-        -------
-        tuple
-            A tuple representing the RGBA color with the modified alpha.
-
-        Raises
-        ------
-        ValueError
-            If either the color or alpha is not provided, or if alpha is not a real number.
-        """
 
         if color is None or alpha is None:
             raise ValueError("Both color and alpha must be provided")
@@ -264,33 +162,9 @@ class Line:
     @NumLines.count
     @AxesRangeSingleton.update
     def plot(self):
-        """
-        Plots the line on the specified axis.
-
-        This method uses the matplotlib `plot` function to draw the line on the axis specified
-        by `axis_index`. It applies various styles such as color, marker, linestyle, and others
-        that were configured during the initialization of the `Line` object.
-
-        The method is decorated with `NumLines.count` to track the number of lines plotted,
-        and with `AxesRangeSingleton.update` to update the axis range based on the plotted data.
-
-        Parameters
-        ----------
-        None
-
-        Returns
-        -------
-        None
-
-        Notes
-        -----
-        This method is designed to be called automatically when plotting a line. It should not
-        need to be called directly in most use cases.
-        """
-
         self.axis.plot(
-            self.xdata,
-            self.ydata,
+            self.x,
+            self.y,
             color=self._color,
             marker=self.marker,
             markersize=self.markersize,
@@ -301,28 +175,28 @@ class Line:
             markerfacecolor=self._color_mfc,
             label=self.label,
             *self.args,
-            **self._kwargs,
+            **self.kwargs,
         )
 
 
-@get_passed_args
+@get_passed_params()
 def line(
-    axis_index: int,
-    xdata: Union[List[float], np.ndarray],
-    ydata: Union[List[float], np.ndarray],
-    color: Union[str, None] = None,
-    marker: Any = "o",
-    markersize: Union[float, int] = 7.0,
-    markeredgewidth: Union[float, int] = 1.5,
-    markeredgecolor: Union[str, None] = None,
-    markerfacecolor: Union[str, None] = None,
-    linestyle: Any = "--",
-    linewidth: Union[float, int] = 1.0,
-    alpha: Union[float, int] = 0.2,
-    alpha_all: Union[float, int] = 1.0,
-    label: Union[str, None] = None,
-    *args: Any,
-    **kwargs: Any,
+    axis_target,
+    x,
+    y,
+    color=None,
+    marker="o",
+    markersize=7.0,
+    markeredgewidth=1.5,
+    markeredgecolor=None,
+    markerfacecolor=None,
+    linestyle="--",
+    linewidth=1.0,
+    alpha=0.2,
+    alpha_all=1.0,
+    label=None,
+    *args,
+    **kwargs,
 ):
     """
     Plots a line on a specified matplotlib axis.
@@ -332,11 +206,11 @@ def line(
 
     Parameters
     ----------
-    axis_index : int
+    axis : int
         The index of the axis on which to plot the line.
-    xdata : Union[List[float], np.ndarray]
+    xdata : Union[list[float], np.ndarray]
         The data for the x-axis.
-    ydata : Union[List[float], np.ndarray]
+    ydata : Union[list[float], np.ndarray]
         The data for the y-axis.
     color : Union[str, None], optional
         The color of the line (default is None, which uses the color cycle).
@@ -375,26 +249,38 @@ def line(
     arguments passed to it. This is useful for handling configuration settings and defaults
     from other sources.
     """
-    passed_variables = line.passed_variables  # type: ignore
+
+    alias_map = {
+        "ms": "markersize",
+        "mew": "markeredgewidth",
+        "ls": "linestyle",
+        "lw": "linewidth",
+        "c": "color",
+        "mec": "markeredgecolor",
+        "mfc": "markerfacecolor",
+    }
+
+    passed_params: dict[str, Any] = ParamsGetter("passed_params").get_params()
+    AliasValidator(alias_map, passed_params).validate()
+    class_params: dict[str, Any] = CreateClassParams(passed_params).get_class_params()
 
     _line = Line(
-        axis_index,
-        xdata,
-        ydata,
-        color,
-        marker,
-        markersize,
-        markeredgewidth,
-        markeredgecolor,
-        markerfacecolor,
-        linestyle,
-        linewidth,
-        alpha,
-        alpha_all,
-        label,
-        passed_variables,
-        *args,
-        **kwargs,
+        class_params["axis_target"],
+        class_params["x"],
+        class_params["y"],
+        class_params["color"],
+        class_params["marker"],
+        class_params["markersize"],
+        class_params["markeredgewidth"],
+        class_params["markeredgecolor"],
+        class_params["markerfacecolor"],
+        class_params["linestyle"],
+        class_params["linewidth"],
+        class_params["alpha"],
+        class_params["alpha_all"],
+        class_params["label"],
+        *class_params["args"],
+        **class_params["kwargs"],
     )
 
     _line.plot()

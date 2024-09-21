@@ -1,97 +1,58 @@
 import inspect
 import numpy as np
-from functools import update_wrapper
+from functools import update_wrapper, wraps
 from typing import Callable
 from typing_extensions import Any, Dict, TypedDict
 
-
-class WrapperWithAttributes(TypedDict):
-    """
-    A TypedDict for storing attributes related to passed variables.
-
-    Attributes
-    ----------
-    passed_variables : dict[str, Any]
-        A dictionary mapping variable names to their corresponding passed values.
-    """
-
-    passed_variables: dict[str, Any]
+from typing import Callable, ParamSpec, TypeVar, Generic, Protocol
 
 
-class GetPassedArgs:
-    """
-    A decorator class that captures and stores arguments passed to a function,
-    excluding those that match the function's default values, unless they are numpy arrays.
-
-    Parameters
-    ----------
-    func : Callable
-        The function to be decorated.
-
-    Attributes
-    ----------
-    func : Callable
-        The function to be called.
-    passed_variables : Dict[str, Any]
-        A dictionary storing the names and values of passed arguments that differ
-        from the function's default values, with special handling for numpy arrays.
-
-    Methods
-    -------
-    __call__(*args: Any, **kwargs: Any) -> Any
-        Calls the decorated function and captures the arguments that were passed.
-    """
-
-    def __init__(self, func) -> None:
-        """
-        Initializes the GetPassedArgs decorator with the provided function.
-
-        Parameters
-        ----------
-        func : Callable
-            The function to be decorated.
-        """
-
-        update_wrapper(self, func)
-
-        self.func = func
-        self.passed_variables: Dict[str, Any] = {}
-
-    def __call__(self, *args: Any, **kwargs: Any) -> Any:
-        """
-        Calls the decorated function and captures the arguments that were passed,
-        excluding those that match the function's default values.
-
-        Parameters
-        ----------
-        *args : Any
-            Positional arguments to be passed to the function.
-        **kwargs : Any
-            Keyword arguments to be passed to the function.
-
-        Returns
-        -------
-        Any
-            The result of the function call.
-        """
-
-        sig = inspect.signature(self.func)
-        bound_args = sig.bind_partial(*args, **kwargs)
-        bound_args.apply_defaults()
-        self.passed_variables = {
-            k: v
-            for k, v in bound_args.arguments.items()
-            if not isinstance(v, np.ndarray)
-            and (v != sig.parameters[k].default)
-            or (
-                isinstance(v, np.ndarray) and not (v == sig.parameters[k].default).all()
-            )
-            or k in kwargs
-        }
-        return self.func(*args, **kwargs)
+# class WrapperWithAttributes(TypedDict):
+#     """
+#     A TypedDict for storing attributes related to passed variables.
+#
+#     Attributes
+#     ----------
+#     passed_variables : dict[str, Any]
+#         A dictionary mapping variable names to their corresponding passed values.
+#     """
+#
+#     passed_variables: dict[str, Any]
 
 
-def get_passed_args(f: Callable) -> Callable:
+# class GetPassedArgs:
+#     def __init__(self, func: Callable) -> None:
+#         self.func = func
+#         self.passed_variables: dict[str, Any] = {}
+#
+#         # update_wrapper(self, func)
+#         wraps(func)(self)
+#
+#     def __call__(self, *args: Any, **kwargs: Any) -> Any:
+#         print("args", args)
+#         print("kwargs", kwargs)
+#
+#         sig = inspect.signature(self.func)
+#         bound_args = sig.bind_partial(*args, **kwargs)
+#
+#         print("bound_args", bound_args)
+#         print("\n")
+#         bound_args.apply_defaults()
+#         self.passed_variables = {
+#             k: v
+#             for k, v in bound_args.arguments.items()
+#             if not isinstance(v, np.ndarray)
+#             and (v != sig.parameters[k].default)
+#             or (
+#                 isinstance(v, np.ndarray) and not (v == sig.parameters[k].default).all()
+#             )
+#             or k in kwargs
+#         }
+#         return self.func(*args, **kwargs)
+#
+
+
+def get_passed_args(f: Callable) -> None:
     """
     A decorator function that wraps the provided function with GetPassedArgs.
 
@@ -105,4 +66,108 @@ def get_passed_args(f: Callable) -> Callable:
     Callable
         The wrapped function, which captures passed arguments.
     """
-    return GetPassedArgs(f)
+    pass
+
+
+T = TypeVar("T")
+P = ParamSpec("P")
+
+
+class Command(Generic[P, T]):
+    """
+    A class that wraps a callable (function) and allows additional keyword arguments
+    to be passed when the function is called.
+
+    Attributes:
+        function (Callable[P, T]): The function to be wrapped.
+        kwargs (dict): Additional keyword arguments to be passed when calling the function.
+
+    Methods:
+        __call__(*args: P.args, **kwargs: P.kwargs) -> T:
+            Calls the wrapped function with the provided arguments and keyword arguments.
+    """
+
+    def __init__(self, function: Callable[P, T], **kwargs) -> None:
+        """
+        Initializes the Command with a function and optional keyword arguments.
+
+        Args:
+            function (Callable[P, T]): The function to wrap.
+            **kwargs: Additional keyword arguments to pass when the function is called.
+        """
+        self.function = function
+        self.kwargs = kwargs
+
+    def __call__(self, *args: P.args, **kwargs: P.kwargs) -> T:
+        """
+        Calls the wrapped function with the provided arguments and keyword arguments.
+
+        Args:
+            *args: Positional arguments to pass to the function.
+            **kwargs: Keyword arguments to pass to the function.
+
+        Returns:
+            T: The return value of the function.
+        """
+        return self.function(*args, **self.kwargs)
+
+
+# def to_command(**kwargs):
+#     """
+#     A decorator that wraps a function in a Command class, passing additional
+#     keyword arguments to the Command instance.
+#
+#     Args:
+#         **decorator_kwargs: Keyword arguments to pass to the Command class.
+#
+#     Returns:
+#         Callable: A decorator that wraps the function with Command.
+#     """
+#
+#     def wrapped(func: Callable) -> Command:
+#         wraps(func)
+#
+#         def wrapper(*args, **kwargs):
+#             return Command(func, **kwargs)
+#
+#         return wrapper
+#
+#     return wrapped
+
+
+def to_command(**decorator_kwargs):
+    """
+    A decorator that wraps a function in a Command class, passing additional
+    keyword arguments to the Command instance.
+
+    Args:
+        **decorator_kwargs: Keyword arguments to pass to the Command class.
+
+    Returns:
+        Callable: A decorator that wraps the function with Command.
+    """
+
+    def wrapped(func: Callable) -> Callable:
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            return Command(func, **decorator_kwargs)
+
+        return wrapper
+
+    return wrapped
+
+
+# In the class that sphinx should be documenting:
+@to_command(name="foo", description="bar")
+def foo_bar(self, *, name: str, description: str) -> None:
+    """
+    A method that does something with a name and a description.
+
+    Args:
+        name (str): The name to process.
+        description (str): The description associated with the name.
+
+    Returns:
+        None
+    """
+    pass

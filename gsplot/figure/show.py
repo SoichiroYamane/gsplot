@@ -13,7 +13,7 @@ class Show:
     ----------
     name : str, optional
         The base name for the saved figure files (default is "gsplot").
-    ft_list : List[str], optional
+    ft_list : list[str], optional
         A list of file formats to save the figure (default is ["png", "pdf"]).
     dpi : float, optional
         The resolution in dots per inch for the saved figures (default is 600).
@@ -28,7 +28,7 @@ class Show:
     ----------
     name : str
         The base name for the saved figure files.
-    ft_list : List[str]
+    ft_list : list[str]
         The list of file formats to save the figure.
     dpi : float
         The resolution in dots per inch for the saved figures.
@@ -52,7 +52,7 @@ class Show:
     def __init__(
         self,
         name: str = "gsplot",
-        ft_list: List[str] = ["png", "pdf"],
+        ft_list: list[str] = ["png", "pdf"],
         dpi: float = 600,
         show: bool = True,
         *args: Any,
@@ -60,7 +60,7 @@ class Show:
     ):
 
         self.name: str = name
-        self.ft_list: List[str] = ft_list
+        self.ft_list: list[str] = ft_list
         self.dpi: float = dpi
         self.show: bool = show
         self.args: Any = args
@@ -90,7 +90,7 @@ class Show:
 
         if self._get_store():
             # save figure
-            fname_list: List[str] = [f"{self.name}.{ft}" for ft in self.ft_list]
+            fname_list: list[str] = [f"{self.name}.{ft}" for ft in self.ft_list]
 
             try:
                 for fname in fname_list:
@@ -123,7 +123,7 @@ class Show:
 
 def show(
     fname: str = "gsplot",
-    ft_list: List[str] = ["png", "pdf"],
+    ft_list: list[str] = ["png", "pdf"],
     dpi: float = 600,
     show: bool = True,
     *args: Any,
@@ -139,7 +139,7 @@ def show(
     ----------
     fname : str, optional
         The base name for the saved figure files (default is "gsplot").
-    ft_list : List[str], optional
+    ft_list : list[str], optional
         A list of file formats to save the figure (default is ["png", "pdf"]).
     dpi : float, optional
         The resolution in dots per inch for the saved figures (default is 600).

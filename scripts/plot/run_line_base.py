@@ -1,44 +1,44 @@
 import gsplot as gs
 
-gs.axes(store=False, mosaic="A")
+axes = gs.axes(store=False, mosaic="A")
 gs.line(
-    axis_index=0,
-    xdata=[1, 2, 3],
-    ydata=[1, 1, 1],
+    0,
+    x=[1, 2, 3],
+    y=[1, 1, 1],
+    label="line 1",
+    # markersize=23,
+    # ms=17,
+)
+
+
+gs.line(
+    0,
+    x=[2, 3, 4],
+    y=[2, 2, 2],
 )
 
 gs.line(
-    axis_index=0,
-    xdata=[2, 3, 4],
-    ydata=[2, 2, 2],
+    0,
+    x=[3, 4, 5],
+    y=[3, 3, 3],
 )
 
 gs.line(
-    axis_index=0,
-    xdata=[3, 4, 5],
-    ydata=[3, 3, 3],
+    0,
+    x=[4, 5, 6],
+    y=[4, 4, 4],
+)
+
+gs.line(0, x=[5, 6, 7], y=[5, 5, 5])
+
+gs.line(
+    0,
+    x=[6, 7, 8],
+    y=[6, 6, 6],
 )
 
 gs.line(
-    axis_index=0,
-    xdata=[4, 5, 6],
-    ydata=[4, 4, 4],
-)
-
-gs.line(
-    axis_index=0,
-    xdata=[5, 6, 7],
-    ydata=[5, 5, 5],
-)
-
-gs.line(
-    axis_index=0,
-    xdata=[6, 7, 8],
-    ydata=[6, 6, 6],
-)
-
-gs.line(
-    axis_index=0,
-    xdata=[7, 8, 9],
-    ydata=[7, 7, 7],
+    0,
+    x=[7, 8, 9],
+    y=[7, 7, 7],
 )

@@ -1,13 +1,19 @@
 from enum import Enum
-from typing import Dict, List, Tuple, Any
+from typing import Dict, List, Tuple, Any, TypeVar, Generic
+from matplotlib.typing import HashableList
+from collections.abc import Hashable
+
 
 import matplotlib.pyplot as plt
 from matplotlib.axes import Axes
 
 from .axes_base import AxesSingleton, AxesRangeSingleton
 from .store import StoreSingleton
-from ..base.base import AttributeSetter
+from ..base.base import get_passed_params, ParamsGetter, CreateClassParams
+from ..config.config import Config
 from ..plot.line_base import NumLines
+
+_T = TypeVar("_T")
 
 
 class Unit(Enum):
@@ -41,7 +47,7 @@ class UnitConv:
 
     Attributes
     ----------
-    conversion_factors : Dict[Unit, float]
+    conversion_factors : dict[Unit, float]
         A dictionary mapping units to their corresponding conversion factors relative to inches.
 
     Methods
@@ -55,7 +61,7 @@ class UnitConv:
         Initializes the UnitConv class with predefined conversion factors.
         """
 
-        self.conversion_factors: Dict[Unit, float] = {
+        self.conversion_factors: dict[Unit, float] = {
             Unit.MM: 1 / 25.4,
             Unit.CM: 1 / 2.54,
             Unit.IN: 1,
@@ -89,7 +95,7 @@ class UnitConv:
         return value * self.conversion_factors[unit]
 
 
-class AxesHandler:
+class AxesHandler(Generic[_T]):
     """
     A class for handling the creation and management of matplotlib Axes objects,
     including configuration of figure size, units, and layout using mosaic.
@@ -98,7 +104,7 @@ class AxesHandler:
     ----------
     store : bool, optional
         Whether to store the current figure (default is False).
-    size : List[int], optional
+    size : list[int], optional
         The size of the figure in the specified unit (default is [5, 5]).
     unit : str, optional
         The unit of the figure size (default is "in"). Must be one of 'mm', 'cm', 'in', 'pt'.
@@ -117,7 +123,7 @@ class AxesHandler:
     ----------
     store : bool
         Whether to store the current figure.
-    size : List[int]
+    size : list[int]
         The size of the figure in the specified unit.
     unit : str
         The unit of the figure size.
@@ -140,7 +146,7 @@ class AxesHandler:
 
     Methods
     -------
-    get_axes -> List[Axes]
+    get_axes -> list[Axes]
         Returns the list of Axes objects created in the current figure.
     _open_figure() -> None
         Opens a new figure, configures its size, and arranges subplots based on the mosaic string.
@@ -149,25 +155,24 @@ class AxesHandler:
     def __init__(
         self,
         store: bool = False,
-        size: List[int] = [5, 5],
+        size: list[int | float] = [5, 5],
         unit: str = "in",
-        mosaic: str = "A",
+        mosaic: str | list[HashableList[_T]] | list[HashableList[Hashable]] = "A",
         clear: bool = True,
         ion: bool = False,
         *args: Any,
         **kwargs: Any,
     ) -> None:
-        self.store: bool = store
-        self.size: List[int] = size
+        self.store = store
+        self.size: list[int | float] = size
         self.unit: str = unit
-        self.mosaic: str = mosaic
+        self.mosaic: str | list[HashableList[_T]] | list[HashableList[Hashable]] = (
+            mosaic
+        )
         self.clear: bool = clear
         self.ion: bool = ion
         self.args: Any = args
         self.kwargs: Any = kwargs
-
-        attributer = AttributeSetter()
-        self.kwargs = attributer.set_attributes(self, locals(), key="axes")
 
         self._store_class = StoreSingleton()
         self._store_class.store = self.store
@@ -183,13 +188,13 @@ class AxesHandler:
         AxesRangeSingleton().reset(self.__axes.axes)
 
     @property
-    def get_axes(self) -> List[Axes]:
+    def get_axes(self) -> list[Axes]:
         """
         Returns the list of Axes objects created in the current figure.
 
         Returns
         -------
-        List[Axes]
+        list[Axes]
             A list of Axes objects in the current figure.
         """
         return self.__axes.axes
@@ -213,14 +218,14 @@ class AxesHandler:
         if len(self.size) != 2:
             raise ValueError("Size must contain exactly two elements.")
 
-        conv_size: Tuple[float, float] = (
+        conv_size: tuple[float, float] = (
             self.unit_conv.convert(self.size[0], self.unit_enum),
             self.unit_conv.convert(self.size[1], self.unit_enum),
         )
         plt.gcf().set_size_inches(*conv_size, *self.args, **self.kwargs)
 
         if self.mosaic != "":
-            axes: List[Any] = [
+            axes: list[Any] = [
                 p[1] for p in (sorted(plt.gcf().subplot_mosaic(self.mosaic).items()))
             ]
             self.__axes.axes = axes
@@ -231,24 +236,23 @@ class AxesHandler:
             raise ValueError("Mosaic must be specified.")
 
 
+@get_passed_params()
 def axes(
-    store: bool = False,
-    size: List[int] = [5, 5],
-    unit: str = "in",
-    mosaic: str = "A",
-    clear: bool = True,
-    ion: bool = False,
-    *args: Any,
-    **kwargs: Any,
-) -> List[Axes]:
+    store=False,
+    size=[5, 5],
+    unit="in",
+    mosaic="A",
+    clear=True,
+    ion=False,
+    *args,
+    **kwargs,
+):
     """
     Creates and returns a list of matplotlib Axes objects based on the provided configuration.
 
     Parameters
     ----------
-    store : bool, optional
-        Whether to store the current figure (default is False).
-    size : List[int], optional
+    size : list[int], optional
         The size of the figure in the specified unit (default is [5, 5]).
     unit : str, optional
         The unit of the figure size (default is "in"). Must be one of 'mm', 'cm', 'in', 'pt'.
@@ -258,14 +262,12 @@ def axes(
         Whether to clear the current figure before creating a new one (default is True).
     ion : bool, optional
         Whether to turn on interactive mode in matplotlib (default is False).
-    *args : Any
-        Additional positional arguments for figure creation.
     **kwargs : Any
         Additional keyword arguments for figure creation.
 
     Returns
     -------
-    List[Axes]
+    list[Axes]
         A list of matplotlib Axes objects created based on the specified configuration.
 
     Examples
@@ -273,15 +275,18 @@ def axes(
     >>> import gsplot as gs
     >>> axes = gs.axes(size=[6, 4], mosaic="AB;CD")
     """
-    __axes_handler = AxesHandler(
-        store,
-        size,
-        unit,
-        mosaic,
-        clear,
-        ion,
-        *args,
-        **kwargs,
-    )
 
+    passed_params: dict[str, Any] = ParamsGetter("passed_params").get_params()
+    class_params = CreateClassParams(passed_params).get_class_params()
+
+    __axes_handler = AxesHandler(
+        class_params["store"],
+        class_params["size"],
+        class_params["unit"],
+        class_params["mosaic"],
+        class_params["clear"],
+        class_params["ion"],
+        *class_params["args"],
+        **class_params["kwargs"],
+    )
     return __axes_handler.get_axes

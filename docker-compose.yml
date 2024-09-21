@@ -11,3 +11,5 @@ services:
       - QT_X11_NO_MITSHM=1
     volumes:
       - .:/root/opt
+    ports:
+      - "8000:8000"

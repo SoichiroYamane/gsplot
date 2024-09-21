@@ -20,9 +20,9 @@ class Legend:
     ----------
     axis_index : int
         Index of the axis to apply the legend to.
-    handles : List[Any], optional
+    handles : list[Any], optional
         Custom legend handles to use, by default None.
-    labels : List[str], optional
+    labels : list[str], optional
         Custom legend labels to use, by default None.
     handlers : dict, optional
         Custom legend handlers to use, by default None.
@@ -35,15 +35,15 @@ class Legend:
     def __init__(
         self,
         axis_index: int,
-        handles: List[Any] | None = None,
-        labels: List[str] | None = None,
+        handles: list[Any] | None = None,
+        labels: list[str] | None = None,
         handlers: dict | None = None,
         *args: Any,
         **kwargs: Any
     ):
         self.axis_index: int = axis_index
-        self.handles: List[Any] | None = handles
-        self.labels: List[str] | None = labels
+        self.handles: list[Any] | None = handles
+        self.labels: list[str] | None = labels
         self.handlers: dict | None = handlers
         self.args: Any = args
         self.kwargs: Any = kwargs
@@ -52,18 +52,18 @@ class Legend:
         self.kwargs = attributer.set_attributes(self, locals(), key="legend")
 
         self.__axes: AxesSingleton = AxesSingleton()
-        self._axes: List[Axes] = self.__axes.axes
+        self._axes: list[Axes] = self.__axes.axes
         self._axis: Axes = self._axes[self.axis_index]
 
     def get_legend_handlers(
         self,
-    ) -> Tuple[List[Artist], List[str], Dict[Artist, HandlerBase]]:
+    ) -> tuple[list[Artist], list[str], dict[Artist, HandlerBase]]:
         """
         Retrieve the handles, labels, and handler map for the legend.
 
         Returns
         -------
-        Tuple[List[Artist], List[str], Dict[Artist, HandlerBase]]
+        tuple[list[Artist], list[str], dict[Artist, HandlerBase]]
             The handles, labels, and handler map for the legend.
         """
 
@@ -146,8 +146,8 @@ def legend(axis_index: int, *args: Any, **kwargs: Any) -> None:
 
 def legend_handlers(
     axis_index: int,
-    handles: List[Any] | None = None,
-    labels: List[str] | None = None,
+    handles: list[Any] | None = None,
+    labels: list[str] | None = None,
     handlers: dict | None = None,
     *args: Any,
     **kwargs: Any
@@ -159,9 +159,9 @@ def legend_handlers(
     ----------
     axis_index : int
         Index of the axis to apply the legend to.
-    handles : List[Any], optional
+    handles : list[Any], optional
         Custom legend handles to use, by default None.
-    labels : List[str], optional
+    labels : list[str], optional
         Custom legend labels to use, by default None.
     handlers : dict, optional
         Custom legend handlers to use, by default None.
@@ -180,8 +180,8 @@ def legend_handlers(
 
 def legend_reverse(
     axis_index: int,
-    handles: List[Any] | None = None,
-    labels: List[str] | None = None,
+    handles: list[Any] | None = None,
+    labels: list[str] | None = None,
     handlers: dict | None = None,
     *args: Any,
     **kwargs: Any
@@ -193,9 +193,9 @@ def legend_reverse(
     ----------
     axis_index : int
         Index of the axis to apply the legend to.
-    handles : List[Any], optional
+    handles : list[Any], optional
         Custom legend handles to use, by default None.
-    labels : List[str], optional
+    labels : list[str], optional
         Custom legend labels to use, by default None.
     handlers : dict, optional
         Custom legend handlers to use, by default None.
@@ -225,7 +225,7 @@ def legend_get_handlers(
 
     Returns
     -------
-    Tuple[List[Artist], List[str], Dict[Artist, HandlerBase]]
+    tuple[list[Artist], list[str], dict[Artist, HandlerBase]]
         The handles, labels, and handler map for the legend.
     """
 

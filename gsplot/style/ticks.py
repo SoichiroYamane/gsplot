@@ -32,7 +32,7 @@ class MinorTicks:
 
     def __init__(self) -> None:
         self.__axes: AxesSingleton = AxesSingleton()
-        self._axes: List[Axes] = self.__axes.axes
+        self._axes: list[Axes] = self.__axes.axes
 
     def minor_ticks_off(
         self,

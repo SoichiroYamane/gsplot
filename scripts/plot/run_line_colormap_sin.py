@@ -2,7 +2,7 @@ import gsplot as gs
 import numpy as np
 
 
-xdata = np.linspace(0, 4 * np.pi, 10)
+xdata = np.linspace(0, 4 * np.pi, 1000)
 ydata = np.sin(xdata)
 
 

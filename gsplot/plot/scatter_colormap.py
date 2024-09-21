@@ -2,7 +2,7 @@ from typing import List, Union, Any, Dict
 import numpy as np
 from matplotlib.axes import Axes
 
-from ..params.params import Params
+from ..config.config import Config
 from ..base.base import AttributeSetter
 from ..base.base_passed_args import get_passed_args
 from ..figure.axes import AxesSingleton, AxesRangeSingleton
@@ -20,11 +20,11 @@ class ScatterColormap:
     ----------
     axis_index : int
         The index of the axis on which to plot the scatter plot.
-    xdata : Union[List[float, int], np.ndarray]
+    xdata : Union[list[float, int], np.ndarray]
         The data for the x-axis.
-    ydata : Union[List[float, int], np.ndarray]
+    ydata : Union[list[float, int], np.ndarray]
         The data for the y-axis.
-    cmapdata : Union[List[float, int], np.ndarray]
+    cmapdata : Union[list[float, int], np.ndarray]
         The data to be used for the colormap.
     size : Union[float, int], optional
         The size of the scatter points (default is 1).
@@ -38,7 +38,7 @@ class ScatterColormap:
         The transparency of the scatter points (default is 1).
     label : str, optional
         The label for the scatter plot (default is None).
-    passed_variables : Dict[str, Any], optional
+    passed_variables : dict[str, Any], optional
         A dictionary of additional variables passed to the scatter plot (default is an empty dictionary).
     *args : Any
         Additional positional arguments passed to the matplotlib scatter function.
@@ -54,30 +54,30 @@ class ScatterColormap:
     def __init__(
         self,
         axis_index: int,
-        xdata: Union[List[float | int], np.ndarray],
-        ydata: Union[List[float | int], np.ndarray],
-        cmapdata: Union[List[float | int], np.ndarray],
+        xdata: Union[list[float | int], np.ndarray],
+        ydata: Union[list[float | int], np.ndarray],
+        cmapdata: Union[list[float | int], np.ndarray],
         size: float | int = 1,
         cmap: str = "viridis",
         vmin: float | int = 0,
         vmax: float | int = 1,
         alpha: float | int = 1,
         label: str | None = None,
-        passed_variables: Dict[str, Any] = {},
+        passed_variables: dict[str, Any] = {},
         *args: Any,
         **kwargs: Any,
     ) -> None:
         self.axis_index: int = axis_index
-        self._xdata: Union[List[float | int], np.ndarray] = xdata
-        self._ydata: Union[List[float | int], np.ndarray] = ydata
-        self._cmapdata: Union[List[float | int], np.ndarray] = cmapdata
+        self._xdata: Union[list[float | int], np.ndarray] = xdata
+        self._ydata: Union[list[float | int], np.ndarray] = ydata
+        self._cmapdata: Union[list[float | int], np.ndarray] = cmapdata
         self.size: float | int = size
         self.cmap: str = cmap
         self._vmin: float | int = vmin
         self._vmax: float | int = vmax
         self.alpha: float | int = alpha
         self.label: str | None = label
-        self.passed_variables: Dict[str, Any] = passed_variables
+        self.passed_variables: dict[str, Any] = passed_variables
         self.args: Any = args
         self.kwargs: Any = kwargs
 
@@ -97,7 +97,7 @@ class ScatterColormap:
         self._handle_kwargs()
 
         self.__axes: AxesSingleton = AxesSingleton()
-        self._axes: List[Axes] = self.__axes.axes
+        self._axes: list[Axes] = self.__axes.axes
         self.axis: Axes = self._axes[self.axis_index]
 
     # TODO: Move this function to base directory
@@ -118,7 +118,7 @@ class ScatterColormap:
         # ╭──────────────────────────────────────────────────────────╮
         # │ check duplicate keys in config file                      │
         # ╰──────────────────────────────────────────────────────────╯
-        params = Params().get_item("scatter_colormap")
+        params = Config().get_config_entry_option("scatter_colormap")
 
         for alias, key in alias_map.items():
             if alias in params:
@@ -243,12 +243,12 @@ class ScatterColormap:
             ).add_legend_colormap()
 
 
-@get_passed_args
+# @get_passed_args
 def scatter_colormap(
     axis_index: int,
-    xdata: Union[List[float | int], np.ndarray],
-    ydata: Union[List[float | int], np.ndarray],
-    cmapdata: Union[List[float | int], np.ndarray],
+    xdata: Union[list[float | int], np.ndarray],
+    ydata: Union[list[float | int], np.ndarray],
+    cmapdata: Union[list[float | int], np.ndarray],
     size: float | int = 1,
     cmap: str = "viridis",
     vmin: float | int = 0,
@@ -270,11 +270,11 @@ def scatter_colormap(
     ----------
     axis_index : int
         The index of the axis on which to plot the scatter plot.
-    xdata : Union[List[float, int], np.ndarray]
+    xdata : Union[list[float, int], np.ndarray]
         The data for the x-axis.
-    ydata : Union[List[float, int], np.ndarray]
+    ydata : Union[list[float, int], np.ndarray]
         The data for the y-axis.
-    cmapdata : Union[List[float, int], np.ndarray]
+    cmapdata : Union[list[float, int], np.ndarray]
         The data to be used for the colormap.
     size : Union[float, int], optional
         The size of the scatter points (default is 1).
