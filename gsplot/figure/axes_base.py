@@ -116,6 +116,55 @@ class AxesSingleton:
             raise IndexError(error_message)
 
 
+class AxesResolver:
+    def __init__(self, axis_target: int | Axes) -> None:
+        self.axis_target: int | Axes = axis_target
+
+        self._axis_index: int | None = None
+        self._axis: Axes | None = None
+
+        self._resolve_type()
+
+    def _resolve_type(self) -> None:
+        def ordinal_suffix(n: int) -> str:
+            if 11 <= n % 100 <= 13:
+                suffix = "th"
+            else:
+                suffix = {1: "st", 2: "nd", 3: "rd"}.get(n % 10, "th")
+            return f"{n}{suffix}"
+
+        if isinstance(self.axis_target, int):
+            self._axis_index = self.axis_target
+            axes = plt.gcf().axes
+            try:
+                self._axis = axes[self._axis_index]
+            except IndexError:
+                error_message = f"Axes out of range: {self._axis_index} => Number of axes: {len(axes)}, but requested {ordinal_suffix(self._axis_index + 1)} axis."
+                raise IndexError(error_message)
+
+        elif isinstance(self.axis_target, Axes):
+            self._axis = self.axis_target
+            self._axis_index = plt.gcf().axes.index(self.axis_target)
+        else:
+            raise ValueError(
+                "Invalid axis target. Please provide an integer or Axes object."
+            )
+
+    @property
+    def axis_index(self) -> int:
+        if isinstance(self._axis_index, int):
+            return self._axis_index
+        else:
+            raise ValueError("Axis index not resolved. Please check the AxisResolver")
+
+    @property
+    def axis(self) -> Axes:
+        if isinstance(self._axis, Axes):
+            return self._axis
+        else:
+            raise ValueError("Axis not resolced. Please check the AxisResolver")
+
+
 class AxesRangeSingleton:
     """
     Singleton class to manage a shared list of axis ranges (x and y ranges) for matplotlib Axes.
@@ -396,9 +445,7 @@ class AxisLayout:
 
     def __init__(self, axis_index: int) -> None:
         self.axis_index = axis_index
-        self.__axes: AxesSingleton = AxesSingleton()
-        self._axes: list[Axes] = self.__axes.axes
-        self.axis: Axes = self.__axes.get_axis(self.axis_index)
+        self.axis: Axes = AxesResolver(self.axis_index).axis
 
         self.fig_size: np.ndarray = FigureLayout().get_figure_size()
 
@@ -463,42 +510,10 @@ class AxisLayout:
 
 
 class AxisRangeController:
-    """
-    A class for controlling and setting the x and y ranges of a specific matplotlib Axes object.
-
-    Parameters
-    ----------
-    axis_index : int
-        The index of the axis in the list of Axes managed by `AxesSingleton`.
-
-    Attributes
-    ----------
-    axis_index : int
-        The index of the axis in the list of Axes.
-    __axes : AxesSingleton
-        The singleton instance managing all Axes objects.
-    _axes : list[Axes]
-        The list of Axes objects managed by the singleton.
-    axis : Axes
-        The specific Axes object corresponding to `axis_index`.
-
-    Methods
-    -------
-    get_axis_xrange() -> np.ndarray
-        Returns the x-axis range of the axis.
-    get_axis_yrange() -> np.ndarray
-        Returns the y-axis range of the axis.
-    set_axis_xrange(xrange: np.ndarray) -> None
-        Sets the x-axis range of the axis.
-    set_axis_yrange(yrange: np.ndarray) -> None
-        Sets the y-axis range of the axis.
-    """
 
     def __init__(self, axis_index: int):
         self.axis_index = axis_index
-        self.__axes: AxesSingleton = AxesSingleton()
-        self._axes: list[Axes] = self.__axes.axes
-        self.axis: Axes = self.__axes.get_axis(self.axis_index)
+        self.axis: Axes = AxesResolver(self.axis_index).axis
 
     def get_axis_xrange(self) -> np.ndarray:
         """
@@ -554,38 +569,11 @@ class AxisRangeController:
 
 
 class AxisRangeManager:
-    """
-    A class for managing the state of an axis, particularly whether it has been initialized with data.
-
-    Parameters
-    ----------
-    axis_index : int
-        The index of the axis in the list of Axes managed by `AxesSingleton`.
-
-    Attributes
-    ----------
-    axis_index : int
-        The index of the axis in the list of Axes.
-    __axes : AxesSingleton
-        The singleton instance managing all Axes objects.
-    _axes : list[Axes]
-        The list of Axes objects managed by the singleton.
-    axis : Axes
-        The specific Axes object corresponding to `axis_index`.
-
-    Methods
-    -------
-    is_init_axis() -> bool
-        Determines whether the axis has been initialized with data.
-    """
 
     def __init__(self, axis_index: int):
         self.axis_index = axis_index
 
-        self.__axes: AxesSingleton = AxesSingleton()
-        self._axes: list[Axes] = self.__axes.axes
-
-        self.axis: Axes = self.__axes.get_axis(self.axis_index)
+        self.axis: Axes = AxesResolver(self.axis_index).axis
 
     def is_init_axis(self) -> bool:
         """
@@ -605,53 +593,13 @@ class AxisRangeManager:
 
 
 class AxisRangeHandler:
-    """
-    A class for handling the calculation and updating of axis ranges based on provided data.
-
-    Parameters
-    ----------
-    axis_index : int
-        The index of the axis in the list of Axes managed by `AxesSingleton`.
-    xdata : np.ndarray
-        The data to be plotted on the x-axis.
-    ydata : np.ndarray
-        The data to be plotted on the y-axis.
-
-    Attributes
-    ----------
-    axis_index : int
-        The index of the axis in the list of Axes.
-    xdata : np.ndarray
-        The data to be plotted on the x-axis.
-    ydata : np.ndarray
-        The data to be plotted on the y-axis.
-    __axes : AxesSingleton
-        The singleton instance managing all Axes objects.
-    _axes : list[Axes]
-        The list of Axes objects managed by the singleton.
-    axis : Axes
-        The specific Axes object corresponding to `axis_index`.
-    _is_init_axis : bool
-        A flag indicating whether the axis has been initialized with data.
-
-    Methods
-    -------
-    _get_axis_range() -> Optional[tuple[Union[np.ndarray, None], Union[np.ndarray, None]]]
-        Retrieves the current x and y ranges of the axis if it is initialized.
-    _calculate_data_range(data: np.ndarray) -> np.ndarray
-        Calculates the minimum and maximum values of the provided data.
-    get_new_axis_range() -> tuple[Union[np.ndarray, None], Union[np.ndarray, None]]
-        Determines the new x and y ranges for the axis based on the existing range and the provided data.
-    """
 
     def __init__(self, axis_index: int, xdata: np.ndarray, ydata: np.ndarray):
         self.axis_index = axis_index
         self.xdata = xdata
         self.ydata = ydata
 
-        self.__axes: AxesSingleton = AxesSingleton()
-        self._axes: list[Axes] = self.__axes.axes
-        self.axis: Axes = self.__axes.get_axis(self.axis_index)
+        self.axis: Axes = AxesResolver(self.axis_index).axis
 
         self._is_init_axis: bool = AxisRangeManager(self.axis_index).is_init_axis()
 
@@ -737,34 +685,34 @@ class AxisRangeHandler:
         return new_xrange, new_yrange
 
 
-class AxisTargetHandler:
-    def __init__(self, axis_target: int | Axes):
-        self.axis_target: int | Axes = axis_target
-        self.axes = self.get_axes()
-
-    def get_figure(self):
-        fig = plt.gcf()
-        return fig
-
-    def get_axes(self):
-        axes = self.get_figure().axes
-        return axes
-
-    def get_axis(self):
-        if type(self.axis_target) is int:
-            __axes: AxesSingleton = AxesSingleton()
-            axis: Axes = __axes.get_axis(self.axis_target)
-            return axis
-
-        elif type(self.axis_target) is Axes:
-            axis = self.axis_target
-            return axis
-
-    def get_idx_axis(self):
-        if type(self.axis_target) is int:
-            return self.axis_target
-
-        elif type(self.axis_target) is Axes:
-            axes = self.get_axes()
-            idx = axes.index(self.axis_target)
-            return idx
+# class AxisTargetHandler:
+#     def __init__(self, axis_target: int | Axes):
+#         self.axis_target: int | Axes = axis_target
+#         self.axes = self.get_axes()
+#
+#     def get_figure(self):
+#         fig = plt.gcf()
+#         return fig
+#
+#     def get_axes(self):
+#         axes = self.get_figure().axes
+#         return axes
+#
+#     def get_axis(self):
+#         if type(self.axis_target) is int:
+#             __axes: AxesSingleton = AxesSingleton()
+#             axis: Axes = __axes.get_axis(self.axis_target)
+#             return axis
+#
+#         elif type(self.axis_target) is Axes:
+#             axis = self.axis_target
+#             return axis
+#
+#     def get_idx_axis(self):
+#         if type(self.axis_target) is int:
+#             return self.axis_target
+#
+#         elif type(self.axis_target) is Axes:
+#             axes = self.get_axes()
+#             idx = axes.index(self.axis_target)
+#             return idx

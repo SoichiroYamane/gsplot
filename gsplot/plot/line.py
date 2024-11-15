@@ -10,7 +10,7 @@ import time
 from ..config.config import Config
 from ..base.base import get_passed_params, ParamsGetter, CreateClassParams
 from ..base.base_alias_validator import AliasValidator
-from ..figure.axes_base import AxesSingleton, AxesRangeSingleton
+from ..figure.axes_base import AxesResolver, AxesRangeSingleton
 from .line_base import NumLines
 from .line_base import AutoColor
 
@@ -115,19 +115,15 @@ class Line:
         self.x: np.ndarray = np.array(self._x)
         self.y: np.ndarray = np.array(self._y)
 
+        self.axis_index: int = AxesResolver(axis_target).axis_index
+        self.axis: Axes = AxesResolver(axis_target).axis
+        print(self.axis_index)
+        print(self.axis)
+
         self._set_colors()
 
-        self.__axes = AxesSingleton()
-        self._axis = self.__axes.axes
-
-        # if not 0 <= self.axis_index < len(self._axis):
-        #     raise IndexError(
-        #         f"axis_index {self.axis_index} is out of range. Valid axis indices are from 0 to {len(self._axis)-1}."
-        #     )
-        self.axis = self._axis[self.axis_target]
-
     def _set_colors(self) -> None:
-        cycle_color: Union[np.ndarray, str] = AutoColor(self.axis_target).get_color()
+        cycle_color: Union[np.ndarray, str] = AutoColor(self.axis_index).get_color()
         if isinstance(cycle_color, np.ndarray):
             cycle_color = colors.to_hex(
                 tuple(cycle_color)

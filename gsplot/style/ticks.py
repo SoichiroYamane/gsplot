@@ -2,8 +2,7 @@ from typing import List
 from matplotlib.axes import Axes
 from matplotlib.ticker import NullLocator
 import matplotlib.ticker as plticker
-
-from ..figure.axes import AxesSingleton
+import matplotlib.pyplot as plt
 
 
 class MinorTicks:
@@ -31,8 +30,7 @@ class MinorTicks:
     """
 
     def __init__(self) -> None:
-        self.__axes: AxesSingleton = AxesSingleton()
-        self._axes: list[Axes] = self.__axes.axes
+        self._axes: list[Axes] = plt.gcf().axes
 
     def minor_ticks_off(
         self,

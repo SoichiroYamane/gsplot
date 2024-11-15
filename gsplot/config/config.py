@@ -231,7 +231,13 @@ class ConfigLoad:
         """
 
         config_dict: dict[str, Any] = self.get_config()
-        config_rcParams: dict[str, Any] = config_dict["rcParams"]
+
+        if "rcParams" in config_dict:
+            config_rcParams: dict[str, Any] = config_dict["rcParams"]
+            backend = config_rcParams.pop("backends", None)
+            if backend:
+                mpl.use(backend)
+            rcParams.update(config_rcParams)
 
         # if "backends" in config_rcParams:
         #     backend = config_rcParams["backends"]
@@ -241,11 +247,6 @@ class ConfigLoad:
         #     if key != "backends":
         #         rcParams[key] = config_rcParams[key]
         #
-        backend = config_rcParams.pop("backends", None)
-        if backend:
-            mpl.use(backend)
-
-        rcParams.update(config_rcParams)
 
     def get_config(self) -> dict[str, Any]:
         try:

@@ -1,21 +1,61 @@
-from typing import cast, List, Optional, Tuple, Any
+from typing import cast, List, Optional, Tuple, Callable, Any, Literal
+
+from numpy.typing import ArrayLike
 import matplotlib.pyplot as plt
 import matplotlib.ticker as plticker
 import numpy as np
 from matplotlib.backends.backend_agg import FigureCanvasAgg
+from matplotlib.figure import Figure
 from matplotlib.axes import Axes
 from matplotlib.transforms import Bbox
 from ..base.base import AttributeSetter
 from ..figure.axes_base import (
-    AxesSingleton,
     AxisRangeController,
     AxesRangeSingleton,
     AxisRangeManager,
 )
 from .ticks import MinorTicks
 
+import warnings
+from functools import wraps
 
-class AddIndexToAxes:
+
+class FuncOrderManager:
+    def __init__(
+        self,
+    ) -> None:
+        self.last_called: str | None = None
+        self.rules: dict = {}
+
+    def add_rule(self, func_a: str, func_b: str, warning_message: str) -> None:
+        self.rules[(func_b, func_a)] = warning_message
+
+    def track(self, func_name: str) -> None:
+        print(func_name)
+        if self.last_called and (self.last_called, func_name) in self.rules:
+            warnings.warn(self.rules[(self.last_called, func_name)])
+        self.last_called = func_name
+
+
+order_manager = FuncOrderManager()
+# !TODO: modify the warning
+order_manager.add_rule(
+    "label", "label_add_index", "Label should be called before track_order"
+)
+
+
+def track_order(func: Callable) -> Callable:
+
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        func_name = func.__name__
+        order_manager.track(func_name)
+        return func(*args, **kwargs)
+
+    return wrapper
+
+
+class LabelAddIndex:
     """
     A class to add index labels to matplotlib axes.
 
@@ -29,9 +69,82 @@ class AddIndexToAxes:
         Adds index labels to all axes in the current figure.
     """
 
-    def __init__(self) -> None:
-        self.__axes: AxesSingleton = AxesSingleton()
-        self._axes: list[Axes] = self.__axes.axes
+    def __init__(
+        self,
+        position: Literal["in", "out", "corner"] = "out",
+        x_offset: float = 0,
+        y_offset: float = 0,
+        ha: str = "center",
+        va: str = "top",
+        fontsize: str | float = "large",
+        *args: Any,
+        **kwargs: Any,
+    ) -> None:
+        self.position = position
+        self.x_offset = x_offset
+        self.y_offset = y_offset
+        self.ha = ha
+        self.va = va
+        self.fontsize = fontsize
+
+        self.args = args
+        self.kwargs = kwargs
+
+        self.fig: Figure = plt.gcf()
+        self._axes: list[Axes] = plt.gcf().axes
+
+        self.renderer = cast(FigureCanvasAgg, self.fig.canvas).get_renderer()
+
+        self.fig_width, self.fig_height = (
+            self.fig.bbox.bounds[2],
+            self.fig.bbox.bounds[3],
+        )
+        self.canvas_width, self.canvas_height = self.fig.canvas.get_width_height()
+
+        # To convert from device coordinates to figure coordinates
+        self.normalization_factors = np.array(
+            [self.fig_width, self.fig_height, self.fig_width, self.fig_height]
+        )
+
+    def _get_render_position(self, axis: Axes) -> tuple[float, float] | None:
+        bbox: Bbox | None = None
+        PADDING_X: float = 0
+        PADDING_Y: float = 0
+
+        if self.position == "out":
+            # Coordinate: device coordinates
+            bbox = axis.get_tightbbox(self.renderer)
+            PADDING_X, PADDING_Y = 0, -5
+        elif self.position == "in":
+            # Coordinate: device coordinates
+            bbox = axis.get_window_extent(self.renderer)
+            PADDING_X, PADDING_Y = 30, -30
+        elif self.position == "corner":
+            bbox = axis.get_window_extent(self.renderer)
+        else:
+            raise ValueError(
+                f"Invalid position: {self.position}, must be 'in', 'out', or 'corner'"
+            )
+
+        # Ensure that padding does not depend on the figure size
+        PADDING_X = PADDING_X / self.canvas_width
+        PADDING_Y = PADDING_Y / self.canvas_height
+
+        if bbox is None:
+            print(f"No bounding box available for the axis. axis: {axis}")
+            return None
+
+        # Calculate the axis bounds in figure coordinates
+        axis_bounds_on_fig = np.array(bbox.bounds) / self.normalization_factors
+
+        x0 = axis_bounds_on_fig[0]
+        y0 = axis_bounds_on_fig[1]
+        width = axis_bounds_on_fig[2]
+        height = axis_bounds_on_fig[3]
+
+        x = x0 + self.x_offset + PADDING_X
+        y = y0 + height + self.y_offset + PADDING_Y
+        return x, y
 
     def add_index(self) -> None:
         """
@@ -46,32 +159,36 @@ class AddIndexToAxes:
         """
 
         for i, axis in enumerate(self._axes):
-            renderer = cast(FigureCanvasAgg, plt.gcf().canvas).get_renderer()
-            tight_bbox: Optional[Bbox] = axis.get_tightbbox(renderer)
-            coords: Optional[tuple[float, float, float, float]] = None
+            position = self._get_render_position(axis)
+            if position is None:
+                continue
+            x, y = position
 
-            if tight_bbox is not None:
-                coords = tight_bbox.bounds
-
-            if coords is not None:
-                fig_coords = plt.gcf().bbox.bounds
-                coords_array = np.array(coords)
-                coords_array /= np.array(
-                    [fig_coords[2], fig_coords[3], fig_coords[2], fig_coords[3]]
-                )
-                plt.gcf().text(
-                    coords_array[0],
-                    coords_array[1] + coords_array[3],
-                    "($\\,$%s$\\,$)" % ("abcdefghijklmnopqrstuvwxyz"[i]),
-                    ha="center",
-                    va="top",
-                    fontsize="large",
-                )
-            else:
-                print("No bounding box available.")
+            #!TODO: enable numbers and roman numerals
+            self.fig.text(
+                x,
+                y,
+                "($\\,$%s$\\,$)" % ("abcdefghijklmnopqrstuvwxyz"[i]),
+                ha=self.ha,
+                va=self.va,
+                fontsize=self.fontsize,
+                transform=self.fig.transFigure,
+                *self.args,
+                **self.kwargs,
+            )
 
 
-def label_add_index() -> None:
+@track_order
+def label_add_index(
+    position: Literal["in", "out", "corner"] = "out",
+    x_offset: float = 0,
+    y_offset: float = 0,
+    ha: str = "center",
+    va: str = "center",
+    fontsize: float | str = "large",
+    *args: Any,
+    **kwargs: Any,
+) -> None:
     """
     Adds index labels to all axes in the current figure.
 
@@ -83,7 +200,9 @@ def label_add_index() -> None:
     None
     """
 
-    AddIndexToAxes().add_index()
+    LabelAddIndex(
+        position, x_offset, y_offset, ha, va, fontsize, *args, **kwargs
+    ).add_index()
 
 
 class Label:
@@ -126,7 +245,6 @@ class Label:
         y_pad: int = 2,
         minor_ticks_all: bool = True,
         tight_layout: bool = True,
-        add_index: bool = False,
         *args: Any,
         **kwargs: Any,
     ) -> None:
@@ -136,15 +254,13 @@ class Label:
         self.y_pad: int = y_pad
         self.minor_ticks_all: bool = minor_ticks_all
         self.tight_layout: bool = tight_layout
-        self.add_index: bool = add_index
         self.args: Any = args
         self.kwargs: Any = kwargs
 
         attributer = AttributeSetter()
         self.kwargs = attributer.set_attributes(self, locals(), key="label")
 
-        self.__axes: AxesSingleton = AxesSingleton()
-        self._axes: list[Axes] = self.__axes.axes
+        self._axes: list[Axes] = plt.gcf().axes
 
     def xticks(
         self, axis: Axes, base: float | None = None, num_minor: int | None = None
@@ -424,19 +540,6 @@ class Label:
                 plt.tight_layout(w_pad=self.x_pad, h_pad=self.y_pad)
 
     #! Adding index will change the size of axis
-    def _add_index(self) -> None:
-        """
-        Adds index labels to the axes if specified.
-
-        Uses the `AddIndexToAxes` class to add alphabetical index labels to the axes.
-
-        Returns
-        -------
-        None
-        """
-
-        if self.add_index:
-            AddIndexToAxes().add_index()
 
     def label(self) -> None:
         """
@@ -452,16 +555,15 @@ class Label:
         self._ticks_all()
         self._add_labels()
         self._tight_layout()
-        self._add_index()
 
 
+@track_order
 def label(
     lab_lims: list[Any],
     x_pad: int = 2,
     y_pad: int = 2,
     minor_ticks_all: bool = True,
     tight_layout: bool = True,
-    add_index: bool = False,
     *args: Any,
     **kwargs: Any,
 ) -> None:
@@ -498,7 +600,6 @@ def label(
         y_pad,
         minor_ticks_all,
         tight_layout,
-        add_index,
         *args,
         **kwargs,
     )

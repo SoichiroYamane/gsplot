@@ -2,16 +2,19 @@ import gsplot as gs
 import matplotlib.pyplot as plt
 
 # Create list of axes
-axes = gs.axes(
-    store=False,
-    mosaic="AB;CD",
-)
+axes = gs.axes(store=True, mosaic="AB;CD", size=[6, 6])
 
 # plot a line on the first axis: corresponding to A
 gs.line(
-    idx=0,
+    axis_target=0,
     x=[1, 2, 3],
     y=[1, 1, 1],
+)
+
+gs.line(
+    axis_target=2,
+    x=[1, 2, 10],
+    y=[1, 1, 10],
 )
 
 
@@ -21,6 +24,9 @@ gs.label(
         ["$B_x$", "$B_y$"],
         ["$C_x$", "$C_y$"],
         ["$D_x$", "$D_y$"],
-    ]
+    ],
 )
-gs.show()
+
+gs.label_add_index(position="in")
+
+gs.show("test")

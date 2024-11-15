@@ -177,15 +177,8 @@ class AxesHandler(Generic[_T]):
         self._store_class = StoreSingleton()
         self._store_class.store = self.store
 
-        self.__axes = AxesSingleton()
         self.unit_enum: Unit = Unit[self.unit.upper()]
         self.unit_conv: UnitConv = UnitConv()
-
-        NumLines().reset()
-
-        self._open_figure()
-
-        AxesRangeSingleton().reset(self.__axes.axes)
 
     @property
     def get_axes(self) -> list[Axes]:
@@ -197,9 +190,9 @@ class AxesHandler(Generic[_T]):
         list[Axes]
             A list of Axes objects in the current figure.
         """
-        return self.__axes.axes
+        return plt.gcf().axes
 
-    def _open_figure(self) -> None:
+    def create_figure(self) -> None:
         """
         Opens a new figure, configures its size, and arranges subplots based on the mosaic string.
 
@@ -209,6 +202,8 @@ class AxesHandler(Generic[_T]):
             If the figure size list does not contain exactly two elements.
             If the mosaic string is not specified.
         """
+        NumLines().reset()
+
         if self.ion:
             plt.ion()
 
@@ -225,15 +220,15 @@ class AxesHandler(Generic[_T]):
         plt.gcf().set_size_inches(*conv_size, *self.args, **self.kwargs)
 
         if self.mosaic != "":
-            axes: list[Any] = [
-                p[1] for p in (sorted(plt.gcf().subplot_mosaic(self.mosaic).items()))
-            ]
-            self.__axes.axes = axes
+            plt.gcf().subplot_mosaic(self.mosaic)
 
             # To ensure that the axes are tightly packed, otherwise axes sizes will be different after tight_layout is called
             plt.tight_layout()
         else:
             raise ValueError("Mosaic must be specified.")
+
+        # Initialize the axes range list by the number of axes in the current figure
+        AxesRangeSingleton().reset(plt.gcf().axes)
 
 
 @get_passed_params()
@@ -279,7 +274,7 @@ def axes(
     passed_params: dict[str, Any] = ParamsGetter("passed_params").get_params()
     class_params = CreateClassParams(passed_params).get_class_params()
 
-    __axes_handler = AxesHandler(
+    __axes_handler: AxesHandler = AxesHandler(
         class_params["store"],
         class_params["size"],
         class_params["unit"],
@@ -289,4 +284,5 @@ def axes(
         *class_params["args"],
         **class_params["kwargs"],
     )
+    __axes_handler.create_figure()
     return __axes_handler.get_axes

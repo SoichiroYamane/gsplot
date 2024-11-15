@@ -3,7 +3,7 @@ USER root
 
 RUN apt-get update
 
-RUN apt-get install -y --no-install-recommends libx11-dev
+RUN apt-get install -y --no-install-recommends libx11-dev x11-apps
 
 RUN apt-get install -y vim less
 RUN pip install --upgrade pip
@@ -34,6 +34,7 @@ RUN poetry config virtualenvs.in-project true
 COPY . .
 WORKDIR /root/opt
 RUN pip install -e .
+# RUN poetry shell & pip install -e e
 
 # Export gui display to host using XQuartz
 ENV DISPLAY=host.docker.internal:0.0
