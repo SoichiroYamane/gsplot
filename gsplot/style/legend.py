@@ -1,232 +1,142 @@
-from typing import Any, Dict, List, Tuple
+from typing import Any
+import matplotlib.pyplot as plt
 from matplotlib.axes import Axes
 from matplotlib.artist import Artist
 from matplotlib.legend import Legend as Lg
 from matplotlib.legend_handler import HandlerBase
 
-from ..base.base import AttributeSetter
-from ..figure.axes import AxesSingleton
+from ..base.base import bind_passed_params, ParamsGetter, CreateClassParams
+from ..figure.axes_base import AxesResolver
 
 
 class Legend:
-    """
-    A class to manage legends on matplotlib axes.
-
-    This class provides methods to create, customize, and manage legends
-    on specific matplotlib axes, including the ability to reverse legend
-    entries and use custom handlers.
-
-    Parameters
-    ----------
-    axis_index : int
-        Index of the axis to apply the legend to.
-    handles : list[Any], optional
-        Custom legend handles to use, by default None.
-    labels : list[str], optional
-        Custom legend labels to use, by default None.
-    handlers : dict, optional
-        Custom legend handlers to use, by default None.
-    *args : Any
-        Additional positional arguments for matplotlib legend.
-    **kwargs : Any
-        Additional keyword arguments for matplotlib legend.
-    """
 
     def __init__(
         self,
-        axis_index: int,
+        axis_target: int | Axes,
         handles: list[Any] | None = None,
         labels: list[str] | None = None,
         handlers: dict | None = None,
         *args: Any,
         **kwargs: Any
     ):
-        self.axis_index: int = axis_index
+        self.axis_target: int | Axes = axis_target
         self.handles: list[Any] | None = handles
         self.labels: list[str] | None = labels
         self.handlers: dict | None = handlers
         self.args: Any = args
         self.kwargs: Any = kwargs
 
-        attributer = AttributeSetter()
-        self.kwargs = attributer.set_attributes(self, locals(), key="legend")
-
-        self.__axes: AxesSingleton = AxesSingleton()
-        self._axes: list[Axes] = self.__axes.axes
-        self._axis: Axes = self._axes[self.axis_index]
+        _axes_resolver = AxesResolver(axis_target)
+        self.axis_index: int = _axes_resolver.axis_index
+        self.axis: Axes = _axes_resolver.axis
 
     def get_legend_handlers(
         self,
     ) -> tuple[list[Artist], list[str], dict[Artist, HandlerBase]]:
-        """
-        Retrieve the handles, labels, and handler map for the legend.
 
-        Returns
-        -------
-        tuple[list[Artist], list[str], dict[Artist, HandlerBase]]
-            The handles, labels, and handler map for the legend.
-        """
-
-        handles, labels = self._axis.get_legend_handles_labels()
+        handles, labels = self.axis.get_legend_handles_labels()
 
         handler_map = Lg(
-            parent=self._axis, handles=[], labels=[]
+            parent=self.axis, handles=[], labels=[]
         ).get_legend_handler_map()
         handlers = dict(zip(handles, [handler_map[type(handle)] for handle in handles]))
 
         return handles, labels, handlers
 
-    def legend(self) -> None:
-        """
-        Apply the legend to the specified axis.
+    def legend(self) -> Lg:
+        _lg = self.axis.legend(*self.args, **self.kwargs)
 
-        Returns
-        -------
-        None
-        """
+        return _lg
 
-        self._axis.legend(*self.args, **self.kwargs)
+    def legend_handlers(self) -> Lg:
 
-    def legend_handlers(self) -> None:
-        """
-        Apply the legend with custom handlers to the specified axis.
-
-        Returns
-        -------
-        None
-        """
-
-        self._axis.legend(
+        _lg = self.axis.legend(
             handles=self.handles,
             labels=self.labels,
             handler_map=self.handlers,
             *self.args,
             **self.kwargs,
         )
+        return _lg
 
-    def reverse_legend(self) -> None:
-        """
-        Reverse the order of legend entries and apply to the specified axis.
-
-        Returns
-        -------
-        None
-        """
+    def reverse_legend(self) -> Lg:
 
         handles, labels, handlers = self.get_legend_handlers()
-        self._axis.legend(
+        _lg = self.axis.legend(
             handles=handles[::-1],
             labels=labels[::-1],
             handler_map=handlers,
             *self.args,
             **self.kwargs,
         )
+        return _lg
 
 
-def legend(axis_index: int, *args: Any, **kwargs: Any) -> None:
-    """
-    Apply a legend to the specified axis.
+@bind_passed_params()
+def legend(axis_target: int | Axes, *args: Any, **kwargs: Any) -> Lg:
 
-    Parameters
-    ----------
-    axis_index : int
-        Index of the axis to apply the legend to.
-    *args : Any
-        Additional positional arguments for matplotlib legend.
-    **kwargs : Any
-        Additional keyword arguments for matplotlib legend.
+    passed_params: dict[str, Any] = ParamsGetter("passed_params").get_bound_params()
+    class_params = CreateClassParams(passed_params).get_class_params()
 
-    Returns
-    -------
-    None
-    """
-
-    Legend(axis_index, *args, **kwargs).legend()
+    _legend = Legend(
+        class_params["axis_target"],
+        *class_params["args"],
+        **class_params["kwargs"],
+    )
+    return _legend.legend()
 
 
+@bind_passed_params()
 def legend_handlers(
-    axis_index: int,
+    axis_target: int | Axes,
     handles: list[Any] | None = None,
     labels: list[str] | None = None,
     handlers: dict | None = None,
     *args: Any,
     **kwargs: Any
-) -> None:
-    """
-    Apply a legend with custom handlers to the specified axis.
+) -> Lg:
 
-    Parameters
-    ----------
-    axis_index : int
-        Index of the axis to apply the legend to.
-    handles : list[Any], optional
-        Custom legend handles to use, by default None.
-    labels : list[str], optional
-        Custom legend labels to use, by default None.
-    handlers : dict, optional
-        Custom legend handlers to use, by default None.
-    *args : Any
-        Additional positional arguments for matplotlib legend.
-    **kwargs : Any
-        Additional keyword arguments for matplotlib legend.
+    passed_params: dict[str, Any] = ParamsGetter("passed_params").get_bound_params()
+    class_params = CreateClassParams(passed_params).get_class_params()
 
-    Returns
-    -------
-    None
-    """
-
-    Legend(axis_index, handles, labels, handlers, *args, **kwargs).legend_handlers()
+    _legend = Legend(
+        class_params["axis_target"],
+        class_params["handles"],
+        class_params["labels"],
+        class_params["handlers"],
+        *class_params["args"],
+        **class_params["kwargs"],
+    )
+    return _legend.legend_handlers()
 
 
+@bind_passed_params()
 def legend_reverse(
-    axis_index: int,
+    axis_target: int | Axes,
     handles: list[Any] | None = None,
     labels: list[str] | None = None,
     handlers: dict | None = None,
     *args: Any,
     **kwargs: Any
-) -> None:
-    """
-    Apply a legend with reversed order of entries to the specified axis.
+) -> Lg:
 
-    Parameters
-    ----------
-    axis_index : int
-        Index of the axis to apply the legend to.
-    handles : list[Any], optional
-        Custom legend handles to use, by default None.
-    labels : list[str], optional
-        Custom legend labels to use, by default None.
-    handlers : dict, optional
-        Custom legend handlers to use, by default None.
-    *args : Any
-        Additional positional arguments for matplotlib legend.
-    **kwargs : Any
-        Additional keyword arguments for matplotlib legend.
+    passed_params: dict[str, Any] = ParamsGetter("passed_params").get_bound_params()
+    class_params = CreateClassParams(passed_params).get_class_params()
 
-    Returns
-    -------
-    None
-    """
-
-    Legend(axis_index, handles, labels, handlers, *args, **kwargs).reverse_legend()
+    _legend = Legend(
+        class_params["axis_target"],
+        class_params["handles"],
+        class_params["labels"],
+        class_params["handlers"],
+        *class_params["args"],
+        **class_params["kwargs"],
+    )
+    return _legend.reverse_legend()
 
 
 def legend_get_handlers(
-    axis_index: int,
+    axis_target: int | Axes,
 ) -> tuple:
-    """
-    Retrieve the handles, labels, and handler map for the legend.
 
-    Parameters
-    ----------
-    axis_index : int
-        Index of the axis to retrieve the legend handlers for.
-
-    Returns
-    -------
-    tuple[list[Artist], list[str], dict[Artist, HandlerBase]]
-        The handles, labels, and handler map for the legend.
-    """
-
-    return Legend(axis_index).get_legend_handlers()
+    return Legend(axis_target).get_legend_handlers()

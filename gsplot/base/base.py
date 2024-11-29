@@ -1,6 +1,5 @@
 from typing import Any, Dict, Callable
 from functools import wraps
-import numpy as np
 
 import inspect
 
@@ -55,60 +54,22 @@ class GetPassedParams:
         return self.passed_params
 
 
-# class CreateClassParams:
-#     def __init__(self, func: Callable, passed_params: dict[str, Any]) -> None:
-#         self.func: Callable = func
-#         self.passed_params: dict[str, Any] = passed_params
-#
-#         self.default_params = self.get_default_params()
-#         self.config_entry_params = self.get_config_entry_params(self.func.__name__)
-#
-#     def get_default_params(self) -> dict[str, Any]:
-#         sig = inspect.signature(self.func)
-#         default_params = {
-#             name: param.default
-#             for name, param in sig.parameters.items()
-#             if param.default is not inspect.Parameter.empty
-#         }
-#         default_params = default_params
-#         return default_params
-#
-#     def get_config_entry_params(self, key: str) -> dict[str, Any]:
-#         config_entry_option: dict[str, Any] = Config().get_config_entry_option(key)
-#
-#         # decompose the config_entry_option following the structure of defaults_params
-#         config_entry_params = {
-#             key: config_entry_option[key]
-#             for key in config_entry_option
-#             if key in self.default_params
-#         }
-#
-#         config_entry_params["kwargs"] = {
-#             key: value
-#             for key, value in config_entry_option.items()
-#             if key not in self.default_params
-#         }
-#         return config_entry_params
-#
-#     def get_class_params(self) -> dict[str, Any]:
-#         defaults_params = self.default_params
-#         config_entry_params = self.config_entry_params
-#         passed_params = self.passed_params
-#
-#         class_params = {
-#             **defaults_params,
-#             **config_entry_params,
-#             **passed_params,
-#         }
-#
-#         class_params["kwargs"] = {
-#             **config_entry_params.get("kwargs", {}),
-#             **passed_params.get("kwargs", {}),
-#         }
-#         return class_params
-
-
 class CreateClassParams:
+    """
+    A class for creating class parameters by merging default parameters, configuration file parameters, and passed parameters.
+
+    Examples
+
+    --------
+    >>> @bind_passed_params()
+    >>> def example_func(p1, p2, p3):
+    >>>     passed_params: dict[str, Any] = ParamsGetter(
+    >>>      "passed_params"
+    >>>     ).get_bound_params()
+    >>> AliasValidator(alias_map, passed_params).validate()
+    >>> class_params: dict[str, Any] = CreateClassParams(passed_params).get_class_params()
+    """
+
     def __init__(self, passed_params: dict[str, Any]) -> None:
         self.passed_params: dict[str, Any] = passed_params
 
@@ -118,8 +79,6 @@ class CreateClassParams:
 
         self.default_params: dict[str, Any] = self.get_default_params()
         self.config_entry_params: dict[str, Any] = self.get_config_entry_params()
-        # print("default", self.default_params)
-        # print("config", self.config_entry_params)
 
     def get_wrapped_func_frame(self):
         current_frame = inspect.currentframe()
@@ -134,11 +93,11 @@ class CreateClassParams:
         wrapped_func_frame = current_frame.f_back.f_back
         return wrapped_func_frame
 
-    def get_wrapped_func_name(self) -> str:
+    def get_wrapped_func_name(self) -> Any:
         wrapped_func_name = self.wrapped_func_frame.f_code.co_name
         return wrapped_func_name
 
-    def get_wrapped_func(self) -> Callable:
+    def get_wrapped_func(self) -> Any:
         wrapped_func = self.wrapped_func_frame.f_globals[self.wrapped_func_name]
         return wrapped_func
 
@@ -187,7 +146,21 @@ class CreateClassParams:
         return class_params
 
 
-def get_passed_params() -> Callable:
+def bind_passed_params() -> Callable:
+    """
+    A decorator function that wraps the provided function with GetPassedParams.
+    passed_params variable is added to the wrapped function.
+
+    Examples
+
+    --------
+    >>> @bind_passed_params()
+    >>> def example_func(p1, p2, p3):
+    >>>     passed_params: dict[str, Any] = ParamsGetter(
+    >>>      "passed_params"
+    >>>     ).get_params_from_wrapper()
+    """
+
     def wrapped(func: Callable) -> Callable:
 
         @wraps(func)
@@ -195,11 +168,6 @@ def get_passed_params() -> Callable:
             # get passed parameters from the function call wrapped by the decorator
             passed_params = GetPassedParams(func, *args, **kwargs).get_passed_params()
             setattr(wrapper, "passed_params", passed_params)
-
-            # get class parameters obtained from default values, configuration, and passed parameters to a class object
-            # class_params = CreateClassParams(func, passed_params).get_class_params()
-            # setattr(wrapper, "class_params", class_params)
-
             return func(*args, **kwargs)
 
         return wrapper
@@ -212,48 +180,20 @@ class AttributeSetter:
         pass
 
 
-# class ParamsVerifier:
-#     def __init__(
-#         self, list_of_params: list[dict[str, Any] | None],
-#     ) -> None:
-#         self.passed_params = passed_params
-#         self.class_params = class_params
-#
-#     def verify(self) -> tuple[dict[str, Any], dict[str, Any]]:
-#         if self.passed_params is None:
-#             raise ValueError("Passed params is None")
-#         if self.class_params is None:
-#             raise ValueError("Class params is None")
-#         return self.passed_params, self.class_params
-
-
-# class ParamsVerifier:
-#     def __init__(
-#         self,
-#         *args: dict[str, Any] | None,
-#     ):
-#         self.args = args
-#
-#     def verify(self) -> tuple[dict[str, Any], ...]:
-#         for arg in self.args:
-#             if arg is None:
-#                 raise ValueError("Passed params is None")
-#         return self.args
-
-
-# class ParamsVerifier:
-#     def __init__(self, *args: dict[str, Any] | None):
-#         self.args = args
-#
-#     def verify(self) -> tuple[dict[str, Any], ...]:
-#         # return tuple of verified arguments without None
-#         verified_args = tuple(arg for arg in self.args if arg is not None)
-#         if len(verified_args) != len(self.args):
-#             raise ValueError("Passed params contains None")
-#         return verified_args
-
-
 class ParamsGetter:
+    """
+    A class for getting passed parameters from the wrapped function.
+
+    Examples
+
+    --------
+    >>> @bind_passed_params()
+    >>> def example_func(p1, p2, p3):
+    >>>     passed_params: dict[str, Any] = ParamsGetter(
+    >>>      "passed_params"
+    >>>     ).get_bound_params()
+    """
+
     def __init__(self, var: str) -> None:
         self.var = var
 
@@ -273,7 +213,7 @@ class ParamsGetter:
             raise ValueError("Params is None")
         return params
 
-    def get_params(self) -> dict[str, Any]:
+    def get_bound_params(self) -> dict[str, Any]:
         wrapped_frame = self.get_wrapped_frame()
         wrapped_func_name = wrapped_frame.f_code.co_name
         func = wrapped_frame.f_globals[wrapped_func_name]

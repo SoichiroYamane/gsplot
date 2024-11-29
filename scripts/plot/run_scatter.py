@@ -7,7 +7,7 @@ ydata = np.sin(xdata)
 
 
 gs.axes(store=False, mosaic="A")
-gs.scatter(0, xdata, ydata, c="green")
+# gs.scatter(0, xdata, ydata, c="green")
 
 
 gs.scatter(

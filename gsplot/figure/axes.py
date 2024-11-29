@@ -1,16 +1,14 @@
 from enum import Enum
-from typing import Dict, List, Tuple, Any, TypeVar, Generic
+from typing import Any, TypeVar, Generic
 from matplotlib.typing import HashableList
 from collections.abc import Hashable
-
 
 import matplotlib.pyplot as plt
 from matplotlib.axes import Axes
 
-from .axes_base import AxesSingleton, AxesRangeSingleton
+from .axes_base import AxesRangeSingleton
 from .store import StoreSingleton
-from ..base.base import get_passed_params, ParamsGetter, CreateClassParams
-from ..config.config import Config
+from ..base.base import bind_passed_params, ParamsGetter, CreateClassParams
 from ..plot.line_base import NumLines
 
 _T = TypeVar("_T")
@@ -96,61 +94,6 @@ class UnitConv:
 
 
 class AxesHandler(Generic[_T]):
-    """
-    A class for handling the creation and management of matplotlib Axes objects,
-    including configuration of figure size, units, and layout using mosaic.
-
-    Parameters
-    ----------
-    store : bool, optional
-        Whether to store the current figure (default is False).
-    size : list[int], optional
-        The size of the figure in the specified unit (default is [5, 5]).
-    unit : str, optional
-        The unit of the figure size (default is "in"). Must be one of 'mm', 'cm', 'in', 'pt'.
-    mosaic : str, optional
-        The layout of the subplot using a mosaic string (default is "A").
-    clear : bool, optional
-        Whether to clear the current figure before creating a new one (default is True).
-    ion : bool, optional
-        Whether to turn on interactive mode in matplotlib (default is False).
-    *args : Any
-        Additional positional arguments for figure creation.
-    **kwargs : Any
-        Additional keyword arguments for figure creation.
-
-    Attributes
-    ----------
-    store : bool
-        Whether to store the current figure.
-    size : list[int]
-        The size of the figure in the specified unit.
-    unit : str
-        The unit of the figure size.
-    mosaic : str
-        The layout of the subplot using a mosaic string.
-    clear : bool
-        Whether to clear the current figure before creating a new one.
-    ion : bool
-        Whether to turn on interactive mode in matplotlib.
-    args : Any
-        Additional positional arguments for figure creation.
-    kwargs : Any
-        Additional keyword arguments for figure creation.
-    unit_enum : Unit
-        The unit enum corresponding to the specified unit.
-    unit_conv : UnitConv
-        The UnitConv object used for converting units.
-    __axes : AxesSingleton
-        The singleton instance of Axes to manage subplot axes.
-
-    Methods
-    -------
-    get_axes -> list[Axes]
-        Returns the list of Axes objects created in the current figure.
-    _open_figure() -> None
-        Opens a new figure, configures its size, and arranges subplots based on the mosaic string.
-    """
 
     def __init__(
         self,
@@ -174,34 +117,17 @@ class AxesHandler(Generic[_T]):
         self.args: Any = args
         self.kwargs: Any = kwargs
 
-        self._store_class = StoreSingleton()
-        self._store_class.store = self.store
+        self._store_singleton = StoreSingleton()
+        self._store_singleton.store = self.store
 
         self.unit_enum: Unit = Unit[self.unit.upper()]
         self.unit_conv: UnitConv = UnitConv()
 
     @property
     def get_axes(self) -> list[Axes]:
-        """
-        Returns the list of Axes objects created in the current figure.
-
-        Returns
-        -------
-        list[Axes]
-            A list of Axes objects in the current figure.
-        """
         return plt.gcf().axes
 
     def create_figure(self) -> None:
-        """
-        Opens a new figure, configures its size, and arranges subplots based on the mosaic string.
-
-        Raises
-        ------
-        ValueError
-            If the figure size list does not contain exactly two elements.
-            If the mosaic string is not specified.
-        """
         NumLines().reset()
 
         if self.ion:
@@ -231,50 +157,85 @@ class AxesHandler(Generic[_T]):
         AxesRangeSingleton().reset(plt.gcf().axes)
 
 
-@get_passed_params()
+@bind_passed_params()
 def axes(
-    store=False,
-    size=[5, 5],
-    unit="in",
-    mosaic="A",
-    clear=True,
-    ion=False,
-    *args,
-    **kwargs,
+    store: bool = False,
+    size: list[int | float] = [5, 5],
+    unit: str = "in",
+    mosaic: str | list[HashableList[_T]] | list[HashableList[Hashable]] = "A",
+    clear: bool = True,
+    ion: bool = False,
+    *args: Any,
+    **kwargs: Any,
 ):
     """
-    Creates and returns a list of matplotlib Axes objects based on the provided configuration.
+    Create and manage Matplotlib axes with customizable options.
+
+    This function creates a Matplotlib figure and axes with user-specified settings,
+    such as size, units, layout, and interactivity. It provides flexibility for
+    handling mosaic layouts and additional customization through arguments.
 
     Parameters
     ----------
-    size : list[int], optional
-        The size of the figure in the specified unit (default is [5, 5]).
+    store : bool, optional
+        If True, store the created axes in a persistent handler for future access.
+        Default is False.
+    size : list[int or float], optional
+        The size of the figure in the specified unit. Default is [5, 5].
     unit : str, optional
-        The unit of the figure size (default is "in"). Must be one of 'mm', 'cm', 'in', 'pt'.
-    mosaic : str, optional
-        The layout of the subplot using a mosaic string (default is "A").
+        The unit for the figure size. Common values include "in" (inches) and "cm"
+        (centimeters). Default is "in".
+    mosaic : str or list[HashableList], optional
+        The layout of the axes as a mosaic grid. It can be a single-character string
+        for a simple layout or a list defining the layout. Default is "A".
     clear : bool, optional
-        Whether to clear the current figure before creating a new one (default is True).
+        If True, clear any existing figure or axes before creating new ones. Default
+        is True.
     ion : bool, optional
-        Whether to turn on interactive mode in matplotlib (default is False).
+        If True, enable interactive mode for Matplotlib. Default is False.
+    *args : Any
+        Additional positional arguments passed to the axes creation process.
     **kwargs : Any
-        Additional keyword arguments for figure creation.
+        Additional keyword arguments for figure or axes customization.
 
     Returns
     -------
-    list[Axes]
-        A list of matplotlib Axes objects created based on the specified configuration.
+    Callable
+        A callable function to retrieve the created axes.
+
+    Notes
+    -----
+    - This function leverages the `AxesHandler` class for managing axes creation
+      and customization.
+    - The mosaic parameter allows complex layouts by specifying a grid pattern
+      with strings or nested lists.
 
     Examples
     --------
-    >>> import gsplot as gs
-    >>> axes = gs.axes(size=[6, 4], mosaic="AB;CD")
-    """
+    Create a default figure with a single axes:
 
-    passed_params: dict[str, Any] = ParamsGetter("passed_params").get_params()
+    >>> axes()
+
+    Create a figure with specific size and units:
+
+    >>> axes(size=[10, 7], unit="cm")
+
+    Use a mosaic layout to create multiple subplots:
+
+    >>> axes(mosaic="AB;CC")
+
+    Enable interactive mode:
+
+    >>> axes(ion=True)
+
+    Pass additional arguments for customization:
+
+    >>> axes(clear=False, dpi=300)
+    """
+    passed_params: dict[str, Any] = ParamsGetter("passed_params").get_bound_params()
     class_params = CreateClassParams(passed_params).get_class_params()
 
-    __axes_handler: AxesHandler = AxesHandler(
+    _axes_handler: AxesHandler = AxesHandler(
         class_params["store"],
         class_params["size"],
         class_params["unit"],
@@ -284,5 +245,5 @@ def axes(
         *class_params["args"],
         **class_params["kwargs"],
     )
-    __axes_handler.create_figure()
-    return __axes_handler.get_axes
+    _axes_handler.create_figure()
+    return _axes_handler.get_axes

@@ -5,6 +5,21 @@ from ..config.config import Config
 
 
 class AliasValidator:
+    """
+    A class for validating aliases on passed_params.
+
+    Examples
+
+    --------
+    >>> @bind_passed_params()
+    >>> def example_func(p1, p2, p3):
+    >>>     passed_params: dict[str, Any] = ParamsGetter(
+    >>>      "passed_params"
+    >>>     ).get_bound_params()
+    >>> AliasValidator(alias_map, passed_params).validate()
+    >>> class_params: dict[str, Any] = CreateClassParams(passed_params).get_class_params()
+    """
+
     def __init__(
         self,
         alias_map: dict[str, Any],

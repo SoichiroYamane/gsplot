@@ -1,80 +1,32 @@
 import numpy as np
 from os import PathLike
-from typing import Iterable, Any, Union
-from ..base.base import AttributeSetter
+from typing import Iterable, Any
+from numpy.typing import NDArray
+
+from ..base.base import bind_passed_params, ParamsGetter, CreateClassParams
 
 
 class LoadFile:
-    """
-    A class to load data from a file with customizable options such as delimiter,
-    header/footer skipping, and unpacking.
-
-    Parameters
-    ----------
-    f : Union[str, PathLike, Iterable[str], Iterable[bytes]]
-        The file path or an iterable of strings/bytes representing the data to be loaded.
-    delimiter : Union[None, str], optional
-        The string used to separate values in the file (default is ',').
-    skip_header : int, optional
-        The number of lines to skip at the beginning of the file (default is 0).
-    skip_footer : int, optional
-        The number of lines to skip at the end of the file (default is 0).
-    unpack : Union[None, bool], optional
-        If True, the columns are returned as separate arrays (default is True).
-    **kwargs : Any
-        Additional keyword arguments to pass to `np.genfromtxt`.
-
-    Attributes
-    ----------
-    f : Union[str, PathLike, Iterable[str], Iterable[bytes]]
-        The file path or an iterable of strings/bytes representing the data to be loaded.
-    delimiter : Union[None, str]
-        The string used to separate values in the file.
-    skip_header : int
-        The number of lines to skip at the beginning of the file.
-    skip_footer : int
-        The number of lines to skip at the end of the file.
-    unpack : Union[None, bool]
-        If True, the columns are returned as separate arrays.
-    kwargs : Any
-        Additional keyword arguments to pass to `np.genfromtxt`.
-
-    Methods
-    -------
-    load_text() -> np.ndarray
-        Loads the data from the file and returns it as a NumPy array.
-    """
-
     def __init__(
         self,
-        f: Union[str, PathLike, Iterable[str], Iterable[bytes]],
-        delimiter: Union[None, str] = ",",
+        f: str | PathLike | Iterable[str] | Iterable[bytes],
+        delimiter: str | None = ",",
         skip_header: int = 0,
         skip_footer: int = 0,
-        unpack: Union[None, bool] = True,
+        unpack: bool = True,
         **kwargs: Any,
     ) -> None:
 
-        self.f: Union[str, PathLike, Iterable[str], Iterable[bytes]] = f
-        self.delimiter: Union[None, str] = delimiter
+        self.f: str | PathLike | Iterable[str] | Iterable[bytes] = f
+        self.delimiter: str | None = delimiter
         self.skip_header: int = skip_header
         self.skip_footer: int = skip_footer
-        self.unpack: Union[None, bool] = unpack
+        self.unpack: bool = unpack
         self.kwargs: Any = kwargs
 
-        attributer = AttributeSetter()
-        self.kwargs = attributer.set_attributes(self, locals(), key="load")
+    def load_data(self) -> NDArray[Any]:
 
-    def load_text(self):
-        """
-        Loads the data from the file and returns it as a NumPy array.
-
-        Returns
-        -------
-        np.ndarray
-            The data loaded from the file as a NumPy array.
-        """
-
+        # np.genfromtxt does not have args parameter
         return np.genfromtxt(
             fname=self.f,
             delimiter=self.delimiter,
@@ -85,39 +37,87 @@ class LoadFile:
         )
 
 
+# TODO: Modify docstring
+@bind_passed_params()
 def load_file(
-    f: Union[str, PathLike, Iterable[str], Iterable[bytes]],
-    delimiter: Union[None, str] = ",",
+    f: str | PathLike | Iterable[str] | Iterable[bytes],
+    delimiter: str | None = ",",
     skip_header: int = 0,
     skip_footer: int = 0,
-    unpack: Union[None, bool] = True,
+    unpack: bool = True,
     **kwargs: Any,
-):
+) -> NDArray[Any]:
     """
-    Loads data from a file with customizable options and returns it as a NumPy array.
+    Load data from a file or an iterable and return it as a NumPy array.
+
+    This function reads data from a specified file, path, or iterable. It supports
+    custom delimiters, header/footer skipping, and unpacking of data into columns.
 
     Parameters
     ----------
-    f : Union[str, PathLike, Iterable[str], Iterable[bytes]]
-        The file path or an iterable of strings/bytes representing the data to be loaded.
-    delimiter : Union[None, str], optional
-        The string used to separate values in the file (default is ',').
+    f : str, PathLike, Iterable[str], or Iterable[bytes]
+        The file path, file-like object, or iterable containing the data to load.
+        Strings or bytes are also accepted as iterable data sources.
+    delimiter : str or None, optional
+        The delimiter used to separate values in the data. If None, whitespace is used
+        as the default delimiter. Default is ",".
     skip_header : int, optional
-        The number of lines to skip at the beginning of the file (default is 0).
+        Number of lines to skip at the beginning of the file. Default is 0.
     skip_footer : int, optional
-        The number of lines to skip at the end of the file (default is 0).
-    unpack : Union[None, bool], optional
-        If True, the columns are returned as separate arrays (default is True).
+        Number of lines to skip at the end of the file. Default is 0.
+    unpack : bool, optional
+        If True, unpack the columns into individual arrays. Default is True.
     **kwargs : Any
-        Additional keyword arguments to pass to `np.genfromtxt`.
+        Additional arguments passed to the file loader, such as encoding or specific
+        parsing options.
 
     Returns
     -------
-    np.ndarray
-        The data loaded from the file as a NumPy array.
+    NDArray[Any]
+        A NumPy array containing the loaded data. If `unpack` is True, the data is
+        returned as separate arrays (one per column).
+
+    Notes
+    -----
+    - This function uses the `LoadFile` class for file parsing and data loading.
+    - It automatically resolves parameters using the `ParamsGetter` and `CreateClassParams` classes.
+    - The input `f` can be a file path, open file handle, or iterable containing
+      lines of data.
+
+    Examples
+    --------
+    Load data from a CSV file:
+
+    >>> load_file("data.csv")
+    array([...])  # Loaded data as a NumPy array.
+
+    Use a custom delimiter:
+
+    >>> load_file("data.tsv", delimiter="\t")
+    array([...])  # Data loaded with tab-separated values.
+
+    Skip headers and footers:
+
+    >>> load_file("data.txt", skip_header=2, skip_footer=1)
+    array([...])  # Data with headers/footers excluded.
+
+    Load data from an iterable:
+
+    >>> data = ["1,2,3", "4,5,6"]
+    >>> load_file(data, delimiter=",")
+    array([[1, 2, 3],
+           [4, 5, 6]])
     """
 
-    load_text = LoadFile(
-        f, delimiter, skip_header, skip_footer, unpack, **kwargs
-    ).load_text()
-    return load_text
+    passed_params: dict[str, Any] = ParamsGetter("passed_params").get_bound_params()
+    class_params = CreateClassParams(passed_params).get_class_params()
+
+    _load_file: LoadFile = LoadFile(
+        class_params["f"],
+        class_params["delimiter"],
+        class_params["skip_header"],
+        class_params["skip_footer"],
+        class_params["unpack"],
+        **class_params["kwargs"],
+    )
+    return _load_file.load_data()

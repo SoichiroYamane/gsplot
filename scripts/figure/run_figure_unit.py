@@ -7,7 +7,7 @@ from matplotlib import rcParams
 # Create list of axes
 # axes = gs.axes(True, size=[5, 5], mosaic="AB;CD")
 
-axes = gs.axes(True, mosaic="AB;CD", clear=True)
+axes = gs.axes(False, mosaic="AB;CD", clear=True)
 print(axes)
 
 

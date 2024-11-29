@@ -1,10 +1,15 @@
 import gsplot as gs
 import matplotlib.pyplot as plt
+
+from rich import pretty
+from rich.pretty import pprint
 from rich import print
 
+test = gs.config_load("./config_file/test.json")
 
-test = gs.config_load()
-print(test)
+test2 = gs.config_dict()
+# print(test2)
+
 
 # Create list of axes
 axes = gs.axes(store=False, mosaic="AB;CD", size=[6, 6])
@@ -23,6 +28,7 @@ gs.line(
     y=[1, 1, 10],
 )
 
+
 gs.label(
     [
         ["$A_x$", "$A_y$"],
@@ -32,7 +38,6 @@ gs.label(
     ],
 )
 
-
-gs.label_add_index(position="in", glyph="alphabet", capitalize=True)
+gs.label_add_index(position="in")
 
 gs.show("test")

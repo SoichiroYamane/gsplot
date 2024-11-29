@@ -26,7 +26,10 @@ RUN poetry add \
   sphinx-book-theme \
   pydata-sphinx-theme \
   ipython \
-  termcolor 
+  termcolor \
+  rich
+
+# !TODO: Add yazi, fish
 
 
 RUN poetry config virtualenvs.in-project true
@@ -34,7 +37,7 @@ RUN poetry config virtualenvs.in-project true
 COPY . .
 WORKDIR /root/opt
 RUN pip install -e .
-# RUN poetry shell & pip install -e e
+RUN poetry run pip install -e .
 
 # Export gui display to host using XQuartz
 ENV DISPLAY=host.docker.internal:0.0

@@ -49,7 +49,7 @@ class Path:
         os.chdir(self.get_pwd())
 
 
-def get_home() -> str:
+def home() -> str:
     """
     Returns the path to the user's home directory.
 
@@ -58,10 +58,11 @@ def get_home() -> str:
     str
         The path to the home directory.
     """
+
     return Path().get_home()
 
 
-def get_pwd() -> str:
+def pwd() -> str:
     """
     Returns the path to the current working directory.
 
@@ -73,7 +74,7 @@ def get_pwd() -> str:
     return Path().get_pwd()
 
 
-def move_to_pwd() -> None:
+def pwd_move() -> None:
     """
     Changes the current working directory to the directory returned by `get_pwd()`.
 
