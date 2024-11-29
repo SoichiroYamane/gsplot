@@ -1,19 +1,23 @@
+import matplotlib.pyplot as plt
+
 from .color.colormap import get_cmap
 
 from .data.load import load_file
-from .data.path import get_home, get_pwd, move_to_pwd
 
-from .base.base_passed_args import foo_bar
 from .figure.axes import axes
-from .figure.figure_tool import get_figure_size
+from .figure.figure_tools import get_figure_size
 from .figure.show import show
 
-from .config.config import get_config_dict
+from .config.config import config_load, config_dict, config_entry_option
+
+from .path.path import home, pwd, pwd_move
 
 from .plot.line import line
-from .plot.line_colormap import line_colormap
+from .plot.line_colormap_solid import line_colormap_solid
+from .plot.line_colormap_dashed import line_colormap_dashed
 from .plot.scatter import scatter
 from .plot.scatter_colormap import scatter_colormap
+
 
 from .style.graph import graph_square, graph_square_all
 from .style.graph import (
@@ -33,35 +37,48 @@ from .style.legend_colormap import legend_colormap
 from .style.ticks import (
     ticks_off,
     ticks_on,
-    ticks_on_by_axis,
-    ticks_x,
-    ticks_y,
     ticks_all,
 )
+from .config.config import Config
+
+# install()
+# ╭──────────────────────────────────────────────────────────╮
+# │ Load the configuration file                              │
+# ╰──────────────────────────────────────────────────────────╯
+Config()
+
+# !TODO: remove passed_variables
+# !TODO modify args
+# !TODO modify NDArray hint
 
 
 __all__ = [
-    "foo_bar",
     # color/colormap.py
     "get_cmap",
     # data/load.py
     "load_file",
-    # data/path.py
-    "get_home",
-    "get_pwd",
-    "move_to_pwd",
     # figure/axes.py
     "axes",
-    # figure/figure_tool.py
+    # figure/figure_tools.py
     "get_figure_size",
     # figure/show.py
     "show",
     # config/config.py
-    "get_config_dict",
+    "config_load",
+    "config_dict",
+    "config_entry_option",
+    # path/path.py
+    "home",
+    "pwd",
+    "pwd_move",
     # plot/line.py
     "line",
     # plot/line_colormap.py
     "line_colormap",
+    # plot/line_colormap_solid.py
+    "line_colormap_solid",
+    # plot/line_colormap_dashed.py
+    "line_colormap_dashed",
     # plot/scatter.py
     "scatter",
     # plot/scatter_colormap.py
@@ -88,8 +105,5 @@ __all__ = [
     # style/ticks.py
     "ticks_off",
     "ticks_on",
-    "ticks_on_by_axis",
-    "ticks_x",
-    "ticks_y",
     "ticks_all",
 ]

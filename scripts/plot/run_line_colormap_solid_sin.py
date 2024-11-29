@@ -7,7 +7,10 @@ ydata = np.sin(xdata)
 
 
 gs.axes(store=False, mosaic="A")
-gs.line_colormap(0, xdata, ydata, ydata, linewidth=10, ls="dashed")
+gs.line_colormap_solid(
+    0, xdata, ydata, ydata, label="$\\sin(x)$", interpolation_points=None
+)
+
 gs.label(
     [
         [

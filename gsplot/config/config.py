@@ -1,14 +1,14 @@
-from ..data.path import Path
-
-from termcolor import colored
-import traceback
+from __future__ import annotations
 import os
 import json
 
-from typing import Any, Optional, Dict
+from typing import Any, cast
+from threading import Lock
+
 
 from matplotlib import rcParams
 import matplotlib as mpl
+from rich.traceback import install
 
 
 rcParams["pdf.fonttype"] = 42
@@ -38,58 +38,21 @@ rcParams["font.sans-serif"] = ["DejaVu Sans"]
 rcParams["xtick.major.pad"] = 6
 rcParams["ytick.major.pad"] = 6
 
-home = os.path.expanduser("~")
-
-
-# class Config:
-#
-#     _instance: Optional["Config"] = None
-#
-#     def __new__(cls) -> "Config":
-#         if cls._instance is None:
-#             cls._instance = super(Config, cls).__new__(cls)
-#             cls._instance._initialize_config_dict()
-#         return cls._instance
-#
-#     def _initialize_config_dict(self) -> None:
-#
-#         self._config_dict: dict[str, Any] = {}
-#
-#     @property
-#     def config_dict(self) -> dict[str, Any]:
-#         return self._config_dict
-#
-#     @config_dict.setter
-#     def config_dict(self, config_dict: dict[str, Any]) -> None:
-#         # if not isinstance(config_dict, dict):
-#         #     raise TypeError(f"Expected type dict, got {type(config_dict).__name__}")
-#         self._config_dict = config_dict
-#
-#     def get_config_entry_option(self, key: str) -> dict[str, Any]:
-#         try:
-#             config_instance = Config()
-#             entry_option = config_instance.config_dict.get(key, {})
-#             if isinstance(entry_option, dict):
-#                 return entry_option
-#             else:
-#                 raise ValueError("Expected a dictionary")
-#         except Exception:
-#             return dict[str, Any]()
-
 
 class Config:
 
-    _instance: Optional["Config"] = None
+    _instance: Config | None = None
+    _lock: Lock = Lock()
 
     def __new__(cls) -> "Config":
-        if cls._instance is None:
-            cls._instance = super(Config, cls).__new__(cls)
-            cls._instance._initialize_config_dict()
+        with cls._lock:
+            if cls._instance is None:
+                cls._instance = super(Config, cls).__new__(cls)
+                cls._instance._initialize_config_dict()
         return cls._instance
 
     def _initialize_config_dict(self) -> None:
-
-        self._config_dict: dict[str, Any] = ConfigLoad().get_config()
+        self._config_dict: dict[str, Any] = ConfigLoad().init_load()
 
     @property
     def config_dict(self) -> dict[str, Any]:
@@ -97,172 +60,86 @@ class Config:
 
     @config_dict.setter
     def config_dict(self, config_dict: dict[str, Any]) -> None:
-        # if not isinstance(config_dict, dict):
-        #     raise TypeError(f"Expected type dict, got {type(config_dict).__name__}")
         self._config_dict = config_dict
 
+    def load(self, config_path: str | None = None) -> dict[str, Any]:
+        loader: ConfigLoad = ConfigLoad(config_path)
+        config_dict: dict[str, Any] = (
+            loader.init_load() if config_path else loader.get_config()
+        )
+        self.config_dict = config_dict
+        return config_dict
+
     def get_config_entry_option(self, key: str) -> dict[str, Any]:
-        try:
-            config_instance = Config()
-            entry_option = config_instance.config_dict.get(key, {})
-            if isinstance(entry_option, dict):
-                return entry_option
-            else:
-                raise ValueError("Expected a dictionary")
-        except Exception:
-            return dict[str, Any]()
-
-
-# class LoadConfig:
-#     def __init__(self) -> None:
-#         self.home: str = Path().get_home()
-#         self.config_fname: str = ".gsplot.json"
-#         self.config_path: str = f"{self.home}/{self.config_fname}"
-#
-#         try:
-#             self._init_load()
-#         except Exception:
-#             pass
-#
-#     def _init_load(self) -> None:
-#         """
-#         Loads parameters from the configuration file and applies them to matplotlib settings.
-#
-#         This method reads the configuration file, retrieves the `rcParams`, and applies the
-#         relevant settings to matplotlib, such as setting the backend and other parameters.
-#         """
-#
-#         config_dict: dict[str, Any] = self.load_config()
-#         config_rcParams: dict[str, Any] = config_dict["rcParams"]
-#
-#         # if "backends" in config_rcParams:
-#         #     backend = config_rcParams["backends"]
-#         #     mpl.use(backend)
-#         #
-#         # for key in config_rcParams:
-#         #     if key != "backends":
-#         #         rcParams[key] = config_rcParams[key]
-#         #
-#         backend = config_rcParams.pop("backends", None)
-#         if backend:
-#             mpl.use(backend)
-#
-#         rcParams.update(config_rcParams)
-#
-#     def load_config(self) -> dict[str, Any]:
-#         config_instance: Config = Config()
-#         try:
-#             with open(self.config_path, "r") as f:
-#                 config_dict: dict[str, Any] = json.load(f)
-#
-#             config_instance.config_dict = config_dict
-#             return config_dict
-#
-#         except FileNotFoundError:
-#             config_default: dict[str, Any] = {}
-#             config_instance.config_dict = config_default
-#             return config_default
-#
-#         except Exception as e:
-#             raise ValueError(f"Error in reading ~/.gsplot.json: {e}")
+        entry_option: dict[str, Any] = self.config_dict.get(key, {})
+        return entry_option
 
 
 class ConfigLoad:
-    def __init__(self) -> None:
-        self.home: str = Path().get_home()
-        self.config_fname: str = ".gsplot.json"
-        self.config_path: str = f"{self.home}/{self.config_fname}"
+    DEFAULT_CONFIG_NAME: str = "gsplot.json"
 
-        try:
-            self._init_load()
-        except Exception:
+    def __init__(self, config_path: str | None = None) -> None:
+        self.config_path: str | None = self.find_config_path(config_path)
 
-            border_top = colored(
-                "╭──────────────────────────────────────────────╮", "red"
-            )
-            border_bottom = colored(
-                "╰──────────────────────────────────────────────╯", "red"
-            )
+    def find_config_path(self, config_path: str | None) -> str | None:
+        """Determine the configuration file path."""
+        if config_path:
+            if not os.path.exists(config_path):
+                raise FileNotFoundError(f"Configuration file not found: {config_path}")
+            return config_path
 
-            # Max width for the content inside the borders
-            max_width = 46
+        # Search in default locations
+        search_paths = [
+            os.getcwd(),  # Current directory
+            os.path.expanduser("~"),  # Home directory
+        ]
 
-            # Colored lines with proper padding
-            error_header = (
-                colored("│", "red")
-                + colored(
-                    f" ERROR: Failed to load a configuration file".ljust(max_width),
-                    "red",
-                    attrs=["bold"],
-                )
-                + colored("│", "red")
-            )
-            error_file = (
-                colored("│", "red")
-                + colored(
-                    f" File : the configuration file ~/.gsplot.json".ljust(max_width),
-                    "yellow",
-                )
-                + colored("│", "red")
-            )
-            error_hint = (
-                colored("│", "red")
-                + colored(
-                    f" Hint : Please check the file for errors".ljust(max_width), "cyan"
-                )
-                + colored("│", "red")
-            )
+        for path in search_paths:
+            potential_path = os.path.join(path, ConfigLoad.DEFAULT_CONFIG_NAME)
+            if os.path.exists(potential_path):
+                return potential_path
+        return None
 
-            # Print the styled error message
-            print(
-                f"{border_top}\n{error_header}\n{error_file}\n{error_hint}\n{border_bottom}"
-            )
-
-            # Print the actual traceback details
-            print(colored("Details:", "yellow"))
-            traceback.print_exc()  # Print the full traceback of the exception
-
-    def _init_load(self) -> None:
-        """
-        Loads parameters from the configuration file and applies them to matplotlib settings.
-
-        This method reads the configuration file, retrieves the `rcParams`, and applies the
-        relevant settings to matplotlib, such as setting the backend and other parameters.
-        """
+    def init_load(self) -> dict[str, Any]:
 
         config_dict: dict[str, Any] = self.get_config()
-        config_rcParams: dict[str, Any] = config_dict["rcParams"]
+        if "rcParams" in config_dict:
+            rc_params = config_dict["rcParams"]
+            self.apply_rc_params(rc_params)
+        if "rich" in config_dict:
+            if "traceback" in config_dict["rich"]:
+                traceback_params = config_dict["rich"]["traceback"]
+                install(**traceback_params)
+        return config_dict
 
-        # if "backends" in config_rcParams:
-        #     backend = config_rcParams["backends"]
-        #     mpl.use(backend)
-        #
-        # for key in config_rcParams:
-        #     if key != "backends":
-        #         rcParams[key] = config_rcParams[key]
-        #
-        backend = config_rcParams.pop("backends", None)
+    @staticmethod
+    def apply_rc_params(rc_params: dict[str, Any]) -> None:
+        backend = rc_params.pop("backends", None)
         if backend:
             mpl.use(backend)
-
-        rcParams.update(config_rcParams)
+        rcParams.update(rc_params)
 
     def get_config(self) -> dict[str, Any]:
-        try:
-            with open(self.config_path, "r") as f:
-                config_dict: dict[str, Any] = json.load(f)
-
-            return config_dict
-
-        except FileNotFoundError:
-            config_default: dict[str, Any] = {}
-            return config_default
-
-        except Exception as e:
-            raise ValueError(f"Error in reading ~/.gsplot.json: {e}")
+        if not self.config_path:
+            return {}
+        with open(self.config_path, "r") as f:
+            return cast(dict[str, Any], json.load(f))
 
 
-def get_config_dict() -> dict[str, Any]:
-    config_instance: Config = Config()
-    config_dict: dict[str, Any] = config_instance.config_dict
+#!TODO: Add docstring
+def config_load(config_path: str | None = None) -> dict[str, Any]:
+    _config: Config = Config()
+    config_dict: dict[str, Any] = _config.load(config_path)
     return config_dict
+
+
+def config_dict() -> dict[str, Any]:
+    _config: Config = Config()
+    config_dict: dict[str, Any] = _config.config_dict
+    return config_dict
+
+
+def config_entry_option(key: str) -> dict[str, Any]:
+    _config: Config = Config()
+    entry_option: dict[str, Any] = _config.get_config_entry_option(key)
+    return entry_option

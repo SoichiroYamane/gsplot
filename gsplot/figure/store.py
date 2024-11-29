@@ -1,4 +1,6 @@
-from typing import Union
+from __future__ import annotations
+
+import threading
 
 
 class StoreSingleton:
@@ -23,12 +25,14 @@ class StoreSingleton:
         Sets the store state to a new value.
     """
 
-    _instance = None
+    _instance: StoreSingleton | None = None
+    _lock: threading.Lock = threading.Lock()  # Lock to ensure thread safety
 
     def __new__(cls) -> "StoreSingleton":
-        if cls._instance is None:
-            cls._instance = super(StoreSingleton, cls).__new__(cls)
-            cls._instance._initialize_store()
+        with cls._lock:
+            if cls._instance is None:
+                cls._instance = super(StoreSingleton, cls).__new__(cls)
+                cls._instance._initialize_store()
         return cls._instance
 
     def _initialize_store(self) -> None:
@@ -39,10 +43,10 @@ class StoreSingleton:
         """
 
         # Explicitly initialize the instance variable with a type hint
-        self._store: Union[bool, int] = False
+        self._store: bool | int = False
 
     @property
-    def store(self) -> Union[bool, int]:
+    def store(self) -> bool | int:
         """
         Gets the current store state.
 
@@ -55,7 +59,7 @@ class StoreSingleton:
         return self._store
 
     @store.setter
-    def store(self, value: Union[bool, int]) -> None:
+    def store(self, value: bool | int) -> None:
         """
         Sets the store state to a new value.
 

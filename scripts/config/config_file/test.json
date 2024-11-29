@@ -1,0 +1,17 @@
+{
+  "load": {
+    "unpack": true
+  },
+  "axes": {
+    "ion": false,
+    "size": [
+      5.0,
+      3.0
+    ],
+    "unit": "in",
+    "clear": true
+  },
+  "show": {
+    "show": true
+  }
+}

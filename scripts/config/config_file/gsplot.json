@@ -1,0 +1,22 @@
+{
+  "rcParams": {
+    "xtick.major.pad": 6,
+    "ytick.major.pad": 6,
+    "backends": "MacOSX"
+  },
+  "load": {
+    "unpack": true
+  },
+  "axes": {
+    "ion": true,
+    "size": [
+      5.0,
+      3.0
+    ],
+    "unit": "in",
+    "clear": true
+  },
+  "show": {
+    "show": true
+  }
+}

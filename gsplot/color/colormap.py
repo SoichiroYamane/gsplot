@@ -1,160 +1,133 @@
+from typing import Any
+from numpy.typing import ArrayLike, NDArray
+
 import numpy as np
 import matplotlib as mpl
-from typing import Optional
+
+from ..base.base import bind_passed_params, ParamsGetter, CreateClassParams
 
 
 class Colormap:
-    """
-    A class to handle the creation and manipulation of colormaps using matplotlib.
-
-    Attributes
-    ----------
-    DEFAULT_N : int
-        The default number of colors in the colormap if `N` is not provided.
-    cmap : str
-        The name of the colormap to be used.
-    cmap_ndarray : np.ndarray
-        The array representing the colormap data.
-    normalize : bool
-        Whether to normalize the colormap data.
-
-    Methods
-    -------
-    _initialize_cmap_ndarray(N: Optional[int], ndarray: Optional[np.ndarray]) -> np.ndarray
-        Initializes the colormap data based on the number of colors or a provided array.
-    get_split_cmap() -> np.ndarray
-        Returns the colormap array, optionally normalized, split into RGB or RGBA values.
-    _normalize(ndarray: np.ndarray) -> np.ndarray
-        Normalizes the input array to the range [0, 1].
-    """
 
     DEFAULT_N: int = 10
 
     def __init__(
         self,
         cmap: str = "viridis",
-        N: Optional[int] = None,
-        ndarray: Optional[np.ndarray] = None,
+        N: int | None = None,
+        cmap_data: ArrayLike | None = None,
         normalize: bool = True,
+        reverse: bool = False,
     ) -> None:
-        """
-        Initializes the Colormap instance with the provided colormap name, number of colors,
-        colormap data array, and normalization option.
-
-        Parameters
-        ----------
-        cmap : str, optional
-            The name of the colormap to be used (default is "viridis").
-        N : Optional[int], optional
-            The number of colors to generate in the colormap (default is None).
-            If specified, `ndarray` must be None.
-        ndarray : Optional[np.ndarray], optional
-            An array representing colormap data (default is None).
-            If specified, `N` must be None.
-        normalize : bool, optional
-            Whether to normalize the colormap data (default is True).
-        """
 
         self.cmap: str = cmap
-        self.cmap_ndarray: np.ndarray = self._initialize_cmap_ndarray(N, ndarray)
+        self.cmap_data: NDArray[Any] = self._initialize_cmap_data(N, cmap_data)
         self.normalize: bool = normalize
+        self.reverse: bool = reverse
 
-    def _initialize_cmap_ndarray(
-        self, N: Optional[int], ndarray: Optional[np.ndarray]
-    ) -> np.ndarray:
-        """
-        Initializes the colormap data based on the number of colors or a provided array.
+    def _initialize_cmap_data(
+        self, N: int | None, cmap_data: ArrayLike | None
+    ) -> NDArray[Any]:
 
-        Parameters
-        ----------
-        N : Optional[int], optional
-            The number of colors to generate in the colormap (default is None).
-        ndarray : Optional[np.ndarray], optional
-            An array representing colormap data (default is None).
-
-        Returns
-        -------
-        np.ndarray
-            An array representing the colormap data.
-
-        Raises
-        ------
-        ValueError
-            If both `N` and `ndarray` are provided.
-        """
-
-        if N is not None and ndarray is not None:
+        if N is not None and cmap_data is not None:
             raise ValueError("Only one of N and ndarray can be specified.")
         if N is not None:
             return np.linspace(0, 1, N)
-        if ndarray is not None:
-            return ndarray
+        if cmap_data is not None:
+            return np.array(cmap_data)
         return np.linspace(0, 1, self.DEFAULT_N)
 
-    def get_split_cmap(self) -> np.ndarray:
-        """
-        Returns the colormap array, optionally normalized, split into RGB or RGBA values.
-
-        Returns
-        -------
-        np.ndarray
-            An array of RGB or RGBA values representing the colormap.
-        """
+    def get_split_cmap(self) -> NDArray[Any]:
 
         if self.normalize:
-            cmap_data = self._normalize(self.cmap_ndarray)
+            cmap_data = self._normalize(self.cmap_data)
         else:
-            cmap_data = self.cmap_ndarray
+            cmap_data = self.cmap_data
+        if self.reverse:
+            cmap_data = cmap_data[::-1]
         return np.array(mpl.colormaps.get_cmap(self.cmap)(cmap_data))
 
     @staticmethod
-    def _normalize(ndarray: np.ndarray) -> np.ndarray:
-        """
-        Normalizes the input array to the range [0, 1].
-
-        Parameters
-        ----------
-        ndarray : np.ndarray
-            The array to be normalized.
-
-        Returns
-        -------
-        np.ndarray
-            The normalized array.
-        """
+    def _normalize(ndarray: NDArray[Any]) -> NDArray[Any]:
 
         return np.array(
             (ndarray - np.min(ndarray)) / (np.max(ndarray) - np.min(ndarray))
         )
 
 
+# !TODO: Modify docstring
+@bind_passed_params()
 def get_cmap(
     cmap: str = "viridis",
-    N: int = 10,
-    ndarray: Optional[np.ndarray] = None,
+    N: int | None = 10,
+    cmap_data: ArrayLike | None = None,
     normalize: bool = True,
-) -> np.ndarray:
+    reverse: bool = False,
+) -> NDArray[Any]:
     """
-    Returns a colormap array based on the provided colormap name, number of colors,
-    colormap data array, and normalization option.
+    Generate a customized colormap based on the specified parameters.
+
+    This function creates a colormap object with the specified configuration and
+    returns a segmented colormap as a NumPy array. It allows for customization of
+    the colormap's resolution, data normalization, and reversal.
 
     Parameters
     ----------
     cmap : str, optional
-        The name of the colormap to be used (default is "viridis").
-    N : int, optional
-        The number of colors to generate in the colormap (default is 10).
-        Ignored if `ndarray` is provided.
-    ndarray : Optional[np.ndarray], optional
-        An array representing colormap data (default is None).
-        If provided, `N` is ignored.
+        The name of the colormap to use. Default is "viridis".
+    N : int or None, optional
+        The number of discrete levels in the colormap. If None, it uses the default
+        number of levels for the specified colormap. Default is 10.
+    cmap_data : ArrayLike or None, optional
+        Custom colormap data as an array-like structure. If None, the colormap is
+        generated based on the `cmap` parameter. Default is None.
     normalize : bool, optional
-        Whether to normalize the colormap data (default is True).
+        Whether to normalize the colormap data. If True, values will be scaled to
+        fit within the range [0, 1]. Default is True.
+    reverse : bool, optional
+        Whether to reverse the colormap. If True, the colormap's colors are inverted.
+        Default is False.
 
     Returns
     -------
-    np.ndarray
-        An array of RGB or RGBA values representing the colormap.
+    NDArray[Any]
+        A NumPy array representing the segmented colormap.
+
+    Notes
+    -----
+    - The colormap is generated using a `Colormap` class, which takes the input
+      parameters and applies additional processing.
+    - The function uses the `ParamsGetter` class to capture the passed arguments
+      and generate parameters for the `Colormap` object.
+
+    Examples
+    --------
+    Create a default colormap:
+
+    >>> get_cmap()
+    array([...])  # Output depends on the colormap resolution and settings.
+
+    Create a reversed colormap with 20 levels:
+
+    >>> get_cmap(cmap="plasma", N=20, reverse=True)
+    array([...])  # Output with inverted "plasma" colormap.
+
+    Use custom colormap data:
+
+    >>> cmap_data = [[1, 0, 0], [0, 1, 0], [0, 0, 1]]  # RGB values
+    >>> get_cmap(cmap_data=cmap_data, normalize=False)
+    array([...])
     """
 
-    return Colormap(cmap, N, ndarray, normalize).get_split_cmap()
+    passed_params: dict[str, Any] = ParamsGetter("passed_params").get_bound_params()
+    class_params = CreateClassParams(passed_params).get_class_params()
+
+    _colormap: Colormap = Colormap(
+        class_params["cmap"],
+        class_params["N"],
+        class_params["cmap_data"],
+        class_params["normalize"],
+        class_params["reverse"],
+    )
+
+    return _colormap.get_split_cmap()

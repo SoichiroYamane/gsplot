@@ -1,53 +1,11 @@
-from typing import List, Union, Any
+from typing import Any
 import matplotlib.pyplot as plt
 
-from ..base.base import AttributeSetter
 from .store import StoreSingleton
+from ..base.base import bind_passed_params, ParamsGetter, CreateClassParams
 
 
 class Show:
-    """
-    A class for displaying and saving matplotlib figures with customizable options.
-
-    Parameters
-    ----------
-    name : str, optional
-        The base name for the saved figure files (default is "gsplot").
-    ft_list : list[str], optional
-        A list of file formats to save the figure (default is ["png", "pdf"]).
-    dpi : float, optional
-        The resolution in dots per inch for the saved figures (default is 600).
-    show : bool, optional
-        Whether to display the figure using `plt.show()` (default is True).
-    *args : Any
-        Additional positional arguments for `plt.savefig`.
-    **kwargs : Any
-        Additional keyword arguments for `plt.savefig`.
-
-    Attributes
-    ----------
-    name : str
-        The base name for the saved figure files.
-    ft_list : list[str]
-        The list of file formats to save the figure.
-    dpi : float
-        The resolution in dots per inch for the saved figures.
-    show : bool
-        Whether to display the figure using `plt.show()`.
-    args : Any
-        Additional positional arguments for `plt.savefig`.
-    kwargs : Any
-        Additional keyword arguments for `plt.savefig`.
-    __store : StoreSingleton
-        Singleton instance managing whether the figure should be stored.
-
-    Methods
-    -------
-    _store_fig() -> None
-        Saves the figure in the specified formats if storing is enabled.
-    _get_store() -> Union[bool, int]
-        Returns the current store setting from the `StoreSingleton` instance.
-    """
 
     def __init__(
         self,
@@ -66,34 +24,20 @@ class Show:
         self.args: Any = args
         self.kwargs: Any = kwargs
 
-        attributer = AttributeSetter()
-        self.kwargs = attributer.set_attributes(self, locals(), key="show")
-
-        self.__store: StoreSingleton = StoreSingleton()
+        self._store_singleton: StoreSingleton = StoreSingleton()
 
         if self.show:
             plt.show()
 
-    def _store_fig(self) -> None:
-        """
-        Saves the figure in the specified formats if storing is enabled.
+    def store_fig(self) -> None:
 
-        The figure is saved with the base name and file formats specified
-        during initialization. The `dpi`, `bbox_inches`, and other options
-        can be customized.
-
-        Raises
-        ------
-        Exception
-            If an error occurs during the saving process.
-        """
-
-        if self._get_store():
+        if self.get_store():
             # save figure
             fname_list: list[str] = [f"{self.name}.{ft}" for ft in self.ft_list]
 
-            try:
-                for fname in fname_list:
+            # !TODO: figure out **kwargs for savefig. None, or *args, **kwargs
+            for fname in fname_list:
+                try:
                     plt.savefig(
                         fname,
                         bbox_inches="tight",
@@ -101,26 +45,18 @@ class Show:
                         *self.args,
                         **self.kwargs,
                     )
-
-            except Exception as e:
-                print(f"Exception: {e}")
-                for fname in fname_list:
+                except Exception as e:
+                    print(f"Error saving figure: {e}")
                     plt.savefig(fname, bbox_inches="tight", dpi=self.dpi)
 
-    def _get_store(self) -> Union[bool, int]:
-        """
-        Returns the current store setting from the `StoreSingleton` instance.
+    def get_store(self) -> bool | int:
 
-        Returns
-        -------
-        Union[bool, int]
-            The current store setting, which determines whether the figure should be saved.
-        """
-
-        store: Union[bool, int] = self.__store.store
+        store: bool | int = self._store_singleton.store
         return store
 
 
+# TODO: Modify docstring
+@bind_passed_params()
 def show(
     fname: str = "gsplot",
     ft_list: list[str] = ["png", "pdf"],
@@ -130,30 +66,67 @@ def show(
     **kwargs: Any,
 ) -> None:
     """
-    Displays and saves a matplotlib figure with customizable options.
+    Save and optionally display a Matplotlib figure with customizable settings.
 
-    This function creates an instance of the `Show` class to handle the display and saving
-    of the figure. The figure can be saved in multiple formats and with specified resolution.
+    This function saves the current Matplotlib figure to one or more file formats
+    with the specified filename and resolution. It also optionally displays the
+    figure in a graphical interface.
 
     Parameters
     ----------
     fname : str, optional
-        The base name for the saved figure files (default is "gsplot").
+        The base filename to use when saving the figure. Default is "gsplot".
     ft_list : list[str], optional
-        A list of file formats to save the figure (default is ["png", "pdf"]).
+        A list of file formats to save the figure in (e.g., ["png", "pdf"]). Default is ["png", "pdf"].
     dpi : float, optional
-        The resolution in dots per inch for the saved figures (default is 600).
+        The resolution of the saved figure in dots per inch (DPI). Default is 600.
     show : bool, optional
-        Whether to display the figure using `plt.show()` (default is True).
+        If True, display the figure in a graphical interface after saving. Default is True.
     *args : Any
-        Additional positional arguments for `plt.savefig`.
+        Additional positional arguments passed to the save or display process.
     **kwargs : Any
-        Additional keyword arguments for `plt.savefig`.
+        Additional keyword arguments for figure saving or display customization.
 
     Returns
     -------
     None
+        This function does not return anything.
+
+    Notes
+    -----
+    - The function uses the `Show` class to manage the figure saving and displaying processes.
+    - Multiple file formats can be specified in `ft_list`, and the figure will be saved
+      in each format with the specified filename and DPI.
+
+    Examples
+    --------
+    Save the current figure as "output.png" and "output.pdf":
+
+    >>> show(fname="output", ft_list=["png", "pdf"])
+
+    Save the figure in high resolution (1200 DPI):
+
+    >>> show(dpi=1200)
+
+    Display the figure without saving it:
+
+    >>> show(show=True, ft_list=[])
+
+    Pass additional arguments for customization:
+
+    >>> show(fname="plot", dpi=300, bbox_inches="tight")
     """
 
-    _show = Show(fname, ft_list, dpi, show, *args, **kwargs)
-    _show._store_fig()
+    passed_params: dict[str, Any] = ParamsGetter("passed_params").get_bound_params()
+    class_params = CreateClassParams(passed_params).get_class_params()
+
+    _show: Show = Show(
+        class_params["fname"],
+        class_params["ft_list"],
+        class_params["dpi"],
+        class_params["show"],
+        *class_params["args"],
+        **class_params["kwargs"],
+    )
+
+    _show.store_fig()

@@ -1,13 +1,12 @@
-version: '3'
 services:
-  python3:
+  gsplot:
     restart: always
     build: .
-    container_name: 'python3'
+    container_name: 'gsplot'
     working_dir: '/root/'
     tty: true
     environment:
-      - DISPLAY
+      - DISPLAY=host.docker.internal:0.0
       - QT_X11_NO_MITSHM=1
     volumes:
       - .:/root/opt

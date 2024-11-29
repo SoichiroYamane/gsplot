@@ -18,6 +18,6 @@ gs.label(
 
 
 gs.legend(
-    axis_index=0,
+    axis_target=0,
     loc="lower right",
 )

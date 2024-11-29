@@ -6,7 +6,7 @@ gs.line(
     x=[1, 2, 3],
     y=[1, 1, 1],
     label="line 1",
-    # markersize=23,
+    markersize=20,
     # ms=17,
 )
 
