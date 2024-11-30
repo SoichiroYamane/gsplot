@@ -1,6 +1,9 @@
 # .github/workflows/build.yml
 name: Build and Save Version Info
 
+permissions:
+  contents: write
+
 on:
   push:
     branches:
@@ -36,8 +39,14 @@ jobs:
 
       - name: Write version info to file
         run: |
-          echo "__version__ = '${{ env.PACKAGE_VERSION }}'" > gsplot/gsplot/version.py
-          echo "__commit__ = '${{ env.COMMIT_HASH }}'" >> gsplot/gsplot/version.py
+          echo "__version__ = '${{ env.PACKAGE_VERSION }}'" > gsplot/version.py
+          echo "__commit__ = '${{ env.COMMIT_HASH }}'" >> gsplot/version.py
+
+      - name: Commit and push changes
+        uses: EndBug/add-and-commit@v9
+        with:
+          message: "Update version.py with build information"
+          add: "gsplot/version.py"
 
       - name: Build package
         run: poetry build

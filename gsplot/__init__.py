@@ -1,3 +1,6 @@
+# from .version import __version__
+
+
 import matplotlib.pyplot as plt
 
 from .color.colormap import get_cmap
