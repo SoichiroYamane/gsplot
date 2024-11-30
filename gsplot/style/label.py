@@ -24,7 +24,7 @@ from ..figure.axes_base import (
 from ..base.base import bind_passed_params, ParamsGetter, CreateClassParams
 
 
-from .ticks import MinorTicksAll
+from .ticks import MinorTicksAxes
 
 import warnings
 from functools import wraps
@@ -95,7 +95,7 @@ class LabelAddIndex:
 
     def __init__(
         self,
-        position: Literal["in", "out", "corner"] = "out",
+        loc: Literal["in", "out", "corner"] = "out",
         x_offset: float = 0,
         y_offset: float = 0,
         ha: str = "center",
@@ -106,7 +106,7 @@ class LabelAddIndex:
         *args: Any,
         **kwargs: Any,
     ) -> None:
-        self.position = position
+        self.loc = loc
         self.x_offset = x_offset
         self.y_offset = y_offset
         self.ha = ha
@@ -139,19 +139,19 @@ class LabelAddIndex:
         PADDING_X: float = 0
         PADDING_Y: float = 0
 
-        if self.position == "out":
+        if self.loc == "out":
             # Coordinate: device coordinates
             bbox = axis.get_tightbbox(self.renderer)
             PADDING_X, PADDING_Y = 0, -5
-        elif self.position == "in":
+        elif self.loc == "in":
             # Coordinate: device coordinates
             bbox = axis.get_window_extent(self.renderer)
             PADDING_X, PADDING_Y = 30, -30
-        elif self.position == "corner":
+        elif self.loc == "corner":
             bbox = axis.get_window_extent(self.renderer)
         else:
             raise ValueError(
-                f"Invalid position: {self.position}, must be 'in', 'out', or 'corner'"
+                f"Invalid position: {self.loc}, must be 'in', 'out', or 'corner'"
             )
 
         # Ensure that padding does not depend on the figure size
@@ -243,7 +243,7 @@ class LabelAddIndex:
 @bind_passed_params()
 @track_order
 def label_add_index(
-    position: Literal["in", "out", "corner"] = "out",
+    loc: Literal["in", "out", "corner"] = "out",
     x_offset: float = 0,
     y_offset: float = 0,
     ha: str = "center",
@@ -262,8 +262,8 @@ def label_add_index(
 
     Parameters
     ----------
-    position : {"in", "out", "corner"}, optional
-        The relative position of the labels:
+    loc : {"in", "out", "corner"}, optional
+        The relative location of the labels:
         - "in": Inside the plot.
         - "out": Outside the plot.
         - "corner": Positioned at the corners. Default is "out".
@@ -318,7 +318,7 @@ def label_add_index(
 
     Add labels at the corners with an offset:
 
-    >>> label_add_index(position="corner", x_offset=0.1, y_offset=0.1)
+    >>> label_add_index(loc="corner", x_offset=0.1, y_offset=0.1)
 
     Use numeric labels with larger font size:
 
@@ -333,7 +333,7 @@ def label_add_index(
     class_params = CreateClassParams(passed_params).get_class_params()
 
     _label_add_index: LabelAddIndex = LabelAddIndex(
-        class_params["position"],
+        class_params["loc"],
         class_params["x_offset"],
         class_params["y_offset"],
         class_params["ha"],
@@ -353,7 +353,7 @@ class Label:
         lab_lims: list[Any],
         x_pad: int = 2,
         y_pad: int = 2,
-        minor_ticks_all: bool = True,
+        minor_ticks_axes: bool = True,
         tight_layout: bool = True,
         *args: Any,
         **kwargs: Any,
@@ -362,7 +362,7 @@ class Label:
         self.lab_lims: list[Any] = lab_lims
         self.x_pad: int = x_pad
         self.y_pad: int = y_pad
-        self.minor_ticks_all: bool = minor_ticks_all
+        self.minor_ticks_axes: bool = minor_ticks_axes
         self.tight_layout: bool = tight_layout
         self.args: Any = args
         self.kwargs: Any = kwargs
@@ -397,10 +397,10 @@ class Label:
         axis.set_ylabel("")
         axis.tick_params(labelleft=False)
 
-    def add_minor_ticks_all(self) -> None:
+    def add_minor_ticks_axes(self) -> None:
 
-        if self.minor_ticks_all:
-            MinorTicksAll().set_minor_ticks_all()
+        if self.minor_ticks_axes:
+            MinorTicksAxes().set_minor_ticks_axes()
 
     def configure_axis_labels(self, axis, x_lab, y_lab):
         if x_lab:
@@ -534,7 +534,7 @@ class Label:
 
     def label(self) -> None:
 
-        self.add_minor_ticks_all()
+        self.add_minor_ticks_axes()
         self.set_labels()
         self.apply_tight_layout()
 
@@ -546,7 +546,7 @@ def label(
     lab_lims: list[Any],
     x_pad: int = 2,
     y_pad: int = 2,
-    minor_ticks_all: bool = True,
+    minor_ticks_axes: bool = True,
     tight_layout: bool = True,
     *args: Any,
     **kwargs: Any,
@@ -567,7 +567,7 @@ def label(
         The padding applied to the x-axis labels. Default is 2.
     y_pad : int, optional
         The padding applied to the y-axis labels. Default is 2.
-    minor_ticks_all : bool, optional
+    minor_ticks_axes : bool, optional
         If True, enable minor tick marks for all axes. Default is True.
     tight_layout : bool, optional
         If True, adjust the layout of the plot to minimize overlap between
@@ -619,7 +619,7 @@ def label(
         class_params["lab_lims"],
         class_params["x_pad"],
         class_params["y_pad"],
-        class_params["minor_ticks_all"],
+        class_params["minor_ticks_axes"],
         class_params["tight_layout"],
         *class_params["args"],
         **class_params["kwargs"],

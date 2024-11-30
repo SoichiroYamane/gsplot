@@ -54,13 +54,16 @@ class LineColormapSolid:
         else:
             NUM_STRIPES = self.interpolation_points
 
+        # NUM_STRIPES in colormap should be subtracted by 1
+        NUM_STRIPES -= 1
+
         LegendColormap(
             self.axis_index,
             self.cmap,
             self.label,
             NUM_STRIPES,
             **self.kwargs,
-        ).add_legend_colormap()
+        ).axis_patch()
 
     def normal_interpolate_points(self, interpolation_points: int) -> tuple:
         xdiff = np.diff(self.x)
@@ -91,12 +94,14 @@ class LineColormapSolid:
             self.x, self.y
         )
         norm = LineColormapBase()._create_cmap(self.cmapdata)
+        print(norm)
 
         lc: LineCollection = LineCollection(
             segments.tolist(), cmap=self.cmap, norm=norm
         )
         lc.set_array(self.cmapdata)
         lc.set_linewidth(self.linewidth)
+        lc.set_capstyle("projecting")
         self.axis.add_collection(lc)
 
         return [lc]

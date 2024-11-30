@@ -53,20 +53,11 @@ class LineColormapBase:
         return segments
 
     def _create_cmap(self, cmapdata: NDArray[Any]) -> Normalize:
-        """
-        Creates a normalization object for mapping data points to colors.
-
-        Parameters
-        ----------
-        cmapdata : NDArray[Any]
-            The data points to be used for creating the colormap.
-
-        Returns
-        -------
-        Normalize
-            A normalization object that maps the data points to the colormap.
-        """
 
         # Create a continuous norm to map from data points to colors
+        if len(cmapdata) >= 2:
+            # delete maximun data
+            cmapdata = np.delete(cmapdata, np.where(cmapdata == np.max(cmapdata)))
         norm = Normalize(cmapdata.min(), cmapdata.max())
+
         return norm

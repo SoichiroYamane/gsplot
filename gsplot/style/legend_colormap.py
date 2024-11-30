@@ -12,6 +12,7 @@ from matplotlib.legend_handler import HandlerBase
 import numpy as np
 from ..base.base import bind_passed_params, ParamsGetter, CreateClassParams
 from ..figure.axes_base import AxesResolver
+from ..plot.line import Line
 
 
 class HandlerColormap(HandlerBase):
@@ -31,6 +32,7 @@ class HandlerColormap(HandlerBase):
         self.vmin: int | float = vmin
         self.vmax: int | float = vmax
         self.reverse: bool = reverse
+        self.kwargs = kwargs
 
     def create_artists(
         self,
@@ -58,9 +60,14 @@ class HandlerColormap(HandlerBase):
                 height,
                 fc=fc,
                 transform=trans,
+                **self.kwargs,
             )
             stripes.append(s)
         return stripes
+
+
+class ColormapRectangle(Rectangle):
+    pass
 
 
 class LegendColormap:
@@ -74,22 +81,33 @@ class LegendColormap:
         vmin: int | float = 0,
         vmax: int | float = 1,
         reverse: bool = False,
-        *args: Any,
         **kwargs: Any,
     ):
         self.axis_target: int | Axes = axis_target
         self.cmap: str = cmap
         self.label: str | None = label
         self.num_stripes: int = num_stripes
-        self.vmin = vmin
-        self.vmax = vmax
-        self.reverse = reverse
-        self.args = args
-        self.kwargs = kwargs
+        self.vmin: int | float = vmin
+        self.vmax: int | float = vmax
+        self.reverse: bool = reverse
+        self.kwargs: Any = kwargs
 
         _axes_resolver = AxesResolver(axis_target)
         self.axis_index: int = _axes_resolver.axis_index
         self.axis: Axes = _axes_resolver.axis
+
+        MAX_NUM_STRIPES = 256
+        if self.num_stripes > MAX_NUM_STRIPES:
+            self.num_stripes = MAX_NUM_STRIPES
+
+        self.handler_colormap = HandlerColormap(
+            cmap=self.cmap,
+            num_stripes=self.num_stripes,
+            reverse=self.reverse,
+            vmin=self.vmin,
+            vmax=self.vmax,
+            **self.kwargs,
+        )
 
     def get_legend_handlers_colormap(
         self,
@@ -97,46 +115,32 @@ class LegendColormap:
 
         handle = [Rectangle((0, 0), 1, 1)]
         label: list[str | None] = [self.label]
-        _handler = HandlerColormap(
-            cmap=self.cmap,
-            num_stripes=self.num_stripes,
-            reverse=self.reverse,
-            vmin=self.vmin,
-            vmax=self.vmax,
-        )
-        handler: dict[Rectangle, HandlerColormap] = {handle[0]: _handler}
+
+        handler: dict[Rectangle, HandlerColormap] = {handle[0]: self.handler_colormap}
         return handle, label, handler
 
-    def add_legend_colormap(self) -> Lg:
+    @staticmethod
+    def create_unique_class_with_handler(base_class, handler, class_name=None):
+        # Create Unique Class
+        if class_name is None:
+            class_name = f"Custom{base_class.__name__}_{id(handler)}"
 
-        handles, labels, handlers = Legend(self.axis_index).get_legend_handlers()
-        handle_cmap, label_cmap, handler_cmap = self.get_legend_handlers_colormap()
+        # Create a new class with the given handler
+        UniqueClass = type(class_name, (base_class,), {})
+        return UniqueClass
 
-        # handles += handle_cmap
-        # labels += label_cmap
-        # handlers |= handler_cmap
+    def axis_patch(self):
+        UniqueClass = self.create_unique_class_with_handler(
+            Rectangle, self.handler_colormap
+        )
+        cmap_dummy_handle = UniqueClass((0, 0), 0, 0, label=self.label, visible=False)
+        self.axis.add_patch(cmap_dummy_handle)
+        Lg.update_default_handler_map({cmap_dummy_handle: self.handler_colormap})
+        self.axis.legend(handles=[cmap_dummy_handle], labels=[self.label])
 
-        # Filter None values from label_cmap to match the expected types
-        label_cmap_filtered = [lbl for lbl in label_cmap if lbl is not None]
-
-        # Append handle_cmap and label_cmap_filtered to the existing lists
-        handles += handle_cmap
-        labels += label_cmap_filtered
-
-        # Ensure handlers and handler_cmap have compatible types
-        handler_cmap_casted: dict[Artist, HandlerBase] = {
-            k: v for k, v in handler_cmap.items()
-        }
-        handlers.update(handler_cmap_casted)
-
-        return Legend(
-            self.axis_index,
-            handles,
-            labels,
-            handlers,
-            *self.args,
-            **self.kwargs,
-        ).legend_handlers()
+    def legend_colormap(self) -> Lg:
+        self.axis_patch()
+        return self.axis.legend()
 
 
 # TODO: modify the docsring
@@ -149,7 +153,6 @@ def legend_colormap(
     vmin: int | float = 0,
     vmax: int | float = 1,
     reverse: bool = False,
-    *args: Any,
     **kwargs: Any,
 ) -> Lg:
     """
@@ -176,8 +179,6 @@ def legend_colormap(
         The maximum value of the colormap range. Default is 1.
     reverse : bool, optional
         If True, reverse the direction of the colormap. Default is False.
-    *args : Any
-        Additional positional arguments for customizing the legend.
     **kwargs : Any
         Additional keyword arguments passed to the `LegendColormap` class for
         further customization.
@@ -225,8 +226,7 @@ def legend_colormap(
         class_params["vmin"],
         class_params["vmax"],
         class_params["reverse"],
-        *class_params["args"],
         **class_params["kwargs"],
     )
 
-    return _legend_colormap.add_legend_colormap()
+    return _legend_colormap.legend_colormap()
