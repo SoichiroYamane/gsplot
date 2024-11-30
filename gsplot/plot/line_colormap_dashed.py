@@ -50,7 +50,6 @@ class LineColormapDashed:
         self.cmapdata: NDArray = np.array(self._cmapdata)
 
         if self.label is not None:
-            print("Adding legend")
             self.add_legend_colormap()
 
         self.xspan: float = (
@@ -73,7 +72,7 @@ class LineColormapDashed:
             self.label,
             num_stripes=len(self.cmapdata),
             **self.kwargs,
-        ).add_legend_colormap()
+        ).axis_patch()
 
     def verify_line_pattern(self) -> None:
         if len(self.line_pattern) != 2:

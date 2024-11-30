@@ -31,8 +31,8 @@ class Line:
         markerfacecolor: ColorType | None = None,
         linestyle: LineStyleType = "--",
         linewidth: int | float = 1.0,
-        alpha: int | float = 0.2,
-        alpha_all: int | float = 1.0,
+        alpha: int | float = 1.0,
+        alpha_mfc: int | float = 0.2,
         label: str | None = None,
         *args: Any,
         **kwargs: Any,
@@ -52,7 +52,7 @@ class Line:
         self.linestyle: LineStyleType = linestyle
         self.linewidth: int | float = linewidth
         self.alpha: int | float = alpha
-        self.alpha_all: int | float = alpha_all
+        self.alpha_mfc: int | float = alpha_mfc
         self.label: str | None = label
         self.args: Any = args
         self.kwargs: Any = kwargs
@@ -75,14 +75,14 @@ class Line:
 
         default_color: ColorType = cycle_color if self.color is None else self.color
 
-        self._color = self._modify_color_alpha(default_color, self.alpha_all)
+        self._color = self._modify_color_alpha(default_color, self.alpha)
         self._color_mec = self._modify_color_alpha(
             self.markeredgecolor if self.markeredgecolor is not None else default_color,
-            self.alpha_all,
+            self.alpha,
         )
         self._color_mfc = self._modify_color_alpha(
             self.markerfacecolor if self.markerfacecolor is not None else default_color,
-            self.alpha * self.alpha_all,
+            self.alpha_mfc * self.alpha,
         )
 
     def _modify_color_alpha(self, color: ColorType, alpha: float | int | None) -> tuple:
@@ -132,8 +132,8 @@ def line(
     markerfacecolor: ColorType | None = None,
     linestyle: LineStyleType = "--",
     linewidth: int | float = 1.0,
-    alpha: int | float = 0.2,
-    alpha_all: int | float = 1.0,
+    alpha: int | float = 1,
+    alpha_mfc: int | float = 0.2,
     label: str | None = None,
     *args: Any,
     **kwargs: Any,
@@ -246,7 +246,7 @@ def line(
         class_params["linestyle"],
         class_params["linewidth"],
         class_params["alpha"],
-        class_params["alpha_all"],
+        class_params["alpha_mfc"],
         class_params["label"],
         *class_params["args"],
         **class_params["kwargs"],

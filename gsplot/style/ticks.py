@@ -41,8 +41,8 @@ class MinorTicks:
             raise ValueError("Invalid mode. Choose from 'x', 'y', or 'xy'.")
 
 
-class MinorTicksAll:
-    def set_minor_ticks_all(self) -> None:
+class MinorTicksAxes:
+    def set_minor_ticks_axes(self) -> None:
         for axis in plt.gcf().axes:
             axis.xaxis.set_minor_locator(plticker.AutoMinorLocator())
             axis.yaxis.set_minor_locator(plticker.AutoMinorLocator())
@@ -57,5 +57,5 @@ def ticks_on(axis_target: int | Axes, mode=Literal["x", "y", "xy"]) -> None:
     MinorTicks(axis_target).set_minor_ticks_on(mode)
 
 
-def ticks_all() -> None:
-    MinorTicksAll().set_minor_ticks_all()
+def ticks_on_axes() -> None:
+    MinorTicksAxes().set_minor_ticks_axes()

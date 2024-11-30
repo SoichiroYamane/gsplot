@@ -37,10 +37,23 @@ class Legend:
 
         handles, labels = self.axis.get_legend_handles_labels()
 
+        # handler_map = Lg(
+        #     parent=self.axis, handles=[], labels=[]
+        # ).get_legend_handler_map()
+        # handlers = dict(zip(handles, [handler_map[type(handle)] for handle in handles]))
+
         handler_map = Lg(
             parent=self.axis, handles=[], labels=[]
         ).get_legend_handler_map()
-        handlers = dict(zip(handles, [handler_map[type(handle)] for handle in handles]))
+
+        handlers = {}
+        for handle in handles:
+            if type(handle) in handler_map:
+                print(handle)
+                handlers[handle] = handler_map[type(handle)]
+            else:
+                # if handle is not in handler_map, pass
+                pass
 
         return handles, labels, handlers
 
@@ -58,6 +71,7 @@ class Legend:
             *self.args,
             **self.kwargs,
         )
+
         return _lg
 
     def reverse_legend(self) -> Lg:

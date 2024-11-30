@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 
 from .color.colormap import get_cmap
 
-from .data.load import load_file
+from .data.load_file import load_file
 
 from .figure.axes import axes
 from .figure.figure_tools import get_figure_size
@@ -19,14 +19,13 @@ from .plot.scatter import scatter
 from .plot.scatter_colormap import scatter_colormap
 
 
-from .style.graph import graph_square, graph_square_all
+from .style.graph import graph_square, graph_square_axes
 from .style.graph import (
     graph_white,
-    graph_white_all,
-    graph_white_axis,
-    graph_white_axis_all,
+    graph_white_axes,
     graph_transparent,
-    graph_transparent_all,
+    graph_transparent_axes,
+    graph_facecolor,
 )
 
 from .style.label import label
@@ -37,7 +36,7 @@ from .style.legend_colormap import legend_colormap
 from .style.ticks import (
     ticks_off,
     ticks_on,
-    ticks_all,
+    ticks_on_axes,
 )
 from .config.config import Config
 
@@ -55,7 +54,7 @@ Config()
 __all__ = [
     # color/colormap.py
     "get_cmap",
-    # data/load.py
+    # data/load_file.py
     "load_file",
     # figure/axes.py
     "axes",
@@ -85,13 +84,12 @@ __all__ = [
     "scatter_colormap",
     # style/graph.py
     "graph_square",
-    "graph_square_all",
+    "graph_square_axes",
     "graph_white",
-    "graph_white_all",
-    "graph_white_axis",
-    "graph_white_axis_all",
+    "graph_white_axes",
     "graph_transparent",
-    "graph_transparent_all",
+    "graph_transparent_axes",
+    "graph_facecolor",
     # style/label.py
     "label",
     "label_add_index",
@@ -105,5 +103,5 @@ __all__ = [
     # style/ticks.py
     "ticks_off",
     "ticks_on",
-    "ticks_all",
+    "ticks_on_axes",
 ]
