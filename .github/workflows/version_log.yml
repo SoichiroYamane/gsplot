@@ -1,0 +1,81 @@
+# .github/workflows/build.yml
+name: Build and Save Version Info
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.12'
+
+      - name: Install Poetry
+        uses: abatilo/actions-poetry@v2.2.0
+
+      - name: Install dependencies
+        run: poetry install --no-root
+
+      - name: Get Git commit hash
+        run: echo "COMMIT_HASH=${GITHUB_SHA}" >> $GITHUB_ENV
+
+      - name: Get package version
+        run: |
+          VERSION=$(poetry version -s)
+          echo "PACKAGE_VERSION=${VERSION}" >> $GITHUB_ENV
+
+      - name: Write version info to file
+        run: |
+          echo "__version__ = '${{ env.PACKAGE_VERSION }}'" > your_package/version.py
+          echo "__commit__ = '${{ env.COMMIT_HASH }}'" >> your_package/version.py
+
+      # - name: Build package
+      #   run: poetry build
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: dist
+          path: dist/*
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: dist
+
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: v${{ env.PACKAGE_VERSION }}
+          release_name: Release v${{ env.PACKAGE_VERSION }}
+          draft: false
+          prerelease: false
+
+      - name: Upload Release Asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: dist/your_package-${{ env.PACKAGE_VERSION }}.tar.gz
+          asset_name: your_package-${{ env.PACKAGE_VERSION }}.tar.gz
+          asset_content_type: application/gzip
