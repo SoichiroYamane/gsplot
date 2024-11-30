@@ -36,8 +36,8 @@ jobs:
 
       - name: Write version info to file
         run: |
-          echo "__version__ = '${{ env.PACKAGE_VERSION }}'" > your_package/version.py
-          echo "__commit__ = '${{ env.COMMIT_HASH }}'" >> your_package/version.py
+          echo "__version__ = '${{ env.PACKAGE_VERSION }}'" > gsplot/version.py
+          echo "__commit__ = '${{ env.COMMIT_HASH }}'" >> gsplot/version.py
 
       # - name: Build package
       #   run: poetry build
