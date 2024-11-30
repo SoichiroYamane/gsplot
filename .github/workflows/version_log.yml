@@ -39,8 +39,8 @@ jobs:
           echo "__version__ = '${{ env.PACKAGE_VERSION }}'" > gsplot/version.py
           echo "__commit__ = '${{ env.COMMIT_HASH }}'" >> gsplot/version.py
 
-      # - name: Build package
-      #   run: poetry build
+      - name: Build package
+        run: poetry build
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v3
