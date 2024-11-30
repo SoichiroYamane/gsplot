@@ -48,34 +48,3 @@ jobs:
           name: dist
           path: dist/*
 
-  release:
-    needs: build
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
-
-    steps:
-      - name: Download artifacts
-        uses: actions/download-artifact@v3
-        with:
-          name: dist
-
-      - name: Create Release
-        id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: v${{ env.PACKAGE_VERSION }}
-          release_name: Release v${{ env.PACKAGE_VERSION }}
-          draft: false
-          prerelease: false
-
-      - name: Upload Release Asset
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: dist/your_package-${{ env.PACKAGE_VERSION }}.tar.gz
-          asset_name: your_package-${{ env.PACKAGE_VERSION }}.tar.gz
-          asset_content_type: application/gzip
