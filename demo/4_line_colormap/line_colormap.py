@@ -16,7 +16,10 @@ axes = gs.axes(store=True, size=[10, 5], mosaic="AB")
 # Line plot with solid colormap
 gs.line_colormap_solid(0, x, u, x, label="sin(x)", lw=3)
 # Line plot with dashed colormap
-gs.line_colormap_dashed(0, x, v, x, label="cos(x)", lw=3, cmap="gnuplot")
+gs.line_colormap_dashed(
+    0, x, v, x[::-1,], label="cos(x)", lw=3, cmap="gnuplot", reverse=True
+)
+
 
 # Line plot with solid colormap
 gs.line_colormap_solid(1, n, n, n, label="quantum solid", lw=10)
