@@ -1,8 +1,10 @@
-import pytest
 from unittest.mock import MagicMock
+
+import pytest
 from matplotlib.axes import Axes
 from numpy import ndarray
-from gsplot.figure.axes_base import AxesSingleton, AxesRangeSingleton
+
+from gsplot.figure.axes_base import AxesRangeSingleton, AxesSingleton
 
 
 class TestAxesSingleton:

@@ -1,37 +1,23 @@
-from typing import (
-    cast,
-    Callable,
-    Any,
-    Literal,
-    Callable,
-    TypeVar,
-)
+import warnings
+from functools import wraps
+from typing import Any, Callable, Literal, TypeVar, cast
 
-
-from numpy.typing import ArrayLike, NDArray
 import matplotlib.pyplot as plt
 import matplotlib.ticker as plticker
 import numpy as np
+from matplotlib.axes import Axes
 from matplotlib.backends.backend_agg import FigureCanvasAgg
 from matplotlib.figure import Figure
-from matplotlib.axes import Axes
 from matplotlib.transforms import Bbox
-from ..figure.axes_base import (
-    AxisRangeController,
-    AxesRangeSingleton,
-    AxisRangeManager,
-)
-from ..base.base import bind_passed_params, ParamsGetter, CreateClassParams
-
-
-from .ticks import MinorTicksAxes
-
-import warnings
-from functools import wraps
-
+from numpy.typing import ArrayLike, NDArray
 from rich.console import Console
 from rich.panel import Panel
 from rich.text import Text
+
+from ..base.base import CreateClassParams, ParamsGetter, bind_passed_params
+from ..figure.axes_base import (AxesRangeSingleton, AxisRangeController,
+                                AxisRangeManager)
+from .ticks import MinorTicksAxes
 
 console = Console()
 

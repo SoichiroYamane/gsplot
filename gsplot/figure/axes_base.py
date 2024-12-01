@@ -1,12 +1,13 @@
 from __future__ import annotations
-from typing import Any, cast, TypeVar, Callable
-from numpy.typing import NDArray
 
-import numpy as np
-from matplotlib.transforms import Bbox
-from matplotlib.axes import Axes
-import matplotlib.pyplot as plt
 import threading
+from typing import Any, Callable, TypeVar, cast
+
+import matplotlib.pyplot as plt
+import numpy as np
+from matplotlib.axes import Axes
+from matplotlib.transforms import Bbox
+from numpy.typing import NDArray
 
 from .figure_tools import FigureLayout
 

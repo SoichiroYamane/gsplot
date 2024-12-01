@@ -1,7 +1,7 @@
-from numpy.typing import NDArray
 from typing import Any
 
 from matplotlib import pyplot as plt
+from numpy.typing import NDArray
 
 
 class FigureLayout:

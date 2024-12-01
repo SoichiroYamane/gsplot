@@ -1,9 +1,9 @@
 # import gsplot as gs
-import gsplot as gs
-import matplotlib.pyplot as plt
 import matplotlib as mpl
+import matplotlib.pyplot as plt
 import matplotlib.ticker as plticker
 
+import gsplot as gs
 
 axes = gs.axes(mosaic="AB")
 

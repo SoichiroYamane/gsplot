@@ -1,15 +1,15 @@
-from enum import Enum
-from typing import Any, TypeVar, Generic
-from matplotlib.typing import HashableList
 from collections.abc import Hashable
+from enum import Enum
+from typing import Any, Generic, TypeVar
 
 import matplotlib.pyplot as plt
 from matplotlib.axes import Axes
+from matplotlib.typing import HashableList
 
+from ..base.base import CreateClassParams, ParamsGetter, bind_passed_params
+from ..plot.line_base import NumLines
 from .axes_base import AxesRangeSingleton
 from .store import StoreSingleton
-from ..base.base import bind_passed_params, ParamsGetter, CreateClassParams
-from ..plot.line_base import NumLines
 
 _T = TypeVar("_T")
 

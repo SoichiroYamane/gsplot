@@ -1,5 +1,6 @@
-import gsplot as gs
 import matplotlib.pyplot as plt
+
+import gsplot as gs
 
 # Create new axes
 axes = gs.axes(store=True, size=[5, 5], unit="in", mosaic="AB;CD")

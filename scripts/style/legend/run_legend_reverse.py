@@ -1,5 +1,6 @@
-import gsplot as gs
 from matplotlib import pyplot as plt
+
+import gsplot as gs
 
 axes = gs.axes(store=False, mosaic="AB")
 

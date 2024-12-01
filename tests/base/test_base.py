@@ -1,5 +1,7 @@
-import pytest
 from unittest.mock import MagicMock, patch
+
+import pytest
+
 from gsplot.base.base import AttributeSetter
 
 # from gsplot.params.params import Params, LoadParams

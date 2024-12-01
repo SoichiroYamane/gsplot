@@ -1,7 +1,7 @@
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
 
-x = np.arange(-5, 5 , 0.1)
+x = np.arange(-5, 5, 0.1)
 y = np.sin(x)
 
 plt.plot(x, y)

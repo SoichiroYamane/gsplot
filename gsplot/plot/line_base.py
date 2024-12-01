@@ -1,9 +1,10 @@
 from __future__ import annotations
-import numpy as np
-from numpy.typing import NDArray
-from typing import Any, Callable, TypeVar, Any, cast
 
 import threading
+from typing import Any, Callable, TypeVar, cast
+
+import numpy as np
+from numpy.typing import NDArray
 
 from ..color.colormap import Colormap
 

@@ -1,7 +1,9 @@
-import pytest
 from unittest.mock import MagicMock, patch
+
+import pytest
 from matplotlib.axes import Axes
-from gsplot.figure.axes import UnitConv, Unit, AxesHandler
+
+from gsplot.figure.axes import AxesHandler, Unit, UnitConv
 
 
 class TestUnitConv:

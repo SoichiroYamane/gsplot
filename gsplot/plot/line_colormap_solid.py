@@ -1,16 +1,16 @@
-import numpy as np
-from numpy.typing import NDArray, ArrayLike
-from matplotlib.axes import Axes
-from matplotlib.colors import Normalize
-from matplotlib.collections import LineCollection
 from typing import Any, Literal
 
+import numpy as np
+from matplotlib.axes import Axes
+from matplotlib.collections import LineCollection
+from matplotlib.colors import Normalize
+from numpy.typing import ArrayLike, NDArray
 
-from .line_colormap_base import LineColormapBase
-from ..base.base import bind_passed_params, ParamsGetter, CreateClassParams
+from ..base.base import CreateClassParams, ParamsGetter, bind_passed_params
 from ..base.base_alias_validator import AliasValidator
-from ..figure.axes_base import AxesResolver, AxesRangeSingleton, AxisLayout
+from ..figure.axes_base import AxesRangeSingleton, AxesResolver, AxisLayout
 from ..style.legend_colormap import LegendColormap
+from .line_colormap_base import LineColormapBase
 
 
 class LineColormapSolid:

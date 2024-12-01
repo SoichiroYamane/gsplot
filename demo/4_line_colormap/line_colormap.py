@@ -1,5 +1,6 @@
-import gsplot as gs
 import numpy as np
+
+import gsplot as gs
 
 # Create data
 x = np.linspace(0, 11, 1000)

@@ -1,5 +1,7 @@
-import pytest
 from typing import Any
+
+import pytest
+
 from gsplot.figure.store import StoreSingleton
 
 

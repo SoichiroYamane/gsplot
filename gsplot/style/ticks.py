@@ -1,8 +1,9 @@
 from typing import Literal
+
+import matplotlib.pyplot as plt
+import matplotlib.ticker as plticker
 from matplotlib.axes import Axes
 from matplotlib.ticker import NullLocator
-import matplotlib.ticker as plticker
-import matplotlib.pyplot as plt
 
 from ..figure.axes_base import AxesResolver
 
