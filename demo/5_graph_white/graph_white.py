@@ -1,5 +1,6 @@
-import gsplot as gs
 import matplotlib.pyplot as plt
+
+import gsplot as gs
 
 gs.graph_facecolor("black")
 axes = gs.axes(store=True, size=[9, 3], mosaic="ABC")

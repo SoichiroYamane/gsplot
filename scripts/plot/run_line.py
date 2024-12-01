@@ -15,6 +15,7 @@
 
 
 import matplotlib.pyplot as plt
+
 import gsplot as gs
 
 # Create a figure with 2 axes

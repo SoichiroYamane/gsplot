@@ -1,6 +1,7 @@
-import gsplot as gs
 import numpy as np
 from rich import print
+
+import gsplot as gs
 
 # Load the configuration file
 config = gs.config_load("./gsplot.json")

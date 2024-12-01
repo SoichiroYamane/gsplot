@@ -1,8 +1,9 @@
-import matplotlib.pyplot as plt
-import gsplot as gs
 import test
 
+import matplotlib.pyplot as plt
 from rich.traceback import install
+
+import gsplot as gs
 
 install()
 

@@ -1,7 +1,8 @@
 from typing import Any
-from numpy.typing import ArrayLike, NDArray
-from matplotlib.colors import Normalize
+
 import numpy as np
+from matplotlib.colors import Normalize
+from numpy.typing import ArrayLike, NDArray
 
 
 class LineColormapBase:

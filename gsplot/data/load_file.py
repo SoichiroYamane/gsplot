@@ -1,9 +1,10 @@
-import numpy as np
 from os import PathLike
-from typing import Iterable, Any
+from typing import Any, Iterable
+
+import numpy as np
 from numpy.typing import NDArray
 
-from ..base.base import bind_passed_params, ParamsGetter, CreateClassParams
+from ..base.base import CreateClassParams, ParamsGetter, bind_passed_params
 
 
 class LoadFile:

@@ -1,5 +1,6 @@
-import gsplot as gs
 import matplotlib.pyplot as plt
+
+import gsplot as gs
 import gsplot as gsp
 
 fig, axs = plt.subplots(2, 2)

@@ -1,18 +1,18 @@
-import matplotlib.pyplot as plt
-from matplotlib.axes import Axes
-from ..color.colormap import Colormap
-from .legend import Legend
 from typing import Any
-from matplotlib.legend import Legend as Lg
 
-
-from matplotlib.patches import Rectangle
-from matplotlib.artist import Artist
-from matplotlib.legend_handler import HandlerBase
+import matplotlib.pyplot as plt
 import numpy as np
-from ..base.base import bind_passed_params, ParamsGetter, CreateClassParams
+from matplotlib.artist import Artist
+from matplotlib.axes import Axes
+from matplotlib.legend import Legend as Lg
+from matplotlib.legend_handler import HandlerBase
+from matplotlib.patches import Rectangle
+
+from ..base.base import CreateClassParams, ParamsGetter, bind_passed_params
+from ..color.colormap import Colormap
 from ..figure.axes_base import AxesResolver
 from ..plot.line import Line
+from .legend import Legend
 
 
 class HandlerColormap(HandlerBase):

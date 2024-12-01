@@ -1,8 +1,9 @@
 from typing import Any
+
 import matplotlib.pyplot as plt
 
+from ..base.base import CreateClassParams, ParamsGetter, bind_passed_params
 from .store import StoreSingleton
-from ..base.base import bind_passed_params, ParamsGetter, CreateClassParams
 
 
 class Show:

@@ -1,5 +1,7 @@
 import os
+
 import pytest
+
 from gsplot.data.path import Path
 
 

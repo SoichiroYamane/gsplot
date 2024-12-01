@@ -1,7 +1,6 @@
-from typing import Any, Dict, Callable
-from functools import wraps
-
 import inspect
+from functools import wraps
+from typing import Any, Callable, Dict
 
 from ..config.config import Config
 

@@ -1,8 +1,8 @@
-import gsplot as gs
 import matplotlib.pyplot as plt
 import numpy as np
-
 from matplotlib import rcParams
+
+import gsplot as gs
 
 # Create list of axes
 # axes = gs.axes(True, size=[5, 5], mosaic="AB;CD")

@@ -1,6 +1,7 @@
-import gsplot as gs
-from rich import print
 import matplotlib.pyplot as plt
+from rich import print
+
+import gsplot as gs
 
 # Load the data
 data = gs.load_file("SC_gap_vs_T_iso.dat", unpack=True, delimiter="	", skip_header=1)

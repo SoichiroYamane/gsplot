@@ -1,15 +1,13 @@
 from __future__ import annotations
-import os
+
 import json
-
-from typing import Any, cast
+import os
 from threading import Lock
+from typing import Any, cast
 
-
-from matplotlib import rcParams
 import matplotlib as mpl
+from matplotlib import rcParams
 from rich.traceback import install
-
 
 rcParams["pdf.fonttype"] = 42
 rcParams["ps.fonttype"] = 42

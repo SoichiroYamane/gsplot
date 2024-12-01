@@ -1,11 +1,12 @@
 from typing import Any
+
 import matplotlib.pyplot as plt
-from matplotlib.axes import Axes
 from matplotlib.artist import Artist
+from matplotlib.axes import Axes
 from matplotlib.legend import Legend as Lg
 from matplotlib.legend_handler import HandlerBase
 
-from ..base.base import bind_passed_params, ParamsGetter, CreateClassParams
+from ..base.base import CreateClassParams, ParamsGetter, bind_passed_params
 from ..figure.axes_base import AxesResolver
 
 

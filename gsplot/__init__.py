@@ -1,46 +1,27 @@
-from .version import __version__
-
 import matplotlib.pyplot as plt
 
 from .color.colormap import get_cmap
-
+from .config.config import (Config, config_dict, config_entry_option,
+                            config_load)
 from .data.load_file import load_file
-
 from .figure.axes import axes
 from .figure.figure_tools import get_figure_size
 from .figure.show import show
-
-from .config.config import config_load, config_dict, config_entry_option
-
 from .path.path import home, pwd, pwd_move
-
 from .plot.line import line
-from .plot.line_colormap_solid import line_colormap_solid
 from .plot.line_colormap_dashed import line_colormap_dashed
+from .plot.line_colormap_solid import line_colormap_solid
 from .plot.scatter import scatter
 from .plot.scatter_colormap import scatter_colormap
-
-
-from .style.graph import graph_square, graph_square_axes
-from .style.graph import (
-    graph_white,
-    graph_white_axes,
-    graph_transparent,
-    graph_transparent_axes,
-    graph_facecolor,
-)
-
-from .style.label import label
-from .style.label import label_add_index
-
-from .style.legend import legend, legend_handlers, legend_reverse, legend_get_handlers
+from .style.graph import (graph_facecolor, graph_square, graph_square_axes,
+                          graph_transparent, graph_transparent_axes,
+                          graph_white, graph_white_axes)
+from .style.label import label, label_add_index
+from .style.legend import (legend, legend_get_handlers, legend_handlers,
+                           legend_reverse)
 from .style.legend_colormap import legend_colormap
-from .style.ticks import (
-    ticks_off,
-    ticks_on,
-    ticks_on_axes,
-)
-from .config.config import Config
+from .style.ticks import ticks_off, ticks_on, ticks_on_axes
+from .version import __version__
 
 # install()
 # ╭──────────────────────────────────────────────────────────╮

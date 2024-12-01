@@ -1,5 +1,6 @@
-import gsplot as gs
 import matplotlib.pyplot as plt
+
+import gsplot as gs
 
 gs.graph_transparent_axes()
 axes = gs.axes(store=True, size=[8, 5], mosaic="AB")

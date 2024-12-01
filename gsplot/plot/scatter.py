@@ -1,18 +1,16 @@
 from typing import Any
-from numpy.typing import ArrayLike, NDArray
+
 import numpy as np
 from matplotlib import colors
 from matplotlib.axes import Axes
-from matplotlib.typing import ColorType
 from matplotlib.collections import PathCollection
+from matplotlib.typing import ColorType
+from numpy.typing import ArrayLike, NDArray
 
-
-from .line_base import NumLines
-from .line_base import AutoColor
-
-from ..base.base import bind_passed_params, ParamsGetter, CreateClassParams
+from ..base.base import CreateClassParams, ParamsGetter, bind_passed_params
 from ..base.base_alias_validator import AliasValidator
-from ..figure.axes_base import AxesResolver, AxesRangeSingleton
+from ..figure.axes_base import AxesRangeSingleton, AxesResolver
+from .line_base import AutoColor, NumLines
 
 
 class Scatter:

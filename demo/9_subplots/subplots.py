@@ -1,5 +1,6 @@
-import gsplot as gs
 import matplotlib.pyplot as plt
+
+import gsplot as gs
 
 x = [1, 2, 3, 4, 5]
 y = [1, 2, 3, 4, 5]

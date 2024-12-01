@@ -1,7 +1,7 @@
-import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
-import gsplot as gsp
+import matplotlib.pyplot as plt
 
+import gsplot as gsp
 
 fig = plt.figure()
 gs = gridspec.GridSpec(3, 3)

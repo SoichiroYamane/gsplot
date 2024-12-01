@@ -1,10 +1,10 @@
 from typing import Any
+
+import matplotlib as mpl
+import numpy as np
 from numpy.typing import ArrayLike, NDArray
 
-import numpy as np
-import matplotlib as mpl
-
-from ..base.base import bind_passed_params, ParamsGetter, CreateClassParams
+from ..base.base import CreateClassParams, ParamsGetter, bind_passed_params
 
 
 class Colormap:

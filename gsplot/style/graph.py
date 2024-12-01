@@ -1,7 +1,8 @@
-from matplotlib import rcParams
-from matplotlib.figure import Figure
-from matplotlib.axes import Axes
 import matplotlib.pyplot as plt
+from matplotlib import rcParams
+from matplotlib.axes import Axes
+from matplotlib.figure import Figure
+
 from ..figure.axes_base import AxesResolver
 
 

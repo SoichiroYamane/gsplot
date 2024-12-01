@@ -1,13 +1,13 @@
 from typing import Any, Dict
-from numpy.typing import NDArray, ArrayLike
+
 import numpy as np
 from matplotlib.axes import Axes
 from matplotlib.collections import PathCollection
+from numpy.typing import ArrayLike, NDArray
 
-
-from ..base.base import bind_passed_params, ParamsGetter, CreateClassParams
+from ..base.base import CreateClassParams, ParamsGetter, bind_passed_params
 from ..base.base_alias_validator import AliasValidator
-from ..figure.axes_base import AxesResolver, AxesRangeSingleton
+from ..figure.axes_base import AxesRangeSingleton, AxesResolver
 from ..style.legend_colormap import LegendColormap
 
 

@@ -1,9 +1,8 @@
-import gsplot as gs
 import matplotlib.pyplot as plt
-
-from rich import pretty
+from rich import pretty, print
 from rich.pretty import pprint
-from rich import print
+
+import gsplot as gs
 
 test = gs.config_load("./config_file/test.json")
 

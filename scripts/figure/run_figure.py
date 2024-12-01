@@ -1,7 +1,7 @@
-import gsplot as gs
 import matplotlib.pyplot as plt
 from rich import print
 
+import gsplot as gs
 
 test = gs.config_load()
 print(test)
