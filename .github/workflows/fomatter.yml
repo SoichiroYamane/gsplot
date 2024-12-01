@@ -2,7 +2,7 @@ name: Format code # Specify the name of the workflow
 
 on: # Define the trigger conditions
   pull_request: # Trigger on pull requests
-    types: [opened, synchronize] # Trigger when a pull request is opened or updated
+    types: [opened, synchronize, edited, reopened] # Trigger for all relevant pull request events
 
 jobs: # Define jobs for the workflow
   formatter: # Specify the job name
