@@ -1,0 +1,38 @@
+name: Format code # Specify the name of the workflow
+
+on: # Define the trigger conditions
+  pull_request: # Trigger on pull requests
+    types: [opened, synchronize] # Trigger when a pull request is opened or updated
+
+jobs: # Define jobs for the workflow
+  formatter: # Specify the job name
+    name: formatter # Name of the job
+    runs-on: ubuntu-latest # Run the job on Ubuntu Linux
+    strategy: # Configure matrix strategy
+      matrix:
+        python-version: [3.9] # Use Python version 3.9
+    permissions:
+      contents: write # Grant write permissions to the contents
+    steps: # Define the steps within the job
+      - name: Checkout Repository # Checkout the repository
+        uses: actions/checkout@v4 # Use the checkout action to retrieve repository code
+        with:
+          ref: ${{ github.head_ref }} # Specify the GitHub head reference
+      - name: Set up Python ${{ matrix.python-version }} # Set up the Python environment
+        uses: actions/setup-python@v4 # Use the setup-python action
+        with:
+          python-version: ${{ matrix.python-version }} # Use the Python version defined in the matrix
+      - name: Install Dependencies # Install necessary dependencies
+        run: |
+          python -m pip install --upgrade pip # Upgrade pip
+          pip install autoflake black isort # Install autoflake, black, and isort
+      - name: autoflake # Run autoflake to clean up unused imports
+        run: autoflake -r .
+      - name: black # Run black to format code
+        run: black .
+      - name: isort # Run isort to organize import statements
+        run: isort .
+      - name: Auto Commit # Automatically commit changes
+        uses: stefanzweifel/git-auto-commit-action@v5 # Use the auto-commit action
+        with:
+          commit_message: Apply Code Formatter # Specify the commit message
