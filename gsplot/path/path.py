@@ -1,4 +1,5 @@
 import os
+import sys
 
 
 class Path:
@@ -83,3 +84,32 @@ def pwd_move() -> None:
     None
     """
     Path().move_to_pwd()
+
+
+class PathToMain:
+    EXECUTED_FILE_DIR: str | None = None
+
+    def get_executed_file_dir(self) -> str:
+        if hasattr(sys.modules["__main__"], "__file__"):
+            file_path = sys.modules["__main__"].__file__
+            if file_path:
+                self.EXECUTED_FILE_DIR = os.path.dirname(os.path.abspath(file_path))
+        else:
+            # case when __file__ does not exist in REPL or environment
+            self.EXECUTED_FILE_DIR = os.getcwd()  # current working directory
+
+        if self.EXECUTED_FILE_DIR is None:
+            raise ValueError("Cannot find the executed file directory.")
+        return self.EXECUTED_FILE_DIR
+
+
+def pwd_main() -> str:
+    """
+    Returns the path to the directory of the executed file.
+
+    Returns
+    -------
+    str
+        The path to the directory of the executed file.
+    """
+    return PathToMain().get_executed_file_dir()

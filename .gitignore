@@ -167,3 +167,5 @@ cython_debug/
 # ignore output pictures from gsplot
 gsplot.png
 gsplot.pdf
+
+.gsplot/.gsplot_log.json

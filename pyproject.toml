@@ -17,6 +17,8 @@ pytest-watch = "^4.2.0"
 pyright = "^1.1.369"
 mypy = "^1.10.1"
 rich = "^13.9.4"
+pyyaml = "^6.0.2"
+types-pyyaml = "^6.0.12.20240917"
 
 
 [tool.poetry.group.dev.dependencies]
