@@ -23,18 +23,14 @@ from .style.legend import (legend, legend_get_handlers, legend_handlers,
 from .style.legend_colormap import legend_colormap
 from .style.ticks import ticks_off, ticks_on, ticks_on_axes
 
-# install()
 # ╭──────────────────────────────────────────────────────────╮
 # │ Load the configuration file                              │
 # ╰──────────────────────────────────────────────────────────╯
 Config()
 
-# !TODO: remove passed_variables
-# !TODO modify args
-# !TODO modify NDArray hint
-
-
-# Logging setup
+# ╭──────────────────────────────────────────────────────────╮
+# │ Logging setup                                            │
+# ╰──────────────────────────────────────────────────────────╯
 logger()
 
 

@@ -1,4 +1,4 @@
-from typing import Any, Literal
+from typing import Any
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -45,9 +45,9 @@ class LineColormapDashed:
         self._yspan: int | float | None = yspan
         self.kwargs: Any = kwargs
 
-        self.x: NDArray = np.array(self._x)
-        self.y: NDArray = np.array(self._y)
-        self.cmapdata: NDArray = np.array(self._cmapdata)
+        self.x: NDArray[Any] = np.array(self._x)
+        self.y: NDArray[Any] = np.array(self._y)
+        self.cmapdata: NDArray[Any] = np.array(self._cmapdata)
 
         if self.label is not None:
             self.add_legend_colormap()
@@ -86,7 +86,7 @@ class LineColormapDashed:
         # Due to projecting capstyle, the solid line must be shrinked by half of the linewidth
         self.length_solid = np.abs(self.length_solid - self.linewidth / 2)
 
-    def get_data_span(self) -> NDArray:
+    def get_data_span(self) -> NDArray[np.float64]:
 
         xmax, xmin = np.max(self.x), np.min(self.x)
         ymax, ymin = np.max(self.y), np.min(self.y)

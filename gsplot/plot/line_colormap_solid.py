@@ -1,4 +1,4 @@
-from typing import Any, Literal
+from typing import Any
 
 import numpy as np
 from matplotlib.axes import Axes
@@ -41,9 +41,9 @@ class LineColormapSolid:
 
         self.kwargs: Any = kwargs
 
-        self.x: NDArray = np.array(self._x)
-        self.y: NDArray = np.array(self._y)
-        self.cmapdata: NDArray = np.array(self._cmapdata)
+        self.x: NDArray[Any] = np.array(self._x)
+        self.y: NDArray[Any] = np.array(self._y)
+        self.cmapdata: NDArray[Any] = np.array(self._cmapdata)
 
         if self.label is not None:
             self.add_legend_colormap()

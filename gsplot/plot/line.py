@@ -57,8 +57,8 @@ class Line:
         self.kwargs: Any = kwargs
 
         # Ensure x and y data are NumPy arrays
-        self.x: NDArray = np.array(self._x)
-        self.y: NDArray = np.array(self._y)
+        self.x: NDArray[Any] = np.array(self._x)
+        self.y: NDArray[Any] = np.array(self._y)
 
         self.axis_index: int = AxesResolver(axis_target).axis_index
         self.axis: Axes = AxesResolver(axis_target).axis
@@ -66,7 +66,7 @@ class Line:
         self._set_colors()
 
     def _set_colors(self) -> None:
-        cycle_color: NDArray | str = AutoColor(self.axis_index).get_color()
+        cycle_color: NDArray[Any] | str = AutoColor(self.axis_index).get_color()
         if isinstance(cycle_color, np.ndarray):
             cycle_color = colors.to_hex(
                 tuple(cycle_color)

@@ -100,14 +100,14 @@ class AutoColor:
     def __init__(self, axis_index: int) -> None:
         self.COLORMAP_LENGTH: int = 5
         self.CMAP = "viridis"
-        self.colormap: NDArray = Colormap(
+        self.colormap: NDArray[Any] = Colormap(
             cmap=self.CMAP, N=self.COLORMAP_LENGTH
         ).get_split_cmap()
 
         self.num_lines_axis: int = NumLines().num_lines_axis(axis_index)
         self.cycle_color_index: int = self.num_lines_axis % self.COLORMAP_LENGTH
 
-    def get_color(self) -> NDArray:
+    def get_color(self) -> NDArray[Any]:
         """
         Returns the color to be used for the next line.
 
