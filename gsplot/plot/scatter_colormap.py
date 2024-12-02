@@ -1,4 +1,4 @@
-from typing import Any, Dict
+from typing import Any
 
 import numpy as np
 from matplotlib.axes import Axes
@@ -61,7 +61,7 @@ class ScatterColormap:
                 cmap=self.cmap,
                 label=self.label,
                 num_stripes=len(self.cmapdata),
-            ).add_legend_colormap()
+            ).legend_colormap()
 
     def get_cmap_norm(self) -> NDArray[Any]:
 
