@@ -7,7 +7,8 @@ from .data.load_file import load_file
 from .figure.axes import axes
 from .figure.figure_tools import get_figure_size
 from .figure.show import show
-from .path.path import home, pwd, pwd_move
+from .logger import logger
+from .path.path import home, pwd, pwd_main, pwd_move
 from .plot.line import line
 from .plot.line_colormap_dashed import line_colormap_dashed
 from .plot.line_colormap_solid import line_colormap_solid
@@ -21,7 +22,6 @@ from .style.legend import (legend, legend_get_handlers, legend_handlers,
                            legend_reverse)
 from .style.legend_colormap import legend_colormap
 from .style.ticks import ticks_off, ticks_on, ticks_on_axes
-from .version import __version__
 
 # install()
 # ╭──────────────────────────────────────────────────────────╮
@@ -32,6 +32,10 @@ Config()
 # !TODO: remove passed_variables
 # !TODO modify args
 # !TODO modify NDArray hint
+
+
+# Logging setup
+logger()
 
 
 __all__ = [
@@ -53,6 +57,7 @@ __all__ = [
     "home",
     "pwd",
     "pwd_move",
+    "pwd_main",
     # plot/line.py
     "line",
     # plot/line_colormap.py
