@@ -12,7 +12,7 @@
     "unpack": true
   },
   "axes": {
-    "ion": true,
+    "ion": false,
     "size": [
       15.0,
       5.0
