@@ -9,6 +9,14 @@ from matplotlib.legend_handler import HandlerBase
 from ..base.base import CreateClassParams, ParamsGetter, bind_passed_params
 from ..figure.axes_base import AxesResolver
 
+__all__: list[str] = [
+    "legend",
+    "legend_axes",
+    "legend_handlers",
+    "legend_reverse",
+    "legend_get_handlers",
+]
+
 
 class Legend:
 
@@ -88,6 +96,19 @@ class Legend:
         return _lg
 
 
+class LegendAxes:
+    def __init__(self, *args: Any, **kwargs: Any):
+        self.args: Any = args
+        self.kwargs: Any = kwargs
+
+    def legend_axes(self) -> list[Lg]:
+        _lg_list = []
+        for ax in plt.gcf().axes:
+            _lg = ax.legend(*self.args, **self.kwargs)
+            _lg_list.append(_lg)
+        return _lg_list
+
+
 @bind_passed_params()
 def legend(axis_target: int | Axes, *args: Any, **kwargs: Any) -> Lg:
 
@@ -100,6 +121,18 @@ def legend(axis_target: int | Axes, *args: Any, **kwargs: Any) -> Lg:
         **class_params["kwargs"],
     )
     return _legend.legend()
+
+
+@bind_passed_params()
+def legend_axes(*args: Any, **kwargs: Any) -> list[Lg]:
+    passed_params: dict[str, Any] = ParamsGetter("passed_params").get_bound_params()
+    class_params = CreateClassParams(passed_params).get_class_params()
+
+    _legend_axes = LegendAxes(
+        *class_params["args"],
+        **class_params["kwargs"],
+    )
+    return _legend_axes.legend_axes()
 
 
 @bind_passed_params()

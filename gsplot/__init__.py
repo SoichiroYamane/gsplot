@@ -1,5 +1,3 @@
-import matplotlib.pyplot as plt
-
 from .color.colormap import get_cmap
 from .config.config import (Config, config_dict, config_entry_option,
                             config_load)
@@ -18,8 +16,8 @@ from .style.graph import (graph_facecolor, graph_square, graph_square_axes,
                           graph_transparent, graph_transparent_axes,
                           graph_white, graph_white_axes)
 from .style.label import label, label_add_index
-from .style.legend import (legend, legend_get_handlers, legend_handlers,
-                           legend_reverse)
+from .style.legend import (legend, legend_axes, legend_get_handlers,
+                           legend_handlers, legend_reverse)
 from .style.legend_colormap import legend_colormap
 from .style.ticks import ticks_off, ticks_on, ticks_on_axes
 
@@ -79,6 +77,7 @@ __all__ = [
     "label_add_index",
     # style/legend.py
     "legend",
+    "legend_axes",
     "legend_handlers",
     "legend_reverse",
     "legend_get_handlers",

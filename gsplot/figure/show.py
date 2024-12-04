@@ -5,6 +5,8 @@ import matplotlib.pyplot as plt
 from ..base.base import CreateClassParams, ParamsGetter, bind_passed_params
 from .store import StoreSingleton
 
+__all__: list[str] = ["show"]
+
 
 class Show:
 
@@ -26,9 +28,6 @@ class Show:
         self.kwargs: Any = kwargs
 
         self._store_singleton: StoreSingleton = StoreSingleton()
-
-        if self.show:
-            plt.show()
 
     def store_fig(self) -> None:
 
@@ -54,6 +53,10 @@ class Show:
 
         store: bool | int = self._store_singleton.store
         return store
+
+    def show_fig(self) -> None:
+        if self.show:
+            plt.show()
 
 
 # TODO: Modify docstring
@@ -131,3 +134,4 @@ def show(
     )
 
     _show.store_fig()
+    _show.show_fig()

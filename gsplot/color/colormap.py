@@ -6,6 +6,8 @@ from numpy.typing import ArrayLike, NDArray
 
 from ..base.base import CreateClassParams, ParamsGetter, bind_passed_params
 
+__all__: list[str] = ["get_cmap"]
+
 
 class Colormap:
 

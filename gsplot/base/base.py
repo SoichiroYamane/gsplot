@@ -1,8 +1,10 @@
 import inspect
 from functools import wraps
-from typing import Any, Callable, Dict
+from typing import Any, Callable
 
 from ..config.config import Config
+
+__all__: list[str] = []
 
 
 class GetPassedParams:

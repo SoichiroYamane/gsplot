@@ -12,6 +12,8 @@ from ..base.base_alias_validator import AliasValidator
 from ..figure.axes_base import AxesRangeSingleton, AxesResolver
 from .line_base import AutoColor, NumLines
 
+__all__: list[str] = ["scatter"]
+
 
 class Scatter:
     def __init__(

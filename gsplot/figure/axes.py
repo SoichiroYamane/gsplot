@@ -13,6 +13,8 @@ from .store import StoreSingleton
 
 _T = TypeVar("_T")
 
+__all__: list[str] = ["axes"]
+
 
 class Unit(Enum):
     """
@@ -169,6 +171,8 @@ def axes(
     **kwargs: Any,
 ):
     """
+    .. gsplot.figure.axes.axes:
+
     Create and manage Matplotlib axes with customizable options.
 
     This function creates a Matplotlib figure and axes with user-specified settings,

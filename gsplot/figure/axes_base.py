@@ -13,6 +13,8 @@ from .figure_tools import FigureLayout
 
 F = TypeVar("F", bound=Callable[..., Any])
 
+__all__: list[str] = []
+
 
 class AxesResolver:
     def __init__(self, axis_target: int | Axes) -> None:

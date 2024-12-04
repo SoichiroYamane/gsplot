@@ -1,4 +1,3 @@
-import warnings
 from functools import wraps
 from typing import Any, Callable, Literal, TypeVar, cast
 
@@ -18,6 +17,9 @@ from ..base.base import CreateClassParams, ParamsGetter, bind_passed_params
 from ..figure.axes_base import (AxesRangeSingleton, AxisRangeController,
                                 AxisRangeManager)
 from .ticks import MinorTicksAxes
+
+__all__ = ["label", "label_add_index"]
+
 
 console = Console()
 

@@ -4,6 +4,8 @@ import numpy as np
 from matplotlib.colors import Normalize
 from numpy.typing import ArrayLike, NDArray
 
+__all__: list[str] = []
+
 
 class LineColormapBase:
     """

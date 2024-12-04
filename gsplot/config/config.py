@@ -36,6 +36,8 @@ rcParams["font.sans-serif"] = ["DejaVu Sans"]
 rcParams["xtick.major.pad"] = 6
 rcParams["ytick.major.pad"] = 6
 
+__all__: list[str] = ["config_load", "config_dict", "config_entry_option"]
+
 
 class Config:
 
@@ -89,6 +91,9 @@ class ConfigLoad:
         # Search in default locations
         search_paths = [
             os.getcwd(),  # Current directory
+            os.path.join(
+                os.path.expanduser("~"), ".config", "gsplot"
+            ),  # User config directory
             os.path.expanduser("~"),  # Home directory
         ]
 

@@ -7,6 +7,8 @@ from matplotlib.ticker import NullLocator
 
 from ..figure.axes_base import AxesResolver
 
+__all__: list[str] = ["ticks_off", "ticks_on", "ticks_on_axes"]
+
 
 class MinorTicks:
 
