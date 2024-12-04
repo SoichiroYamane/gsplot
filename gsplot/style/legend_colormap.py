@@ -14,6 +14,8 @@ from ..figure.axes_base import AxesResolver
 from ..plot.line import Line
 from .legend import Legend
 
+__all__: list[str] = ["legend_colormap"]
+
 
 class HandlerColormap(HandlerBase):
 

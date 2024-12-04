@@ -5,6 +5,16 @@ from matplotlib.figure import Figure
 
 from ..figure.axes_base import AxesResolver
 
+__all__: list[str] = [
+    "graph_square",
+    "graph_square_axes",
+    "graph_white",
+    "graph_white_axes",
+    "graph_transparent",
+    "graph_transparent_axes",
+    "graph_facecolor",
+]
+
 
 class GraphSquare:
     def __init__(self) -> None:

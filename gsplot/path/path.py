@@ -1,6 +1,8 @@
 import os
 import sys
 
+__all__: list[str] = ["home", "pwd", "pwd_move", "pwd_main"]
+
 
 class Path:
     """

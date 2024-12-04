@@ -10,6 +10,8 @@ from ..color.colormap import Colormap
 
 F = TypeVar("F", bound=Callable[..., Any])
 
+__all__: list[str] = []
+
 
 class NumLines:
 

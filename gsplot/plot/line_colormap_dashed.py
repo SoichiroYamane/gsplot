@@ -13,6 +13,8 @@ from ..figure.axes_base import AxesRangeSingleton, AxesResolver, AxisLayout
 from ..style.legend_colormap import LegendColormap
 from .line_colormap_base import LineColormapBase
 
+__all__: list[str] = ["line_colormap_dashed"]
+
 
 class LineColormapDashed:
     def __init__(

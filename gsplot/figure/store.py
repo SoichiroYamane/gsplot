@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import threading
 
+__all__: list[str] = []
+
 
 class StoreSingleton:
     """

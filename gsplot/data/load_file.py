@@ -6,6 +6,8 @@ from numpy.typing import NDArray
 
 from ..base.base import CreateClassParams, ParamsGetter, bind_passed_params
 
+__all__: list[str] = ["load_file"]
+
 
 class LoadFile:
     def __init__(
