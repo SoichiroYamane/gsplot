@@ -37,6 +37,50 @@ exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
 add_module_names = False
 modindex_common_prefix = ["gsplot."]
 html_use_modindex = False
+highlight_language = "python3"
+numfig = True
+
+
+intersphinx_mapping = {
+    "python": ("https://docs.python.org/3", None),
+    "numpy": ("https://numpy.org/doc/stable/", None),
+    "matplotlib": ("https://matplotlib.org/stable/", None),
+}
+
+
+# Setting of napoleon
+napoleon_google_docstring = False
+napoleon_numpy_docstring = True
+napoleon_include_init_with_doc = True
+napoleon_use_param = True  # show parameter type
+napoleon_use_rtype = True  # show return type
+napoleon_use_ivar = True  # show instance variables
+napoleon_preprocess_types = True
+# napoleon_type_aliases = None
+napoleon_attr_annotations = True
+# napoleon_custom_sections = None
+# napoleon_custom_sections = None
+napoleon_use_admonition_for_notes = True
+napoleon_use_admonition_for_examples = False
+napoleon_use_admonttion_for_references = True
+napoleon_use_admonition_for_todo = True
+napoleon_use_admonition_for_hints = True
+napoleon_use_admonition_for_tips = True
+napoleon_use_admonition_for_caution = True
+napoleon_use_admonition_for_warning = True
+napoleon_type_aliases = {
+    "ndarray": "numpy.ndarray",
+    "DataFrame": "pandas.DataFrame",
+}
+
+
+# https://sphinx-design.readthedocs.io/en/latest/get_started.html
+# For using with MyST Parser, for Markdown documentation, it is recommended to use the colon_fence syntax extension:
+myst_enable_extensions = ["colon_fence", "dollarmath", "amsmath", "deflist"]
+
+# Setting of autodoc
+autodoc_inherit_docstrings = True
+autodoc_typehints = "none"
 autodoc_default_options = {
     "members": True,
     "toctree": True,
@@ -46,11 +90,10 @@ autodoc_default_options = {
     "exclude-members": "__weakref__",
 }
 
-# https://sphinx-design.readthedocs.io/en/latest/get_started.html
-# For using with MyST Parser, for Markdown documentation, it is recommended to use the colon_fence syntax extension:
-myst_enable_extensions = ["colon_fence"]
-
-autodoc_inherit_docstrings = True
+# Setting of copy button
+copybutton_prompt_text = r">>> |\.\.\. |\$ "
+copybutton_prompt_is_regexp = True
+copybutton_only_copy_prompt_lines = True
 
 
 def skip_members(app, what, name, obj, skip, options):
@@ -175,11 +218,13 @@ with open(autosummary_file, "w") as f:
 # -- Options for HTML output -------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
 
+html_show_sphinx = False
 html_theme = "pydata_sphinx_theme"
-# html_theme = "sphinx_book_theme"
-# html_theme = "sphinx_rtd_theme"
 html_theme_options = {
-    "default_mode": "light",
-    # "use_repository_button": True,
+    # "default_mode": "light",
+    "pygment_light_style": "solarized-light",
+    "pygment_dark_style": "monokai",
 }
 html_static_path = ["_static"]
+
+pygments_style = "monokai"  # Syntax highlighting

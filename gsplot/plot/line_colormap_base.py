@@ -9,34 +9,63 @@ __all__: list[str] = []
 
 class LineColormapBase:
     """
-    A base class for creating line segments and color maps for line plotting.
+    A base class for creating colormaps and segments for line collections.
 
-    The `LineColormapBase` class provides utility functions for creating line segments
-    and generating color maps that can be used for line plots with varying colors along the line.
+    This class provides utility methods to create line segments for plotting with
+    individual colors and to normalize data for applying colormaps.
 
     Methods
-    -------
-    _create_segment(xdata: NDArray[Any], ydata: NDArray[Any]) -> NDArray[np.float64]
-        Creates line segments from x and y data points for plotting.
-    _create_cmap(cmapdata: NDArray[Any]) -> Normalize
+    --------------------
+    _create_segment(x, y)
+        Creates a set of line segments for line collections, enabling individual
+        segment coloring.
+    _create_cmap(cmapdata)
         Creates a normalization object for mapping data points to colors.
+
+    Examples
+    --------------------
+    >>> line_base = LineColormapBase()
+    >>> x = np.array([0, 1, 2, 3])
+    >>> y = np.array([1, 2, 3, 4])
+    >>> segments = line_base._create_segment(x, y)
+    >>> print(segments.shape)
+    (3, 2, 2)  # Shape: (numlines, points per line, x and y)
+
+    >>> cmapdata = np.array([0.1, 0.4, 0.6, 0.9])
+    >>> norm = line_base._create_cmap(cmapdata)
+    >>> print(norm(cmapdata))
+    [0.   0.5  0.83333333 1.  ]  # Normalized data
     """
 
     def _create_segment(self, x: ArrayLike, y: ArrayLike) -> NDArray[np.float64]:
         """
-        Creates line segments from x and y data points for plotting.
+        Creates a set of line segments for line collections, enabling individual segment coloring.
+
+        The method converts the input x and y arrays into a collection of segments
+        suitable for use with Matplotlib's `LineCollection`. Each segment connects two
+        adjacent points from the input arrays.
 
         Parameters
-        ----------
-        xdata : NDArray[Any]
-            The x-axis data points.
-        ydata : NDArray[Any]
-            The y-axis data points.
+        --------------------
+        x : ArrayLike
+            The x-coordinates of the points.
+        y : ArrayLike
+            The y-coordinates of the points.
 
         Returns
-        -------
-        NDArray[np.float64]
-            An array of line segments, each represented as a pair of points (x, y).
+        --------------------
+        numpy.ndarray
+            An array of shape `(numlines, 2, 2)` representing the line segments,
+            where each segment is defined by two points `(x, y)`.
+
+        Examples
+        --------------------
+        >>> x = np.array([0, 1, 2, 3])
+        >>> y = np.array([1, 2, 3, 4])
+        >>> line_base = LineColormapBase()
+        >>> segments = line_base._create_segment(x, y)
+        >>> print(segments.shape)
+        (3, 2, 2)  # Shape: (numlines, points per line, x and y)
         """
 
         # ╭──────────────────────────────────────────────────────────╮
@@ -56,6 +85,31 @@ class LineColormapBase:
         return segments
 
     def _create_cmap(self, cmapdata: NDArray[Any]) -> Normalize:
+        """
+        Creates a normalization object for mapping data points to colors.
+
+        This method generates a `Normalize` object from Matplotlib, which scales
+        input data to the range `[0, 1]` for use in colormaps. If the input data has
+        at least two elements, the maximum value is removed to prevent color saturation.
+
+        Parameters
+        --------------------
+        cmapdata : numpy.ndarray
+            The input data for normalization.
+
+        Returns
+        --------------------
+        matplotlib.colors.Normalize
+            A normalization object mapping `cmapdata.min()` to 0 and `cmapdata.max()` to 1.
+
+        Examples
+        --------------------
+        >>> cmapdata = np.array([0.1, 0.4, 0.6, 0.9])
+        >>> line_base = LineColormapBase()
+        >>> norm = line_base._create_cmap(cmapdata)
+        >>> print(norm(cmapdata))
+        [0.   0.5  0.83333333 1.  ]  # Normalized data
+        """
 
         # Create a continuous norm to map from data points to colors
         if len(cmapdata) >= 2:

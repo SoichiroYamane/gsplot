@@ -18,6 +18,29 @@ __all__: list[str] = ["legend_colormap"]
 
 
 class HandlerColormap(HandlerBase):
+    """
+    Custom legend handler for displaying a colormap.
+
+    Parameters
+    --------------------
+    cmap : str
+        The colormap to use.
+    num_stripes : int, default=8
+        Number of stripes in the colormap legend.
+    vmin : int | float, default=0
+        Minimum value for the colormap.
+    vmax : int | float, default=1
+        Maximum value for the colormap.
+    reverse : bool, default=False
+        Whether to reverse the colormap.
+    **kwargs : Any
+        Additional parameters for the `Rectangle` artists.
+
+    Examples
+    --------------------
+    >>> from matplotlib.legend_handler import HandlerColormap
+    >>> handler = HandlerColormap(cmap="viridis", num_stripes=10, reverse=True)
+    """
 
     def __init__(
         self,
@@ -47,7 +70,37 @@ class HandlerColormap(HandlerBase):
         fontsize,
         trans,
     ):
+        """
+        Create colormap legend artists.
 
+        Parameters
+        --------------------
+        legend : Legend
+            The legend instance.
+        orig_handle : Any
+            The original handle used for the legend.
+        xdescent : float
+            Horizontal offset for the legend element.
+        ydescent : float
+            Vertical offset for the legend element.
+        width : float
+            Width of the legend element.
+        height : float
+            Height of the legend element.
+        fontsize : float
+            Font size for the legend text.
+        trans : Transform
+            Transformation applied to the artist.
+
+        Returns
+        --------------------
+        list[Rectangle]
+            A list of rectangles representing the colormap legend.
+
+        Examples
+        --------------------
+        Used internally for creating custom colormap legend patches.
+        """
         stripes = []
         cmap_ndarray = np.linspace(self.vmin, self.vmax, self.num_stripes)
         cmap_list = Colormap(
@@ -68,11 +121,40 @@ class HandlerColormap(HandlerBase):
         return stripes
 
 
-class ColormapRectangle(Rectangle):
-    pass
-
-
 class LegendColormap:
+    """
+    Adds a colormap legend to a Matplotlib axis.
+
+    Parameters
+    --------------------
+    axis_target : int | Axes
+        The target axis for the colormap legend.
+    cmap : str, default="viridis"
+        The colormap to use.
+    label : str | None, default=None
+        Label for the legend.
+    num_stripes : int, default=8
+        Number of stripes in the colormap legend.
+    vmin : int | float, default=0
+        Minimum value for the colormap.
+    vmax : int | float, default=1
+        Maximum value for the colormap.
+    reverse : bool, default=False
+        Whether to reverse the colormap.
+    **kwargs : Any
+        Additional parameters passed to the handler and artists.
+
+    Examples
+    --------------------
+    >>> from matplotlib import pyplot as plt
+    >>> import numpy as np
+    >>> fig, ax = plt.subplots()
+    >>> x = np.linspace(0, 10, 100)
+    >>> y = np.sin(x)
+    >>> ax.plot(x, y, label="Data")
+    >>> LegendColormap(0, cmap="plasma", label="Colormap Legend").legend_colormap()
+    >>> plt.show()
+    """
 
     def __init__(
         self,
@@ -114,7 +196,22 @@ class LegendColormap:
     def get_legend_handlers_colormap(
         self,
     ) -> tuple[list[Rectangle], list[str | None], dict[Rectangle, HandlerColormap]]:
+        """
+        Get legend handlers, labels, and handler mappings for colormap legend.
 
+        Returns
+        --------------------
+        tuple
+            - handles (list[Rectangle]): List of legend handles.
+            - labels (list[str | None]): List of legend labels.
+            - handlers (dict[Rectangle, HandlerColormap]): Mapping of handles to their handlers.
+
+        Examples
+        --------------------
+        >>> legend_colormap = LegendColormap(0, cmap="plasma", num_stripes=8)
+        >>> handles, labels, handlers = legend_colormap.get_legend_handlers_colormap()
+        >>> print(handles, labels, handlers)
+        """
         handle = [Rectangle((0, 0), 1, 1)]
         label: list[str | None] = [self.label]
 
@@ -123,6 +220,35 @@ class LegendColormap:
 
     @staticmethod
     def create_unique_class_with_handler(base_class, handler, class_name=None):
+        """
+        Create a unique class that extends a given base class and associates it with a custom handler.
+
+        Parameters
+        --------------------
+        base_class : type
+            The base class to extend.
+        handler : HandlerBase
+            The custom handler to associate with the new class.
+        class_name : str, optional
+            Name for the newly created class. If not provided, a unique name is generated.
+
+        Returns
+        --------------------
+        type
+            A new class that extends the base class and is associated with the custom handler.
+
+        Examples
+        --------------------
+        >>> from matplotlib.patches import Rectangle
+        >>> from matplotlib.legend_handler import HandlerBase
+        >>> class CustomHandler(HandlerBase):
+        ...     pass
+        >>> custom_handler = CustomHandler()
+        >>> NewRectangle = LegendColormap.create_unique_class_with_handler(Rectangle, custom_handler)
+        >>> new_instance = NewRectangle((0, 0), 1, 1)
+        >>> print(type(new_instance).__name__)
+        CustomRectangle_<unique_id>
+        """
         # Create Unique Class
         if class_name is None:
             class_name = f"Custom{base_class.__name__}_{id(handler)}"
@@ -132,6 +258,22 @@ class LegendColormap:
         return UniqueClass
 
     def axis_patch(self):
+        """
+        Add a dummy patch to the axis to represent the colormap legend.
+
+        Notes
+        --------------------
+        This method creates a dummy patch using a custom class associated with a colormap handler.
+        The patch is invisible but serves as a proxy for the colormap legend entry.
+
+        Examples
+        --------------------
+        >>> from matplotlib import pyplot as plt
+        >>> fig, ax = plt.subplots()
+        >>> legend_colormap = LegendColormap(0, cmap="viridis", label="Colormap")
+        >>> legend_colormap.axis_patch()
+        >>> plt.show()
+        """
         UniqueClass = self.create_unique_class_with_handler(
             Rectangle, self.handler_colormap
         )
@@ -141,11 +283,30 @@ class LegendColormap:
         self.axis.legend(handles=[cmap_dummy_handle], labels=[self.label])
 
     def legend_colormap(self) -> Lg:
+        """
+        Create and display a colormap legend on the target axis.
+
+        Returns
+        --------------------
+        matplotlib.legend.Legend
+            The created legend object.
+
+        Notes
+        --------------------
+        This method builds on `axis_patch` to construct and render the legend.
+
+        Examples
+        --------------------
+        >>> from matplotlib import pyplot as plt
+        >>> fig, ax = plt.subplots()
+        >>> legend_colormap = LegendColormap(0, cmap="viridis", label="Color Legend")
+        >>> legend_colormap.legend_colormap()
+        >>> plt.show()
+        """
         self.axis_patch()
         return self.axis.legend()
 
 
-# TODO: modify the docsring
 @bind_passed_params()
 def legend_colormap(
     axis_target: int | Axes,
@@ -158,63 +319,49 @@ def legend_colormap(
     **kwargs: Any,
 ) -> Lg:
     """
-    Add a colormap-based legend to a specified axis.
-
-    This function creates and adds a legend to the given axis that visually
-    represents a colormap. It supports customization of the colormap, value range,
-    number of stripes, and label.
+    Create and display a colormap legend on a specified axis.
 
     Parameters
-    ----------
-    axis_target : int or Axes
-        The target axis where the colormap legend will be added. Can be an integer
-        index of the axis or an `Axes` instance.
+    --------------------
+    axis_target : int | Axes
+        The target axis for the legend. Can be an axis index or an `Axes` object.
     cmap : str, optional
-        The name of the colormap to use. Default is "viridis".
-    label : str or None, optional
-        The label to display alongside the legend. Default is None.
+        The colormap to use for the legend (default is 'viridis').
+    label : str | None, optional
+        The label to display for the colormap in the legend (default is None).
     num_stripes : int, optional
-        The number of discrete stripes to display in the colormap legend. Default is 8.
-    vmin : int or float, optional
-        The minimum value of the colormap range. Default is 0.
-    vmax : int or float, optional
-        The maximum value of the colormap range. Default is 1.
+        The number of stripes to divide the colormap into (default is 8).
+    vmin : int | float, optional
+        The minimum value of the colormap (default is 0).
+    vmax : int | float, optional
+        The maximum value of the colormap (default is 1).
     reverse : bool, optional
-        If True, reverse the direction of the colormap. Default is False.
+        Whether to reverse the colormap (default is False).
     **kwargs : Any
-        Additional keyword arguments passed to the `LegendColormap` class for
-        further customization.
+        Additional keyword arguments for configuring the legend.
 
     Returns
-    -------
-    Lg
-        The legend object representing the colormap.
+    --------------------
+    matplotlib.legend.Legend
+        The created legend object.
 
     Notes
-    -----
-    - This function uses the `LegendColormap` class to handle the creation and
-      customization of the colormap legend.
-    - The `num_stripes` parameter determines the granularity of the visual
-      representation of the colormap in the legend.
-    - The `reverse` parameter allows the colormap direction to be flipped.
+    --------------------
+    This function binds passed parameters and creates a `LegendColormap` instance
+    to generate a colormap legend on the specified axis.
 
     Examples
-    --------
-    Add a default colormap legend to a plot:
-
-    >>> legend_colormap(axis_target=0)
-
-    Customize the colormap and value range:
-
-    >>> legend_colormap(axis_target=0, cmap="plasma", vmin=0.2, vmax=0.8)
-
-    Add a colormap legend with a label and more stripes:
-
-    >>> legend_colormap(axis_target=0, label="Intensity", num_stripes=16)
-
-    Reverse the colormap direction:
-
-    >>> legend_colormap(axis_target=0, reverse=True)
+    --------------------
+    >>> import gsplot as gs
+    >>> gs.legend_colormap(
+    ...     axis_target=0,
+    ...     cmap="plasma",
+    ...     label="Example Legend",
+    ...     num_stripes=10,
+    ...     vmin=0,
+    ...     vmax=100,
+    ...     reverse=True,
+    ... )
     """
 
     passed_params: dict[str, Any] = ParamsGetter("passed_params").get_bound_params()

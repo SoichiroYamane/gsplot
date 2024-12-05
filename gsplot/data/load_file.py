@@ -10,6 +10,57 @@ __all__: list[str] = ["load_file"]
 
 
 class LoadFile:
+    """
+    A utility class to load data from a file or iterable source using NumPy's `genfromtxt`.
+
+    This class provides an interface for loading structured data from files or iterables
+    with options for handling delimiters, skipping headers/footers, and unpacking the data.
+
+    Parameters
+    --------------------
+    f : str, os.PathLike, Iterable[str], or Iterable[bytes]
+        The file path, file-like object, or iterable source from which to load data.
+    delimiter : str or None, optional
+        The string used to separate values. If `None`, any whitespace is treated as a delimiter (default is ",").
+    skip_header : int, optional
+        The number of lines to skip at the beginning of the file (default is 0).
+    skip_footer : int, optional
+        The number of lines to skip at the end of the file (default is 0).
+    unpack : bool, optional
+        Whether to unpack columns into separate arrays (default is True).
+    **kwargs : Any
+        Additional keyword arguments to pass to NumPy's `genfromtxt`.
+
+    Attributes
+    --------------------
+    f : str, os.PathLike, Iterable[str], or Iterable[bytes]
+        The file path, file-like object, or iterable source from which to load data.
+    delimiter : str or None
+        The string used to separate values.
+    skip_header : int
+        The number of lines to skip at the beginning of the file.
+    skip_footer : int
+        The number of lines to skip at the end of the file.
+    unpack : bool
+        Whether to unpack columns into separate arrays.
+    kwargs : Any
+        Additional arguments passed to `genfromtxt`.
+
+    Methods
+    --------------------
+    load_data()
+        Loads the data using NumPy's `genfromtxt` with the specified parameters.
+
+    Examples
+    --------------------
+    >>> loader = LoadFile("data.csv", delimiter=",", skip_header=1, unpack=False)
+    >>> data = loader.load_data()
+    >>> print(data)
+    array([[1.0, 2.0, 3.0],
+           [4.0, 5.0, 6.0],
+           [7.0, 8.0, 9.0]])
+    """
+
     def __init__(
         self,
         f: str | PathLike | Iterable[str] | Iterable[bytes],
@@ -28,6 +79,28 @@ class LoadFile:
         self.kwargs: Any = kwargs
 
     def load_data(self) -> NDArray[Any]:
+        """
+        Loads the data using NumPy's `genfromtxt` with the specified parameters.
+
+        Returns
+        --------------------
+        numpy.ndarray
+            The loaded data as a NumPy array.
+
+        Raises
+        --------------------
+        ValueError
+            If the file cannot be loaded or parsed correctly.
+
+        Examples
+        --------------------
+        >>> loader = LoadFile("data.csv", delimiter=",", skip_header=1, unpack=False)
+        >>> data = loader.load_data()
+        >>> print(data)
+        array([[1.0, 2.0, 3.0],
+               [4.0, 5.0, 6.0],
+               [7.0, 8.0, 9.0]])
+        """
 
         # np.genfromtxt does not have args parameter
         return np.genfromtxt(
@@ -40,7 +113,6 @@ class LoadFile:
         )
 
 
-# TODO: Modify docstring
 @bind_passed_params()
 def load_file(
     f: str | PathLike | Iterable[str] | Iterable[bytes],
@@ -51,65 +123,55 @@ def load_file(
     **kwargs: Any,
 ) -> NDArray[Any]:
     """
-    Load data from a file or an iterable and return it as a NumPy array.
+    Loads structured data from a file or iterable source using the specified parameters.
 
-    This function reads data from a specified file, path, or iterable. It supports
-    custom delimiters, header/footer skipping, and unpacking of data into columns.
+    This function provides a flexible interface for loading data with NumPy's `genfromtxt`.
+    It captures and processes the passed parameters, allowing for customized file loading
+    options, such as handling delimiters, skipping headers/footers, and unpacking columns.
 
     Parameters
-    ----------
-    f : str, PathLike, Iterable[str], or Iterable[bytes]
-        The file path, file-like object, or iterable containing the data to load.
-        Strings or bytes are also accepted as iterable data sources.
+    --------------------
+    f : str, os.PathLike, Iterable[str], or Iterable[bytes]
+        The file path, file-like object, or iterable source from which to load data.
     delimiter : str or None, optional
-        The delimiter used to separate values in the data. If None, whitespace is used
-        as the default delimiter. Default is ",".
+        The string used to separate values. If `None`, any whitespace is treated as a delimiter (default is ",").
     skip_header : int, optional
-        Number of lines to skip at the beginning of the file. Default is 0.
+        The number of lines to skip at the beginning of the file (default is 0).
     skip_footer : int, optional
-        Number of lines to skip at the end of the file. Default is 0.
+        The number of lines to skip at the end of the file (default is 0).
     unpack : bool, optional
-        If True, unpack the columns into individual arrays. Default is True.
+        Whether to unpack columns into separate arrays (default is True).
     **kwargs : Any
-        Additional arguments passed to the file loader, such as encoding or specific
-        parsing options.
-
-    Returns
-    -------
-    NDArray[Any]
-        A NumPy array containing the loaded data. If `unpack` is True, the data is
-        returned as separate arrays (one per column).
+        Additional keyword arguments to pass to NumPy's `genfromtxt`.
 
     Notes
-    -----
-    - This function uses the `LoadFile` class for file parsing and data loading.
-    - It automatically resolves parameters using the `ParamsGetter` and `CreateClassParams` classes.
-    - The input `f` can be a file path, open file handle, or iterable containing
-      lines of data.
+    --------------------
+    This function utilizes the `ParamsGetter` to retrieve bound parameters and
+    the `CreateClassParams` class to handle the merging of default, configuration,
+    and passed parameters.
+
+    Returns
+    --------------------
+    numpy.ndarray
+        The loaded data as a NumPy array.
+
+    Raises
+    --------------------
+    ValueError
+        If the file cannot be loaded or parsed correctly.
 
     Examples
-    --------
-    Load data from a CSV file:
+    --------------------
+    >>> import gsplot as gs
+    >>> data = gs.load_file("data.csv", delimiter=",", skip_header=1, unpack=False)
+    >>> print(data)
+    array([[1.0, 2.0, 3.0],
+           [4.0, 5.0, 6.0],
+           [7.0, 8.0, 9.0]])
 
-    >>> load_file("data.csv")
-    array([...])  # Loaded data as a NumPy array.
-
-    Use a custom delimiter:
-
-    >>> load_file("data.tsv", delimiter="\t")
-    array([...])  # Data loaded with tab-separated values.
-
-    Skip headers and footers:
-
-    >>> load_file("data.txt", skip_header=2, skip_footer=1)
-    array([...])  # Data with headers/footers excluded.
-
-    Load data from an iterable:
-
-    >>> data = ["1,2,3", "4,5,6"]
-    >>> load_file(data, delimiter=",")
-    array([[1, 2, 3],
-           [4, 5, 6]])
+    >>> data = gs.load_file(["1,2,3", "4,5,6", "7,8,9"], delimiter=",", unpack=True)
+    >>> print(data)
+    [array([1.0, 4.0, 7.0]), array([2.0, 5.0, 8.0]), array([3.0, 6.0, 9.0])]
     """
 
     passed_params: dict[str, Any] = ParamsGetter("passed_params").get_bound_params()

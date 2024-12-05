@@ -18,6 +18,56 @@ __all__: list[str] = ["line"]
 
 
 class Line:
+    """
+    A utility class for creating and plotting a line on a specified axis.
+
+    This class manages line properties such as color, markers, and styles, and provides a method to plot the line on a specified Matplotlib axis.
+
+    Parameters
+    --------------------
+    axis_target : int or matplotlib.axes.Axes
+        The target axis, specified either as an index or an `Axes` object.
+    x : ArrayLike
+        The x-coordinates of the data points.
+    y : ArrayLike
+        The y-coordinates of the data points.
+    color : ColorType, optional
+        The color of the line (default is None, which uses the auto color).
+    marker : MarkerType, optional
+        The marker style (default is "o").
+    markersize : int or float, optional
+        The size of the marker (default is 7.0).
+    markeredgewidth : int or float, optional
+        The width of the marker edge (default is 1.5).
+    markeredgecolor : ColorType, optional
+        The color of the marker edge (default is None, which uses the line color).
+    markerfacecolor : ColorType, optional
+        The color of the marker face (default is None, which uses the line color with modified alpha).
+    linestyle : LineStyleType, optional
+        The line style (default is "--").
+    linewidth : int or float, optional
+        The width of the line (default is 1.0).
+    alpha : int or float, optional
+        The opacity of the line (default is 1.0).
+    alpha_mfc : int or float, optional
+        The opacity of the marker face color (default is 0.2).
+    label : str, optional
+        The label for the line (default is None).
+    *args : Any
+        Additional positional arguments passed to `Axes.plot`.
+    **kwargs : Any
+        Additional keyword arguments passed to `Axes.plot`.
+
+    Methods
+    --------------------
+    plot()
+        Plots the line on the specified axis.
+
+    Examples
+    --------------------
+    >>> line = Line(axis_target=0, x=[0, 1, 2], y=[2, 4, 6], color="red", linestyle="-")
+    >>> line.plot()
+    """
 
     def __init__(
         self,
@@ -68,6 +118,9 @@ class Line:
         self._set_colors()
 
     def _set_colors(self) -> None:
+        """
+        Sets the colors for the line, marker edge, and marker face.
+        """
         cycle_color: NDArray[Any] | str = AutoColor(self.axis_index).get_color()
         if isinstance(cycle_color, np.ndarray):
             cycle_color = colors.to_hex(
@@ -87,7 +140,26 @@ class Line:
         )
 
     def _modify_color_alpha(self, color: ColorType, alpha: float | int | None) -> tuple:
+        """
+        Modifies the alpha value of the given color.
 
+        Parameters
+        --------------------
+        color : ColorType
+            The base color.
+        alpha : float or int or None
+            The alpha value to apply.
+
+        Returns
+        --------------------
+        tuple
+            The RGBA color with the modified alpha value.
+
+        Raises
+        --------------------
+        ValueError
+            If `color` or `alpha` is None, or if `alpha` is not a float.
+        """
         if color is None or alpha is None:
             raise ValueError("Both color and alpha must be provided")
 
@@ -101,6 +173,19 @@ class Line:
     @NumLines.count
     @AxesRangeSingleton.update
     def plot(self) -> list[Line2D]:
+        """
+        Plots the line on the specified axis.
+
+        Returns
+        --------------------
+        list of matplotlib.lines.Line2D
+            The list of Line2D objects representing the plotted line.
+
+        Examples
+        --------------------
+        >>> line = Line(axis_target=0, x=[0, 1, 2], y=[2, 4, 6], color="blue")
+        >>> line.plot()
+        """
         _plot = self.axis.plot(
             self.x,
             self.y,
@@ -119,7 +204,6 @@ class Line:
         return _plot
 
 
-# TODO: Modify docstring
 @bind_passed_params()
 def line(
     axis_target: int | Axes,
@@ -140,84 +224,75 @@ def line(
     **kwargs: Any,
 ) -> list[Line2D]:
     """
-    Plot a line with customized appearance on a specified axis.
+    A convenience function to plot a line with extensive customization on a Matplotlib axis.
 
-    This function allows for creating and styling a line plot on a given Matplotlib
-    axis. The appearance of the line, markers, and labels can be customized through
-    various parameters. It supports alias validation for shorter parameter names.
+    This function wraps the `Line` class for easier usage and provides support for aliasing
+    common parameters. It handles axis resolution, automatic color cycling, and parameter validation.
 
     Parameters
-    ----------
-    axis_target : int or Axes
-        The target axis where the line will be plotted. Can be an integer index of
-        the axis or an `Axes` instance.
+    --------------------
+    axis_target : int or matplotlib.axes.Axes
+        The target axis where the line should be plotted. Can be an axis index or an `Axes` object.
     x : ArrayLike
-        The x-coordinates of the data points.
+        The x-coordinates of the line data.
     y : ArrayLike
-        The y-coordinates of the data points.
+        The y-coordinates of the line data.
     color : ColorType or None, optional
-        The color of the line. Accepts any valid Matplotlib color specification.
-        Default is None.
+        The color of the line (default is `None`, using auto color cycling).
     marker : MarkerType, optional
-        The marker style for data points. Default is "o".
+        The marker style for the data points (default is "o").
     markersize : int or float, optional
-        The size of the markers. Default is 7.0.
+        The size of the markers (default is 7.0).
     markeredgewidth : int or float, optional
-        The width of the marker edges. Default is 1.5.
+        The width of the marker edges (default is 1.5).
     markeredgecolor : ColorType or None, optional
-        The color of the marker edges. Default is None.
+        The edge color of the markers (default is `None`).
     markerfacecolor : ColorType or None, optional
-        The fill color of the markers. Default is None.
+        The face color of the markers (default is `None`).
     linestyle : LineStyleType, optional
-        The style of the line. Default is "--".
+        The style of the line (default is "--").
     linewidth : int or float, optional
-        The width of the line. Default is 1.0.
+        The width of the line (default is 1.0).
     alpha : int or float, optional
-        The transparency of the markers. Value should be between 0 (transparent)
-        and 1 (opaque). Default is 0.2.
-    alpha_all : int or float, optional
-        The transparency of the entire line. Value should be between 0 and 1.
-        Default is 1.0.
+        The transparency level of the line (default is 1).
+    alpha_mfc : int or float, optional
+        The transparency level of the marker face color (default is 0.2).
     label : str or None, optional
-        The label for the line, used in legends. Default is None.
+        The label for the line, used in legends (default is `None`).
     *args : Any
-        Additional positional arguments passed to the `plot` function.
+        Additional positional arguments passed to `matplotlib.axes.Axes.plot`.
     **kwargs : Any
-        Additional keyword arguments for further customization.
-
-    Returns
-    -------
-    list[Line2D]
-        A list of `Line2D` objects representing the plotted line(s).
+        Additional keyword arguments passed to `matplotlib.axes.Axes.plot`.
 
     Notes
-    -----
-    - This function uses the `Line` class for line plotting and customization.
-    - Aliases for parameters (e.g., "ms" for "markersize", "ls" for "linestyle")
-      are supported and validated through the `AliasValidator`.
-    - Supports both explicit axis targeting via `Axes` and index-based axis selection.
+    --------------------
+    - This function utilizes the `ParamsGetter` to retrieve bound parameters and
+    the `CreateClassParams` class to handle the merging of default, configuration,
+    and passed parameters.
+
+    - Alias validation is performed using the `AliasValidator` class.
+
+        - 'ms' (markersize)
+        - 'mew' (markeredgewidth)
+        - 'ls' (linestyle)
+        - 'lw' (linewidth)
+        - 'c' (color)
+        - 'mec' (markeredgecolor)
+        - 'mfc' (markerfacecolor).
+
+    Returns
+    --------------------
+    list of matplotlib.lines.Line2D
+        The list of Line2D objects representing the plotted line.
 
     Examples
-    --------
-    Create a simple line plot:
-
-    >>> line(axis_target=0, x=[0, 1, 2], y=[3, 4, 5])
-
-    Customize line style and marker properties:
-
-    >>> line(axis_target=0, x=[0, 1, 2], y=[3, 4, 5],
-    ...      color="blue", linestyle="-.", marker="x", markersize=10)
-
-    Use transparency for markers and the line:
-
-    >>> line(axis_target=0, x=[0, 1, 2], y=[3, 4, 5],
-    ...      alpha=0.5, alpha_all=0.8)
-
-    Plot directly on a specified `Axes`:
-
-    >>> import matplotlib.pyplot as plt
-    >>> fig, ax = plt.subplots()
-    >>> line(axis_target=ax, x=[0, 1, 2], y=[3, 4, 5])
+    --------------------
+    >>> import gsplot as gs
+    >>> x = [0, 1, 2, 3]
+    >>> y = [1, 2, 3, 4]
+    >>> line_plot = gs.line(0, x, y, color="blue", linestyle="-")
+    >>> print(line_plot)
+    [<matplotlib.lines.Line2D object at 0x...>]
     """
 
     alias_map = {

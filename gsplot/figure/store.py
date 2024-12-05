@@ -7,24 +7,42 @@ __all__: list[str] = []
 
 class StoreSingleton:
     """
-    A singleton class for managing a shared store state, which can be either a boolean or an integer.
+    A thread-safe singleton class for managing a shared storage state.
 
-    This class is designed to maintain a single shared instance that controls whether certain operations
-    (like saving a figure) should be performed. The store state can be either a boolean or an integer (0 or 1).
+    This class ensures that a single instance is used to manage the storage state
+    across an application. The storage state can be a boolean or an integer (0 or 1),
+    providing flexibility for different use cases.
 
     Attributes
-    ----------
-    _instance : StoreSingleton
-        The singleton instance of the class.
-    _store : Union[bool, int]
-        The current store state, which determines whether an operation should be performed.
+    --------------------
+    store : bool or int
+        The current storage state, which can be either a boolean or an integer (0 or 1).
 
     Methods
-    -------
-    store -> Union[bool, int]
-        Gets the current store state.
-    store(value: Union[bool, int]) -> None
-        Sets the store state to a new value.
+    --------------------
+    store
+        Retrieves the current storage state.
+    store(value)
+        Sets the storage state to a boolean or an integer (0 or 1).
+
+    Examples
+    --------------------
+    >>> singleton = StoreSingleton()
+    >>> print(singleton.store)
+    False  # Default value
+
+    >>> singleton.store = True
+    >>> print(singleton.store)
+    True
+
+    >>> singleton.store = 1
+    >>> print(singleton.store)
+    1
+
+    >>> singleton.store = "invalid"  # Raises ValueError
+    Traceback (most recent call last):
+        ...
+    ValueError: Store must be a boolean or integer.
     """
 
     _instance: StoreSingleton | None = None
@@ -39,43 +57,60 @@ class StoreSingleton:
 
     def _initialize_store(self) -> None:
         """
-        Initializes the store state to a default value.
-
-        The store state is initialized to `False`, indicating that by default, the operation should not be performed.
+        Initializes the storage state to its default value (False).
         """
-
         # Explicitly initialize the instance variable with a type hint
         self._store: bool | int = False
 
     @property
     def store(self) -> bool | int:
         """
-        Gets the current store state.
+        Retrieves the current storage state.
 
         Returns
-        -------
-        Union[bool, int]
-            The current store state, which is either a boolean or an integer (0 or 1).
-        """
+        --------------------
+        bool or int
+            The current storage state.
 
+        Examples
+        --------------------
+        >>> singleton = StoreSingleton()
+        >>> print(singleton.store)
+        False
+        """
         return self._store
 
     @store.setter
     def store(self, value: bool | int) -> None:
         """
-        Sets the store state to a new value.
+        Sets the storage state.
 
         Parameters
-        ----------
-        value : Union[bool, int]
-            The new value for the store state, which must be either a boolean or an integer (0 or 1).
+        --------------------
+        value : bool or int
+            The new storage state. Must be a boolean or an integer (0 or 1).
 
         Raises
-        ------
+        --------------------
         ValueError
-            If the value is not a boolean or integer, or if an integer value is not 0 or 1.
-        """
+            If the value is not a boolean or integer, or if an integer is not 0 or 1.
 
+        Examples
+        --------------------
+        >>> singleton = StoreSingleton()
+        >>> singleton.store = True
+        >>> print(singleton.store)
+        True
+
+        >>> singleton.store = 1
+        >>> print(singleton.store)
+        1
+
+        >>> singleton.store = "invalid"  # Raises ValueError
+        Traceback (most recent call last):
+            ...
+        ValueError: Store must be a boolean or integer.
+        """
         if not isinstance(value, (bool, int)):
             raise ValueError("Store must be a boolean or integer.")
         if isinstance(value, int) and value not in [0, 1]:

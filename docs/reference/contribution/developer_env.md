@@ -35,6 +35,10 @@ gsplot provides three ways to create an environment: Poetry, Local, and Docker. 
 
 :::{tab-item} Poetry
 
+```{important}
+Ensure you have [Poetry](<https://python-poetry.org/docs/>) installed on your system.
+```
+
 ```bash
 cd gsplot
 poetry install
@@ -44,6 +48,11 @@ poetry shell
 :::
 
 :::{tab-item} Local
+
+```{important}
+- Ensure you have [pip](<https://pip.pypa.io/en/stable/>) installed on your system.
+- Ensure you have [setuptools](<https://setuptools.pypa.io/en/latest/>) installed on your system.
+```
 
 ```bash
 cd gsplot
