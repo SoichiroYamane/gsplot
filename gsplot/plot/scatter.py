@@ -16,6 +16,52 @@ __all__: list[str] = ["scatter"]
 
 
 class Scatter:
+    """
+    A class for creating scatter plots on a specified Matplotlib axis.
+
+    Parameters
+    --------------------
+    axis_target : int or matplotlib.axes.Axes
+        The target axis for the scatter plot. Can be an axis index or a Matplotlib `Axes` object.
+    x : ArrayLike
+        The x-coordinates of the scatter points.
+    y : ArrayLike
+        The y-coordinates of the scatter points.
+    color : ColorType or None, optional
+        Color of the points. If `None`, a default color from the axis's cycle is used (default is `None`).
+    size : int or float, optional
+        Size of the scatter points (default is 1).
+    alpha : int or float, optional
+        Opacity of the scatter points (default is 1).
+    **kwargs : Any
+        Additional keyword arguments passed to the `scatter` method of Matplotlib's `Axes`.
+
+    Attributes
+    --------------------
+    axis_index : int
+        The resolved index of the target axis.
+    axis : matplotlib.axes.Axes
+        The resolved target axis object.
+    x : numpy.ndarray
+        The x-coordinates as a NumPy array.
+    y : numpy.ndarray
+        The y-coordinates as a NumPy array.
+
+    Methods
+    --------------------
+    get_color() -> ColorType
+        Determines the color for the scatter points, either from the user input or the axis's color cycle.
+    plot() -> matplotlib.collections.PathCollection
+        Creates and plots the scatter points on the axis.
+
+    Examples
+    --------------------
+    >>> x = [1, 2, 3, 4]
+    >>> y = [10, 20, 15, 25]
+    >>> scatter = Scatter(axis_target=0, x=x, y=y, color="blue", size=10, alpha=0.5)
+    >>> scatter.plot()
+    """
+
     def __init__(
         self,
         axis_target: int | Axes,
@@ -41,8 +87,30 @@ class Scatter:
         self.x: NDArray[Any] = np.array(self._x)
         self.y: NDArray[Any] = np.array(self._y)
 
+    # TODO: check code
     def get_color(self) -> ColorType:
+        """
+        Determines the color for the scatter points.
 
+        If a color is not explicitly provided, it retrieves a default color from the
+        axis's color cycle.
+
+        Returns
+        --------------------
+        ColorType
+            The resolved color for the scatter points.
+
+        Notes
+        --------------------
+        The method ensures compatibility with Matplotlib's color representation, converting
+        NumPy arrays to hexadecimal strings if needed.
+
+        Examples
+        --------------------
+        >>> scatter = Scatter(axis_target=0, x=[1, 2], y=[3, 4])
+        >>> scatter.get_color()
+        '#1f77b4'  # Example color from the color cycle
+        """
         cycle_color: NDArray | str = AutoColor(self.axis_index).get_color()
         if isinstance(cycle_color, np.ndarray):
             cycle_color = colors.to_hex(
@@ -55,6 +123,27 @@ class Scatter:
     @NumLines.count
     @AxesRangeSingleton.update
     def plot(self) -> PathCollection:
+        """
+        Plots the scatter points on the specified axis.
+
+        This method creates a scatter plot using the provided x, y, color, size, and alpha values.
+
+        Returns
+        --------------------
+        matplotlib.collections.PathCollection
+            The scatter plot as a PathCollection object.
+
+        Notes
+        --------------------
+        - This method is decorated with `@NumLines.count` to track the number of scatter calls on the axis.
+        - It is also decorated with `@AxesRangeSingleton.update` to update the axis range with the scatter data.
+
+        Examples
+        --------------------
+        >>> scatter = Scatter(axis_target=0, x=[1, 2, 3], y=[4, 5, 6], size=50, alpha=0.8)
+        >>> scatter.plot()
+        <matplotlib.collections.PathCollection>
+        """
         _plot = self.axis.scatter(
             self.x,
             self.y,
@@ -66,7 +155,6 @@ class Scatter:
         return _plot
 
 
-# TODO: modify the docstring
 @bind_passed_params()
 def scatter(
     axis_target: int | Axes,
@@ -78,64 +166,48 @@ def scatter(
     **kwargs: Any,
 ) -> PathCollection:
     """
-    Create a scatter plot with customizable appearance.
+    Creates a scatter plot on the specified axis.
 
-    This function creates a scatter plot on a specified axis using x and y
-    coordinates. The size, color, and transparency of the points can be customized.
+    This function uses the `Scatter` class to generate a scatter plot with customizable
+    size, color, and transparency.
 
     Parameters
-    ----------
-    axis_target : int or Axes
-        The target axis where the scatter plot will be created. Can be an integer
-        index of the axis or an `Axes` instance.
+    --------------------
+    axis_target : int or matplotlib.axes.Axes
+        The target axis for the scatter plot. Can be an axis index or a Matplotlib `Axes` object.
     x : ArrayLike
-        The x-coordinates of the data points.
+        The x-coordinates of the scatter points.
     y : ArrayLike
-        The y-coordinates of the data points.
+        The y-coordinates of the scatter points.
     color : ColorType or None, optional
-        The color of the points. Accepts any valid Matplotlib color specification.
-        Default is None.
+        Color of the points. If `None`, a default color from the axis's cycle is used (default is `None`).
     size : int or float, optional
-        The size of the points. Default is 1.
+        Size of the scatter points (default is 1).
     alpha : int or float, optional
-        The transparency of the points. Value should be between 0 (transparent) and 1
-        (opaque). Default is 1.
+        Opacity of the scatter points (default is 1).
     **kwargs : Any
-        Additional keyword arguments passed to the `Scatter` class for further
-        customization.
-
-    Returns
-    -------
-    PathCollection
-        A Matplotlib `PathCollection` object representing the scatter plot.
+        Additional keyword arguments passed to the `scatter` method of Matplotlib's `Axes`.
 
     Notes
-    -----
-    - This function uses the `Scatter` class for plotting and customization.
-    - Aliases for parameters are supported (e.g., "s" for "size" and "c" for "color").
-    - Additional keyword arguments can be used to customize the scatter plot further,
-      such as edge colors or colormap settings.
+    --------------------
+    - This function utilizes the `ParamsGetter` to retrieve bound parameters and
+      the `CreateClassParams` class to handle the merging of default, configuration,
+      and passed parameters.
+    - Aliases such as 's' for size and 'c' for color are automatically resolved
+      by the `AliasValidator`.
+
+    Returns
+    --------------------
+    matplotlib.collections.PathCollection
+        The scatter plot as a PathCollection object.
 
     Examples
-    --------
-    Create a basic scatter plot:
-
-    >>> scatter(axis_target=0, x=[1, 2, 3], y=[4, 5, 6])
-
-    Customize the color and size of points:
-
-    >>> scatter(axis_target=0, x=[1, 2, 3], y=[4, 5, 6],
-    ...         color="red", size=10)
-
-    Add transparency to points:
-
-    >>> scatter(axis_target=0, x=[1, 2, 3], y=[4, 5, 6],
-    ...         alpha=0.5)
-
-    Pass additional keyword arguments:
-
-    >>> scatter(axis_target=0, x=[1, 2, 3], y=[4, 5, 6],
-    ...         edgecolors="black", linewidth=0.5)
+    --------------------
+    >>> import gsplot as gs
+    >>> x = [1, 2, 3, 4]
+    >>> y = [10, 20, 15, 25]
+    >>> gs.scatter(axis_target=0, x=x, y=y, color="red", size=20, alpha=0.8)
+    <matplotlib.collections.PathCollection>
     """
     alias_map = {
         "s": "size",

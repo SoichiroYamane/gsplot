@@ -14,6 +14,71 @@ __all__: list[str] = ["scatter_colormap"]
 
 
 class ScatterColormap:
+    """
+    A class for creating scatter plots with colormap-based coloring on a specified Matplotlib axis.
+
+    Parameters
+    --------------------
+    axis_target : int or matplotlib.axes.Axes
+        The target axis for the scatter plot. Can be an axis index or a Matplotlib `Axes` object.
+    x : ArrayLike
+        The x-coordinates of the scatter points.
+    y : ArrayLike
+        The y-coordinates of the scatter points.
+    cmapdata : ArrayLike
+        The data used to determine the color of the scatter points.
+    size : int or float, optional
+        Size of the scatter points (default is 1).
+    cmap : str, optional
+        The name of the colormap to use (default is "viridis").
+    vmin : int or float, optional
+        The minimum value of the colormap scale (default is 0).
+    vmax : int or float, optional
+        The maximum value of the colormap scale (default is 1).
+    alpha : int or float, optional
+        Opacity of the scatter points (default is 1).
+    label : str or None, optional
+        Label for the colormap, used in legends (default is None).
+    **kwargs : Any
+        Additional keyword arguments passed to the `scatter` method of Matplotlib's `Axes`.
+
+    Attributes
+    --------------------
+    axis_index : int
+        The resolved index of the target axis.
+    axis : matplotlib.axes.Axes
+        The resolved target axis object.
+    x : numpy.ndarray
+        The x-coordinates as a NumPy array.
+    y : numpy.ndarray
+        The y-coordinates as a NumPy array.
+    cmapdata : numpy.ndarray
+        The colormap data as a NumPy array.
+    cmap_norm : numpy.ndarray
+        Normalized colormap data.
+    vmin : float
+        The minimum value of the colormap scale.
+    vmax : float
+        The maximum value of the colormap scale.
+
+    Methods
+    --------------------
+    add_legend_colormap() -> None
+        Adds a colormap legend to the plot, if a label is provided.
+    get_cmap_norm() -> numpy.ndarray
+        Normalizes the colormap data to a range of [0, 1].
+    plot() -> matplotlib.collections.PathCollection
+        Creates and plots the scatter points with colormap-based coloring.
+
+    Examples
+    --------------------
+    >>> x = [1, 2, 3, 4]
+    >>> y = [10, 20, 15, 25]
+    >>> cmapdata = [0.1, 0.5, 0.3, 0.9]
+    >>> scatter = ScatterColormap(axis_target=0, x=x, y=y, cmapdata=cmapdata, cmap="plasma")
+    >>> scatter.plot()
+    """
+
     def __init__(
         self,
         axis_target: int | Axes,
@@ -55,8 +120,22 @@ class ScatterColormap:
         if self.label is not None:
             self.add_legend_colormap()
 
-    def add_legend_colormap(self):
+    def add_legend_colormap(self) -> None:
+        """
+        Adds a colormap legend to the plot.
 
+        If a label is provided, this method creates a colormap legend with stripes
+        corresponding to the colormap data.
+
+        Notes
+        --------------------
+        The legend is created using the `LegendColormap` class.
+
+        Examples
+        --------------------
+        >>> scatter = ScatterColormap(axis_target=0, x=[1, 2], y=[3, 4], cmapdata=[0.1, 0.9], label="Intensity")
+        >>> scatter.add_legend_colormap()
+        """
         if self.label is not None:
             LegendColormap(
                 axis_target=self.axis_target,
@@ -66,7 +145,22 @@ class ScatterColormap:
             ).legend_colormap()
 
     def get_cmap_norm(self) -> NDArray[Any]:
+        """
+        Normalizes the colormap data to a range of [0, 1].
 
+        The normalization is based on the minimum and maximum values of the colormap data.
+
+        Returns
+        --------------------
+        numpy.ndarray
+            Normalized colormap data.
+
+        Examples
+        --------------------
+        >>> scatter = ScatterColormap(axis_target=0, x=[1, 2], y=[3, 4], cmapdata=[0.1, 0.9])
+        >>> scatter.get_cmap_norm()
+        array([0. , 1.])
+        """
         cmapdata_max = max(self.cmapdata)
         cmapdata_min = min(self.cmapdata)
         cmap_norm: NDArray[Any] = (self.cmapdata - cmapdata_min) / (
@@ -76,7 +170,28 @@ class ScatterColormap:
 
     @AxesRangeSingleton.update
     def plot(self) -> PathCollection:
+        """
+        Plots the scatter points with colormap-based coloring.
 
+        This method uses the normalized colormap data to assign colors to the scatter points
+        and creates the plot on the specified axis.
+
+        Returns
+        --------------------
+        matplotlib.collections.PathCollection
+            The scatter plot as a PathCollection object.
+
+        Notes
+        --------------------
+        - This method is decorated with `@AxesRangeSingleton.update` to update the axis range with the scatter data.
+        - The colormap and normalization are applied using the `cmap` and `cmap_norm` attributes.
+
+        Examples
+        --------------------
+        >>> scatter = ScatterColormap(axis_target=0, x=[1, 2, 3], y=[4, 5, 6], cmapdata=[0.2, 0.5, 0.8])
+        >>> scatter.plot()
+        <matplotlib.collections.PathCollection>
+        """
         _plot = self.axis.scatter(
             x=self.x,
             y=self.y,
@@ -91,7 +206,6 @@ class ScatterColormap:
         return _plot
 
 
-# TODO: modify the docstring
 @bind_passed_params()
 def scatter_colormap(
     axis_target: int | Axes,
@@ -107,79 +221,58 @@ def scatter_colormap(
     **kwargs: Any,
 ) -> PathCollection:
     """
-    Create a scatter plot with a colormap applied to the points.
+    Creates a scatter plot with colormap-based coloring on the specified axis.
 
-    This function creates a scatter plot where the color of each point is determined
-    by the values in `cmapdata` and mapped to the specified colormap. Additional
-    customization options for size, transparency, and labels are provided.
+    This function uses the `ScatterColormap` class to generate a scatter plot with customizable
+    size, colormap, and transparency.
 
     Parameters
-    ----------
-    axis_target : int or Axes
-        The target axis where the scatter plot will be created. Can be an integer
-        index of the axis or an `Axes` instance.
+    --------------------
+    axis_target : int or matplotlib.axes.Axes
+        The target axis for the scatter plot. Can be an axis index or a Matplotlib `Axes` object.
     x : ArrayLike
-        The x-coordinates of the data points.
+        The x-coordinates of the scatter points.
     y : ArrayLike
-        The y-coordinates of the data points.
+        The y-coordinates of the scatter points.
     cmapdata : ArrayLike
-        The data values used to map colors to the points.
+        The data used to determine the color of the scatter points.
     size : int or float, optional
-        The size of the points. Default is 1.
+        Size of the scatter points (default is 1).
     cmap : str, optional
-        The name of the colormap to use. Default is "viridis".
+        The name of the colormap to use (default is "viridis").
     vmin : int or float, optional
-        The minimum value for the colormap. Data values smaller than this will be
-        clamped to `vmin`. Default is 0.
+        The minimum value of the colormap scale (default is 0).
     vmax : int or float, optional
-        The maximum value for the colormap. Data values larger than this will be
-        clamped to `vmax`. Default is 1.
+        The maximum value of the colormap scale (default is 1).
     alpha : int or float, optional
-        The transparency of the points. Value should be between 0 (transparent) and 1
-        (opaque). Default is 1.
+        Opacity of the scatter points (default is 1).
     label : str or None, optional
-        The label for the scatter plot, used in legends. Default is None.
+        Label for the colormap, used in legends (default is None).
     **kwargs : Any
-        Additional keyword arguments passed to the `ScatterColormap` class for further
-        customization.
+        Additional keyword arguments passed to the `scatter` method of Matplotlib's `Axes`.
 
-    Returns
-    -------
-    PathCollection
-        A Matplotlib `PathCollection` object representing the scatter plot.
 
     Notes
-    -----
-    - This function uses the `ScatterColormap` class for plotting and customization.
-    - Data values in `cmapdata` are mapped to the colormap using `vmin` and `vmax`.
-    - Aliases for parameters are supported (e.g., "s" for "size").
+    --------------------
+    - This function utilizes the `ParamsGetter` to retrieve bound parameters and
+      the `CreateClassParams` class to handle the merging of default, configuration,
+      and passed parameters.
+    - Aliases such as 's' for size are automatically resolved by the `AliasValidator`.
+
+    Returns
+    --------------------
+    matplotlib.collections.PathCollection
+        The scatter plot as a PathCollection object.
 
     Examples
-    --------
-    Create a scatter plot with a colormap applied:
-
-    >>> import numpy as np
-    >>> x = np.linspace(0, 10, 100)
-    >>> y = np.sin(x)
-    >>> cmapdata = np.abs(y)  # Map colors based on the absolute value of y
-    >>> scatter_colormap(axis_target=0, x=x, y=y, cmapdata=cmapdata)
-
-    Customize the colormap and point size:
-
-    >>> scatter_colormap(axis_target=0, x=x, y=y, cmapdata=cmapdata,
-    ...                  cmap="plasma", size=10)
-
-    Adjust colormap range with `vmin` and `vmax`:
-
-    >>> scatter_colormap(axis_target=0, x=x, y=y, cmapdata=cmapdata,
-    ...                  vmin=0.2, vmax=0.8)
-
-    Add transparency and a label:
-
-    >>> scatter_colormap(axis_target=0, x=x, y=y, cmapdata=cmapdata,
-    ...                  alpha=0.5, label="My Data")
+    --------------------
+    >>> import gsplot as gs
+    >>> x = [1, 2, 3, 4]
+    >>> y = [10, 20, 15, 25]
+    >>> cmapdata = [0.1, 0.5, 0.3, 0.9]
+    >>> gs.scatter_colormap(axis_target=0, x=x, y=y, cmapdata=cmapdata, cmap="plasma", label="Data")
+    <matplotlib.collections.PathCollection>
     """
-
     alias_map = {
         "s": "size",
     }

@@ -16,6 +16,65 @@ __all__: list[str] = ["line_colormap_solid"]
 
 
 class LineColormapSolid:
+    """
+    A class for plotting solid lines with a colormap applied along the line segments.
+
+    This class generates a single continuous line where the color is mapped to the
+    provided data using a colormap. It also supports interpolating points for smoother
+    color transitions.
+
+    Parameters
+    --------------------
+    axis_target : int or matplotlib.axes.Axes
+        The target axis for plotting. Can be an axis index or a Matplotlib `Axes` object.
+    x : ArrayLike
+        The x-coordinates of the line.
+    y : ArrayLike
+        The y-coordinates of the line.
+    cmapdata : ArrayLike
+        Data values used to map colors to the line segments.
+    cmap : str, optional
+        Name of the colormap to use (default is "viridis").
+    linewidth : int or float, optional
+        Width of the line (default is 1).
+    label : str or None, optional
+        Label for the line, used in legends (default is `None`).
+    interpolation_points : int or None, optional
+        Number of interpolation points for smooth color transitions (default is `None`).
+    **kwargs : Any
+        Additional keyword arguments passed to the `LegendColormap` class.
+
+    Attributes
+    --------------------
+    axis_index : int
+        The resolved index of the target axis.
+    axis : matplotlib.axes.Axes
+        The resolved target axis object.
+    x : numpy.ndarray
+        The x-coordinates as a NumPy array.
+    y : numpy.ndarray
+        The y-coordinates as a NumPy array.
+    cmapdata : numpy.ndarray
+        The colormap data as a NumPy array.
+
+    Methods
+    --------------------
+    add_legend_colormap()
+        Adds a legend entry for the colormap associated with the solid line.
+    normal_interpolate_points(interpolation_points)
+        Interpolates x, y, and colormap data for smoother color transitions.
+    plot()
+        Creates and plots the solid line with a colormap and returns the `LineCollection`.
+
+    Examples
+    --------------------
+    >>> x = [0, 1, 2, 3, 4]
+    >>> y = [1, 3, 2, 5, 4]
+    >>> cmapdata = [0.1, 0.3, 0.6, 0.9, 1.0]
+    >>> line = LineColormapSolid(axis_target=0, x=x, y=y, cmapdata=cmapdata, cmap="plasma")
+    >>> line.plot()
+    """
+
     def __init__(
         self,
         axis_target: int | Axes,
@@ -51,6 +110,12 @@ class LineColormapSolid:
             self.add_legend_colormap()
 
     def add_legend_colormap(self) -> None:
+        """
+        Adds a legend entry for the colormap associated with the solid line.
+
+        Determines the number of stripes in the colormap based on the interpolation
+        points or the colormap data length and adds a colormap patch to the legend.
+        """
         if self.interpolation_points is None:
             NUM_STRIPES = len(self.cmapdata)
         else:
@@ -68,6 +133,19 @@ class LineColormapSolid:
         ).axis_patch()
 
     def normal_interpolate_points(self, interpolation_points: int) -> tuple:
+        """
+        Interpolates x, y, and colormap data to create smoother transitions.
+
+        Parameters
+        --------------------
+        interpolation_points : int
+            Number of points for interpolation.
+
+        Returns
+        --------------------
+        tuple
+            Interpolated x-coordinates, y-coordinates, and colormap data.
+        """
         xdiff = np.diff(self.x)
         ydiff = np.diff(self.y)
         distances = np.sqrt(xdiff**2 + ydiff**2)
@@ -88,6 +166,22 @@ class LineColormapSolid:
 
     @AxesRangeSingleton.update
     def plot(self) -> list[LineCollection]:
+        """
+        Plots the solid line with a colormap applied to its segments.
+
+        This method interpolates points if required, creates line segments from the
+        data, and applies the colormap to the segments. The resulting line collection
+        is added to the axis.
+
+        Returns
+        --------------------
+        list[matplotlib.collections.LineCollection]
+            A list containing the single `LineCollection` object for the plotted solid line.
+
+        Notes
+        --------------------
+        This method is decorated with `@AxesRangeSingleton.update` to update the axis range.
+        """
         if self.interpolation_points is not None:
             self.x, self.y, self.cmapdata = self.normal_interpolate_points(
                 self.interpolation_points
@@ -109,7 +203,6 @@ class LineColormapSolid:
         return [lc]
 
 
-# TODO: modify the docstring
 @bind_passed_params()
 def line_colormap_solid(
     axis_target: int | Axes,
@@ -123,67 +216,55 @@ def line_colormap_solid(
     **kwargs: Any,
 ) -> list[LineCollection]:
     """
-    Plot a solid line with a colormap applied based on data values.
+    Plots a solid line with a colormap applied along its segments.
 
-    This function creates a line plot where the color of the line varies according
-    to the provided `cmapdata` values. The line is a solid style, and additional
-    customization such as interpolation of colors can be specified.
+    This function creates a solid line on the specified axis with colors mapped
+    to the provided colormap data. It supports interpolation for smoother transitions
+    between segments.
 
     Parameters
-    ----------
-    axis_target : int or Axes
-        The target axis where the line will be plotted. Can be an integer index of
-        the axis or an `Axes` instance.
+    --------------------
+    axis_target : int or matplotlib.axes.Axes
+        The target axis for plotting. Can be an axis index or a Matplotlib `Axes` object.
     x : ArrayLike
-        The x-coordinates of the data points.
+        The x-coordinates of the line.
     y : ArrayLike
-        The y-coordinates of the data points.
+        The y-coordinates of the line.
     cmapdata : ArrayLike
-        The data values used to map colors to the line segments.
+        Data values used to map colors to the line segments.
     cmap : str, optional
-        The name of the colormap to use. Default is "viridis".
+        Name of the colormap to use (default is "viridis").
     linewidth : float or int, optional
-        The width of the line. Default is 1.
+        Width of the line (default is 1).
     label : str or None, optional
-        The label for the line, used in legends. Default is None.
+        Label for the line, used in legends (default is `None`).
     interpolation_points : int or None, optional
-        The number of points to use for interpolating the colormap along the line.
-        If None, no interpolation is applied. Default is None.
+        Number of interpolation points for smooth color transitions (default is `None`).
     **kwargs : Any
-        Additional keyword arguments passed to the `LineCollection` creation process.
+        Additional keyword arguments passed to the `LegendColormap` class.
 
     Returns
-    -------
-    list[LineCollection]
-        A list of `LineCollection` objects representing the plotted line segments
-        with applied colormap.
+    --------------------
+    list[matplotlib.collections.LineCollection]
+        A list containing the single `LineCollection` object for the plotted solid line.
 
     Notes
-    -----
-    - The line is styled as a solid line with colors mapped from the provided `cmapdata`.
-    - The `AliasValidator` supports shorthand aliases like "lw" for "linewidth".
-    - Interpolation can be used to smooth the color transitions along the line.
+    --------------------
+    This function utilizes the `ParamsGetter` to retrieve bound parameters and
+    the `CreateClassParams` class to handle the merging of default, configuration,
+    and passed parameters.
 
     Examples
-    --------
-    Plot a solid line with a colormap:
-
-    >>> import numpy as np
-    >>> x = np.linspace(0, 10, 100)
-    >>> y = np.sin(x)
-    >>> cmapdata = np.abs(y)  # Map colors based on the absolute value of y
-    >>> line_colormap_solid(axis_target=0, x=x, y=y, cmapdata=cmapdata)
-
-    Customize the line style and colormap:
-
-    >>> line_colormap_solid(axis_target=0, x=x, y=y, cmapdata=cmapdata,
-    ...                     cmap="plasma", linewidth=2)
-
-    Use interpolation for smooth color transitions:
-
-    >>> line_colormap_solid(axis_target=0, x=x, y=y, cmapdata=cmapdata,
-    ...                     interpolation_points=200)
+    --------------------
+    >>> import gsplot as gs
+    >>> x = [0, 1, 2, 3, 4]
+    >>> y = [1, 3, 2, 5, 4]
+    >>> cmapdata = [0.1, 0.3, 0.6, 0.9, 1.0]
+    >>> lc_list = gs.line_colormap_solid(axis_target=0, x=x, y=y, cmapdata=cmapdata, cmap="plasma")
+    >>> print(len(lc_list))
+    1
     """
+
     alias_map = {
         "lw": "linewidth",
     }

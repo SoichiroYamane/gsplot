@@ -19,6 +19,53 @@ __all__: list[str] = [
 
 
 class Legend:
+    """
+    A class to manage legends for a specific Matplotlib axis.
+
+    This class provides functionality for customizing, reversing, and managing
+    legends on a specific axis in a Matplotlib figure.
+
+    Parameters
+    --------------------
+    axis_target : int | Axes
+        The target axis for the legend. Can be an axis index or an `Axes` object.
+    handles : list[Any], optional
+        A list of handles for the legend.
+    labels : list[str], optional
+        A list of labels for the legend.
+    handlers : dict, optional
+        A dictionary of custom legend handlers.
+    *args : Any
+        Additional positional arguments for the legend.
+    **kwargs : Any
+        Additional keyword arguments for the legend.
+
+    Attributes
+    --------------------
+    axis_target : int | Axes
+        The target axis for the legend.
+    handles : list[Any] | None
+        The legend handles.
+    labels : list[str] | None
+        The legend labels.
+    handlers : dict | None
+        The custom legend handlers.
+    axis_index : int
+        The resolved index of the target axis.
+    axis : matplotlib.axes.Axes
+        The resolved `Axes` object for the target axis.
+
+    Methods
+    --------------------
+    get_legend_handlers() -> tuple[list[Artist], list[str], dict[Artist, HandlerBase]]
+        Retrieves the legend handles, labels, and associated handlers.
+    legend() -> matplotlib.legend.Legend
+        Adds a legend to the axis.
+    legend_handlers() -> matplotlib.legend.Legend
+        Adds a legend with custom handles, labels, and handlers.
+    reverse_legend() -> matplotlib.legend.Legend
+        Adds a legend to the axis with reversed order of handles and labels.
+    """
 
     def __init__(
         self,
@@ -43,6 +90,16 @@ class Legend:
     def get_legend_handlers(
         self,
     ) -> tuple[list[Artist], list[str], dict[Artist, HandlerBase]]:
+        """
+        Retrieves the legend handles, labels, and associated handlers for the target axis.
+
+        Returns
+        --------------------
+        tuple[list[Artist], list[str], dict[Artist, HandlerBase]]
+            - handles: The list of legend handles.
+            - labels: The list of legend labels.
+            - handlers: A dictionary mapping handles to their legend handlers.
+        """
 
         handles, labels = self.axis.get_legend_handles_labels()
 
@@ -67,12 +124,27 @@ class Legend:
         return handles, labels, handlers
 
     def legend(self) -> Lg:
+        """
+        Adds a legend to the target axis.
+
+        Returns
+        --------------------
+        matplotlib.legend.Legend
+            The created legend object.
+        """
         _lg = self.axis.legend(*self.args, **self.kwargs)
 
         return _lg
 
     def legend_handlers(self) -> Lg:
+        """
+        Adds a legend with custom handles, labels, and handlers to the target axis.
 
+        Returns
+        --------------------
+        matplotlib.legend.Legend
+            The created legend object with the provided custom handlers.
+        """
         _lg = self.axis.legend(
             handles=self.handles,
             labels=self.labels,
@@ -84,6 +156,14 @@ class Legend:
         return _lg
 
     def reverse_legend(self) -> Lg:
+        """
+        Adds a legend to the target axis with reversed order of handles and labels.
+
+        Returns
+        --------------------
+        matplotlib.legend.Legend
+            The created legend object with reversed order.
+        """
 
         handles, labels, handlers = self.get_legend_handlers()
         _lg = self.axis.legend(
@@ -97,11 +177,42 @@ class Legend:
 
 
 class LegendAxes:
+    """
+    A class to manage legends for all axes in the current Matplotlib figure.
+
+    Parameters
+    --------------------
+    *args : Any
+        Additional positional arguments for legends.
+    **kwargs : Any
+        Additional keyword arguments for legends.
+
+    Attributes
+    --------------------
+    args : Any
+        Positional arguments for legends.
+    kwargs : Any
+        Keyword arguments for legends.
+
+    Methods
+    --------------------
+    legend_axes() -> list[matplotlib.legend.Legend]
+        Adds legends to all axes in the current figure.
+    """
+
     def __init__(self, *args: Any, **kwargs: Any):
         self.args: Any = args
         self.kwargs: Any = kwargs
 
     def legend_axes(self) -> list[Lg]:
+        """
+        Adds legends to all axes in the current Matplotlib figure.
+
+        Returns
+        --------------------
+        list[matplotlib.legend.Legend]
+            A list of legend objects created for each axis.
+        """
         _lg_list = []
         for ax in plt.gcf().axes:
             _lg = ax.legend(*self.args, **self.kwargs)
@@ -111,7 +222,40 @@ class LegendAxes:
 
 @bind_passed_params()
 def legend(axis_target: int | Axes, *args: Any, **kwargs: Any) -> Lg:
+    """
+    Adds a legend to the specified axis.
 
+    Parameters
+    --------------------
+    axis_target : int | Axes
+        The target axis for the legend. Can be an axis index or an `Axes` object.
+    *args : Any
+        Additional positional arguments for the legend.
+    **kwargs : Any
+        Additional keyword arguments for the legend.
+
+    Notes
+    --------------------
+    This function utilizes the `ParamsGetter` to retrieve bound parameters and
+    the `CreateClassParams` class to handle the merging of default, configuration,
+    and passed parameters.
+
+    Returns
+    --------------------
+    matplotlib.legend.Legend
+        The created legend object.
+
+    Examples
+    --------------------
+    >>> import matplotlib.pyplot as plt
+    >>> import numpy as np
+    >>> import gsplot as gs
+    >>> x = np.linspace(0, 10, 100)
+    >>> plt.plot(x, np.sin(x), label="Sine")
+    >>> plt.plot(x, np.cos(x), label="Cosine")
+    >>> gs.legend(0)  # Adds legend to the first axis
+    >>> plt.show()
+    """
     passed_params: dict[str, Any] = ParamsGetter("passed_params").get_bound_params()
     class_params = CreateClassParams(passed_params).get_class_params()
 
@@ -125,6 +269,37 @@ def legend(axis_target: int | Axes, *args: Any, **kwargs: Any) -> Lg:
 
 @bind_passed_params()
 def legend_axes(*args: Any, **kwargs: Any) -> list[Lg]:
+    """
+    Adds legends to all axes in the current Matplotlib figure.
+
+    Parameters
+    --------------------
+    *args : Any
+        Additional positional arguments for legends.
+    **kwargs : Any
+        Additional keyword arguments for legends.
+
+    Notes
+    --------------------
+    This function utilizes the `ParamsGetter` to retrieve bound parameters and
+    the `CreateClassParams` class to handle the merging of default, configuration,
+    and passed parameters.
+
+    Returns
+    --------------------
+    list[matplotlib.legend.Legend]
+        A list of legend objects created for each axis.
+
+    Examples
+    --------------------
+    >>> import matplotlib.pyplot as plt
+    >>> fig, axes = plt.subplots(2, 1)
+    >>> import gsplot as gs
+    >>> axes[0].plot([1, 2, 3], [4, 5, 6], label="Line 1")
+    >>> axes[1].plot([1, 2, 3], [6, 5, 4], label="Line 2")
+    >>> gs.legend_axes()  # Adds legends to all axes
+    >>> plt.show()
+    """
     passed_params: dict[str, Any] = ParamsGetter("passed_params").get_bound_params()
     class_params = CreateClassParams(passed_params).get_class_params()
 
@@ -144,7 +319,46 @@ def legend_handlers(
     *args: Any,
     **kwargs: Any
 ) -> Lg:
+    """
+    Adds a legend with custom handles, labels, and handlers to the specified axis.
 
+    Parameters
+    --------------------
+    axis_target : int | Axes
+        The target axis for the legend. Can be an axis index or an `Axes` object.
+    handles : list[Any], optional
+        A list of custom handles for the legend.
+    labels : list[str], optional
+        A list of custom labels for the legend.
+    handlers : dict, optional
+        A dictionary of custom legend handlers.
+    *args : Any
+        Additional positional arguments for the legend.
+    **kwargs : Any
+        Additional keyword arguments for the legend.
+
+    Notes
+    --------------------
+    This function utilizes the `ParamsGetter` to retrieve bound parameters and
+    the `CreateClassParams` class to handle the merging of default, configuration,
+    and passed parameters.
+
+    Returns
+    --------------------
+    matplotlib.legend.Legend
+        The created legend object with the provided custom handlers.
+
+    Examples
+    --------------------
+    >>> import matplotlib.pyplot as plt
+    >>> from matplotlib.lines import Line2D
+    >>> import gsplot as gs
+    >>> fig, ax = plt.subplots()
+    >>> ax.plot([0, 1], [0, 1], label="Line A")
+    >>> custom_handle = [Line2D([0], [0], color="r", lw=2)]
+    >>> gs.legend_handlers(0, handles=custom_handle, labels=["Custom Line"])
+    >>> plt.show()
+    """
     passed_params: dict[str, Any] = ParamsGetter("passed_params").get_bound_params()
     class_params = CreateClassParams(passed_params).get_class_params()
 
@@ -168,7 +382,46 @@ def legend_reverse(
     *args: Any,
     **kwargs: Any
 ) -> Lg:
+    """
+    Adds a legend to the specified axis with reversed order of handles and labels.
 
+    Parameters
+    --------------------
+    axis_target : int | Axes
+        The target axis for the legend. Can be an axis index or an `Axes` object.
+    handles : list[Any], optional
+        A list of custom handles for the legend.
+    labels : list[str], optional
+        A list of custom labels for the legend.
+    handlers : dict, optional
+        A dictionary of custom legend handlers.
+    *args : Any
+        Additional positional arguments for the legend.
+    **kwargs : Any
+        Additional keyword arguments for the legend.
+
+    Notes
+    --------------------
+    This function utilizes the `ParamsGetter` to retrieve bound parameters and
+    the `CreateClassParams` class to handle the merging of default, configuration,
+    and passed parameters.
+
+    Returns
+    --------------------
+    matplotlib.legend.Legend
+        The created legend object with reversed order.
+
+    Examples
+    --------------------
+    >>> import matplotlib.pyplot as plt
+    >>> x = [1, 2, 3]
+    >>> y1 = [4, 5, 6]
+    >>> y2 = [6, 5, 4]
+    >>> plt.plot(x, y1, label="Line 1")
+    >>> plt.plot(x, y2, label="Line 2")
+    >>> legend_reverse(0)  # Reverses the legend order
+    >>> plt.show()
+    """
     passed_params: dict[str, Any] = ParamsGetter("passed_params").get_bound_params()
     class_params = CreateClassParams(passed_params).get_class_params()
 
@@ -186,5 +439,31 @@ def legend_reverse(
 def legend_get_handlers(
     axis_target: int | Axes,
 ) -> tuple:
+    """
+    Retrieves the legend handles, labels, and associated handlers for the specified axis.
 
+    Parameters
+    --------------------
+    axis_target : int | Axes
+        The target axis for retrieving the legend handlers. Can be an axis index or an `Axes` object.
+
+    Returns
+    --------------------
+    tuple
+        - handles: The list of legend handles.
+        - labels: The list of legend labels.
+        - handlers: A dictionary mapping handles to their legend handlers.
+
+    Examples
+    --------------------
+    >>> import matplotlib.pyplot as plt
+    >>> import gsplot as gs
+    >>> fig, ax = plt.subplots()
+    >>> ax.plot([0, 1], [0, 1], label="Line A")
+    >>> ax.plot([1, 0], [0, 1], label="Line B")
+    >>> handles, labels, handlers = gs.legend_get_handlers(0)
+    >>> print("Handles:", handles)
+    >>> print("Labels:", labels)
+    >>> print("Handlers:", handlers)
+    """
     return Legend(axis_target).get_legend_handlers()

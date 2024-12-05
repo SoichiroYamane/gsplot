@@ -9,6 +9,59 @@ __all__: list[str] = ["show"]
 
 
 class Show:
+    """
+    A utility class for managing figure saving and displaying in Matplotlib.
+
+    This class provides functionality to save the current figure in multiple formats
+    and optionally display it.
+
+    Parameters
+    --------------------
+    name : str, optional
+        The base name for saved figure files (default is "gsplot").
+    ft_list : list of str, optional
+        A list of file formats for saving the figure (default is ["png", "pdf"]).
+    dpi : float, optional
+        The resolution (dots per inch) for saving the figure (default is 600).
+    show : bool, optional
+        Whether to display the figure (default is True).
+    *args : Any
+        Additional positional arguments passed to `plt.savefig`.
+    **kwargs : Any
+        Additional keyword arguments passed to `plt.savefig`.
+
+    Attributes
+    --------------------
+    name : str
+        The base name for saved figure files.
+    ft_list : list of str
+        A list of file formats for saving the figure.
+    dpi : float
+        The resolution for saving the figure.
+    show : bool
+        Whether to display the figure.
+    args : Any
+        Additional positional arguments passed to `plt.savefig`.
+    kwargs : Any
+        Additional keyword arguments passed to `plt.savefig`.
+    _store_singleton : StoreSingleton
+        A singleton instance for managing the storage state.
+
+    Methods
+    --------------------
+    store_fig()
+        Saves the current figure in the specified formats.
+    get_store()
+        Retrieves the storage state from the singleton instance.
+    show_fig()
+        Displays the current figure if `show` is True.
+
+    Examples
+    --------------------
+    >>> show_instance = Show(name="example", ft_list=["png", "jpg"], dpi=300, show=False)
+    >>> show_instance.store_fig()
+    >>> show_instance.show_fig()  # Will not display the figure since `show=False`
+    """
 
     def __init__(
         self,
@@ -30,7 +83,21 @@ class Show:
         self._store_singleton: StoreSingleton = StoreSingleton()
 
     def store_fig(self) -> None:
+        """
+        Saves the current figure in the specified formats.
 
+        This method uses the provided file formats and resolution to save the figure.
+
+        Raises
+        --------------------
+        Exception
+            If an error occurs during saving, a warning is printed.
+
+        Examples
+        --------------------
+        >>> show_instance = Show(name="example", ft_list=["png", "jpg"], dpi=300)
+        >>> show_instance.store_fig()
+        """
         if self.get_store():
             # save figure
             fname_list: list[str] = [f"{self.name}.{ft}" for ft in self.ft_list]
@@ -50,16 +117,37 @@ class Show:
                     plt.savefig(fname, bbox_inches="tight", dpi=self.dpi)
 
     def get_store(self) -> bool | int:
+        """
+        Retrieves the storage state from the singleton instance.
+
+        Returns
+        --------------------
+        bool or int
+            The storage state indicating whether saving is enabled.
+
+        Examples
+        --------------------
+        >>> show_instance = Show()
+        >>> print(show_instance.get_store())
+        True
+        """
 
         store: bool | int = self._store_singleton.store
         return store
 
     def show_fig(self) -> None:
+        """
+        Displays the current figure if `show` is True.
+
+        Examples
+        --------------------
+        >>> show_instance = Show(show=True)
+        >>> show_instance.show_fig()
+        """
         if self.show:
             plt.show()
 
 
-# TODO: Modify docstring
 @bind_passed_params()
 def show(
     fname: str = "gsplot",
@@ -70,57 +158,37 @@ def show(
     **kwargs: Any,
 ) -> None:
     """
-    Save and optionally display a Matplotlib figure with customizable settings.
+    A convenience function to save and optionally display a Matplotlib figure.
 
-    This function saves the current Matplotlib figure to one or more file formats
-    with the specified filename and resolution. It also optionally displays the
-    figure in a graphical interface.
+    This function wraps the `Show` class for easier access and management of figure
+    saving and displaying.
 
     Parameters
-    ----------
+    --------------------
     fname : str, optional
-        The base filename to use when saving the figure. Default is "gsplot".
-    ft_list : list[str], optional
-        A list of file formats to save the figure in (e.g., ["png", "pdf"]). Default is ["png", "pdf"].
+        The base name for saved figure files (default is "gsplot").
+    ft_list : list of str, optional
+        A list of file formats for saving the figure (default is ["png", "pdf"]).
     dpi : float, optional
-        The resolution of the saved figure in dots per inch (DPI). Default is 600.
+        The resolution (dots per inch) for saving the figure (default is 600).
     show : bool, optional
-        If True, display the figure in a graphical interface after saving. Default is True.
+        Whether to display the figure (default is True).
     *args : Any
-        Additional positional arguments passed to the save or display process.
+        Additional positional arguments passed to `plt.savefig`.
     **kwargs : Any
-        Additional keyword arguments for figure saving or display customization.
-
-    Returns
-    -------
-    None
-        This function does not return anything.
+        Additional keyword arguments passed to `plt.savefig`.
 
     Notes
-    -----
-    - The function uses the `Show` class to manage the figure saving and displaying processes.
-    - Multiple file formats can be specified in `ft_list`, and the figure will be saved
-      in each format with the specified filename and DPI.
+    --------------------
+    This function utilizes the `ParamsGetter` to retrieve bound parameters and
+    the `CreateClassParams` class to handle the merging of default, configuration,
+    and passed parameters.
 
     Examples
-    --------
-    Save the current figure as "output.png" and "output.pdf":
-
-    >>> show(fname="output", ft_list=["png", "pdf"])
-
-    Save the figure in high resolution (1200 DPI):
-
-    >>> show(dpi=1200)
-
-    Display the figure without saving it:
-
-    >>> show(show=True, ft_list=[])
-
-    Pass additional arguments for customization:
-
-    >>> show(fname="plot", dpi=300, bbox_inches="tight")
+    --------------------
+    >>> import gsplot as gs
+    >>> gs.show(fname="example", ft_list=["png", "jpg"], dpi=300, show=True)
     """
-
     passed_params: dict[str, Any] = ParamsGetter("passed_params").get_bound_params()
     class_params = CreateClassParams(passed_params).get_class_params()
 

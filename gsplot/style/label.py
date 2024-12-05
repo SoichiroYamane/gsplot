@@ -80,6 +80,66 @@ def track_order(func: F) -> F:
 
 
 class LabelAddIndex:
+    """
+    A class to add index labels to axes in a Matplotlib figure.
+
+    This class allows labeling axes with indices in customizable positions, glyphs,
+    and styles.
+
+    Parameters
+    --------------------
+    loc : {'in', 'out', 'corner'}, default='out'
+        Location of the label relative to the axes:
+        - 'in': Inside the axes.
+        - 'out': Outside the axes.
+        - 'corner': Top-left corner of the axes.
+    x_offset : float, default=0
+        Horizontal offset for the label position.
+    y_offset : float, default=0
+        Vertical offset for the label position.
+    ha : str, default='center'
+        Horizontal alignment of the label.
+    va : str, default='top'
+        Vertical alignment of the label.
+    fontsize : str or float, default='large'
+        Font size of the label.
+    glyph : {'alphabet', 'roman', 'number', 'hiragana'}, default='alphabet'
+        Style of the label:
+        - 'alphabet': Letters (a, b, c, ...).
+        - 'roman': Roman numerals (i, ii, iii, ...).
+        - 'number': Numbers (1, 2, 3, ...).
+        - 'hiragana': Japanese Hiragana (あ, い, う, ...).
+    capitalize : bool, default=False
+        If True, capitalize the label (e.g., A, B, C instead of a, b, c).
+    *args : Any
+        Additional arguments for `matplotlib.text.Text`.
+    **kwargs : Any
+        Additional keyword arguments for `matplotlib.text.Text`.
+
+    Attributes
+    --------------------
+    fig : matplotlib.figure.Figure
+        The current figure object.
+    _axes : list[matplotlib.axes.Axes]
+        List of axes in the current figure.
+    renderer : matplotlib.backends.backend_agg.RendererAgg
+        Renderer for the figure.
+    fig_width : float
+        Width of the figure in pixels.
+    fig_height : float
+        Height of the figure in pixels.
+    canvas_width : int
+        Width of the canvas in pixels.
+    canvas_height : int
+        Height of the canvas in pixels.
+    normalization_factors : numpy.ndarray
+        Factors for normalizing coordinates.
+
+    Methods
+    --------------------
+    add_index() -> None
+        Adds index labels to the axes.
+    """
 
     def __init__(
         self,
@@ -123,6 +183,25 @@ class LabelAddIndex:
         )
 
     def _get_render_position(self, axis: Axes) -> tuple[float, float] | None:
+        """
+        Calculates the position for the index label based on the location.
+
+        Parameters
+        --------------------
+        axis : matplotlib.axes.Axes
+            The axis for which to calculate the label position.
+
+        Returns
+        --------------------
+        tuple[float, float] or None
+            The (x, y) coordinates of the label in figure-relative coordinates,
+            or None if the bounding box is unavailable.
+
+        Raises
+        --------------------
+        ValueError
+            If the specified location (`loc`) is invalid.
+        """
         bbox: Bbox | None = None
         PADDING_X: float = 0
         PADDING_Y: float = 0
@@ -164,6 +243,24 @@ class LabelAddIndex:
 
     @staticmethod
     def int_to_roman(n: int) -> str:
+        """
+        Converts an integer to its Roman numeral representation.
+
+        Parameters
+        --------------------
+        n : int
+            The integer to convert.
+
+        Returns
+        --------------------
+        str
+            The Roman numeral representation.
+
+        Examples
+        --------------------
+        >>> LabelAddIndex.int_to_roman(3)
+        'iii'
+        """
         roman_numerals = {
             1: "i",
             2: "ii",
@@ -187,6 +284,31 @@ class LabelAddIndex:
         return roman_numerals.get(n, "")
 
     def get_index_glyph(self, n: int) -> str:
+        """
+        Retrieves the glyph representation of the index.
+
+        Parameters
+        --------------------
+        n : int
+            The index of the current axis (0-based).
+
+        Returns
+        --------------------
+        str
+            The glyph for the index.
+
+        Raises
+        --------------------
+        ValueError
+            If the specified glyph style (`glyph`) is invalid.
+
+        Examples
+        --------------------
+        >>> LabelAddIndex(glyph='alphabet').get_index_glyph(0)
+        'a'
+        >>> LabelAddIndex(glyph='number').get_index_glyph(2)
+        '3'
+        """
         index_glyph: str = ""
         if self.glyph == "alphabet":
             index_glyph = "abcdefghijklmnopqrstuvwxyz"[n]
@@ -207,7 +329,16 @@ class LabelAddIndex:
         return index_glyph
 
     def add_index(self) -> None:
+        """
+        Adds index labels to all axes in the current figure.
 
+        The labels are positioned according to the specified location (`loc`),
+        offsets, and alignment.
+
+        Returns
+        --------------------
+        None
+        """
         for i, axis in enumerate(self._axes):
             position = self._get_render_position(axis)
             if position is None:
@@ -243,80 +374,53 @@ def label_add_index(
     **kwargs: Any,
 ) -> None:
     """
-    Add index labels to a plot at specified positions.
+    Adds index labels to axes in a Matplotlib figure.
 
-    This function adds labels (e.g., alphabetic, numeric, or other glyphs) to a
-    plot, with options to adjust position, offset, alignment, font size, and case.
+    This function is a wrapper for the `LabelAddIndex` class.
 
     Parameters
-    ----------
-    loc : {"in", "out", "corner"}, optional
-        The relative location of the labels:
-        - "in": Inside the plot.
-        - "out": Outside the plot.
-        - "corner": Positioned at the corners. Default is "out".
-    x_offset : float, optional
-        The horizontal offset of the label relative to the specified position.
-        Default is 0.
-    y_offset : float, optional
-        The vertical offset of the label relative to the specified position.
-        Default is 0.
-    ha : str, optional
-        The horizontal alignment of the label. Common values include "center",
-        "left", or "right". Default is "center".
-    va : str, optional
-        The vertical alignment of the label. Common values include "center",
-        "top", or "bottom". Default is "center".
-    fontsize : float or str, optional
-        The font size of the label. Can be a numeric value or a predefined size
-        like "small", "medium", or "large". Default is "large".
-    glyph : {"alphabet", "roman", "number", "hiragana"}, optional
-        The type of glyph used for the labels:
-        - "alphabet": Alphabetic (A, B, C...).
-        - "roman": Roman numerals (I, II, III...).
-        - "number": Numeric (1, 2, 3...).
-        - "hiragana": Hiragana characters. Default is "alphabet".
-    capitalize : bool, optional
-        If True, capitalize the labels (applies only to "alphabet" glyph). Default
-        is False.
+    --------------------
+    loc : {'in', 'out', 'corner'}, default='out'
+        Location of the label relative to the axes.
+    x_offset : float, default=0
+        Horizontal offset for the label position.
+    y_offset : float, default=0
+        Vertical offset for the label position.
+    ha : str, default='center'
+        Horizontal alignment of the label.
+    va : str, default='center'
+        Vertical alignment of the label.
+    fontsize : str or float, default='large'
+        Font size of the label.
+    glyph : {'alphabet', 'roman', 'number', 'hiragana'}, default='alphabet'
+        Style of the label.
+    capitalize : bool, default=False
+        If True, capitalize the label.
     *args : Any
-        Additional positional arguments for the labeling process.
+        Additional arguments for `matplotlib.text.Text`.
     **kwargs : Any
-        Additional keyword arguments for customizing the labels.
-
-    Returns
-    -------
-    None
-        This function does not return anything.
+        Additional keyword arguments for `matplotlib.text.Text`.
 
     Notes
-    -----
-    - This function uses the `LabelAddIndex` class to handle label creation and
-      placement.
-    - Offset values (`x_offset`, `y_offset`) are applied relative to the specified
-      position, allowing fine-grained control over label placement.
-    - Alignment options (`ha`, `va`) can be used to adjust label alignment within
-      their position.
+    --------------------
+    This function utilizes the `ParamsGetter` to retrieve bound parameters
+    and the `CreateClassParams` class to handle the merging of default,
+    configuration, and passed parameters.
+
+    Returns
+    --------------------
+    None
+
+    Warnings
+    --------------------
+    This function should be called after the :func:`gsplot.label <gsplot.style.label.label>` function
 
     Examples
-    --------
-    Add labels with default settings:
-
-    >>> label_add_index()
-
-    Add labels at the corners with an offset:
-
-    >>> label_add_index(loc="corner", x_offset=0.1, y_offset=0.1)
-
-    Use numeric labels with larger font size:
-
-    >>> label_add_index(glyph="number", fontsize=14)
-
-    Capitalize alphabetic labels and adjust alignment:
-
-    >>> label_add_index(glyph="alphabet", capitalize=True, ha="left", va="top")
+    --------------------
+    >>> import gsplot as gs
+    >>> gs.label_add_index(loc='out', glyph='roman', fontsize=12)
+    >>> gs.label_add_index(loc='corner', capitalize=True)
     """
-
     passed_params: dict[str, Any] = ParamsGetter("passed_params").get_bound_params()
     class_params = CreateClassParams(passed_params).get_class_params()
 
@@ -336,6 +440,69 @@ def label_add_index(
 
 
 class Label:
+    """
+    A class to configure labels, limits, and ticks for Matplotlib axes.
+
+    This class facilitates the customization of axis labels, limits, tick marks,
+    and layouts for multiple axes in a Matplotlib figure.
+
+    Parameters
+    --------------------
+    lab_lims : list[Any]
+        A list specifying labels and limits for each axis in the figure. Each entry
+        should be a tuple of the form `(x_label, y_label, x_limits, y_limits)`.
+    x_pad : int, default=2
+        Horizontal padding for tight layout.
+    y_pad : int, default=2
+        Vertical padding for tight layout.
+    minor_ticks_axes : bool, default=True
+        Whether to add minor ticks to all axes.
+    tight_layout : bool, default=True
+        Whether to apply `tight_layout` to the figure.
+    *args : Any
+        Additional arguments for `plt.tight_layout`.
+    **kwargs : Any
+        Additional keyword arguments for `plt.tight_layout`.
+
+    Attributes
+    --------------------
+    lab_lims : list[Any]
+        The labels and limits configuration for the axes.
+    x_pad : int
+        Horizontal padding for tight layout.
+    y_pad : int
+        Vertical padding for tight layout.
+    minor_ticks_axes : bool
+        Whether minor ticks are enabled for axes.
+    tight_layout : bool
+        Whether `tight_layout` is applied.
+    _axes : list[Axes]
+        List of axes in the current figure.
+
+    Methods
+    --------------------
+    set_xticks(axis, base=None, num_minor=None) -> None
+        Configures the major and minor ticks for the x-axis.
+    set_yticks(axis, base=None, num_minor=None) -> None
+        Configures the major and minor ticks for the y-axis.
+    remove_xlabels(axis) -> None
+        Removes the x-axis labels for a given axis.
+    remove_ylabels(axis) -> None
+        Removes the y-axis labels for a given axis.
+    add_minor_ticks_axes() -> None
+        Adds minor ticks to all axes in the figure.
+    configure_axis_labels(axis, x_lab, y_lab) -> None
+        Configures the labels for a given axis.
+    configure_axis_limits(axis, lims, final_axes_range=None, index=None) -> None
+        Configures the limits and scales for a given axis.
+    set_labels() -> None
+        Applies labels, limits, and scales to all axes based on the configuration.
+    apply_tight_layout() -> None
+        Applies `tight_layout` to the figure.
+    label() -> None
+        Adds labels, limits, and layouts to the figure's axes.
+    """
+
     def __init__(
         self,
         lab_lims: list[Any],
@@ -360,6 +527,22 @@ class Label:
     def set_xticks(
         self, axis: Axes, base: float | None = None, num_minor: int | None = None
     ) -> None:
+        """
+        Configures the major and minor ticks for the x-axis.
+
+        Parameters
+        --------------------
+        axis : matplotlib.axes.Axes
+            The axis for which to configure ticks.
+        base : float, optional
+            Interval for the major ticks.
+        num_minor : int, optional
+            Number of minor ticks between consecutive major ticks.
+
+        Returns
+        --------------------
+        None
+        """
 
         if base is not None:
             axis.xaxis.set_major_locator(plticker.MultipleLocator(base=base))
@@ -369,6 +552,22 @@ class Label:
     def set_yticks(
         self, axis: Axes, base: float | None = None, num_minor: int | None = None
     ) -> None:
+        """
+        Configures the major and minor ticks for the y-axis.
+
+        Parameters
+        --------------------
+        axis : matplotlib.axes.Axes
+            The axis for which to configure ticks.
+        base : float, optional
+            Interval for the major ticks.
+        num_minor : int, optional
+            Number of minor ticks between consecutive major ticks.
+
+        Returns
+        --------------------
+        None
+        """
 
         if base is not None:
             axis.yaxis.set_major_locator(plticker.MultipleLocator(base=base))
@@ -376,21 +575,68 @@ class Label:
             axis.yaxis.set_minor_locator(plticker.AutoMinorLocator(num_minor))
 
     def remove_xlabels(self, axis: Axes) -> None:
+        """
+        Removes the x-axis label for a given axis.
+
+        Parameters
+        --------------------
+        axis : matplotlib.axes.Axes
+            The axis for which to remove the x-axis label.
+
+        Returns
+        --------------------
+        None
+        """
 
         axis.set_xlabel("")
         axis.tick_params(labelbottom=False)
 
     def remove_ylabels(self, axis: Axes) -> None:
+        """
+        Removes the y-axis label for a given axis.
+
+        Parameters
+        --------------------
+        axis : matplotlib.axes.Axes
+            The axis for which to remove the y-axis label.
+
+        Returns
+        --------------------
+        None
+        """
 
         axis.set_ylabel("")
         axis.tick_params(labelleft=False)
 
     def add_minor_ticks_axes(self) -> None:
+        """
+        Adds minor ticks to all axes in the figure.
+
+        Returns
+        --------------------
+        None
+        """
 
         if self.minor_ticks_axes:
             MinorTicksAxes().set_minor_ticks_axes()
 
     def configure_axis_labels(self, axis, x_lab, y_lab):
+        """
+        Configures the labels for a given axis.
+
+        Parameters
+        --------------------
+        axis : matplotlib.axes.Axes
+            The axis to configure labels for.
+        x_lab : str, optional
+            The label for the x-axis. If `None`, the x-axis label is removed.
+        y_lab : str, optional
+            The label for the y-axis. If `None`, the y-axis label is removed.
+
+        Returns
+        --------------------
+        None
+        """
         if x_lab:
             axis.set_xlabel(x_lab)
         else:
@@ -402,6 +648,24 @@ class Label:
             self.remove_ylabels(axis)
 
     def configure_axis_limits(self, axis, lims, final_axes_range=None, index=None):
+        """
+        Configures the limits and scales for a given axis.
+
+        Parameters
+        --------------------
+        axis : matplotlib.axes.Axes
+            The axis to configure limits for.
+        lims : list, optional
+            The limits for the axis in the form `[x_lims, y_lims]`.
+        final_axes_range : list, optional
+            The final axes ranges for all axes.
+        index : int, optional
+            The index of the current axis.
+
+        Returns
+        --------------------
+        None
+        """
         if lims:
             x_lims, y_lims = lims
 
@@ -440,6 +704,7 @@ class Label:
             )
 
     def set_labels(self):
+
         final_axes_range = self._get_final_axes_range()
 
         for i, (x_lab, y_lab, *lims) in enumerate(self.lab_lims):
@@ -527,7 +792,7 @@ class Label:
         self.apply_tight_layout()
 
 
-# TODO: modify the docstring
+# TODO: Check code
 @bind_passed_params()
 @track_order
 def label(
@@ -540,64 +805,50 @@ def label(
     **kwargs: Any,
 ) -> None:
     """
-    Add labels and adjust axis limits and layout for a plot.
+    Configures labels, limits, ticks, and layouts for Matplotlib axes.
 
-    This function adds labels to a plot and adjusts the axis limits and layout
-    according to the provided parameters. It supports customizing padding, minor
-    tick marks, and layout constraints.
+    This function is a wrapper for the `Label` class.
 
     Parameters
-    ----------
+    --------------------
     lab_lims : list[Any]
-        A list specifying the limits or labels for the axes. This can include
-        axis ranges, tick labels, or other relevant specifications.
-    x_pad : int, optional
-        The padding applied to the x-axis labels. Default is 2.
-    y_pad : int, optional
-        The padding applied to the y-axis labels. Default is 2.
-    minor_ticks_axes : bool, optional
-        If True, enable minor tick marks for all axes. Default is True.
-    tight_layout : bool, optional
-        If True, adjust the layout of the plot to minimize overlap between
-        elements. Default is True.
+        A list specifying labels and limits for each axis in the figure. Each entry
+        should be a tuple of the form `(x_label, y_label, x_limits, y_limits)`.
+    x_pad : int, default=2
+        Horizontal padding for tight layout.
+    y_pad : int, default=2
+        Vertical padding for tight layout.
+    minor_ticks_axes : bool, default=True
+        Whether to add minor ticks to all axes.
+    tight_layout : bool, default=True
+        Whether to apply `tight_layout` to the figure.
     *args : Any
-        Additional positional arguments passed to the labeling process.
+        Additional arguments for `plt.tight_layout`.
     **kwargs : Any
-        Additional keyword arguments for customizing the labeling process.
-
-    Returns
-    -------
-    None
-        This function does not return anything.
+        Additional keyword arguments for `plt.tight_layout`.
 
     Notes
-    -----
-    - This function uses the `Label` class to handle label creation and axis
-      adjustments.
-    - The `lab_lims` parameter provides flexibility in defining axis limits,
-      labels, or other configurations.
-    - Padding (`x_pad`, `y_pad`) allows fine-tuned spacing between labels and
-      axis ticks.
-    - Enabling `tight_layout` is useful for ensuring a clean and uncluttered
-      appearance in plots with dense elements.
+    --------------------
+    This function utilizes the `ParamsGetter` to retrieve bound parameters
+    and the `CreateClassParams` class to handle the merging of default,
+    configuration, and passed parameters.
+
+    Returns
+    --------------------
+    None
+
+    Warnings
+    --------------------
+    This function should be called before the :func:`gsplot.label_add_index <gsplot.style.label.label_add_index>` function
 
     Examples
-    --------
-    Add labels with default settings:
-
-    >>> label(lab_lims=[(0, 10), (0, 5)])
-
-    Customize padding and disable minor ticks:
-
-    >>> label(lab_lims=[(0, 10), (0, 5)], x_pad=5, y_pad=5, minor_ticks_all=False)
-
-    Adjust axis limits and enable tight layout:
-
-    >>> label(lab_lims=[(0, 20), (0, 15)], tight_layout=True)
-
-    Pass additional arguments for advanced customization:
-
-    >>> label(lab_lims=[(0, 10), (0, 5)], fontsize=12, rotation=45)
+    --------------------
+    >>> import gsplot as gs
+    >>> gs.label(
+    >>>     lab_lims=[("X Label", "Y Label", [0, 10, "log"], [0, 20, 2])],
+    >>>     x_pad=5,
+    >>>     y_pad=5,
+    >>> )
     """
 
     passed_params: dict[str, Any] = ParamsGetter("passed_params").get_bound_params()

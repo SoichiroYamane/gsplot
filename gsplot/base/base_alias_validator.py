@@ -8,11 +8,44 @@ __all__: list[str] = []
 
 class AliasValidator:
     """
-    A class for validating aliases on passed_params.
+    Validates alias mappings for function parameters and configuration options.
+
+    This class ensures that aliased parameters do not conflict with their original keys
+    in both function arguments and configuration entries. If an alias and its original
+    key are used simultaneously, an error is raised.
+
+    Parameters
+    --------------------
+    alias_map : dict of str, Any
+        A mapping of alias keys to their original parameter keys.
+    passed_params : dict of str, Any
+        The parameters explicitly passed to the function, including `kwargs`.
+
+    Attributes
+    --------------------
+    wrapped_func_name : str
+        The name of the wrapped function where the validation is performed.
+    alias_map : dict of str, Any
+        The mapping of alias keys to original parameter keys.
+    passed_params : dict of str, Any
+        The explicitly passed parameters, updated during validation.
+    config_entry_option : dict of str, Any
+        Configuration options for the wrapped function.
+
+    Methods
+    --------------------
+    get_wrapped_func_name()
+        Retrieves the name of the wrapped function.
+    get_config_entry_option()
+        Retrieves the configuration options for the wrapped function.
+    check_duplicate_kwargs()
+        Checks and resolves conflicts between alias keys and their original keys
+        in both `passed_params` and `config_entry_option`.
+    validate()
+        Performs the full validation by checking for duplicate aliases and resolving conflicts.
 
     Examples
-
-    --------
+    --------------------
     >>> @bind_passed_params()
     >>> def example_func(p1, p2, p3):
     >>>     passed_params: dict[str, Any] = ParamsGetter(
@@ -34,6 +67,19 @@ class AliasValidator:
         self.config_entry_option: dict[str, Any] = self.get_config_entry_option()
 
     def get_wrapped_func_name(self) -> str:
+        """
+        Retrieves the name of the wrapped function.
+
+        Returns
+        --------------------
+        str
+            The name of the wrapped function.
+
+        Raises
+        --------------------
+        Exception
+            If the current frame or its ancestors cannot be accessed.
+        """
         current_frame = inspect.currentframe()
 
         # Ensure that the frames to the wrapped function can be accessed.
@@ -50,12 +96,31 @@ class AliasValidator:
         return wrapped_func_name
 
     def get_config_entry_option(self) -> dict[str, Any]:
+        """
+        Retrieves the configuration options for the wrapped function.
+
+        Returns
+        --------------------
+        dict of str, Any
+            The configuration options for the wrapped function.
+        """
         config_entry_option: dict[str, Any] = Config().get_config_entry_option(
             self.wrapped_func_name
         )
         return config_entry_option
 
     def check_duplicate_kwargs(self):
+        """
+        Checks and resolves conflicts between alias keys and their original keys
+        in both `passed_params` and `config_entry_option`.
+
+        Raises
+        --------------------
+        ValueError
+            If an alias and its original key are used simultaneously in the
+            function call or configuration file.
+        """
+
         def checker_passed_params():
             for alias, key in self.alias_map.items():
                 if alias in self.passed_params["kwargs"]:
@@ -83,4 +148,8 @@ class AliasValidator:
         checker_config_entry_option(self.config_entry_option)
 
     def validate(self):
+        """
+        Performs the full validation by checking for duplicate aliases
+        and resolving conflicts in `passed_params` and `config_entry_option`.
+        """
         self.check_duplicate_kwargs()
