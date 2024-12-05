@@ -251,13 +251,15 @@ def scatter_colormap(
     **kwargs : Any
         Additional keyword arguments passed to the `scatter` method of Matplotlib's `Axes`.
 
-
     Notes
     --------------------
     - This function utilizes the `ParamsGetter` to retrieve bound parameters and
-      the `CreateClassParams` class to handle the merging of default, configuration,
-      and passed parameters.
-    - Aliases such as 's' for size are automatically resolved by the `AliasValidator`.
+    the `CreateClassParams` class to handle the merging of default, configuration,
+    and passed parameters.
+
+    - Alias validation is performed using the `AliasValidator` class.
+
+        - 's' (size)
 
     Returns
     --------------------

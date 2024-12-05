@@ -351,7 +351,6 @@ class LineColormapDashed:
             self.scaled_inter_xdiff**2 + self.scaled_inter_ydiff**2
         )
 
-    # TODO: check code
     @AxesRangeSingleton.update
     def plot(self) -> list[LineCollection]:
         """
@@ -389,8 +388,6 @@ class LineColormapDashed:
         >>> cmapdata = [0.1, 0.3, 0.6, 0.9, 1.0]
         >>> line = LineColormapDashed(axis_target=0, x=x, y=y, cmapdata=cmapdata)
         >>> lc_list = line.plot()
-        >>> print(len(lc_list))
-        3  # Number of dashed segments plotted
         """
         current_length = 0
         draw_dash = True
@@ -454,7 +451,6 @@ class LineColormapDashed:
         return lc_list
 
 
-# TODO: Check code
 @bind_passed_params()
 def line_colormap_dashed(
     axis_target: int | Axes,
@@ -502,10 +498,13 @@ def line_colormap_dashed(
 
     Notes
     --------------------
-    This function utilizes the `ParamsGetter` to retrieve bound parameters and
+    - This function utilizes the `ParamsGetter` to retrieve bound parameters and
     the `CreateClassParams` class to handle the merging of default, configuration,
-    and passed parameters. Additionally, it uses the `AliasValidator` class to validate
-    and map parameter aliases such as `lw` for `linewidth`.
+    and passed parameters.
+
+    - Alias validation is performed using the `AliasValidator` class.
+
+        - `lw` for `linewidth`
 
     Returns
     --------------------
@@ -518,9 +517,7 @@ def line_colormap_dashed(
     >>> x = [0, 1, 2, 3]
     >>> y = [1, 2, 3, 4]
     >>> cmapdata = [0.1, 0.4, 0.6, 0.9]
-    >>> gs.line_collections = line_colormap_dashed(0, x, y, cmapdata, line_pattern=(5, 5))
-    >>> print(len(line_collections))
-    1  # Number of dashed segments plotted
+    >>> line_collections = gs.line_colormap_dashed(0, x, y, cmapdata, line_pattern=(5, 5))
     """
     alias_map = {
         "lw": "linewidth",

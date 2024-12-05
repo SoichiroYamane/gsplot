@@ -87,7 +87,6 @@ class Scatter:
         self.x: NDArray[Any] = np.array(self._x)
         self.y: NDArray[Any] = np.array(self._y)
 
-    # TODO: check code
     def get_color(self) -> ColorType:
         """
         Determines the color for the scatter points.
@@ -109,7 +108,6 @@ class Scatter:
         --------------------
         >>> scatter = Scatter(axis_target=0, x=[1, 2], y=[3, 4])
         >>> scatter.get_color()
-        '#1f77b4'  # Example color from the color cycle
         """
         cycle_color: NDArray | str = AutoColor(self.axis_index).get_color()
         if isinstance(cycle_color, np.ndarray):
@@ -191,10 +189,13 @@ def scatter(
     Notes
     --------------------
     - This function utilizes the `ParamsGetter` to retrieve bound parameters and
-      the `CreateClassParams` class to handle the merging of default, configuration,
-      and passed parameters.
-    - Aliases such as 's' for size and 'c' for color are automatically resolved
-      by the `AliasValidator`.
+    the `CreateClassParams` class to handle the merging of default, configuration,
+    and passed parameters.
+
+    - Alias validation is performed using the `AliasValidator` class.
+
+        - 's' (size)
+        - 'c' (color)
 
     Returns
     --------------------

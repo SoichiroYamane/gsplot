@@ -266,10 +266,19 @@ def line(
 
     Notes
     --------------------
-    This function utilizes the `ParamsGetter` to retrieve bound parameters and
+    - This function utilizes the `ParamsGetter` to retrieve bound parameters and
     the `CreateClassParams` class to handle the merging of default, configuration,
-    and passed parameters. Additionally, it uses the `AliasValidator` class to validate
-    and map parameter aliases such as `ms` for `markersize`.
+    and passed parameters.
+
+    - Alias validation is performed using the `AliasValidator` class.
+
+        - 'ms' (markersize)
+        - 'mew' (markeredgewidth)
+        - 'ls' (linestyle)
+        - 'lw' (linewidth)
+        - 'c' (color)
+        - 'mec' (markeredgecolor)
+        - 'mfc' (markerfacecolor).
 
     Returns
     --------------------

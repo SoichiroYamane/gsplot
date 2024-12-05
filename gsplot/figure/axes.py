@@ -137,7 +137,6 @@ class UnitConv:
         return value * self.conversion_factors[unit]
 
 
-# TODO: Check code
 class AxesHandler(Generic[_T]):
     """
     A handler for managing Matplotlib figures and axes with custom configurations.
@@ -203,8 +202,7 @@ class AxesHandler(Generic[_T]):
     >>> handler.create_figure()
     >>> axes = handler.get_axes
     >>> print(axes)
-    [<matplotlib.axes._subplots.AxesSubplot object at 0x...>,
-     <matplotlib.axes._subplots.AxesSubplot object at 0x...>]
+    [<Axes: label='A'>, <Axes: label='B'>, <Axes: label='C'>, <Axes: label='D'>]
     """
 
     def __init__(
@@ -290,7 +288,6 @@ class AxesHandler(Generic[_T]):
         AxesRangeSingleton().reset(plt.gcf().axes)
 
 
-# TODO: check code
 @bind_passed_params()
 def axes(
     store: bool = False,
@@ -344,8 +341,7 @@ def axes(
     >>> import gsplot as
     >>> axs = gs.axes(size=[10, 8], unit="cm", mosaic="AB;CD", ion=True)
     >>> print(axs)
-    [<matplotlib.axes._subplots.AxesSubplot object at 0x...>,
-     <matplotlib.axes._subplots.AxesSubplot object at 0x...>]
+    [<Axes: label='A'>, <Axes: label='B'>, <Axes: label='C'>, <Axes: label='D'>]
     """
 
     passed_params: dict[str, Any] = ParamsGetter("passed_params").get_bound_params()

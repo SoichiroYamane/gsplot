@@ -113,7 +113,6 @@ class LoadFile:
         )
 
 
-# TODO: Check code
 @bind_passed_params()
 def load_file(
     f: str | PathLike | Iterable[str] | Iterable[bytes],

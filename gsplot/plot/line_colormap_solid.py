@@ -243,16 +243,21 @@ def line_colormap_solid(
     **kwargs : Any
         Additional keyword arguments passed to the `LegendColormap` class.
 
+    Notes
+    --------------------
+    - This function utilizes the `ParamsGetter` to retrieve bound parameters and
+    the `CreateClassParams` class to handle the merging of default, configuration,
+    and passed parameters.
+
+    - Alias validation is performed using the `AliasValidator` class.
+
+        - 'lw' (linewidth)
+
     Returns
     --------------------
     list[matplotlib.collections.LineCollection]
         A list containing the single `LineCollection` object for the plotted solid line.
 
-    Notes
-    --------------------
-    This function utilizes the `ParamsGetter` to retrieve bound parameters and
-    the `CreateClassParams` class to handle the merging of default, configuration,
-    and passed parameters.
 
     Examples
     --------------------

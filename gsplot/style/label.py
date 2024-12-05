@@ -792,7 +792,6 @@ class Label:
         self.apply_tight_layout()
 
 
-# TODO: Check code
 @bind_passed_params()
 @track_order
 def label(
@@ -845,7 +844,7 @@ def label(
     --------------------
     >>> import gsplot as gs
     >>> gs.label(
-    >>>     lab_lims=[("X Label", "Y Label", [0, 10, "log"], [0, 20, 2])],
+    >>>     lab_lims=[("X Label", "Y Label", [1, 10, "log"], [1, 20, 2])],
     >>>     x_pad=5,
     >>>     y_pad=5,
     >>> )
