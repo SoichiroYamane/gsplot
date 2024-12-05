@@ -60,3 +60,30 @@ gsplot.axes(store= True, mosaic = "ABC")
 :width: 500px
 :align: center
 ```
+
+### Output
+
+```bash
+config_dict:
+{
+    'rich': {'traceback': {}},
+    'rcParams': {'xtick.major.pad': 6, 'ytick.major.pad': 6},
+    'axes': {'ion': True, 'size': [15.0, 5.0], 'unit': 'in', 'clear': True, 'mosaic': 'ABC'},
+    'show': {'show': True}
+}
+
+axes_config:
+{'ion': True, 'size': [15.0, 5.0], 'unit': 'in', 'clear': True, 'mosaic': 'ABC'}
+(gsplot-py3.13) root@e985553428b2:~/opt/demo/3_config# python config.py
+
+config_dict:
+{
+    'rich': {'traceback': {}},
+    'rcParams': {'xtick.major.pad': 6, 'ytick.major.pad': 6},
+    'axes': {'ion': False, 'size': [15.0, 5.0], 'unit': 'in', 'clear': False, 'mosaic': 'ABC'},
+    'show': {'show': True}
+}
+
+axes_config:
+{'ion': False, 'size': [15.0, 5.0], 'unit': 'in', 'clear': False, 'mosaic': 'ABC'}
+```

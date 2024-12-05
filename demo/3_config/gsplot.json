@@ -6,37 +6,17 @@
     "xtick.major.pad": 6,
     "ytick.major.pad": 6
   },
-  "load_file": {
-    "skip_header": 1,
-    "delimiter": "\t",
-    "unpack": true
-  },
   "axes": {
-    "ion": true,
+    "ion": false,
     "size": [
       15.0,
       5.0
     ],
     "unit": "in",
-    "clear": true,
+    "clear": false,
     "mosaic": "ABC"
   },
   "show": {
     "show": true
-  },
-  "label": {
-    "x_pad": 2,
-    "tight_layout": true
-  },
-  "line": {
-    "ms": 2
-  },
-  "legend": {
-    "loc": "lower left"
-  },
-  "line_colormap": {
-    "linewidth": 1,
-    "loc": "upper right",
-    "ls": "-"
   }
 }

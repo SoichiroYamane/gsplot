@@ -14,4 +14,5 @@
 ./10_subplots.md
 ./11_directory.md
 ./12_reprodusibility.md
+./13_REPL.md
 ```
