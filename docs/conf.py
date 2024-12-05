@@ -31,7 +31,6 @@ extensions = [
     "sphinx_togglebutton",
 ]
 autosummary_generate = True
-html_title = "gsplot 📈"
 templates_path = ["_templates"]
 exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
 add_module_names = False
@@ -220,10 +219,19 @@ with open(autosummary_file, "w") as f:
 
 html_show_sphinx = False
 html_theme = "pydata_sphinx_theme"
+# html_title = "gsplot 📈"
+# html_logo = "_static/bg_gsplot_com.svg"
 html_theme_options = {
     # "default_mode": "light",
+    "logo": {
+        "text": "gsplot 📈",
+        "image_light": "_static/logo_gsplot.svg",
+        "image_dark": "_static/logo_gsplot.svg",
+    },
     "pygment_light_style": "solarized-light",
     "pygment_dark_style": "monokai",
+    "footer_start": ["copyright"],
+    "footer_end": [],
 }
 html_static_path = ["_static"]
 
