@@ -253,10 +253,7 @@ def scatter_colormap(
 
     Notes
     --------------------
-    - This function utilizes the `ParamsGetter` to retrieve bound parameters and
-    the `CreateClassParams` class to handle the merging of default, configuration,
-    and passed parameters.
-
+    - This function utilizes the `ParamsGetter` to retrieve bound parameters and the `CreateClassParams` class to handle the merging of default, configuration, and passed parameters.
     - Alias validation is performed using the `AliasValidator` class.
 
         - 's' (size)

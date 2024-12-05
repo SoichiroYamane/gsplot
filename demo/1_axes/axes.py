@@ -5,12 +5,12 @@ axes = gs.axes(
     store=True,
     size=[10, 5],
     mosaic="""
-           ABCC
-           ADEF
+           ABBB
+           ACCD
            """,
 )
 # You can also use the following syntax
-# axes = gs.axes(store=True, size=[10, 5], mosaic="ABCC;ADEF")
+# axes = gs.axes(store=True, size=[10, 5], mosaic="ABBB;ACCD")
 
 # Show figure and store figure with the name "axes"
 gs.show("axes")
