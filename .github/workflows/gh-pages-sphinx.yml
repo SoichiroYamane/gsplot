@@ -30,8 +30,17 @@ jobs:
         with:
           python-version: '3.12'
 
+      - name: Upgrade pip and setuptools
+        run: |
+          pip install --upgrade pip setuptools
+
       - name: Install Poetry
         uses: abatilo/actions-poetry@v2.2.0
+
+      - name: Clear Poetry cache
+        run: |
+          poetry cache clear --all pypi
+          poetry cache clear --all virtualenvs
 
       - name: Install dependencies
         run: poetry install --no-root
