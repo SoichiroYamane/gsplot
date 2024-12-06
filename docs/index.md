@@ -8,6 +8,8 @@ sd_hide_title: true
 TODO: Under construction
 ```
 
+## Features
+
 ```{toctree}
 :hidden:
 ./guides/index.md
