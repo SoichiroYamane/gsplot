@@ -9,7 +9,7 @@ sd_hide_title: true
 </div>
 
 <p style="text-align: center;">
-    <a href="./guides/start/get_started.html" target="_blank" style="text-decoration: none;">
+    <a href="./guides/start/get_started.html" style="text-decoration: none;">
         <button style="
             background-color: #0078D7;
             color: white;
