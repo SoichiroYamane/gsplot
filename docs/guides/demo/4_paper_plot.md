@@ -2,7 +2,9 @@
 
 Create a cool plot with `gsplot` ✨
 
-<!-- TODO: ADD data  -->
+```{tip}
+Data can be available from [here](https://github.com/SoichiroYamane/gsplot/tree/main/demo/data)
+```
 
 ## Configuration
 
