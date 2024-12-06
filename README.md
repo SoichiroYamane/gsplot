@@ -1,122 +1,67 @@
-# gsplot
+# gsplot 📈
 
-Welcome to **gsplot** (general-scientific plot), a toolkit designed to enhance the capabilities of data visualization based on `matplotlib`. This package is specifically tailored for creating high-quality figures in the scientific field. It provides a range of utilities for managing plots, including customization of legends, handling colormaps, managing axis properties, and more.
+<div align="center">
+  <img src="docs/_static/logo_gsplot.svg" alt="logo_gsplot" width="100">
+</div>
 
-## Table of Contents
+[![GitHub Page](https://github.com/SoichiroYamane/gsplot/actions/workflows/gh-pages-sphinx.yml/badge.svg)](https://github.com/SoichiroYamane/gsplot/actions/workflows/gh-pages-sphinx.yml)
+![PyPI - Python Version](https://img.shields.io/pypi/pyversions/:packageName)
+![Python](https://img.shields.io/badge/python-3.10%2B-blue)
+----------------
 
-- [Installation](#installation)
-- [Usage](#usage)
-  - [Basic Usage](#basic-usage)
-  - [Advanced Features](#advanced-features)
-- [Modules](#modules)
-  - [Axes Management](#axes-management)
-  - [Colormap Handling](#colormap-handling)
-  - [Legends](#legends)
-  - [Ticks](#ticks)
-- [Contributing](#contributing)
-- [License](#license)
+<div style="text-align: center; font-weight: bold; font-size: 1.2em; margin: 20px 0;">
+  <a href="#docs" style="margin: 0 15px; text-decoration: none;">Docs</a> |
+  <a href="#authors" style="margin: 0 15px; text-decoration: none;">Authors</a> |
+  <a href="#license" style="margin: 0 15px; text-decoration: none;">License</a>
+</div>
 
-## Installation
+Welcome to **gsplot** (general-scientific plot), a toolkit designed to enhance the capabilities of data visualization based on [matplotlib](https://matplotlib.org). This package is specifically tailored for creating high-quality figures in aim to scientific field.
 
-To use **Project Name**, ensure that you have `Python 3.7+` installed. You can install the package using `pip`:
+## Features ✨
+
+- **Better Plot, Less Code**: Simplify the process of creating high-quality figures 💤
+- **Compatibility**: Compatible with matplotlib 📊
+- **Customization**: Customize your configuration to fit your needs 🎨
+- **Reproducibility**: Save your package status 📦
+
+### Example plot using gsplot 📈
+
+![example](demo/4_paper_plot/SC_cal.png)
+
+### Example coding with Python REPL 🐍 and neovim 🌟
+
+<style>
+  .video-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    max-height: 300vh;
+  }
+
+  .responsive-video {
+    max-width: 100%;
+    height: auto;
+  }
+</style>
+
+<div class="video-container">
+  <video class="responsive-video" autoplay muted loop controls>
+    <source src="docs/_static/repl_tutorial.mp4" type="video/mp4">
+    Your browser does not support the video tag.
+  </video>
+</div>
+
+## Getting Started 🚀
+
+### Installation
+
+To use **gsplot**, ensure that you have `Python 3.10+` installed. You can install the package using `pip`:
 
 needs to be updated on python version
 
 ```bash
 pip install gsplot
 ```
-
-Make sure you have the required dependencies listed in `requirements.txt`, which typically include `matplotlib`, `numpy`.
-
-## Usage
-
-### Basic Usage
-
-Below is a quick example of how to use some of the basic features of **gsplot**:
-
-```python
-import gsplot as gs
-
-# Create list of axes
-axes = gs.axes(
-  store = True,
-  size=[8, 8],
-  mosaic = "AB;CD",
-)
-
-# plot a line on the first axis: corresponding to A
-gs.line(
-    axis_index=0,
-    xdata=[1, 2, 3],
-    ydata=[1, 1, 1],
-)
-
-gs.label(
-    [
-        ["$A_x$","$A_y$"],
-        ["$B_x$","$B_y$"],
-        ["$C_x$","$C_y$"],
-        ["$D_x$","$D_y$"],
-    ]
-)
-gs.show()
-
-```
-
-The output is shown below:
-[![alt](pictures/figure.png =250x)](href "Basic Usage of gsplot")
-
-### Advanced Features
-
-**gsplot** offers advanced customization options for your plots:
-
-- **Colormaps**: Easily apply colormaps to your lines and scatter plots.
-- **Custom Legends**: Create legends with custom handlers, including colormaps.
-- **Axis Management**: Control the appearance and behavior of axes, including aspect ratios, ticks, and labels.
-- **Plot Configuration**: Customize your plot style in `~/.gsplot.json`.
-
-#### Example: Configuration of gsplot
-
-Place the following configuration in `~/.gsplot.json`. More details can be found [here](xxx).
-
-```json
-{
-  "rcParams": {
-    "xtick.major.pad": 6,
-    "ytick.major.pad": 6,
-    "backends": "MacOSX"
-  },
-  "load": {
-    "unpack": true
-  },
-  "axes": {
-    "ion": true,
-    "size": [
-      5.0,
-      3.0
-    ],
-    "unit": "in",
-    "clear": true
-  },
-  "show": {
-    "show": true
-  },
-  "labels": {
-    "add_index": true,
-    "tight_layout": true
-  },
-  "line": {
-    "ms": 10
-  },
-  "legend": {
-    "loc": "upper right"
-  },
-}
-```
-
-## Modules
-
-... to be updated
 
 ## Authors
 
@@ -125,4 +70,4 @@ Place the following configuration in `~/.gsplot.json`. More details can be found
 
 ## License
 
-This project is licensed under the MIT License. See the `LICENSE` file for details.
+This project is licensed under the MIT License. See the [LICENSE](LICENCE) file for details.
