@@ -50,7 +50,7 @@ pip install gsplot
 
 ## Authors
 
-This repository is folked from codes developed by Giordano Mattoni.
+This repository is forked from codes developed by Giordano Mattoni.
 
 - Giordano Mattoni
 - Soichiro Yamane
