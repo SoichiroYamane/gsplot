@@ -1,6 +1,6 @@
 # 13. REPL
 
-The REPL (Read-Eval-Print Loop) is a simple, interactive computer programming environment that takes single user inputs (i.e., single expressions), evaluates them, and returns the result to the user. The REPL allows you to simply plot data and visualize it in real-time. This is a great way to explore data and quickly generate plots!
+The REPL (Read-Eval-Print Loop) is a simple, interactive computer programming environment that takes single user inputs (i.e., single expressions), evaluates them, and returns the result to the user. The REPL allows you to simply plot data and visualize it in real-time. We recommend using the REPL for quick data visualization and exploration.
 
 ## Pros of plotting in REPL
 

@@ -9,7 +9,6 @@
 ![Python](https://img.shields.io/badge/python-3.10%2B-blue)
 ----------------
 
-
 <p align="center" style="font-weight: bold; font-size: 1.2em; margin: 20px 0;">
   <a href="https://soichiroyamane.github.io/gsplot/" style="text-decoration: none;">Docs</a> |
   <a href="#authors" style="text-decoration: none;">Authors</a> |
@@ -33,7 +32,6 @@ Welcome to **gsplot** (general-scientific plot), a toolkit designed to enhance t
 
 [Click to watch the video](https://soichiroyamane.github.io/gsplot/guides/demo/13_REPL.html)
 
-
 ## Getting Started 🚀
 
 ### Installation
@@ -43,6 +41,7 @@ To use **gsplot**, ensure that you have `Python 3.10+` installed. You can instal
 needs to be updated on python version
 
 #### important
+
 **This package has not been published yet**
 
 ```bash
@@ -51,9 +50,11 @@ pip install gsplot
 
 ## Authors
 
+This repository is folked from codes developed by Giordano Mattoni.
+
 - Giordano Mattoni
 - Soichiro Yamane
 
 ## License
 
-This project is licensed under the MIT License. See the [LICENSE](LICENCE) file for details.
+This project is licensed under the MIT License. See the ![LICENSE](LICENCE) file for details.
