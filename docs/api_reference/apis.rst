@@ -4,6 +4,7 @@ APIs 📖
 .. autosummary::
    :toctree: ./apis
 
+   gsplot.hello_world.hello_world
    gsplot.plot.line
    gsplot.plot.scatter_colormap
    gsplot.plot.scatter

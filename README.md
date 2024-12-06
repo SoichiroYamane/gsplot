@@ -20,15 +20,15 @@ Welcome to **gsplot** (general-scientific plot), a toolkit designed to enhance t
 ## Features ✨
 
 - **Better Plot, Less Code**: Simplify the process of creating high-quality figures 💤
-- **Compatibility**: Compatible with matplotlib 📊
+- **Compatibility**: Compatible with [matplotlib](https://matplotlib.org) 📊
 - **Customization**: Customize your configuration to fit your needs 🎨
-- **Reproducibility**: Save your package status 📦
+- **Reproducibility**: Save your package status and make plots reproducible 📦
 
-### Example plot using gsplot 📈
+### Example using gsplot 📈
 
 ![example](demo/4_paper_plot/SC_cal.png)
 
-### Example coding with Python REPL 🐍 and neovim 🌟
+### Example with Python REPL 🐍 and neovim 🌟
 
 [Click to watch the video](https://soichiroyamane.github.io/gsplot/guides/demo/13_REPL.html)
 
@@ -38,11 +38,9 @@ Welcome to **gsplot** (general-scientific plot), a toolkit designed to enhance t
 
 To use **gsplot**, ensure that you have `Python 3.10+` installed. You can install the package using `pip`:
 
-needs to be updated on python version
-
 #### important
 
-**This package has not been published yet**
+**⚠️ This package has not been published yet**
 
 ```bash
 pip install gsplot

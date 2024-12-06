@@ -1,7 +1,5 @@
 # Get Started 🚀
 
-## Features
-
 ## Installation 📦
 
 ```{warning}
@@ -14,12 +12,29 @@ To use `gsplot`, ensure that you have `Python 3.10+` installed. You can install 
 pip install gsplot
 ```
 
-## Usage 📈
+## Hello World 🌍
 
-To use `gsplot`, you need to import it as follows:
+To check if the package is installed correctly, create `hello_gsplot.py` with the following content:
 
-```python
-import gsplot as gs
+```{literalinclude} ../../../demo/0_hello_world/hello_world.py
 ```
 
-## Example 🌟
+Run the script using the following command:
+
+```bash
+python hello_gsplot.py
+```
+
+If the installation is successful, you should see the following output:
+
+```text
+Version: Your Version Here
+Commit : Your Commit Hash Here
+
+ ██████╗ ███████╗██████╗ ██╗      ██████╗ ████████╗
+██╔════╝ ██╔════╝██╔══██╗██║     ██╔═══██╗╚══██╔══╝
+██║  ███╗███████╗██████╔╝██║     ██║   ██║   ██║
+██║   ██║╚════██║██╔═══╝ ██║     ██║   ██║   ██║
+╚██████╔╝███████║██║     ███████╗╚██████╔╝   ██║
+ ╚═════╝ ╚══════╝╚═╝     ╚══════╝ ╚═════╝    ╚═╝
+```
