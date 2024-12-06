@@ -38,6 +38,7 @@ jobs:
 
       - name: Build with Sphinx
         run: |
+          export PYTHONPATH=$PYTHONPATH:$(pwd)
           poetry run make -C docs clean
           poetry run make -C docs html
 
