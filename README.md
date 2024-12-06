@@ -9,11 +9,12 @@
 ![Python](https://img.shields.io/badge/python-3.10%2B-blue)
 ----------------
 
-<div style="text-align: center; font-weight: bold; font-size: 1.2em; margin: 20px 0;">
-  <a href="#docs" style="margin: 0 15px; text-decoration: none;">Docs</a> |
-  <a href="#authors" style="margin: 0 15px; text-decoration: none;">Authors</a> |
-  <a href="#license" style="margin: 0 15px; text-decoration: none;">License</a>
-</div>
+
+<p align="center" style="font-weight: bold; font-size: 1.2em; margin: 20px 0;">
+  <a href="https://soichiroyamane.github.io/gsplot/" style="text-decoration: none;">Docs</a> |
+  <a href="#authors" style="text-decoration: none;">Authors</a> |
+  <a href="#license" style="text-decoration: none;">License</a>
+</p>
 
 Welcome to **gsplot** (general-scientific plot), a toolkit designed to enhance the capabilities of data visualization based on [matplotlib](https://matplotlib.org). This package is specifically tailored for creating high-quality figures in aim to scientific field.
 
@@ -30,26 +31,8 @@ Welcome to **gsplot** (general-scientific plot), a toolkit designed to enhance t
 
 ### Example coding with Python REPL 🐍 and neovim 🌟
 
-<style>
-  .video-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    max-height: 300vh;
-  }
+[Click to watch the video](https://soichiroyamane.github.io/gsplot/guides/demo/13_REPL.html)
 
-  .responsive-video {
-    max-width: 100%;
-    height: auto;
-  }
-</style>
-
-<div class="video-container">
-  <video class="responsive-video" autoplay muted loop controls>
-    <source src="docs/_static/repl_tutorial.mp4" type="video/mp4">
-    Your browser does not support the video tag.
-  </video>
-</div>
 
 ## Getting Started 🚀
 
@@ -58,6 +41,9 @@ Welcome to **gsplot** (general-scientific plot), a toolkit designed to enhance t
 To use **gsplot**, ensure that you have `Python 3.10+` installed. You can install the package using `pip`:
 
 needs to be updated on python version
+
+#### important
+**This package has not been published yet**
 
 ```bash
 pip install gsplot
