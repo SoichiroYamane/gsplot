@@ -50,12 +50,12 @@ jobs:
 
       - name: Clean _site directory
         run: |
+          sudo chmod -R 777 ./_site
           find ./_site -type f -name "README.md" -delete
 
       - name: Combine Sphinx and Jekyll Outputs
         run: |
           sudo mkdir -p ./_site/docs
-          sudo chmod -R 777 ./_site
           cp -r ./docs/_build/html/* ./_site/docs/
 
       - name: Upload combined output as GitHub Pages artifact
