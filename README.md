@@ -57,4 +57,4 @@ This repository is folked from codes developed by Giordano Mattoni.
 
 ## License
 
-This project is licensed under the MIT License. See the ![LICENSE](LICENCE) file for details.
+This project is licensed under the MIT License. See the [LICENSE](./LICENSE) file for details.
