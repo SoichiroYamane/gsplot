@@ -48,9 +48,13 @@ jobs:
           source: ./
           destination: ./_site
 
+      - name: Set permissions for output directory
+        run: |
+          sudo mkdir -p ./_site/docs
+          sudo chmod -R 777 ./_site
+
       - name: Combine Sphinx and Jekyll Outputs
         run: |
-          mkdir -p ./_site/docs
           cp -r ./docs/_build/html/* ./_site/docs/
 
       - name: Upload combined output as GitHub Pages artifact
