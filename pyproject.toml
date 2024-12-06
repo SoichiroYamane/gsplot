@@ -3,13 +3,16 @@ name = "gsplot"
 version = "0.0.1"
 description = "Provide a simple way to plot scientific data with matplotlib"
 authors = [
-  "Giordano Mattoni <email>",
+  "Giordano Mattoni <mattoni@scphys.kyoto-u.ac.jp>",
   "Soichiro Yamane <soichiro.yamane.19970619@gmail.com>",
 ]
 readme = "README.md"
 
+[tool.poetry.urls]
+Homepage = "https://soichiroyamane.github.io/gsplot/"
+
 [tool.poetry.dependencies]
-python = "^3.11"
+python = "^3.10"
 matplotlib = "^3.9.0"
 numpy = "^1.26.4"
 pytest-watch = "^4.2.0"

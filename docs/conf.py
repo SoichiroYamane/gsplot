@@ -214,13 +214,18 @@ with open(autosummary_file, "w") as f:
     for module in autosummary_modules:
         f.write(f"   {module}\n")
 
-# -- Options for HTML output -------------------------------------------------
-# https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
 
 html_show_sphinx = False
 html_theme = "pydata_sphinx_theme"
-# html_title = "gsplot 📈"
-# html_logo = "_static/bg_gsplot_com.svg"
+html_context = {
+    "github_user": "SoichiroYamane",
+    "github_repo": "gsplot",
+    "github_version": "main",
+    "doc_path": "docs",
+}
+# html_sidebars = {
+#     "**": ["search-field.html", "sidebar-nav-bs.html", "sidebar-ethical-ads.html"]
+# }
 html_theme_options = {
     # "default_mode": "light",
     "logo": {
@@ -232,6 +237,15 @@ html_theme_options = {
     "pygment_dark_style": "monokai",
     "footer_start": ["copyright"],
     "footer_end": [],
+    "use_edit_page_button": True,
+    "icon_links": [
+        {
+            "name": "GitHub",
+            "url": "https://github.com/SoichiroYamane/gsplot",
+            "icon": "fa-brands fa-square-github",
+            "type": "fontawesome",
+        },
+    ],
 }
 html_static_path = ["_static"]
 
