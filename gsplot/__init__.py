@@ -5,6 +5,7 @@ from .data.load_file import load_file
 from .figure.axes import axes
 from .figure.figure_tools import get_figure_size
 from .figure.show import show
+from .hello_world.hello_world import hello_world
 from .logger import logger
 from .path.path import home, pwd, pwd_main, pwd_move
 from .plot.line import line
@@ -43,6 +44,8 @@ __all__ = [
     "get_figure_size",
     # figure/show.py
     "show",
+    # hello_world.py
+    "hello_world",
     # config/config.py
     "config_load",
     "config_dict",
