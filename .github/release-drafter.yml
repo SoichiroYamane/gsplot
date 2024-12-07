@@ -61,6 +61,11 @@ autolabeler:
       - '/doc(umentation)[/-].+/'
     files:
       - '*.md'
+  - label: documentation
+    branch:
+      - '/docs(umentation)[/-].+/'
+    files:
+      - '*.md'
   - label: enhancement
     branch:
       - '/(enhancement|improve)[/-].+/'

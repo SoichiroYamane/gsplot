@@ -2,6 +2,6 @@
 
 ```{toctree}
 :maxdepth: 1
-./start/get_started.md
+./start/getting_started.md
 ./demo/index.md
 ```

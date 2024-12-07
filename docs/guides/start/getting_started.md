@@ -1,4 +1,4 @@
-# Get Started 🚀
+# Getting Started 🚀
 
 ## Installation 📦
 

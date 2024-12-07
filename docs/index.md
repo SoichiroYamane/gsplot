@@ -9,7 +9,7 @@ sd_hide_title: true
 </div>
 
 <p style="text-align: center;">
-    <a href="./guides/start/get_started.html" style="text-decoration: none;">
+    <a href="./guides/start/getting_started.html" style="text-decoration: none;">
         <button style="
             background-color: #0078D7;
             color: white;
@@ -23,7 +23,7 @@ sd_hide_title: true
         "
         onmouseover="this.style.backgroundColor='#005BBB'; this.style.boxShadow='0px 6px 8px rgba(0, 0, 0, 0.15)';"
         onmouseout="this.style.backgroundColor='#0078D7'; this.style.boxShadow='0px 4px 6px rgba(0, 0, 0, 0.1)';">
-            Get Started 🚀
+            Getting Started 🚀
         </button>
     </a>
 </p>
