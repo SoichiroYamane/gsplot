@@ -1,9 +1,22 @@
 # 1. Axes
 
-- [gsplot.axes](#gsplot.figure.axes.axes) provide the canvas on which to draw your plots. They are the most important part of a figure and are the area where the data is plotted. You can have multiple axes in a single figure, and they can be arranged by the mosaic argument.
+- [gsplot.axes](#gsplot.figure.axes.axes) provide a [list](https://docs.python.org/3/library/stdtypes.html#list) of [matplotlib.axes.Axes](https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.html). They are the most important part of a figure and are axes where the data are plotted. You can have multiple axes in a single figure by `mosaic`, each axis is compatible to [matplotlib](https://matplotlib.org).
+
+## Example
+
+### Main Functions
+
+| Function                                | A Brief Overview                                          |
+| :---:                                   | :-------:                                                  |
+| [gsplot.axes](#gsplot.figure.axes.axes) | Add axes to a figure                                      |
+| [gsplot.show](#gsplot.figure.show.show) | Show a figure and save it if store in gsplot.axes is True |
+
+### Code
 
 ```{literalinclude} ../../../demo/1_axes/axes.py
 ```
+
+### Plot
 
 ```{image} ../../../demo/1_axes/axes.png
 :alt: axes

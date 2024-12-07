@@ -22,6 +22,7 @@ extensions = [
     "sphinx.ext.autosummary",
     "sphinx.ext.autodoc",
     "sphinx.ext.intersphinx",
+    "sphinxcontrib.mermaid",
     "myst_parser",
     "sphinx_design",
     "sphinx_copybutton",
