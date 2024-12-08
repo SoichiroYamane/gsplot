@@ -33,7 +33,7 @@ Welcome to **gsplot** (general-scientific plot), a toolkit designed to enhance t
 ### Example with Python REPL 🐍 and neovim 🌟
 
 [See more details](https://soichiroyamane.github.io/gsplot/guides/demo/13_REPL.html)
-![repl_tutorial](./docs/_static/repl_tutorial.gif)
+![repl_tutorial](./docs/_static/repl_tutorial_sp.gif)
 
 ## Getting Started 🚀
 
