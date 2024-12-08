@@ -1,10 +1,22 @@
 # 7. Graph White
 
-- [gsplot.graph_facecolor](#gsplot.style.graph.graph_facecolor) sets the face color of the graph.
-- [gsplot.graph_white_axes](#gsplot.style.graph.graph_white_axes) sets the color of all axes to white.
+## Example
+
+### Main Functions
+
+| Function                                                        | A Brief Overview                   |
+| :---:                                                           | :-------:                          |
+| [gsplot.graph_facecolor](#gsplot.style.graph.graph_facecolor)   | Set the facecolor of the figure    |
+| [gsplot.graph_white_axes](#gsplot.style.graph.graph_white_axes) | Set the color of all axes to white |
+
+### Code
+
+#
 
 ```{literalinclude} ../../../demo/7_graph_white/graph_white.py
 ```
+
+### Plot
 
 ```{image} ../../../demo/7_graph_white/graph_white.png
 :alt: graph_white

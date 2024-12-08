@@ -85,14 +85,14 @@ gsplot.axes(store = True, size = [10, 10], unit = "in", mosaic = "ABC", clear = 
 | [gsplot.config_dict](#gsplot.config.config.config_dict) | Get dictionary of the configuration          |
 | [gsplot.config_entry_option](#gsplot.config.config.config_entry_option)                 | Get dictionary of configuration with a specific key                        |
 
-### Configuration
-
-```{literalinclude} ../../../demo/3_config/gsplot.json
-```
-
 ### Code
 
 ```{literalinclude} ../../../demo/3_config/config.py
+```
+
+### Configuration
+
+```{literalinclude} ../../../demo/3_config/gsplot.json
 ```
 
 ### Plot

@@ -22,7 +22,7 @@ Welcome to **gsplot** (general-scientific plot), a toolkit designed to enhance t
 - **Better Plot, Less Code**: Simplify the process of creating high-quality figures 💤
 - **Compatibility**: Compatible with [matplotlib](https://matplotlib.org) 📊
 - **Customization**: Customize your configuration to fit your needs 🎨
-- **Reproducibility**: Save your package status and make plots reproducible 📦
+- **Reproducibility**: Save your package status to make plots reproducible 📦
 
 ### Example using gsplot 📈
 
