@@ -26,11 +26,14 @@ Welcome to **gsplot** (general-scientific plot), a toolkit designed to enhance t
 
 ### Example using gsplot 📈
 
+[See more details](https://soichiroyamane.github.io/gsplot/guides/demo/4_paper_plot.html)
+
 ![example](demo/4_paper_plot/SC_cal.png)
 
 ### Example with Python REPL 🐍 and neovim 🌟
 
-[Click to watch the video](https://soichiroyamane.github.io/gsplot/guides/demo/13_REPL.html)
+[See more details](https://soichiroyamane.github.io/gsplot/guides/demo/13_REPL.html)
+![repl_tutorial](./docs/_static/repl_tutorial.gif)
 
 ## Getting Started 🚀
 
@@ -46,13 +49,13 @@ To use **gsplot**, ensure that you have `Python 3.10+` installed. You can instal
 pip install gsplot
 ```
 
-## Authors
+## Authors 👥
 
 This repository was forked from codes developed by Giordano Mattoni.
 
 - Giordano Mattoni
 - Soichiro Yamane
 
-## License
+## License 📜
 
 This project is licensed under the MIT License. See the [LICENSE](./LICENSE) file for details.

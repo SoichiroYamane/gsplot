@@ -11,7 +11,7 @@ The configuration file can be described in json format. Each keyword needs to be
 You can also specify the configuration file by using the [gsplot.config_load](#gsplot.config.config.config_load) function.
 
 ```{note}
-Function that can be configured have a note about passed parameters in api documents.
+Function that can be configured have a note about passed parameters in [APIs](../../api_reference/apis.rst).
 ```
 
 ## Priority of Parameters
@@ -46,7 +46,7 @@ graph TD
 
 ## Example of Axes with Configuration
 
-As a example, we will create a configuration file that sets the default values of the [gsplot.axes](#gsplot.figure.axes.axes). Parameters of [gsplot.axes](#gsplot.figure.axes.axes) are following:
+As a example, we will create a configuration file that sets parameters of the [gsplot.axes](#gsplot.figure.axes.axes). Arguments of [gsplot.axes](#gsplot.figure.axes.axes) are following:
 
 ```python
 gsplot.axes(store = False, size = [5, 5], unit = "in", mosaic = "A", clear = True, ion = False)
@@ -63,13 +63,13 @@ If you set the configuration file like this:
 }
 ```
 
-And place this configuration file in the proper directory, you can create a plot with the following code:
+And place this configuration file in the proper directory, `gsplot` will read the configuration. If you create a plot with the following code:
 
 ```python
 gsplot.axes(store= True, mosaic = "ABC")
 ```
 
-This code is equivalent to the following code:
+, this code is equivalent to the following code:
 
 ```python
 gsplot.axes(store = True, size = [10, 10], unit = "in", mosaic = "ABC", clear = True, ion = False)
@@ -106,7 +106,7 @@ gsplot.axes(store = True, size = [10, 10], unit = "in", mosaic = "ABC", clear = 
 
 ### Output
 
-```bash
+```python
 config_dict:
 {
     'rich': {'traceback': {}},
@@ -117,7 +117,6 @@ config_dict:
 
 axes_config:
 {'ion': True, 'size': [15.0, 5.0], 'unit': 'in', 'clear': True, 'mosaic': 'ABC'}
-(gsplot-py3.13) root@e985553428b2:~/opt/demo/3_config# python config.py
 
 config_dict:
 {
