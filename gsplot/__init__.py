@@ -21,6 +21,7 @@ from .style.legend import (legend, legend_axes, legend_get_handlers,
                            legend_handlers, legend_reverse)
 from .style.legend_colormap import legend_colormap
 from .style.ticks import ticks_off, ticks_on, ticks_on_axes
+from .version import __commit__, __version__
 
 # ╭──────────────────────────────────────────────────────────╮
 # │ Load the configuration file                              │
@@ -31,6 +32,10 @@ Config()
 # │ Logging setup                                            │
 # ╰──────────────────────────────────────────────────────────╯
 logger()
+
+
+__version__ = __version__
+__commit__ = __commit__
 
 
 __all__ = [
