@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "gsplot"
-version = "0.0.1"
-description = "Provide a simple way to plot scientific data with matplotlib"
+version = "0.0.2"
+description = "General-scientific plot based on matplotlib"
 authors = [
   "Giordano Mattoni <mattoni@scphys.kyoto-u.ac.jp>",
   "Soichiro Yamane <soichiro.yamane.19970619@gmail.com>",
@@ -15,22 +15,9 @@ Homepage = "https://soichiroyamane.github.io/gsplot/"
 python = "^3.10"
 matplotlib = "^3.9.0"
 numpy = "^1.26.4"
-pytest-watch = "^4.2.0"
-pyright = "^1.1.369"
-mypy = "^1.10.1"
 rich = "^13.9.4"
 pyyaml = "^6.0.2"
 types-pyyaml = "^6.0.12.20240917"
-myst-parser = "^4.0.0"
-sphinx-autobuild = "^2024.10.3"
-pydata-sphinx-theme = "^0.16.0"
-sphinx-copybutton = "^0.5.2"
-sphinxext-opengraph = "^0.9.1"
-sphinx-pyscript = "^0.1.0"
-sphinx-tippy = "^0.4.3"
-sphinx-togglebutton = "^0.3.2"
-sphinx-design = "^0.6.1"
-sphinxcontrib-mermaid = "^1.0.0"
 
 
 [tool.poetry.group.dev.dependencies]
@@ -38,6 +25,21 @@ flake8 = "^7.0.0"
 black = "^24.4.2"
 pre-commit = "^3.7.1"
 furo = "^2024.5.6"
+myst-parser = "^4.0.0"
+pytest-watch = "^4.2.0"
+pytest = "^8.3.4"
+pyright = "^1.1.390"
+mypy = "^1.13.0"
+sphinxext-opengraph = "^0.9.1"
+sphinx-pyscript = "^0.1.0"
+sphinx-tippy = "^0.4.3"
+sphinx-togglebutton = "^0.3.2"
+sphinx-design = "^0.6.1"
+sphinxcontrib-mermaid = "^1.0.0"
+pydata-sphinx-theme = "^0.16.0"
+sphinx-copybutton = "^0.5.2"
+sphinx-autobuild = "^2024.10.3"
+
 
 [build-system]
 requires = ["poetry-core"]
