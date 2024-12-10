@@ -41,10 +41,6 @@ Welcome to **gsplot** (general-scientific plot), a toolkit designed to enhance t
 
 To use **gsplot**, ensure that you have `Python 3.10+` installed. You can install the package using `pip`:
 
-#### important
-
-**⚠️ This package has not been published yet**
-
 ```bash
 pip install gsplot
 ```
