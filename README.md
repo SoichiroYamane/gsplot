@@ -5,8 +5,12 @@
 </div>
 
 [![GitHub Page](https://github.com/SoichiroYamane/gsplot/actions/workflows/gh-pages-sphinx.yml/badge.svg)](https://github.com/SoichiroYamane/gsplot/actions/workflows/gh-pages-sphinx.yml)
-![PyPI - Python Version](https://img.shields.io/pypi/pyversions/:packageName)
+![Using Poetry](https://img.shields.io/badge/Using-Poetry-blue)
+![PyPI](https://img.shields.io/pypi/v/gsplot)
+![PyPI - Downloads](https://img.shields.io/pypi/dm/gsplot)
 ![Python](https://img.shields.io/badge/python-3.10%2B-blue)
+![License: MIT](https://img.shields.io/badge/License-MIT-green)
+
 ----------------
 
 <p align="center" style="font-weight: bold; font-size: 1.2em; margin: 20px 0;">
