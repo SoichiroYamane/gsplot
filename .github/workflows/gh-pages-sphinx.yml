@@ -53,7 +53,9 @@ jobs:
         run: |
           find demo -name "*.py" | while read file; do
             echo "Running $file"
-            poetry run python "$file"
+            cd "$(dirname "$file")"  # change directory to the script's directory
+            poetry run python "$(basename "$file")"  # run the script
+            cd - > /dev/null  # change back to the original directory
           done
 
       - name: Build with Sphinx
