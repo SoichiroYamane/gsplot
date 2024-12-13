@@ -45,6 +45,10 @@ jobs:
       - name: Install dependencies
         run: poetry install --no-root
 
+      - name: Install gsplot locally
+        run: |
+          poetry pip install -e .
+
       - name: Run demos
         run: |
           find demo -name "*.py" | while read file; do
