@@ -168,6 +168,6 @@ cython_debug/
 *.png
 *.pdf
 
-!_static/
-!_static/*.png
-!_static/*.pdf
+!docs/_static/
+!docs/_static/*.png
+!docs/_static/*.pdf
