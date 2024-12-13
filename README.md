@@ -1,7 +1,5 @@
-# gsplot 📈
-
 <div align="center">
-  <img src="docs/_static/logo_gsplot.svg" alt="logo_gsplot" width="100">
+  <img src="docs/_static/logo_title_gsplot.png" alt="logo_gsplot" width="300">
 </div>
 
 [![GitHub Page](https://github.com/SoichiroYamane/gsplot/actions/workflows/gh-pages-sphinx.yml/badge.svg)](https://github.com/SoichiroYamane/gsplot/actions/workflows/gh-pages-sphinx.yml)

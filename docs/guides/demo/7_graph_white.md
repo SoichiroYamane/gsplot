@@ -11,8 +11,6 @@
 
 ### Code
 
-#
-
 ```{literalinclude} ../../../demo/7_graph_white/graph_white.py
 ```
 
