@@ -164,8 +164,10 @@ cython_debug/
 # ignore .jukit
 .jukit
 
-# ignore output pictures from gsplot
-gsplot.png
-gsplot.pdf
+# ignore .png and pdf
+*.png
+*.pdf
 
-.gsplot/.gsplot_log.json
+!_static/
+!_static/*.png
+!_static/*.pdf
