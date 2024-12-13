@@ -45,6 +45,13 @@ jobs:
       - name: Install dependencies
         run: poetry install --no-root
 
+      - name: Run demos
+        run: |
+          find demo -name "*.py" | while read file; do
+            echo "Running $file"
+            poetry run python "$file"
+          done
+
       - name: Build with Sphinx
         run: |
           export PYTHONPATH=$PYTHONPATH:$(pwd)
