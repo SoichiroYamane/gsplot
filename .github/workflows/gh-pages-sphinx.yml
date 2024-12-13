@@ -47,7 +47,7 @@ jobs:
 
       - name: Install gsplot locally
         run: |
-          poetry pip install -e .
+          poetry run pip install -e .
 
       - name: Run demos
         run: |
