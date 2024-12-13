@@ -30,7 +30,7 @@ Welcome to **gsplot** (general-scientific plot), a toolkit designed to enhance t
 
 [See more details](https://soichiroyamane.github.io/gsplot/guides/demo/4_paper_plot.html)
 
-![example](demo/4_paper_plot/SC_cal.png)
+![example](docs/_static/SC_cal.png)
 
 ### Example with Python REPL 🐍 and neovim 🌟
 
