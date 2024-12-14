@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "gsplot"
-version = "0.0.1"
+version = "0.0.2"
 description = "General-scientific plot based on matplotlib"
 authors = [
   "Giordano Mattoni <mattoni@scphys.kyoto-u.ac.jp>",
