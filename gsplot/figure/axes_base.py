@@ -105,10 +105,14 @@ class AxesResolver:
             except IndexError:
                 error_message = f"Axes out of range: {self._axis_index} => Number of axes: {len(axes)}, but requested {ordinal_suffix(self._axis_index + 1)} axis."
                 raise IndexError(error_message)
-
         elif isinstance(self.axis_target, Axes):
             self._axis = self.axis_target
-            self._axis_index = plt.gcf().axes.index(self._axis)
+            if self.axis_target in plt.gcf().axes:
+                self._axis_index = plt.gcf().axes.index(self._axis)
+            else:
+                # Add the axis to the current figure if it is not present
+                plt.gcf().add_axes(self._axis)
+                self._axis_index = len(plt.gcf().axes) - 1
         else:
             raise ValueError(
                 "Invalid axis target. Please provide an integer or Axes object."
