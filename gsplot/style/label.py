@@ -1,3 +1,4 @@
+import warnings
 from functools import wraps
 from typing import Any, Callable, Literal, TypeVar, cast
 
@@ -778,12 +779,16 @@ class Label:
     def apply_tight_layout(self) -> None:
 
         if self.tight_layout:
-            try:
-                plt.tight_layout(
-                    w_pad=self.x_pad, h_pad=self.y_pad, *self.args, **self.kwargs
-                )
-            except Exception:
-                plt.tight_layout(w_pad=self.x_pad, h_pad=self.y_pad)
+            # Ignore this warning when using inset_axes:
+            # UserWarning: This figure includes Axes that are not compatible with tight_layout, so results might be incorrect
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore")
+                try:
+                    plt.tight_layout(
+                        w_pad=self.x_pad, h_pad=self.y_pad, *self.args, **self.kwargs
+                    )
+                except Exception:
+                    plt.tight_layout(w_pad=self.x_pad, h_pad=self.y_pad)
 
     def label(self) -> None:
 
