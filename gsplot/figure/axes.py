@@ -171,7 +171,7 @@ class AxesHandler(Generic[_T]):
         Indicates whether shared storage is used.
     size : list of int or float
         The size of the figure in the specified unit.
-    unit : Literal["mm", "cm", "in", "pt"]
+    unit : {"mm", "cm", "in", "pt"}
         The unit for the figure size.
     mosaic : str or list of HashableList[_T] or list of HashableList[Hashable]
         The mosaic layout for subplots.
@@ -312,7 +312,7 @@ def axes(
         Whether to use a shared storage for axes or figure states (default is False).
     size : list of int or float, optional
         The size of the figure in the specified unit (default is [5, 5]).
-    unit : Literal["mm", "cm", "in", "pt"], optional
+    unit : {"mm", "cm", "in", "pt"}, optional
         The unit for the figure size. Supported units are "mm", "cm", "in", and "pt" (default is "in").
     mosaic : str or list of HashableList[_T] or list of HashableList[Hashable], optional
         The mosaic layout for subplots. Can be a string or a list of hashable items (default is "A").
