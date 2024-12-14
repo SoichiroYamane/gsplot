@@ -47,13 +47,13 @@ class MinorTicks:
         self.axis_index: int = _axes_resolver.axis_index
         self.axis: Axes = _axes_resolver.axis
 
-    def set_minor_ticks_off(self, mode=Literal["x", "y", "xy"]) -> None:
+    def set_minor_ticks_off(self, mode: Literal["x", "y", "xy"] = "xy") -> None:
         """
         Turn off minor ticks for the specified axis.
 
         Parameters
         --------------------
-        mode : Literal["x", "y", "xy"], optional
+        mode : {"x", "y", "xy"}, optional
             Specifies the axis to configure. 'x' for x-axis, 'y' for y-axis,
             and 'xy' for both axes. Default is 'xy'.
         """
@@ -67,13 +67,13 @@ class MinorTicks:
         else:
             raise ValueError("Invalid mode. Choose from 'x', 'y', or 'xy'.")
 
-    def set_minor_ticks_on(self, mode=Literal["x", "y", "xy"]) -> None:
+    def set_minor_ticks_on(self, mode: Literal["x", "y", "xy"] = "xy") -> None:
         """
         Turn on minor ticks for the specified axis.
 
         Parameters
         --------------------
-        mode : Literal["x", "y", "xy"], optional
+        mode : {"x", "y", "xy"}, optional
             Specifies the axis to configure. 'x' for x-axis, 'y' for y-axis,
             and 'xy' for both axes. Default is 'xy'.
         """
@@ -112,7 +112,7 @@ class MinorTicksAxes:
             axis.yaxis.set_minor_locator(plticker.AutoMinorLocator())
 
 
-def ticks_off(axis_target: int | Axes, mode=Literal["x", "y", "xy"]) -> None:
+def ticks_off(axis_target: int | Axes, mode: Literal["x", "y", "xy"] = "xy") -> None:
     """
     Turn off minor ticks for the specified axis.
 
@@ -120,7 +120,7 @@ def ticks_off(axis_target: int | Axes, mode=Literal["x", "y", "xy"]) -> None:
     --------------------
     axis_target : int | Axes
         The target axis for minor tick configuration.
-    mode : Literal["x", "y", "xy"], optional
+    mode : {"x", "y", "xy"}, optional
         Specifies the axis to configure. 'x' for x-axis, 'y' for y-axis,
         and 'xy' for both axes. Default is 'xy'.
 
@@ -133,7 +133,7 @@ def ticks_off(axis_target: int | Axes, mode=Literal["x", "y", "xy"]) -> None:
     MinorTicks(axis_target).set_minor_ticks_off(mode)
 
 
-def ticks_on(axis_target: int | Axes, mode=Literal["x", "y", "xy"]) -> None:
+def ticks_on(axis_target: int | Axes, mode: Literal["x", "y", "xy"] = "xy") -> None:
     """
     Turn on minor ticks for the specified axis.
 
@@ -141,7 +141,7 @@ def ticks_on(axis_target: int | Axes, mode=Literal["x", "y", "xy"]) -> None:
     --------------------
     axis_target : int | Axes
         The target axis for minor tick configuration.
-    mode : Literal["x", "y", "xy"], optional
+    mode : {"x", "y", "xy"}, optional
         Specifies the axis to configure. 'x' for x-axis, 'y' for y-axis,
         and 'xy' for both axes. Default is 'xy'.
 
