@@ -1,28 +1,19 @@
 import numpy as np
-from rich import print
 
 import gsplot as gs
 
 # Load the configuration file
 config = gs.config_load("./gsplot.json")
 
-
 # Load the data files
-symmmetries = ["A1g", "A2u", "B1g", "B1u", "Eg1i", "Eg10", "Eu10", "Eg11", "Eu11"]
-even_symmetries = [
-    "A1g",
-    "B1g",
-    "Eg1i",
-    "Eg10",
-    "Eg11",
-]
+symmetries = ["A1g", "A2u", "B1g", "B1u", "Eg1i", "Eg10", "Eu10", "Eg11", "Eu11"]
+even_symmetries = ["A1g", "B1g", "Eg1i", "Eg10", "Eg11"]
 
-gap_data_list = [gs.load_file(f"../data/gap/Gapeq_{s}.dat") for s in symmmetries]
-c_data_list = [gs.load_file(f"../data/c/C_{s}.dat") for s in symmmetries]
+gap_data_list = [gs.load_file(f"../data/gap/Gapeq_{s}.dat") for s in symmetries]
+c_data_list = [gs.load_file(f"../data/c/C_{s}.dat") for s in symmetries]
 yosida_data_list = [
     gs.load_file(f"../data/yosida/Y(T)_{s}.dat") for s in even_symmetries
 ]
-
 
 # Create axes
 axes = gs.axes(store=True)
@@ -56,7 +47,7 @@ for i, (data, label) in enumerate(zip(gap_data_list, labels)):
     )
 
 for i, (data, label) in enumerate(zip(yosida_data_list, labels_even)):
-    idx = symmmetries.index(even_symmetries[i])
+    idx = symmetries.index(even_symmetries[i])
     gs.line(2, data[0], data[1], color=cm[idx], label=label, ms=0, lw=2, ls="-")
 
 # Add Legend
