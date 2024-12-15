@@ -223,6 +223,7 @@ html_context = {
     "github_repo": "gsplot",
     "github_version": "main",
     "doc_path": "docs",
+    "default_mode": "dark",
 }
 # html_sidebars = {
 #     "**": ["search-field.html", "sidebar-nav-bs.html", "sidebar-ethical-ads.html"]
