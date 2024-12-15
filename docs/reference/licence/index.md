@@ -1,4 +1,4 @@
-# License 📜
+# 📜 License
 
 ```{raw} html
 <div style="background: linear-gradient(135deg, #0078D7, #005BBB); color: white; border-radius: 10px; padding: 20px; text-align: center; font-family: Arial, sans-serif;">

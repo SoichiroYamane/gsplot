@@ -2,7 +2,7 @@
 sd_hide_title: true
 ---
 
-# HOME 🏠
+# 🏠 HOME
 
 <div style="text-align: center; background-color: transparent;">
     <img src="./_static/logo_title_gsplot.png" alt="gsplot logo" style="width: 80%; max-width: 300px; height: auto; background-color:transparent">
@@ -23,25 +23,42 @@ sd_hide_title: true
         "
         onmouseover="this.style.backgroundColor='#005BBB'; this.style.boxShadow='0px 6px 8px rgba(0, 0, 0, 0.15)';"
         onmouseout="this.style.backgroundColor='#0078D7'; this.style.boxShadow='0px 4px 6px rgba(0, 0, 0, 0.1)';">
-            Getting Started 🚀
+            🚀 Getting Started
         </button>
     </a>
 </p>
 
-## Overview 🔎
+## 🔎 Overview
 
 Welcome to **gsplot** (general-scientific plot), a toolkit designed to enhance the capabilities of data visualization based on [matplotlib](https://matplotlib.org). This package is specifically tailored for creating high-quality figures aimed at the scientific field.
 
-## Features ✨
+## ✨ Features
 
 - **Better Plot, Less Code**: Simplify the process of creating high-quality figures 💤
 - **Compatibility**: Compatible with [matplotlib](https://matplotlib.org) 📊
 - **Customization**: Customize your configuration to fit your needs 🎨
 - **Reproducibility**: Save your package status to make plots reproducible 📦
 
-## Example using gsplot 📈
+## 📈 Example using gsplot
 
-[> Here is a sample code for this plot](./guides/demo/4_paper_plot.md)
+<a href="./guides/demo/4_paper_plot.html"
+   style="
+      display: inline-block;
+      padding: 8px 16px;
+      font-size: 1em;
+      font-weight: 500;
+      color: #005BBB;
+      background-color: #E8F4FF;
+      text-decoration: none;
+      border-radius: 4px;
+      border: 1px solid #005BBB;
+      transition: all 0.2s ease;
+      margin-left: 40px;
+   "
+   onmouseover="this.style.backgroundColor='#D1E9FF'; this.style.color='#003E7F';"
+   onmouseout="this.style.backgroundColor='#E8F4FF'; this.style.color='#005BBB';">
+   ➡️ View the Sample Code
+</a>
 
 ```{image} ../demo/4_paper_plot/SC_cal.png
 :alt: SC_cal

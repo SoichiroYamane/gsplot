@@ -1,6 +1,6 @@
-# Getting Started 🚀
+# 🚀 Getting Started
 
-## Installation 📦
+## 📦 Installation
 
 To use `gsplot`, ensure that you have `Python 3.10+` installed. You can install the package using `pip`:
 
@@ -8,7 +8,7 @@ To use `gsplot`, ensure that you have `Python 3.10+` installed. You can install 
 pip install gsplot
 ```
 
-## Hello World 🌍
+## 🌍 Hello World
 
 To check if the package is installed correctly, create `hello_gsplot.py` with the following content:
 

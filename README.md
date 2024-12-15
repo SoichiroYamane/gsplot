@@ -19,28 +19,26 @@
 
 Welcome to **gsplot** (general-scientific plot), a toolkit designed to enhance the capabilities of data visualization based on [matplotlib](https://matplotlib.org). This package is specifically tailored for creating high-quality figures aimed at the scientific field.
 
-## Features ✨
+## ✨ Features
 
 - **Better Plot, Less Code**: Simplify the process of creating high-quality figures ⚛️
 - **Compatibility**: Compatible with [matplotlib](https://matplotlib.org) 📊
 - **Customization**: Customize your configuration to fit your needs 🎨
 - **Reproducibility**: Save your package status to make plots reproducible 📦
 
-### Example using gsplot 📈
+### 📈 Example using gsplot
 
 [See more details](https://soichiroyamane.github.io/gsplot/guides/demo/4_paper_plot.html)
 
 ![example](docs/_static/SC_cal.png)
 
-### Example with Python REPL 🐍 and neovim 🌟
+### 🌃 Example with Python REPL 🐍 and neovim 🌟
 
 [See more details](https://soichiroyamane.github.io/gsplot/guides/demo/13_REPL.html)
 
 ![repl_tutorial](./docs/_static/repl_tutorial_sp.gif)
 
-## Getting Started 🚀
-
-### Installation
+## 🚀 Getting Started
 
 To use **gsplot**, ensure that you have `Python 3.10+` installed. You can install the package using `pip`:
 
@@ -48,13 +46,13 @@ To use **gsplot**, ensure that you have `Python 3.10+` installed. You can instal
 pip install gsplot
 ```
 
-## Authors 👥
+## 👥 Authors
 
 This repository was forked from codes developed by Giordano Mattoni.
 
 - Giordano Mattoni
 - Soichiro Yamane
 
-## License 📜
+## 📜 License
 
 This project is licensed under the MIT License. See the [LICENSE](./LICENSE) file for details.

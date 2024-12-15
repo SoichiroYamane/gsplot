@@ -1,10 +1,10 @@
-# API Reference 💻
+# 💻 API
 
-## Table of APIs 📖
+## 📖 Table of APIs
 
-- [API Reference](./apis.rst)
+- [APIs](./apis.rst)
 
-## Indices 🔎
+## 🔎 Indices
 
 - [General Index](genindex)
 - [Module Index](modindex)
