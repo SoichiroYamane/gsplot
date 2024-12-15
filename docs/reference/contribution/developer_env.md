@@ -1,4 +1,4 @@
-# Setting up gsplot for developer 🛠️
+# 🛠️ Setting up gsplot for developer
 
 This document describes how to set up gsplot for development.
 

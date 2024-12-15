@@ -207,7 +207,7 @@ autosummary_modules = generate_autosummary_list(root_package, base_path)
 
 # Write the result to the RST file
 with open(autosummary_file, "w") as f:
-    f.write("APIs 📖\n")
+    f.write("📖 APIs\n")
     f.write("================\n\n")
     f.write(".. autosummary::\n")
     f.write("   :toctree: ./apis\n")
@@ -234,7 +234,7 @@ html_theme_options = {
         "image_light": "_static/logo_gsplot.svg",
         "image_dark": "_static/logo_gsplot.svg",
     },
-    "pygment_light_style": "solarized-light",
+    "pygment_light_style": "manni",
     "pygment_dark_style": "monokai",
     "footer_start": ["copyright"],
     "footer_end": [],

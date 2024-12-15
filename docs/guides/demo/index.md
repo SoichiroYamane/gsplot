@@ -1,4 +1,4 @@
-# Demonstrations 📈
+# 📈 Demonstrations
 
 ```{toctree}
 :maxdepth: 1
