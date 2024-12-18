@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="docs/_static/logo_title_gsplot.png" alt="logo_gsplot" width="300">
+  <img src="docs/_static/logo/logo_title_gsplot.png" alt="logo_gsplot" width="300">
 </div>
 
 [![GitHub Page](https://github.com/SoichiroYamane/gsplot/actions/workflows/gh-pages-sphinx.yml/badge.svg)](https://github.com/SoichiroYamane/gsplot/actions/workflows/gh-pages-sphinx.yml)
@@ -30,13 +30,13 @@ Welcome to **gsplot** (general-scientific plot), a toolkit designed to enhance t
 
 [See more details](https://soichiroyamane.github.io/gsplot/guides/demo/4_paper_plot.html)
 
-![example](docs/_static/SC_cal.png)
+![example](docs/_static/tutorial/SC_cal.png)
 
 ### 🌃 Example with Python REPL 🐍 and neovim 🌟
 
 [See more details](https://soichiroyamane.github.io/gsplot/guides/demo/13_REPL.html)
 
-![repl_tutorial](./docs/_static/repl_tutorial_sp.gif)
+![repl_tutorial](./docs/_static/tutorial/repl_tutorial_sp.gif)
 
 ## 🚀 Getting Started
 
