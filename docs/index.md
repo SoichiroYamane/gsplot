@@ -5,7 +5,7 @@ sd_hide_title: true
 # 🏠 HOME
 
 <div style="text-align: center; background-color: transparent;">
-    <img src="./_static/logo_title_gsplot.png" alt="gsplot logo" style="width: 80%; max-width: 300px; height: auto; background-color:transparent">
+    <img src="./_static/logo/logo_title_gsplot.png" alt="gsplot logo" style="width: 80%; max-width: 300px; height: auto; background-color:transparent">
 </div>
 
 <p style="text-align: center;">

@@ -169,5 +169,7 @@ cython_debug/
 *.pdf
 
 !docs/_static/
-!docs/_static/*.png
-!docs/_static/*.pdf
+!docs/_static/logo/*.png
+!docs/_static/logo/*.pdf
+!docs/_static/tutorial/*.png
+!docs/_static/tutorial/*.pdf
