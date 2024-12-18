@@ -28,7 +28,7 @@ The REPL (Read-Eval-Print Loop) is a simple, interactive computer programming en
 
 <div class="video-container">
   <video class="responsive-video" autoplay muted loop controls>
-    <source src="../../_static/repl_tutorial.mp4" type="video/mp4">
+    <source src="../../_static/tutorial/repl_tutorial.mp4" type="video/mp4">
     Your browser does not support the video tag.
   </video>
 </div>
