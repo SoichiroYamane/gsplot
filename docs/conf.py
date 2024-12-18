@@ -228,17 +228,21 @@ html_context = {
 # html_sidebars = {
 #     "**": ["search-field.html", "sidebar-nav-bs.html", "sidebar-ethical-ads.html"]
 # }
+json_url = "_static/switcher.json"
 html_theme_options = {
     # "default_mode": "light",
     "logo": {
         "text": "gsplot 📈",
-        "image_light": "_static/logo_gsplot.svg",
-        "image_dark": "_static/logo_gsplot.svg",
+        "image_light": "_static/logo/logo_gsplot.svg",
+        "image_dark": "_static/logo/logo_gsplot.svg",
     },
     "pygment_light_style": "manni",
     "pygment_dark_style": "monokai",
+    "navbar_start": [
+        "navbar-logo",
+    ],
     "footer_start": ["copyright"],
-    "footer_end": [],
+    "footer_end": ["version-switcher"],
     "use_edit_page_button": True,
     "icon_links": [
         {
@@ -248,6 +252,10 @@ html_theme_options = {
             "type": "fontawesome",
         },
     ],
+    "switcher": {
+        "version_match": __version__,
+        "json_url": json_url,
+    },
 }
 html_static_path = ["_static"]
 
