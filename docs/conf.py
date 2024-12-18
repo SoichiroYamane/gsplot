@@ -228,7 +228,6 @@ html_context = {
 # html_sidebars = {
 #     "**": ["search-field.html", "sidebar-nav-bs.html", "sidebar-ethical-ads.html"]
 # }
-json_url = "_static/switcher.json"
 html_theme_options = {
     # "default_mode": "light",
     "logo": {
@@ -254,7 +253,7 @@ html_theme_options = {
     ],
     "switcher": {
         "version_match": __version__,
-        "json_url": json_url,
+        "json_url": "_static/switcher.json",
     },
 }
 html_static_path = ["_static"]
