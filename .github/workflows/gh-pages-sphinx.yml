@@ -89,8 +89,8 @@ jobs:
           for version_dir in ./docs/_build/html/*; do
             if [ -d "$version_dir" ]; then
               version_name=$(basename "$version_dir")
-              mkdir -p "./_site/$version_name"
-              cp -r "$version_dir"/* "./_site/$version_name/"
+              mkdir -p "./_site/docs/$version_name"
+              cp -r "$version_dir"/* "./_site/docs/$version_name/"
             fi
           done
 
