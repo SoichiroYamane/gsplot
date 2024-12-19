@@ -49,20 +49,21 @@ jobs:
         run: |
           poetry run pip install -e .
 
-      - name: Run demos
-        run: |
-          find demo -name "*.py" | while read file; do
-            echo "Running $file"
-            cd "$(dirname "$file")"  # change directory to the script's directory
-            poetry run python "$(basename "$file")"  # run the script
-            cd - > /dev/null  # change back to the original directory
-          done
+      # - name: Run demos
+      #   run: |
+      #     find demo -name "*.py" | while read file; do
+      #       echo "Running $file"
+      #       cd "$(dirname "$file")"  # change directory to the script's directory
+      #       poetry run python "$(basename "$file")"  # run the script
+      #       cd - > /dev/null  # change back to the original directory
+      #     done
 
       - name: Build with Sphinx
         run: |
           export PYTHONPATH=$PYTHONPATH:$(pwd)
           poetry run make -C docs clean
-          poetry run make -C docs html
+          # poetry run make -C docs html
+          poetry run make -C docs multiversion
 
       - name: Build with Jekyll
         uses: actions/jekyll-build-pages@v1

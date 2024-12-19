@@ -1,7 +1,17 @@
 [
   {
+    "name": "dev",
+    "version": "main",
+    "url": "https://soichiroyamane.github.io/gsplot/main/"
+  },
+  {
     "name": "v0.0.2 (stable)",
     "version": "0.0.2",
-    "url": "https://soichiroyamane.github.io/gsplot/0.0.2/"
+    "url": "https://soichiroyamane.github.io/gsplot/v0.0.2/"
+  },
+  {
+    "name": "v0.0.1",
+    "version": "0.0.1",
+    "url": "https://soichiroyamane.github.io/gsplot/v0.0.1/"
   }
 ]
