@@ -1,12 +1,13 @@
 import importlib.util
+import json
 import os
+import subprocess
 import sys
 from pathlib import Path
 
 from gsplot.version import __version__
 
 sys.path.insert(0, os.path.abspath("../"))
-
 project = "gsplot"
 copyright = "2024, Giordano Mattoni, Soichiro Yamane"
 author = "Giordano Mattoni, Soichiro Yamane"
@@ -136,7 +137,106 @@ def skip_members(app, what, name, obj, skip, options):
     return skip
 
 
+# Define the output directory and file name
+output_dir = Path("docs/_static")
+output_file = output_dir / "switcher.json"
+
+
+# Function to run Git commands and retrieve tags and branches
+def get_git_versions():
+    # Get Git tags
+    tags = subprocess.check_output(["git", "tag"], text=True).strip().split("\n")
+    # Get Git branches
+    branches = (
+        subprocess.check_output(
+            ["git", "branch", "--format", "%(refname:short)"], text=True
+        )
+        .strip()
+        .split("\n")
+    )
+    return tags, branches
+
+
+# Generate version information for the JSON
+def generate_version_data():
+    tags, branches = get_git_versions()
+
+    # List to store JSON version data
+    versions = []
+
+    # Add development version (main branch)
+    if "main" in branches:
+        versions.append(
+            {
+                "name": "dev",
+                "version": "main",
+                "url": "https://soichiroyamane.github.io/gsplot/main/",
+            }
+        )
+
+    # Add tag versions
+    for tag in sorted(tags, reverse=True):  # Sort tags in descending order
+        version_info = {
+            "name": (
+                f"v{tag} (stable)" if tag == tags[-1] else f"v{tag}"
+            ),  # Mark the latest tag as stable
+            "version": tag,
+            "url": f"https://soichiroyamane.github.io/gsplot/v{tag}/",
+        }
+        versions.append(version_info)
+
+    return versions
+
+
+# Create the JSON file
+def write_version_switcher():
+    versions = generate_version_data()
+
+    # Ensure the output directory exists
+    output_dir.mkdir(parents=True, exist_ok=True)
+
+    # Write version data to the JSON file
+    with open(output_file, "w") as f:
+        json.dump(versions, f, indent=2)
+
+
+# Sphinx Multiversion configuration
+smv_tag_whitelist = r"^v\d+\.\d+\.\d+$"  # Matches tags in the format v1.0.0
+smv_branch_whitelist = r"^main$"  # Includes the main branch
+smv_remote_whitelist = r"^origin$"  # Uses the default remote
+smv_released_pattern = r"^refs/tags/v.*$"  # Treats tags as release versions
+smv_outputdir_format = (
+    "{ref.name}"  # Sets the output directory to the branch or tag name
+)
+
+
+def generate_images():
+
+    demo_path = Path(os.path.abspath("../demo"))
+
+    if not demo_path.exists():
+        raise FileNotFoundError(f"Demo directory not found: {demo_path}")
+
+    for py_file in demo_path.rglob("*.py"):
+        path = Path(py_file).parent
+        os.chdir(path)
+        print(f"Executing: {py_file}")
+        subprocess.run(["python", str(py_file)], check=True)
+
+
 def setup(app):
+    # Add Sphinx Multiversion configuration variables
+    app.add_config_value("smv_metadata_path", None, "env")
+    app.add_config_value("smv_current_version", None, "env")
+    app.add_config_value("smv_tag_whitelist", smv_tag_whitelist, "env")
+    app.add_config_value("smv_branch_whitelist", smv_branch_whitelist, "env")
+    app.add_config_value("smv_remote_whitelist", smv_remote_whitelist, "env")
+    app.add_config_value("smv_released_pattern", smv_released_pattern, "env")
+    app.add_config_value("smv_outputdir_format", smv_outputdir_format, "env")
+
+    # Generate images for the documentation from the demo scripts
+    generate_images()
+
     generate_autosummary_list("gsplot", Path(__file__).parent / ".." / "gsplot")
     app.connect("autodoc-skip-member", skip_members)
 
@@ -253,7 +353,10 @@ html_theme_options = {
     ],
     "switcher": {
         "version_match": __version__,
-        "json_url": f"https://soichiroyamane.github.io/gsplot/main/_static/v{__version__}.json",
+
+
+        "json_url": "https://soichiroyamane.github.io/gsplot/_static/switcher.json",
+
     },
 }
 html_static_path = ["_static"]

@@ -9,7 +9,7 @@ import gsplot as gs
 # 3. Home directory: ~/gsplot.json
 #
 # You can also specify the configuration file path with the `config_load` function
-config = gs.config_load("./gsplot.json")
+config = gs.config_load(r"./gsplot.json")
 
 # Check the configuration
 config_dict = gs.config_dict()
