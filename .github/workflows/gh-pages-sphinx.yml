@@ -65,9 +65,6 @@ jobs:
           # poetry run make -C docs html
           poetry run make -C docs multiversion
 
-      - name: Copy top-level index.html
-        run: |
-          cp ./docs/_build/main/index.html ./docs/_build/index.html
 
       - name: Build with Jekyll
         uses: actions/jekyll-build-pages@v1
@@ -84,6 +81,7 @@ jobs:
         run: |
           sudo mkdir -p ./_site/docs
           cp -r ./docs/_build/html/* ./_site/docs/
+          cp -r ./docs/_build/html/main/index.html ./_site/docs/index.html
 
       - name: Upload combined output as GitHub Pages artifact
         uses: actions/upload-pages-artifact@v3
