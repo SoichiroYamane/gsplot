@@ -86,7 +86,7 @@ jobs:
 
       - name: Combine Sphinx Outputs
         run: |
-          for version_dir in ./docs/_build/*; do
+          for version_dir in ./docs/_build/html/*; do
             if [ -d "$version_dir" ]; then
               version_name=$(basename "$version_dir")
               mkdir -p "./_site/$version_name"
