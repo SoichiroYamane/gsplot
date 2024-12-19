@@ -31,7 +31,7 @@ autobuild:
 
 # Multiversion target: build documentation for multiple versions
 multiversion:
-	$(SPHINXMULTI) "$(SOURCEDIR)" "$(BUILDDIR)"
+	$(SPHINXMULTI) "$(SOURCEDIR)" "$(BUILDDIR)/html"
 
 # Catch-all target: route all unknown targets to Sphinx using the new
 # "make mode" option.  $(O) is meant as a shortcut for $(SPHINXOPTS).
