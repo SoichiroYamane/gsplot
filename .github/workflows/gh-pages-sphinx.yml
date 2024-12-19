@@ -84,20 +84,34 @@ jobs:
       #     sudo mkdir -p ./_site/docs
       #     cp -r ./docs/_build/html/* ./_site/docs/
 
+      # - name: Combine Sphinx Outputs
+      #   run: |
+      #     for version_dir in ./docs/_build/html/*; do
+      #       if [ -d "$version_dir" ]; then
+      #         version_name=$(basename "$version_dir")
+      #         mkdir -p "./_site/docs/$version_name"
+      #         cp -r "$version_dir"/* "./_site/docs/$version_name/"
+      #       fi
+      #     done
       - name: Combine Sphinx Outputs
         run: |
-          for version_dir in ./docs/_build/html/*; do
+          for version_dir in ./docs/_build/*; do
             if [ -d "$version_dir" ]; then
               version_name=$(basename "$version_dir")
-              mkdir -p "./_site/docs/$version_name"
-              cp -r "$version_dir"/* "./_site/docs/$version_name/"
+              mkdir -p "./_site/$version_name"
+              cp -r "$version_dir"/* "./_site/$version_name/"
             fi
           done
 
       - name: Upload combined output as GitHub Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: ./_site/docs
+          path: ./_site
+
+      # - name: Upload combined output as GitHub Pages artifact
+      #   uses: actions/upload-pages-artifact@v3
+      #   with:
+      #     path: ./_site/docs
 
   deploy:
     environment:
