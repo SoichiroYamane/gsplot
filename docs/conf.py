@@ -353,10 +353,7 @@ html_theme_options = {
     ],
     "switcher": {
         "version_match": __version__,
-
-
         "json_url": "https://soichiroyamane.github.io/gsplot/_static/switcher.json",
-
     },
 }
 html_static_path = ["_static"]
