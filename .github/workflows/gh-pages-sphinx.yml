@@ -65,6 +65,10 @@ jobs:
           # poetry run make -C docs html
           poetry run make -C docs multiversion
 
+      - name: Copy top-level index.html
+        run: |
+          cp ./docs/_build/main/index.html ./docs/_build/index.html
+
       - name: Build with Jekyll
         uses: actions/jekyll-build-pages@v1
         with:
