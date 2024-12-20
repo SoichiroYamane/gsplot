@@ -54,6 +54,7 @@ jobs:
         with:
           fetch-depth: 0  # collect all history for git tags
 
+
       - name: Build with Sphinx
         run: |
           export PYTHONPATH=$PYTHONPATH:$(pwd)
