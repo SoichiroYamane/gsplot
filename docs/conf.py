@@ -282,7 +282,7 @@ def generate_version_data():
             {
                 "name": "dev",
                 "version": "main",
-                "url": "https://soichiroyamane.github.io/gsplot/main/",
+                "url": "https://soichiroyamane.github.io/gsplot/dev/",
             }
         )
 
@@ -370,10 +370,8 @@ html_theme_options = {
         },
     ],
     "switcher": {
-
         "version_match": version_match,
         "json_url": json_url,
-
     },
 }
 html_static_path = ["_static"]
