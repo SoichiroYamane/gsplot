@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Directory to store the build artifacts
-OUTPUT_DIR="_build/html"
+OUTPUT_DIR="docs/_build/html"
 
 # Build documentation for the main branch as "dev"
 echo "Building documentation for main (dev)"
