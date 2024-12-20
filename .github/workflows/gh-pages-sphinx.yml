@@ -65,9 +65,17 @@ jobs:
           poetry run make -C docs html
           # poetry run make -C docs multiversion
         
+      - name: Stash local changes
+        run: |
+          git stash --include-untracked || echo "No changes to stash"
+
       - name: Run docs/multiversions.sh
         run: |
           poetry run bash docs/multiversions.sh
+
+      - name: Restore stashed changes
+        run: |
+          git stash pop || echo "No stashed changes to restore"
 
       - name: Build with Jekyll
         uses: actions/jekyll-build-pages@v1
