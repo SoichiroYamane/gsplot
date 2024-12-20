@@ -4,6 +4,7 @@ import os
 import subprocess
 import sys
 from pathlib import Path
+from typing import Any
 
 from gsplot.version import __version__
 
@@ -137,69 +138,6 @@ def skip_members(app, what, name, obj, skip, options):
     return skip
 
 
-# Define the output directory and file name
-output_dir = Path("docs/_static")
-output_file = output_dir / "switcher.json"
-
-
-# Function to run Git commands and retrieve tags and branches
-def get_git_versions():
-    # Get Git tags
-    tags = subprocess.check_output(["git", "tag"], text=True).strip().split("\n")
-    # Get Git branches
-    branches = (
-        subprocess.check_output(
-            ["git", "branch", "--format", "%(refname:short)"], text=True
-        )
-        .strip()
-        .split("\n")
-    )
-    return tags, branches
-
-
-# Generate version information for the JSON
-def generate_version_data():
-    tags, branches = get_git_versions()
-
-    # List to store JSON version data
-    versions = []
-
-    # Add development version (main branch)
-    if "main" in branches:
-        versions.append(
-            {
-                "name": "dev",
-                "version": "main",
-                "url": "https://soichiroyamane.github.io/gsplot/main/",
-            }
-        )
-
-    # Add tag versions
-    for tag in sorted(tags, reverse=True):  # Sort tags in descending order
-        version_info = {
-            "name": (
-                f"v{tag} (stable)" if tag == tags[-1] else f"v{tag}"
-            ),  # Mark the latest tag as stable
-            "version": tag,
-            "url": f"https://soichiroyamane.github.io/gsplot/v{tag}/",
-        }
-        versions.append(version_info)
-
-    return versions
-
-
-# Create the JSON file
-def write_version_switcher():
-    versions = generate_version_data()
-
-    # Ensure the output directory exists
-    output_dir.mkdir(parents=True, exist_ok=True)
-
-    # Write version data to the JSON file
-    with open(output_file, "w") as f:
-        json.dump(versions, f, indent=2)
-
-
 # Sphinx Multiversion configuration
 smv_tag_whitelist = r"^v\d+\.\d+\.\d+$"  # Matches tags in the format v1.0.0
 smv_branch_whitelist = r"^main$"  # Includes the main branch
@@ -316,6 +254,86 @@ with open(autosummary_file, "w") as f:
         f.write(f"   {module}\n")
 
 
+# Function to run Git commands and retrieve tags and branches
+def get_git_versions():
+    # Get Git tags
+    tags = subprocess.check_output(["git", "tag"], text=True).strip().split("\n")
+    # Get Git branches
+    branches = (
+        subprocess.check_output(
+            ["git", "branch", "--format", "%(refname:short)"], text=True
+        )
+        .strip()
+        .split("\n")
+    )
+    return tags, branches
+
+
+# Generate version information for the JSON
+def generate_version_data():
+    tags, branches = get_git_versions()
+
+    # List to store JSON version data
+    versions: list[dict[str, Any]] = []
+
+    # Add development version (main branch)
+    if "main" in branches:
+        versions.append(
+            {
+                "name": "dev",
+                "version": "main",
+                "url": "https://soichiroyamane.github.io/gsplot/main/",
+            }
+        )
+
+    # Add tag versions
+    for tag in sorted(tags, reverse=True):  # Sort tags in descending order
+        if tag == tags[-1]:
+            version_info = {
+                "name": f"{tag} (stable)",  # Mark the latest tag as stable
+                "version": f"{tag}",
+                "url": f"https://soichiroyamane.github.io/gsplot/stable/",
+                "preferred": True,
+            }
+        else:
+            version_info = {
+                "name": f"{tag}",
+                "version": f"{tag}",
+                "url": f"https://soichiroyamane.github.io/gsplot/{tag}/",
+            }
+        version_info = {
+            key: str(value) if not isinstance(value, bool) else value
+            for key, value in version_info.items()
+        }
+        versions.append(version_info)
+
+    return versions
+
+
+# Define the output directory and file name
+output_dir = Path("_static")
+output_file = output_dir / "switcher.json"
+
+
+# Create the JSON file
+def write_version_switcher():
+    versions = generate_version_data()
+
+    # Ensure the output directory exists
+    output_dir.mkdir(parents=True, exist_ok=True)
+
+    # Write version data to the JSON file
+    with open(output_file, "w") as f:
+        json.dump(versions, f, indent=2)
+
+
+# Generate the version switcher JSON file
+write_version_switcher()
+
+json_url = "https://soichiroyamane.github.io/gsplot/stable/_static/switcher.json"
+version_match = f"v{__version__}"
+
+
 html_show_sphinx = False
 html_theme = "pydata_sphinx_theme"
 html_context = {
@@ -352,10 +370,9 @@ html_theme_options = {
         },
     ],
     "switcher": {
-        "version_match": __version__,
 
-
-        "json_url": "https://soichiroyamane.github.io/gsplot/_static/switcher.json",
+        "version_match": version_match,
+        "json_url": json_url,
 
     },
 }

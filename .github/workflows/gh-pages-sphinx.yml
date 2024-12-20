@@ -2,8 +2,11 @@ name: GitHub Pages
 
 on:
   push:
-    branches: ["main"]
-
+    branches:
+      - "main"  
+  release:
+    types:
+      - published 
   workflow_dispatch:
 
 permissions:
@@ -48,21 +51,18 @@ jobs:
       - name: Install gsplot locally
         run: |
           poetry run pip install -e .
+      
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # collect all history for git tags
 
-      # - name: Run demos
-      #   run: |
-      #     find demo -name "*.py" | while read file; do
-      #       echo "Running $file"
-      #       cd "$(dirname "$file")"  # change directory to the script's directory
-      #       poetry run python "$(basename "$file")"  # run the script
-      #       cd - > /dev/null  # change back to the original directory
-      #     done
 
       - name: Build with Sphinx
         run: |
           export PYTHONPATH=$PYTHONPATH:$(pwd)
           poetry run make -C docs clean
-          # poetry run make -C docs html
+          poetry run make -C docs html
           poetry run make -C docs multiversion
 
       - name: Build with Jekyll
@@ -76,10 +76,26 @@ jobs:
           sudo chmod -R 777 ./_site
           find ./_site -type f -name "README.md" -delete
 
+
+      - name: Copy latest version as stable
+        run: |
+          echo "Finding the latest version..."
+          latest_version=$(ls -1 ./docs/_build/html/ | grep '^v[0-9]' | sort -V | tail -n 1)
+          echo "Latest version detected: $latest_version"
+
+          echo "Copying the latest version to stable..."
+          mkdir -p ./docs/_build/html/stable
+          cp -r ./docs/_build/html/$latest_version/* ./docs/_build/html/stable/
+
+      - name: Debug list of files
+        run: |
+          ls -R ./docs/_build/html/
+
       - name: Combine Sphinx and Jekyll Outputs
         run: |
           sudo mkdir -p ./_site/docs
           cp -r ./docs/_build/html/* ./_site/docs/
+
 
       - name: Upload combined output as GitHub Pages artifact
         uses: actions/upload-pages-artifact@v3
