@@ -62,7 +62,7 @@ jobs:
         run: |
           export PYTHONPATH=$PYTHONPATH:$(pwd)
           poetry run make -C docs clean
-          poetry run make -C docs html
+          # poetry run make -C docs html
           poetry run make -C docs multiversion
 
       - name: Build with Jekyll
@@ -80,6 +80,30 @@ jobs:
         run: |
           sudo mkdir -p ./_site/docs
           cp -r ./docs/_build/html/* ./_site/docs/
+
+      - name: Create top-level index.html
+        run: |
+          cat <<EOF > ./_site/docs/index.html
+          <!DOCTYPE html>
+          <html>
+          <head>
+              <title>Documentation</title>
+          </head>
+          <body>
+              <h1>Available Versions</h1>
+              <ul>
+          EOF
+          for version_dir in ./docs/_build/html/*; do
+              if [ -d "$version_dir" ]; then
+                  version=$(basename "$version_dir")
+                  echo "                  <li><a href=\"$version/\">$version</a></li>" >> ./_site/docs/index.html
+              fi
+          done
+          cat <<EOF >> ./_site/docs/index.html
+              </ul>
+          </body>
+          </html>
+          EOF
 
       - name: Upload combined output as GitHub Pages artifact
         uses: actions/upload-pages-artifact@v3
