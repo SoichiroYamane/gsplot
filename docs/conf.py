@@ -1,4 +1,5 @@
 import importlib.util
+import json
 import os
 import subprocess
 import sys
@@ -136,67 +137,67 @@ def skip_members(app, what, name, obj, skip, options):
     return skip
 
 
-# # Define the output directory and file name
-# output_dir = Path("docs/_static")
-# output_file = output_dir / "switcher.json"
+# Define the output directory and file name
+output_dir = Path("docs/_static")
+output_file = output_dir / "switcher.json"
 
 
-# # Function to run Git commands and retrieve tags and branches
-# def get_git_versions():
-#     # Get Git tags
-#     tags = subprocess.check_output(["git", "tag"], text=True).strip().split("\n")
-#     # Get Git branches
-#     branches = (
-#         subprocess.check_output(
-#             ["git", "branch", "--format", "%(refname:short)"], text=True
-#         )
-#         .strip()
-#         .split("\n")
-#     )
-#     return tags, branches
+# Function to run Git commands and retrieve tags and branches
+def get_git_versions():
+    # Get Git tags
+    tags = subprocess.check_output(["git", "tag"], text=True).strip().split("\n")
+    # Get Git branches
+    branches = (
+        subprocess.check_output(
+            ["git", "branch", "--format", "%(refname:short)"], text=True
+        )
+        .strip()
+        .split("\n")
+    )
+    return tags, branches
 
 
-# # Generate version information for the JSON
-# def generate_version_data():
-#     tags, branches = get_git_versions()
-#
-#     # List to store JSON version data
-#     versions = []
-#
-#     # Add development version (main branch)
-#     if "main" in branches:
-#         versions.append(
-#             {
-#                 "name": "dev",
-#                 "version": "main",
-#                 "url": "https://soichiroyamane.github.io/gsplot/main/",
-#             }
-#         )
-#
-#     # Add tag versions
-#     for tag in sorted(tags, reverse=True):  # Sort tags in descending order
-#         version_info = {
-#             "name": (
-#                 f"v{tag} (stable)" if tag == tags[-1] else f"v{tag}"
-#             ),  # Mark the latest tag as stable
-#             "version": tag,
-#             "url": f"https://soichiroyamane.github.io/gsplot/v{tag}/",
-#         }
-#         versions.append(version_info)
-#
-#     return versions
-#
-#
-# # Create the JSON file
-# def write_version_switcher():
-#     versions = generate_version_data()
-#
-#     # Ensure the output directory exists
-#     output_dir.mkdir(parents=True, exist_ok=True)
-#
-#     # Write version data to the JSON file
-#     with open(output_file, "w") as f:
-#         json.dump(versions, f, indent=2)
+# Generate version information for the JSON
+def generate_version_data():
+    tags, branches = get_git_versions()
+
+    # List to store JSON version data
+    versions = []
+
+    # Add development version (main branch)
+    if "main" in branches:
+        versions.append(
+            {
+                "name": "dev",
+                "version": "main",
+                "url": "https://soichiroyamane.github.io/gsplot/main/",
+            }
+        )
+
+    # Add tag versions
+    for tag in sorted(tags, reverse=True):  # Sort tags in descending order
+        version_info = {
+            "name": (
+                f"v{tag} (stable)" if tag == tags[-1] else f"v{tag}"
+            ),  # Mark the latest tag as stable
+            "version": tag,
+            "url": f"https://soichiroyamane.github.io/gsplot/v{tag}/",
+        }
+        versions.append(version_info)
+
+    return versions
+
+
+# Create the JSON file
+def write_version_switcher():
+    versions = generate_version_data()
+
+    # Ensure the output directory exists
+    output_dir.mkdir(parents=True, exist_ok=True)
+
+    # Write version data to the JSON file
+    with open(output_file, "w") as f:
+        json.dump(versions, f, indent=2)
 
 
 # Sphinx Multiversion configuration
@@ -314,24 +315,24 @@ with open(autosummary_file, "w") as f:
     for module in autosummary_modules:
         f.write(f"   {module}\n")
 
-# json_url = "https://soichiroyamane.github.io/gsplot/main/_static/switcher"
-# # Define the version we use for matching in the version switcher.
-# version_match = os.environ.get("gsplot")
-# release = __version__
-# # If READTHEDOCS_VERSION doesn't exist, we're not on RTD
-# # If it is an integer, we're in a PR build and the version isn't correct.
-# # If it's "latest" → change to "dev" (that's what we want the switcher to call it)
-# if not version_match or version_match.isdigit() or version_match == "latest":
-#     # For local development, infer the version to match from the package.
-#     if "dev" in release or "rc" in release:
-#         version_match = "dev"
-#         # We want to keep the relative reference if we are in dev mode
-#         # but we want the whole url if we are effectively in a released version
-#         json_url = "_static/switcher.json"
-#     else:
-#         version_match = f"v{release}"
-# elif version_match == "stable":
-#     version_match = f"v{release}"
+json_url = "https://soichiroyamane.github.io/gsplot/main/_static/switcher.json"
+# Define the version we use for matching in the version switcher.
+version_match = os.environ.get("gsplot")
+release = __version__
+# If READTHEDOCS_VERSION doesn't exist, we're not on RTD
+# If it is an integer, we're in a PR build and the version isn't correct.
+# If it's "latest" → change to "dev" (that's what we want the switcher to call it)
+if not version_match or version_match.isdigit() or version_match == "latest":
+    # For local development, infer the version to match from the package.
+    if "dev" in release or "rc" in release:
+        version_match = "dev"
+        # We want to keep the relative reference if we are in dev mode
+        # but we want the whole url if we are effectively in a released version
+        json_url = "_static/switcher.json"
+    else:
+        version_match = release
+elif version_match == "stable":
+    version_match = release
 
 
 html_show_sphinx = False
@@ -369,10 +370,10 @@ html_theme_options = {
             "type": "fontawesome",
         },
     ],
-    # "switcher": {
-    #     "version_match": version_match,
-    #     "json_url": version_match,
-    # },
+    "switcher": {
+        "version_match": version_match,
+        "json_url": version_match,
+    },
 }
 html_static_path = ["_static"]
 

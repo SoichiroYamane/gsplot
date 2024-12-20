@@ -48,15 +48,6 @@ jobs:
       - name: Install gsplot locally
         run: |
           poetry run pip install -e .
-
-      # - name: Run demos
-      #   run: |
-      #     find demo -name "*.py" | while read file; do
-      #       echo "Running $file"
-      #       cd "$(dirname "$file")"  # change directory to the script's directory
-      #       poetry run python "$(basename "$file")"  # run the script
-      #       cd - > /dev/null  # change back to the original directory
-      #     done
       
       - name: Checkout
         uses: actions/checkout@v4
@@ -69,11 +60,6 @@ jobs:
           poetry run make -C docs clean
           # poetry run make -C docs html
           poetry run make -C docs multiversion
-
-      - name: Debug multiversion output1
-        run: |
-          echo "Checking generated directories:"
-          ls -R ./docs/_build/html/
 
       - name: Build with Jekyll
         uses: actions/jekyll-build-pages@v1
@@ -90,40 +76,6 @@ jobs:
         run: |
           sudo mkdir -p ./_site/docs
           cp -r ./docs/_build/html/* ./_site/docs/
-
-      - name: Create top-level index.html
-        run: |
-          cat <<EOF > ./_site/docs/index.html
-          <!DOCTYPE html>
-          <html>
-          <head>
-              <title>Documentation</title>
-          </head>
-          <body>
-              <h1>Available Versions</h1>
-              <ul>
-          EOF
-          for version_dir in ./docs/_build/html/*; do
-              if [ -d "$version_dir" ]; then
-                  version=$(basename "$version_dir")
-                  echo "                  <li><a href=\"$version/\">$version</a></li>" >> ./_site/docs/index.html
-              fi
-          done
-          cat <<EOF >> ./_site/docs/index.html
-              </ul>
-          </body>
-          </html>
-          EOF
-
-      - name: Debug git refs
-        run: |
-          git fetch --all --tags
-          git show-ref
-
-      - name: Debug site directory
-        run: |
-          echo "Checking generated directories:"
-          ls -R ./_site
 
       - name: Upload combined output as GitHub Pages artifact
         uses: actions/upload-pages-artifact@v3
