@@ -178,7 +178,7 @@ def generate_version_data():
     for tag in sorted(tags, reverse=True):  # Sort tags in descending order
         version_info = {
             "name": (
-                f"v{tag} (stable)" if tag == tags[-1] else f"v{tag}"
+                f"v{tag} (latest)" if tag == tags[-1] else f"v{tag}"
             ),  # Mark the latest tag as stable
             "version": f"v{tag}",
             "url": f"https://soichiroyamane.github.io/gsplot/v{tag}/",
@@ -372,7 +372,7 @@ html_theme_options = {
     ],
     "switcher": {
         "version_match": version_match,
-        "json_url": version_match,
+        "json_url": json_url,
     },
 }
 html_static_path = ["_static"]
