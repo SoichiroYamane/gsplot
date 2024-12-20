@@ -314,6 +314,7 @@ with open(autosummary_file, "w") as f:
     for module in autosummary_modules:
         f.write(f"   {module}\n")
 
+json_url = "https://soichiroyamane.github.io/gsplot/main/_static/switcher"
 # Define the version we use for matching in the version switcher.
 version_match = os.environ.get("gsplot")
 release = __version__
