@@ -53,7 +53,7 @@ Welcome to **gsplot** (general-scientific plot), a toolkit designed to enhance t
       border-radius: 4px;
       border: 1px solid #005BBB;
       transition: all 0.2s ease;
-      margin-left: 40px;
+      margin-left: 0px;
    "
    onmouseover="this.style.backgroundColor='#D1E9FF'; this.style.color='#003E7F';"
    onmouseout="this.style.backgroundColor='#E8F4FF'; this.style.color='#005BBB';">
