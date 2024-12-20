@@ -138,8 +138,7 @@ def skip_members(app, what, name, obj, skip, options):
 
 # Sphinx Multiversion configuration
 smv_tag_whitelist = r"^v\d+\.\d+\.\d+$"  # Matches tags in the format v1.0.0
-# smv_branch_whitelist = r"^main$"  # Includes the main branch
-smv_branch_whitelist = r"^(main|.*)$"  # Includes main and all other branches
+smv_branch_whitelist = r"^main$"  # Includes the main branch
 smv_remote_whitelist = r"^origin$"  # Uses the default remote
 smv_released_pattern = r"^refs/tags/v.*$"  # Treats tags as release versions
 smv_outputdir_format = (
