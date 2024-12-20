@@ -282,7 +282,7 @@ def generate_version_data():
             {
                 "name": "dev",
                 "version": "main",
-                "url": "https://soichiroyamane.github.io/gsplot/main/",
+                "url": "https://soichiroyamane.github.io/gsplot/dev/",
             }
         )
 

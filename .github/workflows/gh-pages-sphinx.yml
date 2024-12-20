@@ -60,7 +60,11 @@ jobs:
           export PYTHONPATH=$PYTHONPATH:$(pwd)
           poetry run make -C docs clean
           poetry run make -C docs html
-          poetry run make -C docs multiversion
+          # poetry run make -C docs multiversion
+        
+      - name: Run docs/multiversions.sh
+        run: |
+          poetry run bash docs/multiversions.sh
 
       - name: Build with Jekyll
         uses: actions/jekyll-build-pages@v1
