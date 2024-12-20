@@ -72,10 +72,6 @@ jobs:
           sudo chmod -R 777 ./_site
           find ./_site -type f -name "README.md" -delete
 
-      - name: Combine Sphinx and Jekyll Outputs
-        run: |
-          sudo mkdir -p ./_site/docs
-          cp -r ./docs/_build/html/* ./_site/docs/
 
       - name: Copy latest version as stable
         run: |
@@ -86,6 +82,12 @@ jobs:
           echo "Copying the latest version to stable..."
           mkdir -p ./docs/_build/html/stable
           cp -r ./docs/_build/html/$latest_version/* ./docs/_build/html/stable/
+
+      - name: Combine Sphinx and Jekyll Outputs
+        run: |
+          sudo mkdir -p ./_site/docs
+          cp -r ./docs/_build/html/* ./_site/docs/
+
 
       - name: Upload combined output as GitHub Pages artifact
         uses: actions/upload-pages-artifact@v3
