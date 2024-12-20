@@ -105,6 +105,11 @@ jobs:
           </html>
           EOF
 
+      - name: Debug git refs
+        run: |
+          git fetch --all --tags
+          git show-ref
+
       - name: Debug multiversion output
         run: |
           echo "Checking generated directories:"
