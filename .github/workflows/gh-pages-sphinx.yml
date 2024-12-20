@@ -77,6 +77,16 @@ jobs:
           sudo mkdir -p ./_site/docs
           cp -r ./docs/_build/html/* ./_site/docs/
 
+      - name: Copy latest version as stable
+        run: |
+          echo "Finding the latest version..."
+          latest_version=$(ls -1 ./docs/_build/html/ | grep '^v[0-9]' | sort -V | tail -n 1)
+          echo "Latest version detected: $latest_version"
+
+          echo "Copying the latest version to stable..."
+          mkdir -p ./docs/_build/html/stable
+          cp -r ./docs/_build/html/$latest_version/* ./docs/_build/html/stable/
+
       - name: Upload combined output as GitHub Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:

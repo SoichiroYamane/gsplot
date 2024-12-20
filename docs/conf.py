@@ -4,6 +4,7 @@ import os
 import subprocess
 import sys
 from pathlib import Path
+from typing import Any
 
 from gsplot.version import __version__
 
@@ -137,11 +138,6 @@ def skip_members(app, what, name, obj, skip, options):
     return skip
 
 
-# Define the output directory and file name
-output_dir = Path("docs/_static")
-output_file = output_dir / "switcher.json"
-
-
 # Function to run Git commands and retrieve tags and branches
 def get_git_versions():
     # Get Git tags
@@ -162,7 +158,7 @@ def generate_version_data():
     tags, branches = get_git_versions()
 
     # List to store JSON version data
-    versions = []
+    versions: list[dict[str, Any]] = []
 
     # Add development version (main branch)
     if "main" in branches:
@@ -176,20 +172,36 @@ def generate_version_data():
 
     # Add tag versions
     for tag in sorted(tags, reverse=True):  # Sort tags in descending order
+        if tag == tags[-1]:
+            version_info = {
+                "name": f"{tag} (stable)",  # Mark the latest tag as stable
+                "version": f"{tag}",
+                "url": f"https://soichiroyamane.github.io/gsplot/stable/",
+                "preferred": True,
+            }
+        else:
+            version_info = {
+                "name": f"{tag}",
+                "version": f"{tag}",
+                "url": f"https://soichiroyamane.github.io/gsplot/{tag}/",
+            }
         version_info = {
-            "name": (
-                f"v{tag} (latest)" if tag == tags[-1] else f"v{tag}"
-            ),  # Mark the latest tag as stable
-            "version": f"v{tag}",
-            "url": f"https://soichiroyamane.github.io/gsplot/v{tag}/",
+            key: str(value) if not isinstance(value, bool) else value
+            for key, value in version_info.items()
         }
         versions.append(version_info)
 
     return versions
 
 
+# Define the output directory and file name
+output_dir = Path("_static")
+output_file = output_dir / "switcher.json"
+
+
 # Create the JSON file
 def write_version_switcher():
+
     versions = generate_version_data()
 
     # Ensure the output directory exists
@@ -199,6 +211,9 @@ def write_version_switcher():
     with open(output_file, "w") as f:
         json.dump(versions, f, indent=2)
 
+
+# Generate the version switcher JSON file
+write_version_switcher()
 
 # Sphinx Multiversion configuration
 smv_tag_whitelist = r"^v\d+\.\d+\.\d+$"  # Matches tags in the format v1.0.0
