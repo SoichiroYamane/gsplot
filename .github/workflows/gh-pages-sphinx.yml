@@ -57,6 +57,11 @@ jobs:
       #       poetry run python "$(basename "$file")"  # run the script
       #       cd - > /dev/null  # change back to the original directory
       #     done
+      
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # collect all history for git tags
 
       - name: Build with Sphinx
         run: |
@@ -64,6 +69,11 @@ jobs:
           poetry run make -C docs clean
           # poetry run make -C docs html
           poetry run make -C docs multiversion
+
+      - name: Debug multiversion output1
+        run: |
+          echo "Checking generated directories:"
+          ls -R ./docs/_build/html/
 
       - name: Build with Jekyll
         uses: actions/jekyll-build-pages@v1
@@ -110,10 +120,10 @@ jobs:
           git fetch --all --tags
           git show-ref
 
-      - name: Debug multiversion output
+      - name: Debug site directory
         run: |
           echo "Checking generated directories:"
-          ls -R ./docs/_build/html/
+          ls -R ./_site
 
       - name: Upload combined output as GitHub Pages artifact
         uses: actions/upload-pages-artifact@v3
