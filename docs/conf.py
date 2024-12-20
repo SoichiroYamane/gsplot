@@ -180,7 +180,7 @@ def generate_version_data():
             "name": (
                 f"v{tag} (stable)" if tag == tags[-1] else f"v{tag}"
             ),  # Mark the latest tag as stable
-            "version": tag,
+            "version": f"v{tag}",
             "url": f"https://soichiroyamane.github.io/gsplot/v{tag}/",
         }
         versions.append(version_info)
@@ -330,9 +330,9 @@ if not version_match or version_match.isdigit() or version_match == "latest":
         # but we want the whole url if we are effectively in a released version
         json_url = "_static/switcher.json"
     else:
-        version_match = release
+        version_match = f"v{release}"
 elif version_match == "stable":
-    version_match = release
+    version_match = f"v{release}"
 
 
 html_show_sphinx = False

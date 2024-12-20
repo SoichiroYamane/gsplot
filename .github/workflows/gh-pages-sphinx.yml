@@ -58,7 +58,7 @@ jobs:
         run: |
           export PYTHONPATH=$PYTHONPATH:$(pwd)
           poetry run make -C docs clean
-          # poetry run make -C docs html
+          poetry run make -C docs html
           poetry run make -C docs multiversion
 
       - name: Build with Jekyll
