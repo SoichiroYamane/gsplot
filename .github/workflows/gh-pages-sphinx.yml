@@ -105,6 +105,11 @@ jobs:
           </html>
           EOF
 
+      - name: Debug multiversion output
+        run: |
+          echo "Checking generated directories:"
+          ls -R ./docs/_build/html/
+
       - name: Upload combined output as GitHub Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
