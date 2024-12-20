@@ -83,6 +83,10 @@ jobs:
           mkdir -p ./docs/_build/html/stable
           cp -r ./docs/_build/html/$latest_version/* ./docs/_build/html/stable/
 
+      - name: Debug list of files
+        run: |
+          ls -R ./docs/_build/html/
+
       - name: Combine Sphinx and Jekyll Outputs
         run: |
           sudo mkdir -p ./_site/docs
