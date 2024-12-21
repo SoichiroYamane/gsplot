@@ -150,7 +150,7 @@ smv_outputdir_format = (
 
 def generate_images():
 
-    demo_path = Path(os.path.abspath("../demo"))
+    demo_path = Path(os.path.abspath("demo"))
 
     if not demo_path.exists():
         raise FileNotFoundError(f"Demo directory not found: {demo_path}")
