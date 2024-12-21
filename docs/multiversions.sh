@@ -1,29 +1,27 @@
 #!/bin/bash
 
-# Directory to store the build artifacts
-OUTPUT_DIR="docs/_build/html"
+# Define the directory containing conf.py
+DOCS_DIR="docs"
 
-# Build documentation for the main branch as "dev"
+# Build documentation for the main branch
 echo "Building documentation for main (dev)"
 git checkout main
-sphinx-build . "$OUTPUT_DIR/dev"
+poetry run sphinx-build -c "$DOCS_DIR" "$DOCS_DIR" "_build/html/dev"
 
 # Get all tags
 TAGS=$(git tag)
 
-# Process each tag
+# Loop through each tag and build documentation
 for TAG in $TAGS; do
   echo "Building documentation for tag: $TAG"
 
-  # Checkout the tag and create a temporary branch
-  git checkout tags/$TAG -b build-$TAG
+  # Create a new branch for the tag
+  git checkout "$TAG" -b "build-$TAG"
 
-  # Build the documentation for the tag
-  sphinx-build . "$OUTPUT_DIR/$TAG"
+  # Build the documentation
+  poetry run sphinx-build -c "$DOCS_DIR" "$DOCS_DIR" "_build/html/$TAG"
 
-  # Delete the temporary branch and switch back to main
+  # Return to the main branch and delete the temporary branch
   git checkout main
-  git branch -D build-$TAG
+  git branch -D "build-$TAG"
 done
-
-echo "Documentation build complete. Output available in $OUTPUT_DIR."
