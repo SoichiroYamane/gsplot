@@ -1,3 +1,5 @@
 from setuptools import find_packages, setup
 
-setup(name="gsplot", version="0.0.1", packages=find_packages())
+from gsplot.version import __version__
+
+setup(name="gsplot", version=__version__, packages=find_packages())
