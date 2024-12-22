@@ -252,7 +252,10 @@ with open(autosummary_file, "w") as f:
         f.write(f"   {module}\n")
 
 json_url = "https://soichiroyamane.github.io/gsplot/_static/switcher.json"
-version_match = f"v{__version__}"
+if __version__ == "dev":
+    version_match = "dev"
+else:
+    version_match = f"v{__version__}"
 
 
 html_show_sphinx = False

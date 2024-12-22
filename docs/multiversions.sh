@@ -11,6 +11,9 @@ git worktree add --detach "$MAIN_WORKTREE" main
 # Navigate to the docs/ directory within the worktree
 cd "$MAIN_WORKTREE"/docs || exit 1
 
+# Replace only the __version__ line with 'dev'
+sed -i "s/^__version__ = .*/__version__ = 'dev'/" ../gsplot/version.py
+
 # Build the documentation for the main branch
 sphinx-build . "../../$OUTPUT_DIR/dev"
 
