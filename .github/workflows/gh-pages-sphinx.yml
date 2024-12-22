@@ -57,13 +57,22 @@ jobs:
         with:
           fetch-depth: 0  # collect all history for git tags
 
+      - name: Create switcher.json
+        run: |
+          cd docs/_static
+          poetry run python create_switcher.py
+
+      - name: Debug list of files
+        run: |
+          ls -R ./docs/_static
+          cat ./docs/_static/switcher.json
+
 
       - name: Build with Sphinx
         run: |
           export PYTHONPATH=$PYTHONPATH:$(pwd)
           poetry run make -C docs clean
           poetry run make -C docs html
-          # poetry run make -C docs multiversion
         
       - name: Stash local changes
         run: |
