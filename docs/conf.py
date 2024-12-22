@@ -281,7 +281,7 @@ def generate_version_data():
         versions.append(
             {
                 "name": "dev",
-                "version": "main",
+                "version": "dev",
                 "url": "https://soichiroyamane.github.io/gsplot/main/",
             }
         )
