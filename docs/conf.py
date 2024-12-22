@@ -251,7 +251,7 @@ with open(autosummary_file, "w") as f:
     for module in autosummary_modules:
         f.write(f"   {module}\n")
 
-json_url = "https://soichiroyamane.github.io/gsplot/stable/_static/switcher.json"
+json_url = "https://soichiroyamane.github.io/gsplot/_static/switcher.json"
 version_match = f"v{__version__}"
 
 
