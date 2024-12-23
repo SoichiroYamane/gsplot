@@ -33,6 +33,12 @@ autobuild:
 multiversion:
 	$(SPHINXMULTI) "$(SOURCEDIR)" "$(BUILDDIR)/html"
 
+html-dev-deploy:
+	@echo "Setting __version__ to 'dev' in gsplot/version.py"
+	sed -i "s/^__version__ = .*/__version__ = 'dev'/" gsplot/version.py
+	@echo "Building HTML documentation..."
+	$(SPHINXBUILD) -b html "$(SOURCEDIR)" "$(BUILDDIR)/html"
+
 # Catch-all target: route all unknown targets to Sphinx using the new
 # "make mode" option.  $(O) is meant as a shortcut for $(SPHINXOPTS).
 %: Makefile

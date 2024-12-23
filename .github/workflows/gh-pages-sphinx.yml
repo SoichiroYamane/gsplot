@@ -72,7 +72,7 @@ jobs:
         run: |
           export PYTHONPATH=$PYTHONPATH:$(pwd)
           poetry run make -C docs clean
-          poetry run make -C docs html
+          poetry run make -C docs html-dev-deploy
         
       - name: Stash local changes
         run: |
