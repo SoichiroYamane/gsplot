@@ -66,7 +66,7 @@ cd docs || exit 1
 sphinx-build . "../../_build/html/dev"
 
 # Return to the original directory
-cd - || exit 1
+cd ../.. || exit 1
 
 # Remove the main branch worktree
 rm -rf "$MAIN_WORKTREE"
