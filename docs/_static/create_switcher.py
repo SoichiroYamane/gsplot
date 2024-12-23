@@ -1,4 +1,5 @@
 import json
+import os
 import subprocess
 from pathlib import Path
 from typing import Any
@@ -6,9 +7,18 @@ from typing import Any
 
 # Function to run Git commands and retrieve tags and branches
 def get_git_versions():
-    # Get Git tags
-    tags = subprocess.check_output(["git", "tag"], text=True).strip().split("\n")
-    # Get Git branches
+    versions_file = "../versions"
+
+    # Check if the versions file exists
+    if not os.path.exists(versions_file):
+        raise FileNotFoundError(f"Versions file '{versions_file}' not found.")
+
+    # Read versions (tags) from the file
+    with open(versions_file, "r") as f:
+        tags = [line.strip() for line in f if line.strip()]
+
+    # Optionally, include branches
+    # Get Git branches if needed
     branches = (
         subprocess.check_output(
             ["git", "branch", "--format", "%(refname:short)"], text=True
@@ -16,6 +26,7 @@ def get_git_versions():
         .strip()
         .split("\n")
     )
+
     return tags, branches
 
 

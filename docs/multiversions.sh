@@ -2,32 +2,6 @@
 
 OUTPUT_DIR="_build/html"
 
-# echo "Building documentation for main (dev)"
-# MAIN_WORKTREE=".worktree-main"
-#
-# # Create a detached worktree for the main branch
-# git worktree add --detach "$MAIN_WORKTREE" main
-#
-# # Navigate to the docs/ directory within the worktree
-# cd "$MAIN_WORKTREE"/docs || exit 1
-#
-# # Replace only the __version__ line with 'dev'
-# sed -i "s/^__version__ = .*/__version__ = 'dev'/" ../gsplot/version.py
-#
-# # Check the content of ../gsplot/version.py
-# cat ../gsplot/version.py
-#
-# # Build the documentation for the main branch
-# sphinx-build . "../../$OUTPUT_DIR/dev"
-#
-# # Return to the original directory
-# cd - || exit 1
-#
-# # Remove the main branch worktree
-# git worktree remove "$MAIN_WORKTREE" --force
-#
-#
-
 echo "Building documentation for main (dev)"
 MAIN_WORKTREE=".worktree-main"
 
@@ -72,7 +46,17 @@ cd ../.. || exit 1
 rm -rf "$MAIN_WORKTREE"
 
 # Build documentation for each tag
-TAGS=$(git tag)
+# TAGS=$(git tag)
+VERSIONS_FILE="versions"
+
+# Check if the versions file exists
+if [ ! -f "$VERSIONS_FILE" ]; then
+  echo "Error: Versions file '$VERSIONS_FILE' not found."
+  exit 1
+fi
+
+# Read versions from the file
+TAGS=$(cat "$VERSIONS_FILE")
 for TAG in $TAGS; do
   echo "Building documentation for tag: $TAG"
   WORKTREE_DIR=".worktree-$TAG"
