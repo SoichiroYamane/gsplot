@@ -1,7 +1,10 @@
 import importlib.util
 import os
 import sys
+from multiprocessing import Process
 from pathlib import Path
+
+import matplotlib.pyplot as plt
 
 sys.path.insert(0, os.path.abspath("../"))
 
@@ -149,6 +152,17 @@ smv_outputdir_format = (
 )
 
 
+def run_demo_script(py_file):
+    path = Path(py_file).parent
+    os.chdir(path)
+
+    # Execute the file in the current process
+    print(f"Executing: {py_file}")
+    with open(py_file) as f:
+        code = compile(f.read(), str(py_file), "exec")
+        exec(code, {"__name__": "__main__", "__file__": str(py_file)})
+
+
 def generate_images():
     demo_path = Path(os.path.abspath("../demo"))
 
@@ -158,15 +172,15 @@ def generate_images():
     print("target python files:" + str(demo_path.rglob("*.py")))
     print(f"Current __version__: {open('../gsplot/version.py').read()}")
 
+    processes = []
     for py_file in demo_path.rglob("*.py"):
-        path = Path(py_file).parent
-        os.chdir(path)
+        print(f"Running {py_file}")
+        p = Process(target=run_demo_script, args=(py_file,))
+        processes.append(p)
+        p.start()
 
-        # Execute the file in the current process
-        print(f"Executing: {py_file}")
-        with open(py_file) as f:
-            code = compile(f.read(), str(py_file), "exec")
-            exec(code, {"__name__": "__main__"})
+    for p in processes:
+        p.join()
 
 
 def setup(app):
