@@ -173,3 +173,5 @@ cython_debug/
 !docs/_static/logo/*.pdf
 !docs/_static/tutorial/*.png
 !docs/_static/tutorial/*.pdf
+
+.worktree-main

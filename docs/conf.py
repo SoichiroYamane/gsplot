@@ -1,12 +1,15 @@
 import importlib.util
 import os
-import subprocess
 import sys
 from pathlib import Path
 
+sys.path.insert(0, os.path.abspath("../"))
+
+
 from gsplot.version import __version__
 
-sys.path.insert(0, os.path.abspath("../"))
+print(f"version: {__version__}")
+
 project = "gsplot"
 copyright = "2024, Giordano Mattoni, Soichiro Yamane"
 author = "Giordano Mattoni, Soichiro Yamane"
@@ -153,12 +156,17 @@ def generate_images():
         raise FileNotFoundError(f"Demo directory not found: {demo_path}")
 
     print("target python files:" + str(demo_path.rglob("*.py")))
+    print(f"Current __version__: {open('../gsplot/version.py').read()}")
 
     for py_file in demo_path.rglob("*.py"):
         path = Path(py_file).parent
         os.chdir(path)
+
+        # Execute the file in the current process
         print(f"Executing: {py_file}")
-        subprocess.run(["python", str(py_file)], check=True)
+        with open(py_file) as f:
+            code = compile(f.read(), str(py_file), "exec")
+            exec(code, {"__name__": "__main__"})
 
 
 def setup(app):
