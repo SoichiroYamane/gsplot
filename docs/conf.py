@@ -147,11 +147,12 @@ smv_outputdir_format = (
 
 
 def generate_images():
-
     demo_path = Path(os.path.abspath("../demo"))
 
     if not demo_path.exists():
         raise FileNotFoundError(f"Demo directory not found: {demo_path}")
+
+    print("target python files:" + str(demo_path.rglob("*.py")))
 
     for py_file in demo_path.rglob("*.py"):
         path = Path(py_file).parent
@@ -251,12 +252,13 @@ with open(autosummary_file, "w") as f:
     for module in autosummary_modules:
         f.write(f"   {module}\n")
 
+
 json_url = "https://soichiroyamane.github.io/gsplot/_static/switcher.json"
+
 if __version__ == "dev":
     version_match = "dev"
 else:
     version_match = f"v{__version__}"
-
 
 html_show_sphinx = False
 html_theme = "pydata_sphinx_theme"
