@@ -12,7 +12,7 @@
 ----------------
 
 <p align="center" style="font-weight: bold; font-size: 1.2em; margin: 20px 0;">
-  <a href="https://soichiroyamane.github.io/gsplot/" style="text-decoration: none;">Docs</a> |
+  <a href="https://soichiroyamane.github.io/gsplot/stable" style="text-decoration: none;">Docs</a> |
   <a href="#authors" style="text-decoration: none;">Authors</a> |
   <a href="#license" style="text-decoration: none;">License</a>
 </p>
@@ -28,13 +28,13 @@ Welcome to **gsplot** (general-scientific plot), a toolkit designed to enhance t
 
 ### 📈 Example using gsplot
 
-[See more details](https://soichiroyamane.github.io/gsplot/guides/demo/4_paper_plot.html)
+[See more details](https://soichiroyamane.github.io/gsplot/guides/stable/demo/4_paper_plot.html)
 
 ![example](docs/_static/tutorial/SC_cal.png)
 
 ### 🌃 Example with Python REPL 🐍 and neovim 🌟
 
-[See more details](https://soichiroyamane.github.io/gsplot/guides/demo/13_REPL.html)
+[See more details](https://soichiroyamane.github.io/gsplot/stable/guides/demo/13_REPL.html)
 
 ![repl_tutorial](./docs/_static/tutorial/repl_tutorial_sp.gif)
 
