@@ -6,7 +6,7 @@ from .figure.axes import axes
 from .figure.figure_tools import get_figure_size
 from .figure.show import show
 from .hello_world.hello_world import hello_world
-from .logger import logger
+from .logger import logger, metadata
 from .path.path import home, pwd, pwd_main, pwd_move
 from .plot.line import line
 from .plot.line_colormap_dashed import line_colormap_dashed
@@ -33,6 +33,10 @@ Config()
 # ╰──────────────────────────────────────────────────────────╯
 logger()
 
+# ╭──────────────────────────────────────────────────────────╮
+# │ Metadata                                                 │
+# ╰──────────────────────────────────────────────────────────╯
+metadata()
 
 __version__ = __version__
 __commit__ = __commit__
