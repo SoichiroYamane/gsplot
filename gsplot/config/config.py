@@ -150,7 +150,7 @@ class Config:
         self.config_dict = config_dict
         return config_dict
 
-    def get_config_entry_option(self, key: str) -> dict[str, Any]:
+    def get_config_entry_option(self, key: str) -> Any | dict[str, Any]:
         """
         Retrieves a specific entry from the configuration dictionary.
 
@@ -161,7 +161,7 @@ class Config:
 
         Returns
         --------------------
-        dict of str, Any
+        Any and dict of str, Any
             The configuration entry corresponding to the provided key.
 
         Examples
