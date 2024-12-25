@@ -4,6 +4,7 @@ import threading
 from typing import Any, Callable, TypeVar, cast
 
 import numpy as np
+from matplotlib.axes import Axes
 from numpy.typing import NDArray
 
 from ..color.colormap import Colormap
@@ -70,50 +71,36 @@ class NumLines:
 
     def _initialize_num_lines(self) -> None:
         """
-        Initializes the line count to its default value ([0]).
+        Initializes the line count to its default dictionary ({}).
         """
         # Explicitly initialize the instance variable with a type hint
-        self._num_lines: list[int] = [0]
-
-    def update_num_lines(self, axis_index: int) -> None:
-        """
-        Ensures the line count list is large enough to include the given axis index.
-
-        Parameters
-        --------------------
-        axis_index : int
-            The index of the axis to update.
-        """
-        length = len(self._num_lines)
-        if axis_index + 1 > length:
-            self._num_lines.extend([0] * (axis_index - length + 1))
+        self._num_lines_dict: dict[Axes, int] = {}
 
     @property
-    def num_lines(self) -> list[int]:
+    def num_lines_dict(self) -> dict[Axes, int]:
         """
-        Retrieves the list of line counts for all axes.
+        Retrieves the dictionary containing the number of lines plotted on each axis.
 
         Returns
         --------------------
-        list[int]
-            The list of line counts, where each index corresponds to an axis.
+        dict[matplotlib.axes.Axes, int]
+            A dictionary where each key is an axis and the value is the number of lines plotted.
 
         Examples
         --------------------
         >>> num_lines = NumLines()
-        >>> print(num_lines.num_lines)
-        [0]
+        >>> print(num_lines.num_lines_dict)
         """
-        return self._num_lines
+        return self._num_lines_dict
 
-    def num_lines_axis(self, axis_index: int) -> int:
+    def num_lines(self, ax: Axes) -> int:
         """
         Retrieves the number of lines plotted on a specific axis.
 
         Parameters
         --------------------
-        axis_index : int
-            The index of the axis.
+        ax : matplotlib.axes.Axes
+            The axis to query.
 
         Returns
         --------------------
@@ -123,30 +110,29 @@ class NumLines:
         Examples
         --------------------
         >>> num_lines = NumLines()
-        >>> print(num_lines.num_lines_axis(0))
-        0
+        >>> print(num_lines.num_lines_axis(axs[0]))
         """
-        self.update_num_lines(axis_index)
-        return self._num_lines[axis_index]
+        if ax not in self._num_lines_dict:
+            self._num_lines_dict[ax] = 0
+        return self._num_lines_dict[ax]
 
-    def increment(self, axis_index: int) -> None:
+    def increment(self, ax: Axes) -> None:
         """
         Increments the line count for a specific axis.
 
         Parameters
         --------------------
-        axis_index : int
-            The index of the axis.
+        ax : matplotlib.axes.Axes
+            The axis to increment.
 
         Examples
         --------------------
         >>> num_lines = NumLines()
-        >>> num_lines.increment(0)
-        >>> print(num_lines.num_lines_axis(0))
-        1
+        >>> num_lines.increment(axs[1])
         """
-        self.update_num_lines(axis_index)
-        self._num_lines[axis_index] += 1
+        if ax not in self._num_lines_dict:
+            self._num_lines_dict[ax] = 0
+        self._num_lines_dict[ax] += 1
 
     @classmethod
     def count(cls, func: F) -> F:
@@ -169,14 +155,12 @@ class NumLines:
         ... def plot_line(axis_index):
         ...     print(f"Plotting on axis {axis_index}")
         >>> plot_line(0)
-        Plotting on axis 0
-        >>> num_lines = NumLines()
-        >>> print(num_lines.num_lines_axis(0))
-        1
         """
 
         def wrapper(self, *args: Any, **kwargs: Any) -> Any:
-            cls().increment(self.axis_index)
+            # TODO: Remove next line
+            ax = self.axis
+            cls().increment(ax)
             result = func(self, *args, **kwargs)
             return result
 
@@ -240,15 +224,18 @@ class AutoColor:
     array([0.267004, 0.004874, 0.329415, 1.0])  # Example RGBA color from the colormap
     """
 
-    def __init__(self, axis_index: int) -> None:
+    def __init__(self, ax) -> None:
+        self.ax: Axes = ax
         self.COLORMAP_LENGTH: int = 5
         self.CMAP = "viridis"
         self.colormap: NDArray[Any] = Colormap(
             cmap=self.CMAP, N=self.COLORMAP_LENGTH
         ).get_split_cmap()
 
-        self.num_lines_axis: int = NumLines().num_lines_axis(axis_index)
-        self.cycle_color_index: int = self.num_lines_axis % self.COLORMAP_LENGTH
+        _num_lines = NumLines()
+        self.num_lines: int = _num_lines.num_lines(self.ax)
+
+        self.cycle_color_index: int = self.num_lines % self.COLORMAP_LENGTH
 
     def get_color(self) -> NDArray[Any]:
         """
