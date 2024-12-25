@@ -121,7 +121,9 @@ class Line:
         """
         Sets the colors for the line, marker edge, and marker face.
         """
-        cycle_color: NDArray[Any] | str = AutoColor(self.axis_index).get_color()
+        # TODO: Remove next line
+        self.ax = self.axis
+        cycle_color: NDArray[Any] | str = AutoColor(self.ax).get_color()
         if isinstance(cycle_color, np.ndarray):
             cycle_color = colors.to_hex(
                 tuple(cycle_color)

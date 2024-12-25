@@ -87,6 +87,8 @@ class Scatter:
         self.x: NDArray[Any] = np.array(self._x)
         self.y: NDArray[Any] = np.array(self._y)
 
+        self.color = self.get_color()
+
     def get_color(self) -> ColorType:
         """
         Determines the color for the scatter points.
@@ -109,7 +111,9 @@ class Scatter:
         >>> scatter = Scatter(axis_target=0, x=[1, 2], y=[3, 4])
         >>> scatter.get_color()
         """
-        cycle_color: NDArray | str = AutoColor(self.axis_index).get_color()
+        # TODO: fix the next line
+        self.ax = self.axis
+        cycle_color: NDArray | str = AutoColor(self.ax).get_color()
         if isinstance(cycle_color, np.ndarray):
             cycle_color = colors.to_hex(
                 tuple(cycle_color)
@@ -146,7 +150,7 @@ class Scatter:
             self.x,
             self.y,
             s=self.size,
-            c=self.get_color(),
+            c=self.color,
             alpha=self.alpha,
             **self.kwargs,
         )
