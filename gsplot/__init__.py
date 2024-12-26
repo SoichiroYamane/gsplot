@@ -1,12 +1,12 @@
 from .color.colormap import get_cmap
 from .config.config import (Config, config_dict, config_entry_option,
-                            config_load)
+                            config_load, save_metadata)
 from .data.load_file import load_file
 from .figure.axes import axes
 from .figure.figure_tools import get_figure_size
 from .figure.show import show
 from .hello_world.hello_world import hello_world
-from .logger import logger, metadata
+from .logger import logger
 from .path.path import home, pwd, pwd_main, pwd_move
 from .plot.line import line
 from .plot.line_colormap_dashed import line_colormap_dashed
@@ -34,9 +34,9 @@ Config()
 logger()
 
 # ╭──────────────────────────────────────────────────────────╮
-# │ Metadata                                                 │
+# │ Save Metadata                                            │
 # ╰──────────────────────────────────────────────────────────╯
-metadata()
+save_metadata()
 
 __version__ = __version__
 __commit__ = __commit__

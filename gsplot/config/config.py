@@ -2,12 +2,17 @@ from __future__ import annotations
 
 import json
 import os
+from datetime import datetime
 from threading import Lock
 from typing import Any, cast
 
 import matplotlib as mpl
+import yaml
 from matplotlib import rcParams
 from rich.traceback import install
+
+from ..path.path import PathToMain
+from ..version import __commit__, __version__
 
 rcParams["pdf.fonttype"] = 42
 rcParams["ps.fonttype"] = 42
@@ -148,6 +153,11 @@ class Config:
             loader.init_load() if config_path else loader.get_config()
         )
         self.config_dict = config_dict
+
+        # Save metadata
+        metadata_store = MetadataStore()
+        metadata_store.create_metadata()
+
         return config_dict
 
     def get_config_entry_option(self, key: str) -> Any | dict[str, Any]:
@@ -420,3 +430,170 @@ def config_entry_option(key: str) -> dict[str, Any]:
     _config: Config = Config()
     entry_option: dict[str, Any] = _config.get_config_entry_option(key)
     return entry_option
+
+
+class MetadataHistory:
+    def __init__(
+        self,
+        new_metadata: Any,
+        new_config: Any,
+        metadata_dir: str,
+    ) -> None:
+        self.new_metadata = new_metadata.copy()
+        self.new_config = new_config.copy()
+        self.metadata_dir = metadata_dir
+
+        self.needs_update = False
+
+        self.history: Any = {}
+        self.new_entry: Any = {}
+        self.history_dir = os.path.join(self.metadata_dir, "history")
+
+    def _get_old_metadata(self) -> None | Any:
+        if not os.path.exists(os.path.join(self.metadata_dir, "metadata.yml")):
+            return None
+
+        with open(os.path.join(self.metadata_dir, "metadata.yml"), "r") as file:
+            return yaml.safe_load(file)
+
+    def _get_old_config(self) -> None | Any:
+        if not os.path.exists(os.path.join(self.metadata_dir, "config.json")):
+            return None
+
+        with open(os.path.join(self.metadata_dir, "config.json"), "r") as file:
+            return json.load(file)
+
+    def _is_identical(self) -> None:
+        old_metadata = self._get_old_metadata()
+        old_config = self._get_old_config()
+
+        if not old_metadata or not old_config:
+            self.needs_update = True
+            return None
+
+        exclude_keys = ["date"]
+
+        def remove_keys(data: dict, keys: list) -> dict:
+            return {k: v for k, v in data.items() if k not in keys}
+
+        filtered_old_metadata = remove_keys(old_metadata, exclude_keys)
+        filtered_new_metadata = remove_keys(self.new_metadata, exclude_keys)
+
+        if filtered_old_metadata != filtered_new_metadata:
+            self.needs_update = True
+            return None
+
+        if old_config != self.new_config:
+            self.needs_update = True
+            return None
+
+    def _create_history_dir(self) -> None:
+        metadata_history_dir = os.path.join(self.history_dir)
+
+        if not os.path.exists(metadata_history_dir):
+            os.makedirs(metadata_history_dir)
+
+    def _read_history(self) -> Any:
+        self._create_history_dir()
+        history_file = os.path.join(self.history_dir, "history.txt")
+
+        if not os.path.exists(history_file):
+            return []
+
+        try:
+            with open(history_file, "r") as file:
+                return [json.loads(line) for line in file if line.strip()]
+        except Exception as e:
+            print(f"Error reading history file: {e}")
+            return []
+
+    def _create_new_history(self) -> None:
+        if not self.needs_update:
+            return None
+
+        self.history = self._read_history()
+
+        self.new_entry = self.new_metadata
+        self.new_entry["config"] = self.new_config
+
+    def _write_history(self) -> None:
+        history_file = os.path.join(self.history_dir, "history.txt")
+
+        with open(history_file, "a") as file:
+            json.dump(self.new_entry, file)
+            file.write("\n")
+
+    def create_history(self) -> None:
+        self._is_identical()
+        self._create_new_history()
+        if self.new_entry:
+            self._write_history()
+
+
+class MetadataStore:
+    def __init__(
+        self,
+    ) -> None:
+        path_to_main = PathToMain()
+        self.main_dir = path_to_main.get_executed_file_dir()
+        self.meta_data_dir_name = ".gsplot"
+        self.meta_data_dir = os.path.join(
+            self.main_dir,
+            self.meta_data_dir_name,
+        )
+
+        self.date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        self.version = __version__
+        self.commit = __commit__
+
+        self.new_metadata = {
+            "date": self.date,
+            "version": self.version,
+            "commit": self.commit,
+        }
+
+        # get config dictionary
+        config = Config()
+        self.new_config_dict = config.config_dict
+        self.is_stored = config.get_config_entry_option("metadata")
+
+    def _create_metadata_dir(self) -> None:
+        if not os.path.exists(self.meta_data_dir):
+            os.makedirs(self.meta_data_dir)
+
+    def _create_new_metadata(self) -> None:
+
+        with open(os.path.join(self.meta_data_dir, "metadata.yml"), "w") as file:
+            yaml.dump(
+                self.new_metadata,
+                file,
+                default_flow_style=False,
+                sort_keys=False,
+                indent=2,
+            )
+
+    def _create_new_config(self) -> None:
+        with open(os.path.join(self.meta_data_dir, "config.json"), "w") as file:
+            # write config dictionary to file as json
+            json.dump(self.new_config_dict, file, indent=2)
+
+    def create_metadata(self) -> None:
+        if not self.is_stored:
+            return None
+
+        self._create_metadata_dir()
+
+        metadata_history = MetadataHistory(
+            new_metadata=self.new_metadata,
+            new_config=self.new_config_dict,
+            metadata_dir=self.meta_data_dir,
+        )
+        metadata_history.create_history()
+
+        self._create_new_metadata()
+        self._create_new_config()
+
+
+def save_metadata() -> None:
+    _metadata = MetadataStore()
+    _metadata.create_metadata()

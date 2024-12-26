@@ -1,4 +1,3 @@
-import json
 import os
 from datetime import datetime
 from typing import Any, cast
@@ -156,54 +155,3 @@ class Logger:
 def logger():
     _logger = Logger()
     _logger.make_log()
-
-
-class MetadataStore:
-    def __init__(self) -> None:
-        path_to_main = PathToMain()
-        self.main_dir = path_to_main.get_executed_file_dir()
-        self.meta_data_dir_name = ".gsplot"
-        self.meta_data_dir = os.path.join(self.main_dir, self.meta_data_dir_name)
-
-        self.date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        self.version = __version__
-        self.commit = __commit__
-
-        # get config dictionary
-        config = Config()
-        self.config_dict = config.config_dict
-        self.is_stored = config.get_config_entry_option("metadata")
-        print(self.is_stored)
-
-    def _create_metadata_dir(self) -> None:
-        if not os.path.exists(self.meta_data_dir):
-            os.makedirs(self.meta_data_dir)
-
-    def _create_metadata(self) -> None:
-        metadata = {
-            "date": self.date,
-            "version": self.version,
-            "commit": self.commit,
-        }
-
-        with open(os.path.join(self.meta_data_dir, "metadata.yml"), "w") as file:
-            yaml.dump(
-                metadata, file, default_flow_style=False, sort_keys=False, indent=2
-            )
-
-    def _create_config(self) -> None:
-        with open(os.path.join(self.meta_data_dir, "config.json"), "w") as file:
-            # write config dictionary to file as json
-            json.dump(self.config_dict, file, indent=2)
-
-    def create_metadata(self) -> None:
-        if not self.is_stored:
-            return None
-        self._create_metadata_dir()
-        self._create_metadata()
-        self._create_config()
-
-
-def metadata() -> None:
-    _metadata = MetadataStore()
-    _metadata.create_metadata()
