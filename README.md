@@ -20,7 +20,7 @@
 Welcome to **gsplot** (general-scientific plot), a toolkit designed to enhance the capabilities of data visualization based on [matplotlib](https://matplotlib.org). This package is specifically tailored for creating high-quality figures aimed at the scientific field.
 
 > [!WARNING]
-> This plugin is _beta_ quality. Expect breaking changes and many bugs
+> This package is _beta_ quality. Expect breaking changes and many bugs 🐛. Please report any issue you encounter 🤝.
 
 ## ✨ Features
 
