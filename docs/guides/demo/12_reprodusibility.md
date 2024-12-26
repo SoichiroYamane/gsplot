@@ -28,9 +28,9 @@ versions:
 
 ## Store Metadata of gsplot
 
-Metadata of `gsplot` can be stored in the directory of main file: `./.gsplot/metadata.yml` and `./.gsplot/config.json` files. The metadata file contains the version of `gsplot` and the commit hash of the repository. The config file contains the configuration of `gsplot`. This feature enables the user to reproduce the same plot in the future by using the metadata and config files.
+Metadata of `gsplot` can be stored in following files: `./.gsplot/metadata.yml`, `./.gsplot/config.json`, and `./.gsplot/history/history.txt`. The metadata file contains the version of `gsplot` and the commit hash of the repository. The config file contains the configuration of `gsplot`. The history file tracks all histories of configuration on the executed main file. This feature enables the user to reproduce the same plot in the future by using the metadata and config files.
 
-### Config
+### Configuration
 
 To enable this feature, set `metadata` to `true` in the configuration file.
 
@@ -40,7 +40,7 @@ To enable this feature, set `metadata` to `true` in the configuration file.
 }
 ```
 
-### Structure of Metadata
+### Example: Structure of Metadata
 
 Matadata and config files are stored in the `.gsplot` directory.
 
@@ -50,15 +50,17 @@ $ tree
 ├── main.py
 ├── .gsplot
 │   ├── metadata.yml
-│   └── config.json
+│   ├── config.json
+│   └── history
+│       └─── history.txt
 ```
 
 #### metadata.yml
 
 ```yaml
-date: '2024-12-25 16:32:21'
+date: '2024-12-26 15:55:35'
 version: 0.0.5
-commit: 9802d2879ca33fcaf7f7ddd8bfe8b2c5c4498ba6
+commit: 6b818865da62342790933a079a65fea1e2d9e63e
 ```
 
 #### config.json
@@ -67,4 +69,11 @@ commit: 9802d2879ca33fcaf7f7ddd8bfe8b2c5c4498ba6
 {
   "metadata": true
 }
+```
+
+#### history.txt
+
+```text
+{"date": "2024-12-26 15:55:23", "version": "0.0.5", "commit": "6b818865da62342790933a079a65fea1e2d9e63e", "config": {"rich": {"traceback": {}}, "rcParams": {"xtick.major.pad": 6, "ytick.major.pad": 6}, "metadata": true}}
+{"date": "2024-12-26 15:55:35", "version": "0.0.5", "commit": "6b818865da62342790933a079a65fea1e2d9e63e", "config": {"metadata": true}}
 ```
