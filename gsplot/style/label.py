@@ -492,9 +492,9 @@ class Label:
         Removes the y-axis labels for a given axis.
     add_minor_ticks_axes() -> None
         Adds minor ticks to all axes in the figure.
-    configure_axis_labels(axis, x_lab, y_lab) -> None
+    configure_axis_labels(ax, x_lab, y_lab) -> None
         Configures the labels for a given axis.
-    configure_axis_limits(axis, lims, final_axes_range=None, index=None) -> None
+    configure_axis_limits(ax, lims, final_axes_ranges=None) -> None
         Configures the limits and scales for a given axis.
     set_labels() -> None
         Applies labels, limits, and scales to all axes based on the configuration.
@@ -621,13 +621,13 @@ class Label:
         if self.minor_ticks_axes:
             MinorTicksAxes().set_minor_ticks_axes()
 
-    def configure_axis_labels(self, axis, x_lab, y_lab):
+    def configure_axis_labels(self, ax: Axes, x_lab: str | None, y_lab: str | None):
         """
         Configures the labels for a given axis.
 
         Parameters
         --------------------
-        axis : matplotlib.axes.Axes
+        ax : matplotlib.axes.Axes
             The axis to configure labels for.
         x_lab : str, optional
             The label for the x-axis. If `None`, the x-axis label is removed.
@@ -639,26 +639,31 @@ class Label:
         None
         """
         if x_lab:
-            axis.set_xlabel(x_lab)
+            ax.set_xlabel(x_lab)
         else:
-            self.remove_xlabels(axis)
+            self.remove_xlabels(ax)
 
         if y_lab:
-            axis.set_ylabel(y_lab)
+            ax.set_ylabel(y_lab)
         else:
-            self.remove_ylabels(axis)
+            self.remove_ylabels(ax)
 
-    def configure_axis_limits(self, axis, lims, final_axes_range=None, index=None):
+    def configure_axis_limits(
+        self,
+        ax: Axes,
+        lims: list[Any],
+        final_axes_ranges: dict[Axes, list] | None = None,
+    ):
         """
         Configures the limits and scales for a given axis.
 
         Parameters
         --------------------
-        axis : matplotlib.axes.Axes
+        ax : matplotlib.axes.Axes
             The axis to configure limits for.
         lims : list, optional
             The limits for the axis in the form `[x_lims, y_lims]`.
-        final_axes_range : list, optional
+        final_axes_ranges : dict[matplotlib.axes.Axes, list], optional
             The final axes ranges for all axes.
         index : int, optional
             The index of the current axis.
@@ -676,28 +681,28 @@ class Label:
                 [x_lims[0], x_lims[1], y_lims[0], y_lims[1]],
             ):
                 if val != "":
-                    axis.axis(**{lim: val})
+                    ax.axis(**{lim: val})
 
             # Configure x-axis scale or ticks
             if len(x_lims) > 2:
                 if isinstance(x_lims[2], str):
-                    axis.set_xscale(x_lims[2])
+                    ax.set_xscale(x_lims[2])
                 else:
-                    self.set_xticks(axis, num_minor=x_lims[2])
+                    self.set_xticks(ax, num_minor=x_lims[2])
                     if len(x_lims) > 3:
-                        self.set_xticks(axis, base=x_lims[3])
+                        self.set_xticks(ax, base=x_lims[3])
 
             # Configure y-axis scale or ticks
             if len(y_lims) > 2:
                 if isinstance(y_lims[2], str):
-                    axis.set_yscale(y_lims[2])
+                    ax.set_yscale(y_lims[2])
                 else:
-                    self.set_yticks(axis, num_minor=y_lims[2])
+                    self.set_yticks(ax, num_minor=y_lims[2])
                     if len(y_lims) > 3:
-                        self.set_yticks(axis, base=y_lims[3])
-        elif final_axes_range and index is not None:
-            final_axis_range = final_axes_range[index]
-            axis.axis(
+                        self.set_yticks(ax, base=y_lims[3])
+        elif final_axes_ranges is not None:
+            final_axis_range = final_axes_ranges[ax]
+            ax.axis(
                 xmin=final_axis_range[0][0],
                 xmax=final_axis_range[0][1],
                 ymin=final_axis_range[1][0],
@@ -705,19 +710,16 @@ class Label:
             )
 
     def set_labels(self):
-
-        final_axes_range = self._get_final_axes_range()
+        final_axes_ranges = self._get_final_axes_ranges()
 
         for i, (x_lab, y_lab, *lims) in enumerate(self.lab_lims):
-            axis = self._axes[i]
+            ax = self._axes[i]
 
             # Configure axis labels
-            self.configure_axis_labels(axis, x_lab, y_lab)
+            self.configure_axis_labels(ax, x_lab, y_lab)
 
             # Configure axis limits and scales
-            self.configure_axis_limits(axis, lims, final_axes_range, i)
-
-            self._get_final_axes_range()
+            self.configure_axis_limits(ax, lims, final_axes_ranges)
 
     def _calculate_padding_range(self, range: NDArray[Any]) -> NDArray[Any]:
 
@@ -737,23 +739,24 @@ class Label:
     def _get_axes_ranges_current(self) -> list[list[NDArray[Any]]]:
 
         axes_ranges_current = []
-        for axis_index in range(len(self._axes)):
-            xrange = AxisRangeController(axis_index).get_axis_xrange()
-            yrange = AxisRangeController(axis_index).get_axis_yrange()
+        for ax in self._axes:
+            xrange = AxisRangeController(ax).get_axis_xrange()
+            yrange = AxisRangeController(ax).get_axis_yrange()
             axes_ranges_current.append([xrange, yrange])
         return axes_ranges_current
 
-    def _get_final_axes_range(self) -> list[list[NDArray[Any]]]:
+    def _get_final_axes_ranges(self) -> dict[Axes, list[NDArray[Any]]]:
+        _axes_range_singleton = AxesRangeSingleton()
 
-        axes_ranges_singleton = AxesRangeSingleton().axes_ranges
         axes_ranges_current = self._get_axes_ranges_current()
 
-        final_axes_ranges = []
-        for axis_index, (xrange, yrange) in enumerate(axes_ranges_current):
-            xrange_singleton = axes_ranges_singleton[axis_index][0]
-            yrange_singleton = axes_ranges_singleton[axis_index][1]
+        final_axes_ranges = {}
+        for ax, (xrange, yrange) in zip(self._axes, axes_ranges_current):
+            xrange_singleton, yrange_singleton = _axes_range_singleton.get_axes_range(
+                ax
+            )
 
-            is_init_axis = AxisRangeManager(axis_index).is_init_axis()
+            is_init_axis = AxisRangeManager(ax).is_init_axis()
 
             if is_init_axis and xrange_singleton is not None:
                 new_xrange = xrange_singleton
@@ -772,7 +775,7 @@ class Label:
             new_xrange = self._calculate_padding_range(new_xrange)
             new_yrange = self._calculate_padding_range(new_yrange)
 
-            final_axes_ranges.append([new_xrange, new_yrange])
+            final_axes_ranges[ax] = [new_xrange, new_yrange]
         return final_axes_ranges
 
     #! Xpad and Ypad will change the size of the axis
