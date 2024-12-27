@@ -15,49 +15,84 @@ F = TypeVar("F", bound=Callable[..., Any])
 
 class AxesRangeSingleton:
     """
-    A thread-safe singleton class for managing axis ranges in Matplotlib figures.
+    AxesRangeSingleton
+    ==================
 
-    This class provides functionality to store and update axis ranges for all axes
-    in a figure, ensuring consistency across different parts of the application.
-    It maintains axis ranges for each axis and can dynamically extend or reset the stored ranges.
+    A thread-safe singleton class for managing and storing axis ranges in a plotting context.
+    The class provides utility methods for retrieving, updating, and managing axis ranges
+    for matplotlib axes, ensuring consistency across multiple threads and functions.
 
-    Attributes
+    Key Features
     --------------------
-    _instance : AxesRangeSingleton or None
-        The singleton instance of the `AxesRangeSingleton` class.
-    _lock : threading.Lock
-        A lock to ensure thread-safe access to the singleton instance.
-    _axes_ranges : list of list[Any]
-        A list storing ranges for each axis, where each range is represented as `[xrange, yrange]`.
+    - Implements a thread-safe singleton pattern.
+    - Stores axis ranges (`xrange` and `yrange`) for matplotlib axes.
+    - Updates axis ranges dynamically based on new data using decorators.
+    - Provides utility functions for handling infinities and calculating wider ranges.
 
-    Methods
+    Usage
     --------------------
-    axes_ranges
-        Retrieves the list of axis ranges, ensuring its size matches the number of axes in the current figure.
-    add_range(axis_index, xrange, yrange)
-        Adds or updates the range for a specific axis.
-    get_max_wo_inf(array)
-        Returns the maximum value in an array, ignoring infinities.
-    get_min_wo_inf(array)
-        Returns the minimum value in an array, ignoring infinities.
-    reset(axes)
-        Resets the stored ranges to match the provided list of axes.
-    update(func)
-        A decorator to update axis ranges based on data and ensure consistency.
+    This class is designed to be used as a singleton, meaning only one instance of it
+    exists at any time. Use the `AxesRangeSingleton()` constructor to access the instance.
 
     Examples
     --------------------
-    >>> axes_ranges = AxesRangeSingleton()
-    >>> print(axes_ranges.axes_ranges)
-    [[None, None]]
+    >>> import numpy as np
+    >>> import matplotlib.pyplot as plt
+    >>> from AxesRangeSingleton import AxesRangeSingleton
 
-    >>> axes_ranges.add_range(0, np.array([0, 10]), np.array([0, 20]))
-    >>> print(axes_ranges.axes_ranges)
-    [array([0, 10]), array([0, 20])]
+    >>> ax = plt.subplot()
+    >>> singleton = AxesRangeSingleton()
+    >>> singleton.add_range(ax, np.array([0, 5]), np.array([1, 10]))
+    >>> print(singleton.get_axes_range(ax))
+    [array([0, 5]), array([1, 10])]
 
-    >>> axes_ranges.reset(plt.gcf().axes)
-    >>> print(axes_ranges.axes_ranges)
-    [[None, None], [None, None]]  # Resets to the number of current figure axes
+    >>> @AxesRangeSingleton.update
+    ... def draw_plot():
+    ...     pass
+
+    Attributes
+    --------------------
+    _axes_ranges_dict : dict[matplotlib.axes.Axes, list]
+        A dictionary storing the `xrange` and `yrange` for each axis.
+
+    _lock : threading.Lock
+        A threading lock to ensure thread safety when accessing the singleton instance.
+
+    Methods
+    --------------------
+    __new__(cls) -> AxesRangeSingleton
+        Ensures only one instance of the singleton is created.
+
+    axes_ranges_dict -> dict[matplotlib.axes.Axes, list]
+        Returns the dictionary containing the axis ranges.
+
+    get_axes_range(ax: Axes) -> list
+        Retrieves the range for a specific axis. If the axis does not exist, initializes it
+        with `[None, None]`.
+
+    add_range(ax: Axes, xrange: NDArray[Any], yrange: NDArray[Any]) -> None
+        Adds or updates the range for a specific axis.
+
+    _get_wider_range(range1: NDArray[Any], range2: NDArray[Any]) -> NDArray[Any]
+        Computes a wider range that encompasses two given ranges.
+
+    get_max_wo_inf(array: NDArray[Any]) -> float
+        Returns the maximum value in an array, ignoring positive infinities.
+
+    get_min_wo_inf(array: NDArray[Any]) -> float
+        Returns the minimum value in an array, ignoring negative infinities.
+
+    update(cls, func: F) -> F
+        A decorator that updates axis ranges dynamically based on data.
+
+    reset(axs: list[Axes]) -> None
+        Resets the axis ranges for the specified axes to `[None, None]`.
+
+    Notes
+    --------------------
+    - This class is thread-safe and ensures that modifications to the axis ranges are consistent.
+    - Axis ranges are represented as numpy arrays for compatibility with mathematical operations.
+
     """
 
     _instance: AxesRangeSingleton | None = None
@@ -76,67 +111,53 @@ class AxesRangeSingleton:
         """
 
         # Explicitly initialize the instance variable with a type hint
-        self._axes_ranges: list[list[Any]] = [[None, None]]
-
-    def ensure_size_of_axes_ranges(self) -> None:
-        """
-        Ensures the `_axes_ranges` list matches the number of axes in the current figure.
-        """
-
-        axes = plt.gcf().axes
-        axes_length = len(axes)
-        num_elements_to_append = max(0, axes_length - len(self._axes_ranges))
-        self._axes_ranges.extend([[None, None]] * num_elements_to_append)
+        self._axes_ranges_dict: dict[Axes, list] = {}
 
     @property
-    def axes_ranges(self) -> list[list[Any]]:
+    def axes_ranges_dict(self) -> dict[Axes, list]:
         """
-        Retrieves the list of axis ranges, ensuring its size matches the number of axes.
+        Retrieves the dictionary containing the ranges for each axis.
 
         Returns
         --------------------
-        list of list[Any]
-            The list of axis ranges.
+        dict[matplotlib.axes.Axes, list]
+            The dictionary containing the ranges for each axis.
         """
 
-        self.ensure_size_of_axes_ranges()
-        return self._axes_ranges
+        return self._axes_ranges_dict
 
-    @axes_ranges.setter
-    def axes_ranges(
-        self,
-        axes_ranges: list[list[Any]],
-    ) -> None:
+    def get_axes_range(self, ax: Axes) -> list:
         """
-        Sets the axis ranges to a new list.
+        Retrieves the range for a specific axis.
 
         Parameters
         --------------------
-        axes_ranges : list of list[Any]
-            The new axis ranges to set.
+        ax: matplotlib.axes.Axes
+            The axis for which to retrieve the range.
 
-        Raises
+        Returns
         --------------------
-        TypeError
-            If the provided value is not iterable.
+        list
+            The range for the specified axis.
+
+        Examples
+        --------------------
+        >>> axes_ranges = AxesRangeSingleton()
+        >>> axes_ranges.get_axes_range(axs[0])
         """
+        if ax not in self._axes_ranges_dict:
+            self._axes_ranges_dict[ax] = [None, None]
+            return [None, None]
+        return self._axes_ranges_dict[ax]
 
-        try:
-            iter(axes_ranges)
-        except TypeError:
-            raise TypeError(f"Expected an iterable, got {type(axes_ranges).__name__}")
-        self._axes_ranges = axes_ranges
-
-    def add_range(
-        self, axis_index: int, xrange: NDArray[Any], yrange: NDArray[Any]
-    ) -> None:
+    def add_range(self, ax: Axes, xrange: NDArray[Any], yrange: NDArray[Any]) -> None:
         """
         Adds or updates the range for a specific axis.
 
         Parameters
         --------------------
-        axis_index : int
-            The index of the axis to update.
+        ax: matplotlib.axes.Axes
+            Axes object for which to add or update the range.
         xrange : numpy.ndarray
             The range for the x-axis.
         yrange : numpy.ndarray
@@ -144,14 +165,11 @@ class AxesRangeSingleton:
 
         Examples
         --------------------
-        >>> axes_ranges = AxesRangeSingleton()
-        >>> axes_ranges.add_range(0, np.array([0, 10]), np.array([0, 20]))
-        >>> print(axes_ranges.axes_ranges)
-        [[array([ 0, 10]), array([ 0, 20])]]
         """
-        while len(self._axes_ranges) <= axis_index:
-            self._axes_ranges.append([None, None])
-        self._axes_ranges[axis_index] = [xrange, yrange]
+        if ax not in self._axes_ranges_dict:
+            self._axes_ranges_dict[ax] = [None, None]
+
+        self._axes_ranges_dict[ax] = [xrange, yrange]
 
     def _get_wider_range(
         self, range1: NDArray[Any], range2: NDArray[Any]
@@ -261,19 +279,16 @@ class AxesRangeSingleton:
         """
 
         def wrapper(self, *args: Any, **kwargs: Any) -> Any:
-            axis_index: int = self.axis_index
+            # TODO: remove next line
+            ax: Axes = self.axis
             x: NDArray[Any] = self.x
             y: NDArray[Any] = self.y
 
-            num_elements_to_append = max(0, axis_index + 1 - len(cls().axes_ranges))
-            cls().axes_ranges.extend([[None, None]] * num_elements_to_append)
-
-            xrange, yrange = AxisRangeHandler(axis_index, x, y).get_new_axis_range()
+            xrange, yrange = AxisRangeHandler(ax, x, y).get_new_axis_range()
             xrange = np.array([cls().get_min_wo_inf(x), cls().get_max_wo_inf(x)])
             yrange = np.array([cls().get_min_wo_inf(y), cls().get_max_wo_inf(y)])
 
-            xrange_singleton = cls().axes_ranges[axis_index][0]
-            yrange_singleton = cls().axes_ranges[axis_index][1]
+            xrange_singleton, yrange_singleton = cls().get_axes_range(ax)
 
             if xrange_singleton is not None:
                 new_xrange = cls()._get_wider_range(xrange, xrange_singleton)
@@ -285,16 +300,17 @@ class AxesRangeSingleton:
             else:
                 new_yrange = yrange
 
-            cls().add_range(axis_index, new_xrange, new_yrange)
+            cls().add_range(ax, new_xrange, new_yrange)
 
             result = func(self, *args, **kwargs)
             return result
 
         return cast(F, wrapper)
 
-    def reset(self, axes: list[Axes]):
-        axes_length = len(axes)
-        self._axes_ranges = [[None, None]] * axes_length
+    def reset(self, axs: list[Axes]):
+        for ax in axs:
+            if ax not in self._axes_ranges_dict:
+                self._axes_ranges_dict[ax] = [None, None]
 
 
 class AxisRangeController:
@@ -347,9 +363,8 @@ class AxisRangeController:
     array([0.2, 0.8])
     """
 
-    def __init__(self, axis_index: int):
-        self.axis_index = axis_index
-        self.axis: Axes = AxesResolver(self.axis_index).axis
+    def __init__(self, ax: Axes):
+        self.ax: Axes = ax
 
     def get_axis_xrange(self) -> NDArray[Any]:
         """
@@ -367,8 +382,8 @@ class AxisRangeController:
         >>> print(x_range)
         array([0.0, 1.0])
         """
-        axis_xrange: NDArray[Any] = np.array(self.axis.get_xlim())
-        return axis_xrange
+        ax_xrange: NDArray[Any] = np.array(self.ax.get_xlim())
+        return ax_xrange
 
     def get_axis_yrange(self) -> NDArray[Any]:
         """
@@ -386,8 +401,8 @@ class AxisRangeController:
         >>> print(y_range)
         array([0.0, 1.0])
         """
-        axis_yrange: NDArray[Any] = np.array(self.axis.get_ylim())
-        return axis_yrange
+        ax_yrange: NDArray[Any] = np.array(self.ax.get_ylim())
+        return ax_yrange
 
     def set_axis_xrange(self, xrange: NDArray[Any]) -> None:
         """
@@ -406,7 +421,7 @@ class AxisRangeController:
         array([0.5, 1.5])
         """
         xrange_tuple = tuple(xrange)
-        self.axis.set_xlim(xrange_tuple)
+        self.ax.set_xlim(xrange_tuple)
 
     def set_axis_yrange(self, yrange: NDArray[Any]) -> None:
         """
@@ -425,7 +440,7 @@ class AxisRangeController:
         array([0.2, 0.8])
         """
         yrange_tuple = tuple(yrange)
-        self.axis.set_ylim(yrange_tuple)
+        self.ax.set_ylim(yrange_tuple)
 
 
 class AxisRangeManager:
@@ -465,10 +480,8 @@ class AxisRangeManager:
     False  # A line plot exists on the axis
     """
 
-    def __init__(self, axis_index: int):
-        self.axis_index = axis_index
-
-        self.axis: Axes = AxesResolver(self.axis_index).axis
+    def __init__(self, ax: Axes):
+        self.ax: Axes = ax
 
     def is_init_axis(self) -> bool:
         """
@@ -494,7 +507,7 @@ class AxisRangeManager:
         >>> print(is_initialized)
         False  # A line plot exists on the axis
         """
-        num_lines = len(self.axis.lines)
+        num_lines = len(self.ax.lines)
 
         if num_lines:
             return False
@@ -549,14 +562,12 @@ class AxisRangeHandler:
     array([4, 7])
     """
 
-    def __init__(self, axis_index: int, xdata: NDArray[Any], ydata: NDArray[Any]):
-        self.axis_index = axis_index
-        self.xdata = xdata
-        self.ydata = ydata
+    def __init__(self, ax: Axes, xdata: NDArray[Any], ydata: NDArray[Any]):
+        self.ax: Axes = ax
+        self.xdata: NDArray[Any] = xdata
+        self.ydata: NDArray[Any] = ydata
 
-        self.axis: Axes = AxesResolver(self.axis_index).axis
-
-        self._is_init_axis: bool = AxisRangeManager(self.axis_index).is_init_axis()
+        self._is_init_axis: bool = AxisRangeManager(self.ax).is_init_axis()
 
     def _get_axis_range(
         self,
@@ -579,8 +590,8 @@ class AxisRangeHandler:
         if self._is_init_axis:
             return None, None
         else:
-            axis_xrange = AxisRangeController(self.axis_index).get_axis_xrange()
-            axis_yrange = AxisRangeController(self.axis_index).get_axis_yrange()
+            axis_xrange = AxisRangeController(self.ax).get_axis_xrange()
+            axis_yrange = AxisRangeController(self.ax).get_axis_yrange()
             return axis_xrange, axis_yrange
 
     def _calculate_data_range(self, data: NDArray[Any]) -> NDArray[Any]:
