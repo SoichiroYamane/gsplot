@@ -15,8 +15,8 @@ from rich.panel import Panel
 from rich.text import Text
 
 from ..base.base import CreateClassParams, ParamsGetter, bind_passed_params
-from ..figure.axes_base import (AxesRangeSingleton, AxisRangeController,
-                                AxisRangeManager)
+from ..figure.axes_range_base import (AxesRangeSingleton, AxisRangeController,
+                                      AxisRangeManager)
 from .ticks import MinorTicksAxes
 
 __all__ = ["label", "label_add_index"]

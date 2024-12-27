@@ -8,7 +8,8 @@ from numpy.typing import ArrayLike, NDArray
 
 from ..base.base import CreateClassParams, ParamsGetter, bind_passed_params
 from ..base.base_alias_validator import AliasValidator
-from ..figure.axes_base import AxesRangeSingleton, AxesResolver, AxisLayout
+from ..figure.axes_base import AxesResolver, AxisLayout
+from ..figure.axes_range_base import AxesRangeSingleton
 from ..style.legend_colormap import LegendColormap
 from .line_colormap_base import LineColormapBase
 

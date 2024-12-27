@@ -7,7 +7,8 @@ from numpy.typing import ArrayLike, NDArray
 
 from ..base.base import CreateClassParams, ParamsGetter, bind_passed_params
 from ..base.base_alias_validator import AliasValidator
-from ..figure.axes_base import AxesRangeSingleton, AxesResolver
+from ..figure.axes_base import AxesResolver
+from ..figure.axes_range_base import AxesRangeSingleton
 from ..style.legend_colormap import LegendColormap
 
 __all__: list[str] = ["scatter_colormap"]

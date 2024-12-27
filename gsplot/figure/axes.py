@@ -8,7 +8,7 @@ from matplotlib.typing import HashableList
 
 from ..base.base import CreateClassParams, ParamsGetter, bind_passed_params
 from ..plot.line_base import NumLines
-from .axes_base import AxesRangeSingleton
+from .axes_range_base import AxesRangeSingleton
 from .store import StoreSingleton
 
 _T = TypeVar("_T")
