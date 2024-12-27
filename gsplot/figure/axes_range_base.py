@@ -85,8 +85,8 @@ class AxesRangeSingleton:
     update(cls, func: F) -> F
         A decorator that updates axis ranges dynamically based on data.
 
-    reset(axs: list[Axes]) -> None
-        Resets the axis ranges for the specified axes to `[None, None]`.
+    reset() -> None
+        Resets the axes ranges for all
 
     Notes
     --------------------
@@ -307,10 +307,11 @@ class AxesRangeSingleton:
 
         return cast(F, wrapper)
 
-    def reset(self, axs: list[Axes]):
-        for ax in axs:
-            if ax not in self._axes_ranges_dict:
-                self._axes_ranges_dict[ax] = [None, None]
+    def reset(self):
+        """
+        Resets the axes ranges for all axes.
+        """
+        self._axes_ranges_dict = {}
 
 
 class AxisRangeController:

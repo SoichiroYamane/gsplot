@@ -285,7 +285,7 @@ class AxesHandler(Generic[_T]):
             raise ValueError("Mosaic must be specified.")
 
         # Initialize the axes range list by the number of axes in the current figure
-        AxesRangeSingleton().reset(plt.gcf().axes)
+        AxesRangeSingleton().reset()
 
 
 @bind_passed_params()
