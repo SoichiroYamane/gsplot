@@ -191,7 +191,6 @@ class LineColormapSolid:
             self.x, self.y
         )
         norm = LineColormapBase()._create_cmap(self.cmapdata)
-        print(norm)
 
         lc: LineCollection = LineCollection(
             segments.tolist(), cmap=self.cmap, norm=norm
