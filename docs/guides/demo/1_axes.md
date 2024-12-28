@@ -13,6 +13,15 @@
 
 ### Code
 
+:::{tip}
+`unit` provides a way to set [gsplot.label](#gsplot.style.label.label) of `10 px` (default) to all axes of the figure. This ensures consistency when creating presentations with a unified style.
+his ensures consistency when creating presentations with a unified style.
+
+**PowerPoint**: Set the `unit` to `cm` and insert the figure with the same size in PowerPoint. The font size will default to `10 pt` on the PowerPoint slide
+
+**Keynote**: Set the `unit` to `pt` and insert the figure with the same size in Keynote. The font size will default to `10 pt` on the Keynote slide
+:::
+
 ```{literalinclude} ../../../demo/1_axes/axes.py
 ```
 

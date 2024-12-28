@@ -15,8 +15,6 @@ gs.line_colormap_dashed(axs[2], x, y, x, lw=2)
 # Set the facecolor of axes to white
 gs.graph_white_axes()
 
-gs.label(
-    [["x", "y"], ["x", "y"], ["x", "y"]],
-)
+gs.label([["x", "y"], ["x", "y"], ["x", "y"]])
 
 gs.show("graph_white")

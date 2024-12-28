@@ -14,6 +14,6 @@ Another example of compatibility to matplotlib is shown below. In this example, 
 ```{image} ../../../demo/10_subplots/subplots.png
 :alt: subplots
 :class: bg-primary
-:width: 800px
+:width: 1000px
 :align: center
 ```

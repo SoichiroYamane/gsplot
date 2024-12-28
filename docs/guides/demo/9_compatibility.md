@@ -14,6 +14,6 @@
 ```{image} ../../../demo/9_compatibility/compatibility.png
 :alt: compatibility
 :class: bg-primary
-:width: 500px
+:width: 1000px
 :align: center
 ```
