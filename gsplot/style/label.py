@@ -9,7 +9,7 @@ from matplotlib.axes import Axes
 from matplotlib.backends.backend_agg import FigureCanvasAgg
 from matplotlib.figure import Figure
 from matplotlib.transforms import Bbox
-from numpy.typing import ArrayLike, NDArray
+from numpy.typing import NDArray
 from rich.console import Console
 from rich.panel import Panel
 from rich.text import Text
@@ -183,13 +183,13 @@ class LabelAddIndex:
             [self.fig_width, self.fig_height, self.fig_width, self.fig_height]
         )
 
-    def _get_render_position(self, axis: Axes) -> tuple[float, float] | None:
+    def _get_render_position(self, ax: Axes) -> tuple[float, float] | None:
         """
         Calculates the position for the index label based on the location.
 
         Parameters
         --------------------
-        axis : matplotlib.axes.Axes
+        ax : matplotlib.axes.Axes
             The axis for which to calculate the label position.
 
         Returns
@@ -209,14 +209,14 @@ class LabelAddIndex:
 
         if self.loc == "out":
             # Coordinate: device coordinates
-            bbox = axis.get_tightbbox(self.renderer)
+            bbox = ax.get_tightbbox(self.renderer)
             PADDING_X, PADDING_Y = 0, -5
         elif self.loc == "in":
             # Coordinate: device coordinates
-            bbox = axis.get_window_extent(self.renderer)
+            bbox = ax.get_window_extent(self.renderer)
             PADDING_X, PADDING_Y = 30, -30
         elif self.loc == "corner":
-            bbox = axis.get_window_extent(self.renderer)
+            bbox = ax.get_window_extent(self.renderer)
         else:
             raise ValueError(
                 f"Invalid position: {self.loc}, must be 'in', 'out', or 'corner'"
@@ -227,7 +227,7 @@ class LabelAddIndex:
         PADDING_Y = PADDING_Y / self.canvas_height
 
         if bbox is None:
-            print(f"No bounding box available for the axis. axis: {axis}")
+            print(f"No bounding box available for the axis. axis: {ax}")
             return None
 
         # Calculate the axis bounds in figure coordinates
@@ -340,8 +340,8 @@ class LabelAddIndex:
         --------------------
         None
         """
-        for i, axis in enumerate(self._axes):
-            position = self._get_render_position(axis)
+        for i, ax in enumerate(self._axes):
+            position = self._get_render_position(ax)
             if position is None:
                 continue
             x, y = position
@@ -482,13 +482,13 @@ class Label:
 
     Methods
     --------------------
-    set_xticks(axis, base=None, num_minor=None) -> None
+    set_xticks(ax, base=None, num_minor=None) -> None
         Configures the major and minor ticks for the x-axis.
-    set_yticks(axis, base=None, num_minor=None) -> None
+    set_yticks(ax, base=None, num_minor=None) -> None
         Configures the major and minor ticks for the y-axis.
-    remove_xlabels(axis) -> None
+    remove_xlabels(ax) -> None
         Removes the x-axis labels for a given axis.
-    remove_ylabels(axis) -> None
+    remove_ylabels(ax) -> None
         Removes the y-axis labels for a given axis.
     add_minor_ticks_axes() -> None
         Adds minor ticks to all axes in the figure.
@@ -526,14 +526,14 @@ class Label:
         self._axes: list[Axes] = plt.gcf().axes
 
     def set_xticks(
-        self, axis: Axes, base: float | None = None, num_minor: int | None = None
+        self, ax: Axes, base: float | None = None, num_minor: int | None = None
     ) -> None:
         """
         Configures the major and minor ticks for the x-axis.
 
         Parameters
         --------------------
-        axis : matplotlib.axes.Axes
+        ax : matplotlib.axes.Axes
             The axis for which to configure ticks.
         base : float, optional
             Interval for the major ticks.
@@ -546,19 +546,19 @@ class Label:
         """
 
         if base is not None:
-            axis.xaxis.set_major_locator(plticker.MultipleLocator(base=base))
+            ax.xaxis.set_major_locator(plticker.MultipleLocator(base=base))
         if num_minor is not None:
-            axis.xaxis.set_minor_locator(plticker.AutoMinorLocator(num_minor))
+            ax.xaxis.set_minor_locator(plticker.AutoMinorLocator(num_minor))
 
     def set_yticks(
-        self, axis: Axes, base: float | None = None, num_minor: int | None = None
+        self, ax: Axes, base: float | None = None, num_minor: int | None = None
     ) -> None:
         """
         Configures the major and minor ticks for the y-axis.
 
         Parameters
         --------------------
-        axis : matplotlib.axes.Axes
+        ax : matplotlib.axes.Axes
             The axis for which to configure ticks.
         base : float, optional
             Interval for the major ticks.
@@ -571,17 +571,17 @@ class Label:
         """
 
         if base is not None:
-            axis.yaxis.set_major_locator(plticker.MultipleLocator(base=base))
+            ax.yaxis.set_major_locator(plticker.MultipleLocator(base=base))
         if num_minor is not None:
-            axis.yaxis.set_minor_locator(plticker.AutoMinorLocator(num_minor))
+            ax.yaxis.set_minor_locator(plticker.AutoMinorLocator(num_minor))
 
-    def remove_xlabels(self, axis: Axes) -> None:
+    def remove_xlabels(self, ax: Axes) -> None:
         """
         Removes the x-axis label for a given axis.
 
         Parameters
         --------------------
-        axis : matplotlib.axes.Axes
+        ax : matplotlib.axes.Axes
             The axis for which to remove the x-axis label.
 
         Returns
@@ -589,16 +589,16 @@ class Label:
         None
         """
 
-        axis.set_xlabel("")
-        axis.tick_params(labelbottom=False)
+        ax.set_xlabel("")
+        ax.tick_params(labelbottom=False)
 
-    def remove_ylabels(self, axis: Axes) -> None:
+    def remove_ylabels(self, ax: Axes) -> None:
         """
         Removes the y-axis label for a given axis.
 
         Parameters
         --------------------
-        axis : matplotlib.axes.Axes
+        ax : matplotlib.axes.Axes
             The axis for which to remove the y-axis label.
 
         Returns
@@ -606,8 +606,8 @@ class Label:
         None
         """
 
-        axis.set_ylabel("")
-        axis.tick_params(labelleft=False)
+        ax.set_ylabel("")
+        ax.tick_params(labelleft=False)
 
     def add_minor_ticks_axes(self) -> None:
         """

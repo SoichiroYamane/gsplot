@@ -4,12 +4,11 @@ import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.axes import Axes
 from matplotlib.collections import LineCollection
-from matplotlib.colors import Normalize
 from numpy.typing import ArrayLike, NDArray
 
 from ..base.base import CreateClassParams, ParamsGetter, bind_passed_params
 from ..base.base_alias_validator import AliasValidator
-from ..figure.axes_base import AxesResolver, AxisLayout
+from ..figure.axes_base import AxisLayout
 from ..figure.axes_range_base import AxesRangeSingleton
 from ..style.legend_colormap import LegendColormap
 from .line_colormap_base import LineColormapBase
@@ -26,8 +25,8 @@ class LineColormapDashed:
 
     Parameters
     --------------------
-    axis_target : int or matplotlib.axes.Axes
-        The target axis where the line should be plotted.
+    ax : matplotlib.axes.Axes
+        The target axis where the line will be plotted.
     x : ArrayLike
         The x-coordinates of the line data.
     y : ArrayLike
@@ -77,7 +76,7 @@ class LineColormapDashed:
 
     def __init__(
         self,
-        axis_target: int | Axes,
+        ax: Axes,
         x: ArrayLike,
         y: ArrayLike,
         cmapdata: ArrayLike,
@@ -90,10 +89,7 @@ class LineColormapDashed:
         **kwargs: Any,
     ) -> None:
 
-        self.axis_target: int | Axes = axis_target
-
-        self.axis_index: int = AxesResolver(axis_target).axis_index
-        self.axis: Axes = AxesResolver(axis_target).axis
+        self.ax: Axes = ax
 
         self._x: ArrayLike = x
         self._y: ArrayLike = y
@@ -143,11 +139,11 @@ class LineColormapDashed:
 
         Examples
         --------------------
-        >>> line = LineColormapDashed(axis_target=0, x=[0, 1, 2], y=[1, 2, 3], cmapdata=[0.1, 0.5, 1.0])
+        >>> line = LineColormapDashed(ax=ax, x=[0, 1, 2], y=[1, 2, 3], cmapdata=[0.1, 0.5, 1.0])
         >>> line.add_legend_colormap()
         """
         LegendColormap(
-            self.axis_index,
+            self.ax,
             self.cmap,
             self.label,
             num_stripes=len(self.cmapdata),
@@ -177,7 +173,7 @@ class LineColormapDashed:
 
         Examples
         --------------------
-        >>> line = LineColormapDashed(axis_target=0, x=[0, 1], y=[1, 2], cmapdata=[0.1, 0.2])
+        >>> line = LineColormapDashed(ax=ax, x=[0, 1], y=[1, 2], cmapdata=[0.1, 0.2])
         >>> line.verify_line_pattern()
         """
         if len(self.line_pattern) != 2:
@@ -209,7 +205,7 @@ class LineColormapDashed:
 
         Examples
         --------------------
-        >>> line = LineColormapDashed(axis_target=0, x=[0, 1, 2], y=[1, 2, 3], cmapdata=[0.1, 0.5, 1.0])
+        >>> line = LineColormapDashed(ax=ax, x=[0, 1, 2], y=[1, 2, 3], cmapdata=[0.1, 0.5, 1.0])
         >>> spans = line.get_data_span()
         >>> print(spans)
         array([2.0, 2.0])
@@ -239,14 +235,14 @@ class LineColormapDashed:
 
         Examples
         --------------------
-        >>> line = LineColormapDashed(axis_target=0, x=[0, 1, 2], y=[1, 2, 3], cmapdata=[0.1, 0.5, 1.0])
+        >>> line = LineColormapDashed(ax=ax, x=[0, 1, 2], y=[1, 2, 3], cmapdata=[0.1, 0.5, 1.0])
         >>> xscale, yscale = line.get_scales()
         >>> print(xscale, yscale)
         100.0 150.0  # Example output
         """
         canvas_width, canvas_height = self.fig.canvas.get_width_height()
         # get axis size
-        axis_width, axis_height = AxisLayout(self.axis_index).get_axis_size()
+        axis_width, axis_height = AxisLayout(self.ax).get_axis_size()
 
         xscale: float
         yscale: float
@@ -279,7 +275,7 @@ class LineColormapDashed:
 
         Examples
         --------------------
-        >>> line = LineColormapDashed(axis_target=0, x=[0, 1, 2], y=[1, 2, 3], cmapdata=[0.1, 0.5, 1.0])
+        >>> line = LineColormapDashed(ax=ax, x=[0, 1, 2], y=[1, 2, 3], cmapdata=[0.1, 0.5, 1.0])
         >>> x_interp, y_interp, cmap_interp = line.get_interpolated_data(100)
         """
 
@@ -320,7 +316,7 @@ class LineColormapDashed:
 
         Examples
         --------------------
-        >>> line = LineColormapDashed(axis_target=0, x=[0, 1, 2], y=[1, 2, 3], cmapdata=[0.1, 0.5, 1.0])
+        >>> line = LineColormapDashed(ax=ax, x=[0, 1, 2], y=[1, 2, 3], cmapdata=[0.1, 0.5, 1.0])
         >>> x_interp, y_interp, cmap_interp = line.get_interpolated_data(100)
         """
 
@@ -387,7 +383,7 @@ class LineColormapDashed:
         >>> x = [0, 1, 2, 3, 4]
         >>> y = [1, 3, 2, 5, 4]
         >>> cmapdata = [0.1, 0.3, 0.6, 0.9, 1.0]
-        >>> line = LineColormapDashed(axis_target=0, x=x, y=y, cmapdata=cmapdata)
+        >>> line = LineColormapDashed(ax=ax, x=x, y=y, cmapdata=cmapdata)
         >>> lc_list = line.plot()
         """
         current_length = 0
@@ -416,7 +412,7 @@ class LineColormapDashed:
                     lc.set_array(self.cmap_interpolated[idx_start : i + 1])
                     lc.set_linewidth(self.linewidth)
                     lc.set_linestyle("solid")
-                    self.axis.add_collection(lc)
+                    self.ax.add_collection(lc)
 
                     lc_list.append(lc)
 
@@ -445,7 +441,7 @@ class LineColormapDashed:
                 lc.set_linewidth(self.linewidth)
                 lc.set_linestyle("solid")
 
-                self.axis.add_collection(lc)
+                self.ax.add_collection(lc)
 
                 lc_list.append(lc)
 
@@ -454,7 +450,7 @@ class LineColormapDashed:
 
 @bind_passed_params()
 def line_colormap_dashed(
-    axis_target: int | Axes,
+    ax: Axes,
     x: ArrayLike,
     y: ArrayLike,
     cmapdata: ArrayLike,
@@ -474,8 +470,8 @@ def line_colormap_dashed(
 
     Parameters
     --------------------
-    axis_target : int or matplotlib.axes.Axes
-        The target axis where the line will be plotted. Can be an axis index or an `Axes` object.
+    ax : matplotlib.axes.Axes
+        The target axis where the line will be plotted.
     x : ArrayLike
         The x-coordinates of the line.
     y : ArrayLike
@@ -515,7 +511,7 @@ def line_colormap_dashed(
     >>> x = [0, 1, 2, 3]
     >>> y = [1, 2, 3, 4]
     >>> cmapdata = [0.1, 0.4, 0.6, 0.9]
-    >>> line_collections = gs.line_colormap_dashed(0, x, y, cmapdata, line_pattern=(5, 5))
+    >>> line_collections = gs.line_colormap_dashed(ax, x, y, cmapdata, line_pattern=(5, 5))
     """
     alias_map = {
         "lw": "linewidth",
@@ -526,7 +522,7 @@ def line_colormap_dashed(
     class_params = CreateClassParams(passed_params).get_class_params()
 
     _line_colormap_dashed: LineColormapDashed = LineColormapDashed(
-        class_params["axis_target"],
+        class_params["ax"],
         class_params["x"],
         class_params["y"],
         class_params["cmapdata"],

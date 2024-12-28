@@ -5,18 +5,18 @@ import gsplot as gs
 x = [1, 2, 3, 4, 5]
 y = [1, 4, 9, 16, 25]
 
-axes = gs.axes(store=True, size=[5, 5], unit="in", mosaic="AB;CD")
-gs.line(axis_target=0, x=x, y=y, label="Line 1")
-gs.line(axis_target=axes[1], x=x, y=y)
+axs = gs.axes(store=True, size=[5, 5], unit="in", mosaic="AB;CD")
+gs.line(axs[0], x=x, y=y, label="Line 1")
+gs.line(axs[1], x=x, y=y)
 
 # gsplot is compatible with matplotlib
 # Plot data by matplotlib plot
-axes[2].plot(x, y)
+axs[2].plot(x, y)
 
-plt.sca(axes[3])
+plt.sca(axs[3])
 plt.plot(x, y)
 
-gs.legend(0, loc="lower right")
+gs.legend(axs[0], loc="lower right")
 gs.label(
     [
         # add label without specifying limits

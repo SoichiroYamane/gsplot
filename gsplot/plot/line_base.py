@@ -26,14 +26,13 @@ class NumLines:
     Attributes
     --------------------
     num_lines : list[int]
-        A list where each index represents an axis, and the value is the number of lines
-        plotted on that axis.
+        The number of lines plotted on each axis.
 
     Methods
     --------------------
-    num_lines_axis(axis_index)
+    num_lines_axis(ax)
         Retrieves the number of lines plotted on a specific axis.
-    increment(axis_index)
+    increment(ax)
         Increments the line count for a specific axis.
     count(func)
         A decorator to increment the line count whenever a plotting function is called.
@@ -43,20 +42,8 @@ class NumLines:
     Examples
     --------------------
     >>> num_lines = NumLines()
-    >>> print(num_lines.num_lines_axis(0))
-    0  # No lines plotted yet
-
-    >>> num_lines.increment(0)  # Increment the count for axis 0
-    >>> print(num_lines.num_lines_axis(0))
-    1
-
-    >>> @NumLines.count
-    ... def plot_line(axis_index):
-    ...     print(f"Plotting on axis {axis_index}")
-    >>> plot_line(0)
-    Plotting on axis 0
-    >>> print(num_lines.num_lines_axis(0))
-    2
+    >>> print(num_lines.num_lines_axis(axs[0]))
+    0
     """
 
     _instance: NumLines | None = None
@@ -152,15 +139,12 @@ class NumLines:
         Examples
         --------------------
         >>> @NumLines.count
-        ... def plot_line(axis_index):
-        ...     print(f"Plotting on axis {axis_index}")
-        >>> plot_line(0)
+        >>> def plot():
+        >>>     print("Plotting")
         """
 
         def wrapper(self, *args: Any, **kwargs: Any) -> Any:
-            # TODO: Remove next line
-            ax = self.axis
-            cls().increment(ax)
+            cls().increment(self.ax)
             result = func(self, *args, **kwargs)
             return result
 
@@ -187,7 +171,7 @@ class NumLines:
 
 class AutoColor:
     """
-    A utility class for generating colors automatically based on the axis index and line count.
+    A utility class for generating colors automatically based on line count.
 
     This class uses a predefined colormap and cycles through colors based on the number of lines
     already plotted on the target axis. The default colormap is "viridis", and it is divided
@@ -195,8 +179,8 @@ class AutoColor:
 
     Parameters
     --------------------
-    axis_index : int
-        The index of the target axis in the current figure.
+    ax : matplotlib.axes.Axes
+        The target `Axes` object for which to generate colors
 
     Attributes
     --------------------
@@ -251,7 +235,7 @@ class AutoColor:
 
         Examples
         --------------------
-        >>> auto_color = AutoColor(axis_index=0)
+        >>> auto_color = AutoColor(ax)
         >>> color = auto_color.get_color()
         >>> print(color)
         array([0.267004, 0.004874, 0.329415, 1.0])  # Example RGBA color
