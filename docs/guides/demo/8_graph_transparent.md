@@ -18,6 +18,6 @@
 ```{image} ../../../demo/8_graph_transparent/graph_transparent.png
 :alt: graph_transparent
 :class: bg-secondary
-:width: 800px
+:width: 1000px
 :align: center
 ```

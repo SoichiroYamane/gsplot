@@ -2,20 +2,20 @@ import numpy as np
 
 import gsplot as gs
 
-# Create data
+axs = gs.axes(store=True, size=[10, 5], mosaic="AB")
+
 x = np.linspace(0, 10, 100)
 y = np.sin(x)
-z = np.cos(x)
+for i in range(5):
+    # Scatter plot
+    gs.scatter(axs[0], x, y + i, label=f"{i}th", s=5)
 
-
-axs = gs.axes(store=True, size=[5, 5], mosaic="A")
-
-# Scatter plot
-gs.scatter(axs[0], x, y, label="sin(x)", s=5)
+s = np.linspace(0, 10, 100)
+t = np.cos(s)
 # Scatter plot with colormap
-gs.scatter_colormap(axs[0], x, z, x, label="cos(x)", s=5)
+gs.scatter_colormap(axs[1], s, t, s, label="cos(x)", s=5)
 
-# Add legend to the first axis
-gs.legend(axs[0])
+# Add legends to the all axes
+gs.legend_axes()
 
 gs.show("scatter")

@@ -20,7 +20,6 @@ gs.line_colormap_dashed(
     axs[0], x, v, x[::-1,], label="cos(x)", lw=3, cmap="gnuplot", reverse=True
 )
 
-
 # Line plot with solid colormap
 gs.line_colormap_solid(axs[1], n, n, n, label="quantum solid", lw=10)
 # Line plot with dashed colormap
@@ -37,7 +36,6 @@ gs.line_colormap_dashed(
     ),
     cmap="gnuplot",
 )
-
 
 gs.legend(axs[0])
 gs.legend(axs[1], loc="upper left")
