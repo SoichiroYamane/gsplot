@@ -16,7 +16,7 @@ yosida_data_list = [
 ]
 
 # Create axes
-axes = gs.axes(store=True)
+axs = gs.axes(store=True)
 
 # Plot the data
 cm = gs.get_cmap(N=9)
@@ -33,9 +33,9 @@ labels = [
 ]
 labels_even = ["$A_{1g}$", "$B_{1g}$", "$E_{g}(1,i)$", "$E_{g}(1,0)$", "$E_{g}(1,1)$"]
 for i, (data, label) in enumerate(zip(gap_data_list, labels)):
-    gs.line(0, data[0], data[1], color=cm[i], label=label, ms=0, lw=2, ls="-")
+    gs.line(axs[0], data[0], data[1], color=cm[i], label=label, ms=0, lw=2, ls="-")
     gs.line(
-        1,
+        axs[1],
         # add trivial points to the data from normal states
         np.append(c_data_list[i][0], [1, 1.5]),
         np.append(c_data_list[i][1], [1, 1]),
@@ -48,11 +48,11 @@ for i, (data, label) in enumerate(zip(gap_data_list, labels)):
 
 for i, (data, label) in enumerate(zip(yosida_data_list, labels_even)):
     idx = symmetries.index(even_symmetries[i])
-    gs.line(2, data[0], data[1], color=cm[idx], label=label, ms=0, lw=2, ls="-")
+    gs.line(axs[2], data[0], data[1], color=cm[idx], label=label, ms=0, lw=2, ls="-")
 
 # Add Legend
-gs.legend(0)
-gs.legend(2, loc="lower right")
+gs.legend(axs[0])
+gs.legend(axs[2], loc="lower right")
 
 # Set square aspect ratio
 gs.graph_square_axes()

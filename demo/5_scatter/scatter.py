@@ -8,14 +8,14 @@ y = np.sin(x)
 z = np.cos(x)
 
 
-axes = gs.axes(store=True, size=[5, 5], mosaic="A")
+axs = gs.axes(store=True, size=[5, 5], mosaic="A")
 
 # Scatter plot
-gs.scatter(0, x, y, label="sin(x)", s=5)
+gs.scatter(axs[0], x, y, label="sin(x)", s=5)
 # Scatter plot with colormap
-gs.scatter_colormap(0, x, z, x, label="cos(x)", s=5)
+gs.scatter_colormap(axs[0], x, z, x, label="cos(x)", s=5)
 
 # Add legend to the first axis
-gs.legend(0)
+gs.legend(axs[0])
 
 gs.show("scatter")

@@ -7,7 +7,6 @@ from numpy.typing import ArrayLike, NDArray
 
 from ..base.base import CreateClassParams, ParamsGetter, bind_passed_params
 from ..base.base_alias_validator import AliasValidator
-from ..figure.axes_base import AxesResolver
 from ..figure.axes_range_base import AxesRangeSingleton
 from ..style.legend_colormap import LegendColormap
 
@@ -20,8 +19,8 @@ class ScatterColormap:
 
     Parameters
     --------------------
-    axis_target : int or matplotlib.axes.Axes
-        The target axis for the scatter plot. Can be an axis index or a Matplotlib `Axes` object.
+    ax : matplotlib.axes.Axes
+        The target axis for the scatter plot.
     x : ArrayLike
         The x-coordinates of the scatter points.
     y : ArrayLike
@@ -45,10 +44,6 @@ class ScatterColormap:
 
     Attributes
     --------------------
-    axis_index : int
-        The resolved index of the target axis.
-    axis : matplotlib.axes.Axes
-        The resolved target axis object.
     x : numpy.ndarray
         The x-coordinates as a NumPy array.
     y : numpy.ndarray
@@ -76,13 +71,13 @@ class ScatterColormap:
     >>> x = [1, 2, 3, 4]
     >>> y = [10, 20, 15, 25]
     >>> cmapdata = [0.1, 0.5, 0.3, 0.9]
-    >>> scatter = ScatterColormap(axis_target=0, x=x, y=y, cmapdata=cmapdata, cmap="plasma")
+    >>> scatter = ScatterColormap(ax=ax, x=x, y=y, cmapdata=cmapdata, cmap="plasma")
     >>> scatter.plot()
     """
 
     def __init__(
         self,
-        axis_target: int | Axes,
+        ax: Axes,
         x: ArrayLike,
         y: ArrayLike,
         cmapdata: ArrayLike,
@@ -94,11 +89,7 @@ class ScatterColormap:
         label: str | None = None,
         **kwargs: Any,
     ) -> None:
-        self.axis_target: int | Axes = axis_target
-
-        self.axis_index: int = AxesResolver(self.axis_target).axis_index
-        self.axis: Axes = AxesResolver(self.axis_target).axis
-
+        self.ax: Axes = ax
         self._x: ArrayLike = x
         self._y: ArrayLike = y
         self._cmapdata: ArrayLike = cmapdata
@@ -134,12 +125,12 @@ class ScatterColormap:
 
         Examples
         --------------------
-        >>> scatter = ScatterColormap(axis_target=0, x=[1, 2], y=[3, 4], cmapdata=[0.1, 0.9], label="Intensity")
+        >>> scatter = ScatterColormap(ax=ax, x=[1, 2], y=[3, 4], cmapdata=[0.1, 0.9], label="Intensity")
         >>> scatter.add_legend_colormap()
         """
         if self.label is not None:
             LegendColormap(
-                axis_target=self.axis_target,
+                ax=self.ax,
                 cmap=self.cmap,
                 label=self.label,
                 num_stripes=len(self.cmapdata),
@@ -158,7 +149,7 @@ class ScatterColormap:
 
         Examples
         --------------------
-        >>> scatter = ScatterColormap(axis_target=0, x=[1, 2], y=[3, 4], cmapdata=[0.1, 0.9])
+        >>> scatter = ScatterColormap(ax=ax, x=[1, 2], y=[3, 4], cmapdata=[0.1, 0.9])
         >>> scatter.get_cmap_norm()
         array([0. , 1.])
         """
@@ -189,11 +180,11 @@ class ScatterColormap:
 
         Examples
         --------------------
-        >>> scatter = ScatterColormap(axis_target=0, x=[1, 2, 3], y=[4, 5, 6], cmapdata=[0.2, 0.5, 0.8])
+        >>> scatter = ScatterColormap(ax=ax, x=[1, 2, 3], y=[4, 5, 6], cmapdata=[0.2, 0.5, 0.8])
         >>> scatter.plot()
         <matplotlib.collections.PathCollection>
         """
-        _plot = self.axis.scatter(
+        _plot = self.ax.scatter(
             x=self.x,
             y=self.y,
             s=self.size,
@@ -209,7 +200,7 @@ class ScatterColormap:
 
 @bind_passed_params()
 def scatter_colormap(
-    axis_target: int | Axes,
+    ax: Axes,
     x: ArrayLike,
     y: ArrayLike,
     cmapdata: ArrayLike,
@@ -229,8 +220,8 @@ def scatter_colormap(
 
     Parameters
     --------------------
-    axis_target : int or matplotlib.axes.Axes
-        The target axis for the scatter plot. Can be an axis index or a Matplotlib `Axes` object.
+    ax : matplotlib.axes.Axes
+        The target axis for the scatter plot.
     x : ArrayLike
         The x-coordinates of the scatter points.
     y : ArrayLike
@@ -270,7 +261,7 @@ def scatter_colormap(
     >>> x = [1, 2, 3, 4]
     >>> y = [10, 20, 15, 25]
     >>> cmapdata = [0.1, 0.5, 0.3, 0.9]
-    >>> gs.scatter_colormap(axis_target=0, x=x, y=y, cmapdata=cmapdata, cmap="plasma", label="Data")
+    >>> gs.scatter_colormap(ax=ax, x=x, y=y, cmapdata=cmapdata, cmap="plasma", label="Data")
     <matplotlib.collections.PathCollection>
     """
     alias_map = {
@@ -282,7 +273,7 @@ def scatter_colormap(
     class_params: dict[str, Any] = CreateClassParams(passed_params).get_class_params()
 
     _scatter_colormap = ScatterColormap(
-        class_params["axis_target"],
+        class_params["ax"],
         class_params["x"],
         class_params["y"],
         class_params["cmapdata"],

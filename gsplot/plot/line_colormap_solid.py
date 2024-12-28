@@ -8,7 +8,6 @@ from numpy.typing import ArrayLike, NDArray
 
 from ..base.base import CreateClassParams, ParamsGetter, bind_passed_params
 from ..base.base_alias_validator import AliasValidator
-from ..figure.axes_base import AxesResolver, AxisLayout
 from ..figure.axes_range_base import AxesRangeSingleton
 from ..style.legend_colormap import LegendColormap
 from .line_colormap_base import LineColormapBase
@@ -26,8 +25,8 @@ class LineColormapSolid:
 
     Parameters
     --------------------
-    axis_target : int or matplotlib.axes.Axes
-        The target axis for plotting. Can be an axis index or a Matplotlib `Axes` object.
+    ax : matplotlib.axes.Axes
+        The target axis for plotting.
     x : ArrayLike
         The x-coordinates of the line.
     y : ArrayLike
@@ -47,10 +46,6 @@ class LineColormapSolid:
 
     Attributes
     --------------------
-    axis_index : int
-        The resolved index of the target axis.
-    axis : matplotlib.axes.Axes
-        The resolved target axis object.
     x : numpy.ndarray
         The x-coordinates as a NumPy array.
     y : numpy.ndarray
@@ -72,13 +67,13 @@ class LineColormapSolid:
     >>> x = [0, 1, 2, 3, 4]
     >>> y = [1, 3, 2, 5, 4]
     >>> cmapdata = [0.1, 0.3, 0.6, 0.9, 1.0]
-    >>> line = LineColormapSolid(axis_target=0, x=x, y=y, cmapdata=cmapdata, cmap="plasma")
+    >>> line = LineColormapSolid(ax=ax, x=x, y=y, cmapdata=cmapdata, cmap="plasma")
     >>> line.plot()
     """
 
     def __init__(
         self,
-        axis_target: int | Axes,
+        ax: Axes,
         x: ArrayLike,
         y: ArrayLike,
         cmapdata: ArrayLike,
@@ -88,11 +83,7 @@ class LineColormapSolid:
         interpolation_points: int | None = None,
         **kwargs: Any,
     ) -> None:
-        self.axis_target: int | Axes = axis_target
-
-        self.axis_index: int = AxesResolver(axis_target).axis_index
-        self.axis: Axes = AxesResolver(axis_target).axis
-
+        self.ax: Axes = ax
         self._x: ArrayLike = x
         self._y: ArrayLike = y
         self._cmapdata: ArrayLike = cmapdata
@@ -126,7 +117,7 @@ class LineColormapSolid:
         NUM_STRIPES -= 1
 
         LegendColormap(
-            self.axis_index,
+            self.ax,
             self.cmap,
             self.label,
             NUM_STRIPES,
@@ -198,14 +189,14 @@ class LineColormapSolid:
         lc.set_array(self.cmapdata)
         lc.set_linewidth(self.linewidth)
         lc.set_capstyle("projecting")
-        self.axis.add_collection(lc)
+        self.ax.add_collection(lc)
 
         return [lc]
 
 
 @bind_passed_params()
 def line_colormap_solid(
-    axis_target: int | Axes,
+    ax: Axes,
     x: ArrayLike,
     y: ArrayLike,
     cmapdata: ArrayLike,
@@ -224,8 +215,8 @@ def line_colormap_solid(
 
     Parameters
     --------------------
-    axis_target : int or matplotlib.axes.Axes
-        The target axis for plotting. Can be an axis index or a Matplotlib `Axes` object.
+    ax : matplotlib.axes.Axes
+        The target axis for plotting.
     x : ArrayLike
         The x-coordinates of the line.
     y : ArrayLike
@@ -262,7 +253,7 @@ def line_colormap_solid(
     >>> x = [0, 1, 2, 3, 4]
     >>> y = [1, 3, 2, 5, 4]
     >>> cmapdata = [0.1, 0.3, 0.6, 0.9, 1.0]
-    >>> lc_list = gs.line_colormap_solid(axis_target=0, x=x, y=y, cmapdata=cmapdata, cmap="plasma")
+    >>> lc_list = gs.line_colormap_solid(ax=ax, x=x, y=y, cmapdata=cmapdata, cmap="plasma")
     >>> print(len(lc_list))
     1
     """
@@ -276,7 +267,7 @@ def line_colormap_solid(
     class_params = CreateClassParams(passed_params).get_class_params()
 
     _line_colormap_solid: LineColormapSolid = LineColormapSolid(
-        class_params["axis_target"],
+        class_params["ax"],
         class_params["x"],
         class_params["y"],
         class_params["cmapdata"],

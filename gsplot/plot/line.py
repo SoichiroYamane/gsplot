@@ -11,7 +11,6 @@ from numpy.typing import ArrayLike, NDArray
 
 from ..base.base import CreateClassParams, ParamsGetter, bind_passed_params
 from ..base.base_alias_validator import AliasValidator
-from ..figure.axes_base import AxesResolver
 from ..figure.axes_range_base import AxesRangeSingleton
 from .line_base import AutoColor, NumLines
 
@@ -26,8 +25,8 @@ class Line:
 
     Parameters
     --------------------
-    axis_target : int or matplotlib.axes.Axes
-        The target axis, specified either as an index or an `Axes` object.
+    ax : matplotlib.axes.Axes
+        The target axis where the line should be plotted.
     x : ArrayLike
         The x-coordinates of the data points.
     y : ArrayLike
@@ -72,7 +71,7 @@ class Line:
 
     def __init__(
         self,
-        axis_target: int | Axes,
+        ax: Axes,
         x: ArrayLike,
         y: ArrayLike,
         color: ColorType | None = None,
@@ -90,7 +89,7 @@ class Line:
         **kwargs: Any,
     ) -> None:
 
-        self.axis_target: int | Axes = axis_target
+        self.ax: Axes = ax
 
         self._x: ArrayLike = x
         self._y: ArrayLike = y
@@ -113,17 +112,12 @@ class Line:
         self.x: NDArray[Any] = np.array(self._x)
         self.y: NDArray[Any] = np.array(self._y)
 
-        self.axis_index: int = AxesResolver(axis_target).axis_index
-        self.axis: Axes = AxesResolver(axis_target).axis
-
         self._set_colors()
 
     def _set_colors(self) -> None:
         """
         Sets the colors for the line, marker edge, and marker face.
         """
-        # TODO: Remove next line
-        self.ax = self.axis
         cycle_color: NDArray[Any] | str = AutoColor(self.ax).get_color()
         if isinstance(cycle_color, np.ndarray):
             cycle_color = colors.to_hex(
@@ -189,7 +183,7 @@ class Line:
         >>> line = Line(axis_target=0, x=[0, 1, 2], y=[2, 4, 6], color="blue")
         >>> line.plot()
         """
-        _plot = self.axis.plot(
+        _plot = self.ax.plot(
             self.x,
             self.y,
             color=self._color,
@@ -209,7 +203,7 @@ class Line:
 
 @bind_passed_params()
 def line(
-    axis_target: int | Axes,
+    ax: Axes,
     x: ArrayLike,
     y: ArrayLike,
     color: ColorType | None = None,
@@ -234,8 +228,8 @@ def line(
 
     Parameters
     --------------------
-    axis_target : int or matplotlib.axes.Axes
-        The target axis where the line should be plotted. Can be an axis index or an `Axes` object.
+    ax : matplotlib.axes.Axes
+        The target axis where the line should be plotted.
     x : ArrayLike
         The x-coordinates of the line data.
     y : ArrayLike
@@ -290,7 +284,7 @@ def line(
     >>> import gsplot as gs
     >>> x = [0, 1, 2, 3]
     >>> y = [1, 2, 3, 4]
-    >>> line_plot = gs.line(0, x, y, color="blue", linestyle="-")
+    >>> line_plot = gs.line(ax, x, y, color="blue", linestyle="-")
     >>> print(line_plot)
     [<matplotlib.lines.Line2D object at 0x...>]
     """
@@ -310,7 +304,7 @@ def line(
     class_params: dict[str, Any] = CreateClassParams(passed_params).get_class_params()
 
     _line = Line(
-        class_params["axis_target"],
+        class_params["ax"],
         class_params["x"],
         class_params["y"],
         class_params["color"],

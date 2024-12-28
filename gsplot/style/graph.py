@@ -3,8 +3,6 @@ from matplotlib import rcParams
 from matplotlib.axes import Axes
 from matplotlib.figure import Figure
 
-from ..figure.axes_base import AxesResolver
-
 __all__: list[str] = [
     "graph_square",
     "graph_square_axes",
@@ -30,7 +28,7 @@ class GraphSquare:
 
     Methods
     --------------------
-    set_square(axis_target: int | matplotlib.axes.Axes) -> None
+    set_square(ax: matplotlib.axes.Axes) -> None
         Sets the aspect ratio of the specified axis to square.
     set_square_axes() -> None
         Sets the aspect ratio of all axes in the current figure to square.
@@ -38,21 +36,21 @@ class GraphSquare:
     Examples
     --------------------
     >>> gs = GraphSquare()
-    >>> gs.set_square(0)  # Set the first axis to square aspect ratio
+    >>> gs.set_square(ax)  # Set the first axis to square aspect ratio
     >>> gs.set_square_axes()  # Set all axes to square aspect ratio
     """
 
     def __init__(self) -> None:
         self._axes: list[Axes] = plt.gcf().axes
 
-    def set_square(self, axis_target: int | Axes) -> None:
+    def set_square(self, ax: Axes) -> None:
         """
         Sets the aspect ratio of the specified axis to square.
 
         Parameters
         --------------------
-        axis_target : int or matplotlib.axes.Axes
-            The target axis to adjust. Can be an axis index or a Matplotlib `Axes` object.
+        ax : matplotlib.axes.Axes
+            The target axis to adjust.
 
         Returns
         --------------------
@@ -66,11 +64,10 @@ class GraphSquare:
         Examples
         --------------------
         >>> gs = GraphSquare()
-        >>> gs.set_square(0)  # Set the first axis to square aspect ratio
+        >>> gs.set_square(axs[0])  # Set the first axis to square aspect ratio
         """
 
-        axis: Axes = AxesResolver(axis_target).axis
-        axis.set_box_aspect(1)
+        ax.set_box_aspect(1)
 
     def set_square_axes(self) -> None:
         """
@@ -92,7 +89,7 @@ class GraphSquare:
             axis.set_box_aspect(1)
 
 
-def graph_square(axis_target: int | Axes) -> None:
+def graph_square(ax: Axes) -> None:
     """
     Sets the aspect ratio of a specified axis to square.
 
@@ -100,8 +97,8 @@ def graph_square(axis_target: int | Axes) -> None:
 
     Parameters
     --------------------
-    axis_target : int or matplotlib.axes.Axes
-        The target axis to adjust. Can be an axis index or a Matplotlib `Axes` object.
+    ax : matplotlib.axes.Axes
+        The target axis to adjust.
 
     Returns
     --------------------
@@ -110,9 +107,9 @@ def graph_square(axis_target: int | Axes) -> None:
     Examples
     --------------------
     >>> import gsplot as gs
-    >>> gs.graph_square(0)  # Set the first axis to square aspect ratio
+    >>> gs.graph_square(axs[0])  # Set the first axis to square aspect ratio
     """
-    GraphSquare().set_square(axis_target)
+    GraphSquare().set_square(ax)
 
 
 def graph_square_axes() -> None:
@@ -148,7 +145,7 @@ class GraphWhite:
 
     Methods
     --------------------
-    set_white(axis_target: int | matplotlib.axes.Axes) -> None
+    set_white(axt: matplotlib.axes.Axes) -> None
         Sets the text, spines, and ticks of the specified axis to white.
     set_white_axes() -> None
         Applies the white color scheme to all axes in the current figure.
@@ -156,14 +153,14 @@ class GraphWhite:
     Examples
     --------------------
     >>> gw = GraphWhite()
-    >>> gw.set_white(0)  # Apply white color scheme to the first axis
+    >>> gw.set_white(axs[0])  # Apply white color scheme to the first axis
     >>> gw.set_white_axes()  # Apply white color scheme to all axes
     """
 
     def __init__(self) -> None:
         self._axes: list[Axes] = plt.gcf().axes
 
-    def set_white(self, axis_target: int | Axes) -> None:
+    def set_white(self, ax: Axes) -> None:
         """
         Sets the text, spines, and ticks of the specified axis to white.
 
@@ -172,8 +169,8 @@ class GraphWhite:
 
         Parameters
         --------------------
-        axis_target : int or matplotlib.axes.Axes
-            The target axis to modify. Can be an axis index or a Matplotlib `Axes` object.
+        ax : matplotlib.axes.Axes
+            The target axis to modify.
 
         Returns
         --------------------
@@ -187,21 +184,20 @@ class GraphWhite:
         Examples
         --------------------
         >>> gw = GraphWhite()
-        >>> gw.set_white(0)  # Apply white color scheme to the first axis
+        >>> gw.set_white(axs[0])  # Apply white color scheme to the first axis
         """
-        axis: Axes = AxesResolver(axis_target).axis
 
-        axis.xaxis.label.set_color("w")
-        axis.yaxis.label.set_color("w")
-        axis.title.set_color("w")
+        ax.xaxis.label.set_color("w")
+        ax.yaxis.label.set_color("w")
+        ax.title.set_color("w")
 
-        for spine in axis.spines.values():
+        for spine in ax.spines.values():
             spine.set_edgecolor("w")
 
-        axis.tick_params(axis="x", which="both", colors="w")
-        axis.tick_params(axis="y", which="both", colors="w")
+        ax.tick_params(axis="x", which="both", colors="w")
+        ax.tick_params(axis="y", which="both", colors="w")
 
-        axis.patch.set_alpha(0)
+        ax.patch.set_alpha(0)
 
     def set_white_axes(self) -> None:
         """
@@ -226,11 +222,11 @@ class GraphWhite:
         """
 
         rcParams["text.color"] = "w"
-        for axis_index in range(len(self._axes)):
-            self.set_white(axis_index)
+        for ax in self._axes:
+            self.set_white(ax)
 
 
-def graph_white(axis_target: int | Axes) -> None:
+def graph_white(ax: Axes) -> None:
     """
     Applies the white color scheme to a specified axis.
 
@@ -248,9 +244,9 @@ def graph_white(axis_target: int | Axes) -> None:
     Examples
     --------------------
     >>> import gsplot as gs
-    >>> gs.graph_white(0)  # Apply white color scheme to the first axis
+    >>> gs.graph_white(axs[0])  # Apply white color scheme to the first axis
     """
-    GraphWhite().set_white(axis_target)
+    GraphWhite().set_white(ax)
 
 
 def graph_white_axes() -> None:
@@ -286,7 +282,7 @@ class GraphTransparent:
 
     Methods
     --------------------
-    set_transparent(axis_target: int | matplotlib.axes.Axes) -> None
+    set_transparent(ax: matplotlib.axes.Axes) -> None
         Sets a specified axis to be transparent.
     set_transparent_axes() -> None
         Sets all axes in the current figure to be transparent.
@@ -294,7 +290,7 @@ class GraphTransparent:
     Examples
     --------------------
     >>> gt = GraphTransparent()
-    >>> gt.set_transparent(0)  # Set the first axis to be transparent
+    >>> gt.set_transparent(axs[0])  # Set the first axis to be transparent
     >>> gt.set_transparent_axes()  # Set all axes to be transparent
     """
 
@@ -309,14 +305,14 @@ class GraphTransparent:
             }
         )
 
-    def set_transparent(self, axis_target: int | Axes) -> None:
+    def set_transparent(self, ax: Axes) -> None:
         """
         Sets a specified axis to be transparent.
 
         Parameters
         --------------------
-        axis_target : int or matplotlib.axes.Axes
-            The target axis to modify. Can be an axis index or a Matplotlib `Axes` object.
+        ax : matplotlib.axes.Axes
+            The target axis to modify.
 
         Returns
         --------------------
@@ -330,11 +326,10 @@ class GraphTransparent:
         Examples
         --------------------
         >>> gt = GraphTransparent()
-        >>> gt.set_transparent(0)  # Make the first axis transparent
+        >>> gt.set_transparent(axs[0])  # Make the first axis transparent
         """
 
-        axis: Axes = AxesResolver(axis_target).axis
-        axis.patch.set_alpha(0)
+        ax.patch.set_alpha(0)
 
     def set_transparent_axes(self) -> None:
         """
@@ -352,11 +347,11 @@ class GraphTransparent:
         >>> gt = GraphTransparent()
         >>> gt.set_transparent_axes()  # Make all axes transparent
         """
-        for axis in self._axes:
-            self.set_transparent(axis)
+        for ax in self._axes:
+            self.set_transparent(ax)
 
 
-def graph_transparent(axis_target: int | Axes) -> None:
+def graph_transparent(ax: Axes) -> None:
     """
     Sets a specified axis to be transparent.
 
@@ -364,8 +359,8 @@ def graph_transparent(axis_target: int | Axes) -> None:
 
     Parameters
     --------------------
-    axis_target : int or matplotlib.axes.Axes
-        The target axis to modify. Can be an axis index or a Matplotlib `Axes` object.
+    ax : matplotlib.axes.Axes
+        The target axis to modify.
 
     Returns
     --------------------
@@ -374,9 +369,9 @@ def graph_transparent(axis_target: int | Axes) -> None:
     Examples
     --------------------
     >>> import gsplot as gs
-    >>> gs.graph_transparent(0)  # Make the first axis transparent
+    >>> gs.graph_transparent(axs[0])  # Make the first axis transparent
     """
-    GraphTransparent().set_transparent(axis_target)
+    GraphTransparent().set_transparent(ax)
 
 
 def graph_transparent_axes() -> None:

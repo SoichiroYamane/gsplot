@@ -1,8 +1,6 @@
 from typing import Any
 
-import matplotlib.pyplot as plt
 import numpy as np
-from matplotlib.artist import Artist
 from matplotlib.axes import Axes
 from matplotlib.legend import Legend as Lg
 from matplotlib.legend_handler import HandlerBase
@@ -10,9 +8,6 @@ from matplotlib.patches import Rectangle
 
 from ..base.base import CreateClassParams, ParamsGetter, bind_passed_params
 from ..color.colormap import Colormap
-from ..figure.axes_base import AxesResolver
-from ..plot.line import Line
-from .legend import Legend
 
 __all__: list[str] = ["legend_colormap"]
 
@@ -127,8 +122,8 @@ class LegendColormap:
 
     Parameters
     --------------------
-    axis_target : int | Axes
-        The target axis for the colormap legend.
+    ax : Axes
+        The target axis for the legend.
     cmap : str, default="viridis"
         The colormap to use.
     label : str | None, default=None
@@ -152,13 +147,13 @@ class LegendColormap:
     >>> x = np.linspace(0, 10, 100)
     >>> y = np.sin(x)
     >>> ax.plot(x, y, label="Data")
-    >>> LegendColormap(0, cmap="plasma", label="Colormap Legend").legend_colormap()
+    >>> LegendColormap(ax, cmap="plasma", label="Colormap Legend").legend_colormap()
     >>> plt.show()
     """
 
     def __init__(
         self,
-        axis_target: int | Axes,
+        ax: Axes,
         cmap: str = "viridis",
         label: str | None = None,
         num_stripes: int = 8,
@@ -167,7 +162,7 @@ class LegendColormap:
         reverse: bool = False,
         **kwargs: Any,
     ):
-        self.axis_target: int | Axes = axis_target
+        self.ax: Axes = ax
         self.cmap: str = cmap
         self.label: str | None = label
         self.num_stripes: int = num_stripes
@@ -175,10 +170,6 @@ class LegendColormap:
         self.vmax: int | float = vmax
         self.reverse: bool = reverse
         self.kwargs: Any = kwargs
-
-        _axes_resolver = AxesResolver(axis_target)
-        self.axis_index: int = _axes_resolver.axis_index
-        self.axis: Axes = _axes_resolver.axis
 
         MAX_NUM_STRIPES = 256
         if self.num_stripes > MAX_NUM_STRIPES:
@@ -278,9 +269,9 @@ class LegendColormap:
             Rectangle, self.handler_colormap
         )
         cmap_dummy_handle = UniqueClass((0, 0), 0, 0, label=self.label, visible=False)
-        self.axis.add_patch(cmap_dummy_handle)
+        self.ax.add_patch(cmap_dummy_handle)
         Lg.update_default_handler_map({cmap_dummy_handle: self.handler_colormap})
-        self.axis.legend(handles=[cmap_dummy_handle], labels=[self.label])
+        self.ax.legend(handles=[cmap_dummy_handle], labels=[self.label])
 
     def legend_colormap(self) -> Lg:
         """
@@ -304,12 +295,12 @@ class LegendColormap:
         >>> plt.show()
         """
         self.axis_patch()
-        return self.axis.legend()
+        return self.ax.legend()
 
 
 @bind_passed_params()
 def legend_colormap(
-    axis_target: int | Axes,
+    ax: Axes,
     cmap: str = "viridis",
     label: str | None = None,
     num_stripes: int = 8,
@@ -323,8 +314,8 @@ def legend_colormap(
 
     Parameters
     --------------------
-    axis_target : int | Axes
-        The target axis for the legend. Can be an axis index or an `Axes` object.
+    ax : Axes
+        The target axis for the legend.
     cmap : str, optional
         The colormap to use for the legend (default is 'viridis').
     label : str | None, optional
@@ -354,7 +345,7 @@ def legend_colormap(
     --------------------
     >>> import gsplot as gs
     >>> gs.legend_colormap(
-    ...     axis_target=0,
+    ...     ax=ax,
     ...     cmap="plasma",
     ...     label="Example Legend",
     ...     num_stripes=10,
@@ -368,7 +359,7 @@ def legend_colormap(
     class_params = CreateClassParams(passed_params).get_class_params()
 
     _legend_colormap = LegendColormap(
-        class_params["axis_target"],
+        class_params["ax"],
         class_params["cmap"],
         class_params["label"],
         class_params["num_stripes"],

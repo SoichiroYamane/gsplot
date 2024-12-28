@@ -7,7 +7,6 @@ from matplotlib.legend import Legend as Lg
 from matplotlib.legend_handler import HandlerBase
 
 from ..base.base import CreateClassParams, ParamsGetter, bind_passed_params
-from ..figure.axes_base import AxesResolver
 
 __all__: list[str] = [
     "legend",
@@ -27,8 +26,8 @@ class Legend:
 
     Parameters
     --------------------
-    axis_target : int | Axes
-        The target axis for the legend. Can be an axis index or an `Axes` object.
+    ax : Axes
+        The target axis for the legend.
     handles : list[Any], optional
         A list of handles for the legend.
     labels : list[str], optional
@@ -42,18 +41,12 @@ class Legend:
 
     Attributes
     --------------------
-    axis_target : int | Axes
-        The target axis for the legend.
     handles : list[Any] | None
         The legend handles.
     labels : list[str] | None
         The legend labels.
     handlers : dict | None
         The custom legend handlers.
-    axis_index : int
-        The resolved index of the target axis.
-    axis : matplotlib.axes.Axes
-        The resolved `Axes` object for the target axis.
 
     Methods
     --------------------
@@ -69,23 +62,19 @@ class Legend:
 
     def __init__(
         self,
-        axis_target: int | Axes,
+        ax: Axes,
         handles: list[Any] | None = None,
         labels: list[str] | None = None,
         handlers: dict | None = None,
         *args: Any,
         **kwargs: Any
     ):
-        self.axis_target: int | Axes = axis_target
+        self.ax: Axes = ax
         self.handles: list[Any] | None = handles
         self.labels: list[str] | None = labels
         self.handlers: dict | None = handlers
         self.args: Any = args
         self.kwargs: Any = kwargs
-
-        _axes_resolver = AxesResolver(axis_target)
-        self.axis_index: int = _axes_resolver.axis_index
-        self.axis: Axes = _axes_resolver.axis
 
     def get_legend_handlers(
         self,
@@ -101,16 +90,9 @@ class Legend:
             - handlers: A dictionary mapping handles to their legend handlers.
         """
 
-        handles, labels = self.axis.get_legend_handles_labels()
+        handles, labels = self.ax.get_legend_handles_labels()
 
-        # handler_map = Lg(
-        #     parent=self.axis, handles=[], labels=[]
-        # ).get_legend_handler_map()
-        # handlers = dict(zip(handles, [handler_map[type(handle)] for handle in handles]))
-
-        handler_map = Lg(
-            parent=self.axis, handles=[], labels=[]
-        ).get_legend_handler_map()
+        handler_map = Lg(parent=self.ax, handles=[], labels=[]).get_legend_handler_map()
 
         handlers = {}
         for handle in handles:
@@ -132,7 +114,7 @@ class Legend:
         matplotlib.legend.Legend
             The created legend object.
         """
-        _lg = self.axis.legend(*self.args, **self.kwargs)
+        _lg = self.ax.legend(*self.args, **self.kwargs)
 
         return _lg
 
@@ -145,7 +127,7 @@ class Legend:
         matplotlib.legend.Legend
             The created legend object with the provided custom handlers.
         """
-        _lg = self.axis.legend(
+        _lg = self.ax.legend(
             handles=self.handles,
             labels=self.labels,
             handler_map=self.handlers,
@@ -166,7 +148,7 @@ class Legend:
         """
 
         handles, labels, handlers = self.get_legend_handlers()
-        _lg = self.axis.legend(
+        _lg = self.ax.legend(
             handles=handles[::-1],
             labels=labels[::-1],
             handler_map=handlers,
@@ -221,14 +203,14 @@ class LegendAxes:
 
 
 @bind_passed_params()
-def legend(axis_target: int | Axes, *args: Any, **kwargs: Any) -> Lg:
+def legend(ax: Axes, *args: Any, **kwargs: Any) -> Lg:
     """
     Adds a legend to the specified axis.
 
     Parameters
     --------------------
-    axis_target : int | Axes
-        The target axis for the legend. Can be an axis index or an `Axes` object.
+    ax : matplotlib.axes.Axes
+        The target axis for the legend.
     *args : Any
         Additional positional arguments for the legend.
     **kwargs : Any
@@ -253,14 +235,14 @@ def legend(axis_target: int | Axes, *args: Any, **kwargs: Any) -> Lg:
     >>> x = np.linspace(0, 10, 100)
     >>> plt.plot(x, np.sin(x), label="Sine")
     >>> plt.plot(x, np.cos(x), label="Cosine")
-    >>> gs.legend(0)  # Adds legend to the first axis
+    >>> gs.legend(plt.gcf()[0])  # Adds legend to the first axis
     >>> plt.show()
     """
     passed_params: dict[str, Any] = ParamsGetter("passed_params").get_bound_params()
     class_params = CreateClassParams(passed_params).get_class_params()
 
     _legend = Legend(
-        class_params["axis_target"],
+        class_params["ax"],
         *class_params["args"],
         **class_params["kwargs"],
     )
@@ -312,7 +294,7 @@ def legend_axes(*args: Any, **kwargs: Any) -> list[Lg]:
 
 @bind_passed_params()
 def legend_handlers(
-    axis_target: int | Axes,
+    ax: Axes,
     handles: list[Any] | None = None,
     labels: list[str] | None = None,
     handlers: dict | None = None,
@@ -324,7 +306,7 @@ def legend_handlers(
 
     Parameters
     --------------------
-    axis_target : int | Axes
+    ax : Axes
         The target axis for the legend. Can be an axis index or an `Axes` object.
     handles : list[Any], optional
         A list of custom handles for the legend.
@@ -356,14 +338,14 @@ def legend_handlers(
     >>> fig, ax = plt.subplots()
     >>> ax.plot([0, 1], [0, 1], label="Line A")
     >>> custom_handle = [Line2D([0], [0], color="r", lw=2)]
-    >>> gs.legend_handlers(0, handles=custom_handle, labels=["Custom Line"])
+    >>> gs.legend_handlers(ax, handles=custom_handle, labels=["Custom Line"])
     >>> plt.show()
     """
     passed_params: dict[str, Any] = ParamsGetter("passed_params").get_bound_params()
     class_params = CreateClassParams(passed_params).get_class_params()
 
     _legend = Legend(
-        class_params["axis_target"],
+        class_params["ax"],
         class_params["handles"],
         class_params["labels"],
         class_params["handlers"],
@@ -375,7 +357,7 @@ def legend_handlers(
 
 @bind_passed_params()
 def legend_reverse(
-    axis_target: int | Axes,
+    ax: Axes,
     handles: list[Any] | None = None,
     labels: list[str] | None = None,
     handlers: dict | None = None,
@@ -387,7 +369,7 @@ def legend_reverse(
 
     Parameters
     --------------------
-    axis_target : int | Axes
+    ax : Axes
         The target axis for the legend. Can be an axis index or an `Axes` object.
     handles : list[Any], optional
         A list of custom handles for the legend.
@@ -419,14 +401,14 @@ def legend_reverse(
     >>> y2 = [6, 5, 4]
     >>> plt.plot(x, y1, label="Line 1")
     >>> plt.plot(x, y2, label="Line 2")
-    >>> legend_reverse(0)  # Reverses the legend order
+    >>> legend_reverse(plt.gca()[0])  # Reverses the legend order
     >>> plt.show()
     """
     passed_params: dict[str, Any] = ParamsGetter("passed_params").get_bound_params()
     class_params = CreateClassParams(passed_params).get_class_params()
 
     _legend = Legend(
-        class_params["axis_target"],
+        class_params["ax"],
         class_params["handles"],
         class_params["labels"],
         class_params["handlers"],
@@ -437,14 +419,14 @@ def legend_reverse(
 
 
 def legend_get_handlers(
-    axis_target: int | Axes,
+    ax: Axes,
 ) -> tuple:
     """
     Retrieves the legend handles, labels, and associated handlers for the specified axis.
 
     Parameters
     --------------------
-    axis_target : int | Axes
+    ax : Axes
         The target axis for retrieving the legend handlers. Can be an axis index or an `Axes` object.
 
     Returns
@@ -461,9 +443,9 @@ def legend_get_handlers(
     >>> fig, ax = plt.subplots()
     >>> ax.plot([0, 1], [0, 1], label="Line A")
     >>> ax.plot([1, 0], [0, 1], label="Line B")
-    >>> handles, labels, handlers = gs.legend_get_handlers(0)
+    >>> handles, labels, handlers = gs.legend_get_handlers(ax)
     >>> print("Handles:", handles)
     >>> print("Labels:", labels)
     >>> print("Handlers:", handlers)
     """
-    return Legend(axis_target).get_legend_handlers()
+    return Legend(ax).get_legend_handlers()

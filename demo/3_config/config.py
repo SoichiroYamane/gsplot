@@ -23,6 +23,6 @@ print("\naxes_config:", axes_config)
 # 1. Direct arguments to the function
 # 2. Configuration file
 # 3. Default values
-axes = gs.axes(store=True, size=[5, 5], mosaic="A")
+axs = gs.axes(store=True, size=[5, 5], mosaic="A")
 
 gs.show("config")

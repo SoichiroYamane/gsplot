@@ -8,8 +8,6 @@ import numpy as np
 from matplotlib.axes import Axes
 from numpy.typing import NDArray
 
-from .axes_base import AxesResolver
-
 F = TypeVar("F", bound=Callable[..., Any])
 
 
@@ -279,8 +277,7 @@ class AxesRangeSingleton:
         """
 
         def wrapper(self, *args: Any, **kwargs: Any) -> Any:
-            # TODO: remove next line
-            ax: Axes = self.axis
+            ax = self.ax
             x: NDArray[Any] = self.x
             y: NDArray[Any] = self.y
 

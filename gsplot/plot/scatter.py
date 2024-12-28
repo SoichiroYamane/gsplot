@@ -9,7 +9,6 @@ from numpy.typing import ArrayLike, NDArray
 
 from ..base.base import CreateClassParams, ParamsGetter, bind_passed_params
 from ..base.base_alias_validator import AliasValidator
-from ..figure.axes_base import AxesResolver
 from ..figure.axes_range_base import AxesRangeSingleton
 from .line_base import AutoColor, NumLines
 
@@ -22,8 +21,8 @@ class Scatter:
 
     Parameters
     --------------------
-    axis_target : int or matplotlib.axes.Axes
-        The target axis for the scatter plot. Can be an axis index or a Matplotlib `Axes` object.
+    ax : matplotlib.axes.Axes
+        The target axis for the scatter
     x : ArrayLike
         The x-coordinates of the scatter points.
     y : ArrayLike
@@ -39,10 +38,6 @@ class Scatter:
 
     Attributes
     --------------------
-    axis_index : int
-        The resolved index of the target axis.
-    axis : matplotlib.axes.Axes
-        The resolved target axis object.
     x : numpy.ndarray
         The x-coordinates as a NumPy array.
     y : numpy.ndarray
@@ -59,13 +54,13 @@ class Scatter:
     --------------------
     >>> x = [1, 2, 3, 4]
     >>> y = [10, 20, 15, 25]
-    >>> scatter = Scatter(axis_target=0, x=x, y=y, color="blue", size=10, alpha=0.5)
+    >>> scatter = Scatter(ax=ax, x=x, y=y, color="blue", size=10, alpha=0.5)
     >>> scatter.plot()
     """
 
     def __init__(
         self,
-        axis_target: int | Axes,
+        ax: Axes,
         x: ArrayLike,
         y: ArrayLike,
         color: ColorType | None = None,
@@ -73,10 +68,7 @@ class Scatter:
         alpha: int | float = 1,
         **kwargs: Any,
     ) -> None:
-        self.axis_target: int | Axes = axis_target
-
-        self.axis_index: int = AxesResolver(self.axis_target).axis_index
-        self.axis: Axes = AxesResolver(self.axis_target).axis
+        self.ax: Axes = ax
 
         self._x: ArrayLike = x
         self._y: ArrayLike = y
@@ -109,11 +101,9 @@ class Scatter:
 
         Examples
         --------------------
-        >>> scatter = Scatter(axis_target=0, x=[1, 2], y=[3, 4])
+        >>> scatter = Scatter(ax=ax, x=[1, 2], y=[3, 4])
         >>> scatter.get_color()
         """
-        # TODO: fix the next line
-        self.ax = self.axis
         cycle_color: NDArray | str = AutoColor(self.ax).get_color()
         if isinstance(cycle_color, np.ndarray):
             cycle_color = colors.to_hex(
@@ -143,11 +133,11 @@ class Scatter:
 
         Examples
         --------------------
-        >>> scatter = Scatter(axis_target=0, x=[1, 2, 3], y=[4, 5, 6], size=50, alpha=0.8)
+        >>> scatter = Scatter(ax=ax, x=[1, 2, 3], y=[4, 5, 6], size=50, alpha=0.8)
         >>> scatter.plot()
         <matplotlib.collections.PathCollection>
         """
-        _plot = self.axis.scatter(
+        _plot = self.ax.scatter(
             self.x,
             self.y,
             s=self.size,
@@ -160,7 +150,7 @@ class Scatter:
 
 @bind_passed_params()
 def scatter(
-    axis_target: int | Axes,
+    ax: Axes,
     x: ArrayLike,
     y: ArrayLike,
     color: ColorType | None = None,
@@ -176,8 +166,8 @@ def scatter(
 
     Parameters
     --------------------
-    axis_target : int or matplotlib.axes.Axes
-        The target axis for the scatter plot. Can be an axis index or a Matplotlib `Axes` object.
+    ax : matplotlib.axes.Axes
+        The target axis for the scatter.
     x : ArrayLike
         The x-coordinates of the scatter points.
     y : ArrayLike
@@ -209,7 +199,7 @@ def scatter(
     >>> import gsplot as gs
     >>> x = [1, 2, 3, 4]
     >>> y = [10, 20, 15, 25]
-    >>> gs.scatter(axis_target=0, x=x, y=y, color="red", size=20, alpha=0.8)
+    >>> gs.scatter(ax=ax, x=x, y=y, color="red", size=20, alpha=0.8)
     <matplotlib.collections.PathCollection>
     """
     alias_map = {
@@ -222,7 +212,7 @@ def scatter(
     class_params: dict[str, Any] = CreateClassParams(passed_params).get_class_params()
 
     _scatter = Scatter(
-        class_params["axis_target"],
+        class_params["ax"],
         class_params["x"],
         class_params["y"],
         class_params["color"],
