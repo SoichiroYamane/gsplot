@@ -1,3 +1,4 @@
+import warnings
 from typing import Any
 
 import matplotlib.pyplot as plt
@@ -197,8 +198,10 @@ class LegendAxes:
         """
         _lg_list = []
         for ax in plt.gcf().axes:
-            _lg = ax.legend(*self.args, **self.kwargs)
-            _lg_list.append(_lg)
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore")
+                _lg = ax.legend(*self.args, **self.kwargs)
+                _lg_list.append(_lg)
         return _lg_list
 
 
