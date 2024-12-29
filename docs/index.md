@@ -38,10 +38,10 @@ This package is _beta_ quality. Expect breaking changes and many bugs 🐛. Plea
 
 ## ✨ Features
 
-- **Better Plot, Less Code**: Simplify the process of creating high-quality figures 💤
-- **Compatibility**: Compatible with [matplotlib](https://matplotlib.org) 📊
-- **Customization**: Customize your configuration to fit your needs 🎨
-- **Reproducibility**: Save your package status to make plots reproducible 📦
+- **Better Plot, Less Effort**: Effortlessly create high-quality figures ⚛️
+- **Compatibility**: Fully compatible with [matplotlib](https://matplotlib.org) 📊
+- **Customization**: Tailor configurations to suit your needs 🎨
+- **Reproducibility**: Save package states for reproducible plots 📦
 
 ## 📈 Example using gsplot
 
