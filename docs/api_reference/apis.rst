@@ -13,6 +13,7 @@
    gsplot.config.config
    gsplot.figure.show
    gsplot.figure.figure_tools
+   gsplot.figure.axes_inset
    gsplot.figure.axes
    gsplot.color.colormap
    gsplot.path.path
