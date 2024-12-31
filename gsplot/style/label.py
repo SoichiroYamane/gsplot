@@ -507,8 +507,8 @@ class Label:
     def __init__(
         self,
         lab_lims: list[Any],
-        x_pad: int = 2,
-        y_pad: int = 2,
+        x_pad: int | float = 2,
+        y_pad: int | float = 2,
         minor_ticks_axes: bool = True,
         tight_layout: bool = True,
         *args: Any,
@@ -516,8 +516,8 @@ class Label:
     ) -> None:
 
         self.lab_lims: list[Any] = lab_lims
-        self.x_pad: int = x_pad
-        self.y_pad: int = y_pad
+        self.x_pad: int | float = x_pad
+        self.y_pad: int | float = y_pad
         self.minor_ticks_axes: bool = minor_ticks_axes
         self.tight_layout: bool = tight_layout
         self.args: Any = args
