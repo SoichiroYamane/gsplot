@@ -1,2 +1,2 @@
-__version__ = "0.1.0"
-__commit__ = "ce6c4ada301e539efad8a587d8d40de299ff26a7"
+__version__ = '0.1.0'
+__commit__ = 'c8f4655e0bd47685d27dace2a7b79e339d021d1e'
