@@ -10,6 +10,7 @@ Create a cool plot with `gsplot` ✨
 | :---:                                                             | :-------:                                                 |
 | [gsplot.config_load](#gsplot.config.config.config_load)           | Load configuration file with a specific path              |
 | [gsplot.axes](#gsplot.figure.axes.axes)                           | Add axes to a figure                                      |
+| [gsplot.axes_inset](#gsplot.figure.axes_inset.axes_inset)               | Add inset axes to a figure                                |
 | [gsplot.line](#gsplot.plot.line.line)                             | Add line plot to the axis specified by axis_target        |
 | [gsplot.legend](#gsplot.style.legend.legend)                      | Add legend to the axis specified by axis_target           |
 | [gsplot.graph_square_axes](#gsplot.style.graph.graph_square_axes) | Make all axes square                                      |
