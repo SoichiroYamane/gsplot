@@ -638,15 +638,19 @@ class Label:
         --------------------
         None
         """
-        if x_lab:
+        if isinstance(x_lab, str):
             ax.set_xlabel(x_lab)
-        else:
+        elif x_lab is None:
             self.remove_xlabels(ax)
-
-        if y_lab:
-            ax.set_ylabel(y_lab)
         else:
+            raise ValueError("Invalid x-axis label. Must be a string or None.")
+
+        if isinstance(y_lab, str):
+            ax.set_ylabel(y_lab)
+        elif y_lab is None:
             self.remove_ylabels(ax)
+        else:
+            raise ValueError("Invalid y-axis label. Must be a string or None.")
 
     def configure_axis_limits(
         self,
