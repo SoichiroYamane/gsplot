@@ -30,11 +30,18 @@ yosida_data_list = [
 
 # Create axes
 axs = gs.axes(store=True)
-axins = gs.axes_inset(
+axins1 = gs.axes_inset(
+    axs[1],
+    bounds=(0.57, 0.12, 0.25, 0.25),
+    lab_lims=["$T/T_{\\rm{c}}$", "$C_{\\rm}/C_{\\rm{n}}$", [0.9, 1.01], [1.5, 1.8]],
+    zoom=((3, 2), (4, 1)),
+)
+
+axins2 = gs.axes_inset(
     axs[1],
     bounds=(0.2, 0.55, 0.35, 0.35),
-    lab_lims=["$T/T_{\\rm{c}}$", "$C_{\\rm}/C_{\\rm{n}}$", [0.9, 1.01], [1.4, 2.5]],
-    zoom=((2, 1), (3, 4)),
+    lab_lims=["($T/T_{\\rm{c}})^2$", "$C_{\\rm}/C_{\\rm{n}}$", [0, 0.25], [0, 1.0]],
+    zoom=False,
 )
 
 # Plot the data
@@ -58,7 +65,8 @@ for i, (data, label, ls) in enumerate(zip(gap_data_list, labels, ls_list)):
     tc = np.append(c_data_list[i][0], [1, 1.5])
     c = np.append(c_data_list[i][1], [1, 1])
     gs.line(axs[1], tc, c, color=cm[i], label=label, ms=0, lw=2, ls=ls)
-    gs.line(axins, tc, c, color=cm[i], label=label, ms=0, lw=2, ls=ls)
+    gs.line(axins1, tc, c, color=cm[i], label=label, ms=0, lw=2, ls=ls)
+    gs.line(axins2, tc**2, c, color=cm[i], label=label, ms=0, lw=2, ls=ls)
 
 for i, (data, label, ls) in enumerate(zip(yosida_data_list, labels_even, ls_even)):
     idx = symmetries.index(even_symmetries[i])
