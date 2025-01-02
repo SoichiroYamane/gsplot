@@ -39,7 +39,7 @@ Welcome to **gsplot** (General-Scientific Plot), a toolkit designed to elevate c
 
 [See more details](https://soichiroyamane.github.io/gsplot/stable/guides/demo/13_REPL.html)
 
-![repl_tutorial](./docs/_static/tutorial/repl_tutorial_sp.gif)
+![repl_tutorial](./docs/_static/tutorial/repl_tutorial_45fps.gif)
 
 ## 🚀 Getting Started
 
