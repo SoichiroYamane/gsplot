@@ -33,7 +33,7 @@ axs = gs.axes(store=True)
 axins = gs.axes_inset(
     axs[1],
     bounds=(0.2, 0.55, 0.35, 0.35),
-    lab_lims=["$C_{\\rm}/C_{\\rm{n}}$", "$T/T_{\\rm{c}}$", [0.9, 1.01], [1.4, 2.5]],
+    lab_lims=["$T/T_{\\rm{c}}$", "$C_{\\rm}/C_{\\rm{n}}$", [0.9, 1.01], [1.4, 2.5]],
     zoom=((2, 1), (3, 4)),
 )
 
