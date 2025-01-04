@@ -33,8 +33,6 @@ gs.style.Labels(
         ["x", "y"],
     ],
     add_index=True,
-    x_pad=2,
-    y_pad=2,
 )
 
 

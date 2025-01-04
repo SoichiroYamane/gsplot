@@ -452,31 +452,39 @@ class Label:
     lab_lims : list[Any]
         A list specifying labels and limits for each axis in the figure. Each entry
         should be a tuple of the form `(x_label, y_label, x_limits, y_limits)`.
-    x_pad : int, default=2
-        Horizontal padding for tight layout.
-    y_pad : int, default=2
-        Vertical padding for tight layout.
+    xpad_label : int or float, default=2
+        Padding for the x-axis label.
+    ypad_label : int or float, default=2
+        Padding for the y-axis label.
     minor_ticks_axes : bool, default=True
         Whether to add minor ticks to all axes.
     tight_layout : bool, default=True
         Whether to apply `tight_layout` to the figure.
+    xpad_layout : int, default=2
+        Horizontal padding for tight layout.
+    ypad_layout : int, default=2
+        Vertical padding for tight layout.
     *args : Any
-        Additional arguments for `plt.tight_layout`.
+        Additional arguments for `ax.set_xlabel` and `ax.set_ylabel.
     **kwargs : Any
-        Additional keyword arguments for `plt.tight_layout`.
+        Additional keyword arguments for `ax.set_xlabel` and `ax.set_ylabel`.
 
     Attributes
     --------------------
     lab_lims : list[Any]
         The labels and limits configuration for the axes.
-    x_pad : int
-        Horizontal padding for tight layout.
-    y_pad : int
-        Vertical padding for tight layout.
+    xpad_label : int or float
+        Padding for the x-axis label.
+    ypad_label : int or float
+        Padding for the y-axis label.
     minor_ticks_axes : bool
         Whether minor ticks are enabled for axes.
     tight_layout : bool
         Whether `tight_layout` is applied.
+    xpad_layout : int
+        Horizontal padding for tight layout.
+    ypad_layout : int
+        Vertical padding for tight layout.
     _axes : list[Axes]
         List of axes in the current figure.
 
@@ -507,20 +515,22 @@ class Label:
     def __init__(
         self,
         lab_lims: list[Any],
-        x_pad: int | float = 2,
-        y_pad: int | float = 2,
+        xpad_label: int | float = 2,
+        ypad_label: int | float = 2,
         minor_ticks_axes: bool = True,
         tight_layout: bool = True,
-        *args: Any,
+        xpad_layout: int | float = 2,
+        ypad_layout: int | float = 2,
         **kwargs: Any,
     ) -> None:
 
         self.lab_lims: list[Any] = lab_lims
-        self.x_pad: int | float = x_pad
-        self.y_pad: int | float = y_pad
+        self.xpad_label: int | float = xpad_label
+        self.ypad_label: int | float = ypad_label
         self.minor_ticks_axes: bool = minor_ticks_axes
         self.tight_layout: bool = tight_layout
-        self.args: Any = args
+        self.xpad_layout: int | float = xpad_layout
+        self.ypad_layout: int | float = ypad_layout
         self.kwargs: Any = kwargs
 
         self._axes: list[Axes] = plt.gcf().axes
@@ -621,7 +631,15 @@ class Label:
         if self.minor_ticks_axes:
             MinorTicksAxes().set_minor_ticks_axes()
 
-    def configure_axis_labels(self, ax: Axes, x_lab: str | None, y_lab: str | None):
+    def configure_axis_labels(
+        self,
+        ax: Axes,
+        x_lab: str | None,
+        y_lab: str | None,
+        xpad_label: int | float = 2,
+        ypad_label: int | float = 2,
+        **kwargs: Any,
+    ) -> None:
         """
         Configures the labels for a given axis.
 
@@ -633,20 +651,27 @@ class Label:
             The label for the x-axis. If `None`, the x-axis label is removed.
         y_lab : str, optional
             The label for the y-axis. If `None`, the y-axis label is removed.
+        xpad_label : int or float, default=2
+            Padding for the x-axis label.
+        ypad_label : int or float, default=2
+            Padding for the y-axis label.
+        **kwargs : Any
+            Additional keyword arguments for the labels.
 
         Returns
         --------------------
         None
         """
+
         if isinstance(x_lab, str):
-            ax.set_xlabel(x_lab)
+            ax.set_xlabel(xlabel=x_lab, labelpad=xpad_label, **kwargs)
         elif x_lab is None:
             self.remove_xlabels(ax)
         else:
             raise ValueError("Invalid x-axis label. Must be a string or None.")
 
         if isinstance(y_lab, str):
-            ax.set_ylabel(y_lab)
+            ax.set_ylabel(ylabel=y_lab, labelpad=ypad_label, **kwargs)
         elif y_lab is None:
             self.remove_ylabels(ax)
         else:
@@ -676,6 +701,7 @@ class Label:
         --------------------
         None
         """
+
         if lims:
             x_lims, y_lims = lims
 
@@ -714,18 +740,40 @@ class Label:
             )
 
     def set_labels(self):
+        """
+        Applies labels, limits, and scales to all axes based on the configuration.
+
+        Returns
+        --------------------
+        None
+
+        """
         final_axes_ranges = self._get_final_axes_ranges()
 
         for i, (x_lab, y_lab, *lims) in enumerate(self.lab_lims):
             ax = self._axes[i]
 
             # Configure axis labels
-            self.configure_axis_labels(ax, x_lab, y_lab)
+            self.configure_axis_labels(
+                ax, x_lab, y_lab, self.xpad_label, self.ypad_label, **self.kwargs
+            )
 
             # Configure axis limits and scales
             self.configure_axis_limits(ax, lims, final_axes_ranges)
 
     def _calculate_padding_range(self, range: NDArray[Any]) -> NDArray[Any]:
+        """
+        Calculates the padding range for a given axis.
+
+        Parameters
+        --------------------
+        range : numpy.ndarray
+            The range of values for the axis.
+
+        Returns
+        --------------------
+        numpy.ndarray
+        """
 
         PADDING_FACTOR: float = 0.05
         span: float = range[1] - range[0]
@@ -736,11 +784,32 @@ class Label:
     def _get_wider_range(
         self, range1: NDArray[Any], range2: NDArray[Any]
     ) -> NDArray[Any]:
+        """
+        Calculates the wider range between two ranges.
+
+        Parameters
+        --------------------
+        range1 : numpy.ndarray
+            The first range of values.
+        range2 : numpy.ndarray
+            The second range of values.
+
+        Returns
+        --------------------
+        numpy.ndarray
+        """
 
         new_range = np.array([min(range1[0], range2[0]), max(range1[1], range2[1])])
         return new_range
 
     def _get_axes_ranges_current(self) -> list[list[NDArray[Any]]]:
+        """
+        Retrieves the current ranges for all axes.
+
+        Returns
+        --------------------
+        list[list[numpy.ndarray]]
+        """
 
         axes_ranges_current = []
         for ax in self._axes:
@@ -750,6 +819,13 @@ class Label:
         return axes_ranges_current
 
     def _get_final_axes_ranges(self) -> dict[Axes, list[NDArray[Any]]]:
+        """
+        Retrieves the final axes ranges for all axes.
+
+        Returns
+        --------------------
+        dict[matplotlib.axes.Axes, list[numpy.ndarray]]
+        """
         _axes_range_singleton = AxesRangeSingleton()
 
         axes_ranges_current = self._get_axes_ranges_current()
@@ -784,21 +860,28 @@ class Label:
 
     #! Xpad and Ypad will change the size of the axis
     def apply_tight_layout(self) -> None:
+        """
+        Applies `tight_layout` to the figure.
 
+        Returns
+        --------------------
+        None
+        """
         if self.tight_layout:
             # Ignore this warning when using inset_axes:
             # UserWarning: This figure includes Axes that are not compatible with tight_layout, so results might be incorrect
             with warnings.catch_warnings():
                 warnings.simplefilter("ignore")
-                try:
-                    plt.tight_layout(
-                        w_pad=self.x_pad, h_pad=self.y_pad, *self.args, **self.kwargs
-                    )
-                except Exception:
-                    plt.tight_layout(w_pad=self.x_pad, h_pad=self.y_pad)
+                plt.tight_layout(w_pad=self.xpad_layout, h_pad=self.ypad_layout)
 
     def label(self) -> None:
+        """
+        Adds labels, limits, and layouts to the figure's axes.
 
+        Returns
+        --------------------
+        None
+        """
         self.add_minor_ticks_axes()
         self.set_labels()
         self.apply_tight_layout()
@@ -808,10 +891,12 @@ class Label:
 @track_order
 def label(
     lab_lims: list[Any],
-    x_pad: int = 2,
-    y_pad: int = 2,
+    xpad_label: int | float = 2,
+    ypad_label: int | float = 2,
     minor_ticks_axes: bool = True,
     tight_layout: bool = True,
+    xpad_layout: int = 2,
+    ypad_layout: int = 2,
     *args: Any,
     **kwargs: Any,
 ) -> None:
@@ -825,18 +910,22 @@ def label(
     lab_lims : list[Any]
         A list specifying labels and limits for each axis in the figure. Each entry
         should be a tuple of the form `(x_label, y_label, x_limits, y_limits)`.
-    x_pad : int, default=2
-        Horizontal padding for tight layout.
-    y_pad : int, default=2
-        Vertical padding for tight layout.
+    xpad_label : int or float, default=2
+        Padding for the x-axis label.
+    ypad_label : int or float, default=2
+        Padding for the y-axis label.
     minor_ticks_axes : bool, default=True
         Whether to add minor ticks to all axes.
     tight_layout : bool, default=True
         Whether to apply `tight_layout` to the figure.
+    xpad_layout : int, default=2
+        Horizontal padding for tight layout.
+    ypad_layout : int, default=2
+        Vertical padding for tight layout.
     *args : Any
-        Additional arguments for `plt.tight_layout`.
+        Additional arguments for `ax.set_xlabel` and `ax.set_ylabel.
     **kwargs : Any
-        Additional keyword arguments for `plt.tight_layout`.
+        Additional keyword arguments for `ax.set_xlabel` and `ax.set_ylabel`.
 
     Notes
     --------------------
@@ -857,8 +946,8 @@ def label(
     >>> import gsplot as gs
     >>> gs.label(
     >>>     lab_lims=[("X Label", "Y Label", [1, 10, "log"], [1, 20, 2])],
-    >>>     x_pad=5,
-    >>>     y_pad=5,
+    >>>     xpad_layout=5,
+    >>>     ypad_layout=5,
     >>> )
     """
 
@@ -867,11 +956,12 @@ def label(
 
     _label = Label(
         class_params["lab_lims"],
-        class_params["x_pad"],
-        class_params["y_pad"],
+        class_params["xpad_label"],
+        class_params["ypad_label"],
         class_params["minor_ticks_axes"],
         class_params["tight_layout"],
-        *class_params["args"],
+        class_params["xpad_layout"],
+        class_params["ypad_layout"],
         **class_params["kwargs"],
     )
 
