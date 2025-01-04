@@ -452,9 +452,9 @@ class Label:
     lab_lims : list[Any]
         A list specifying labels and limits for each axis in the figure. Each entry
         should be a tuple of the form `(x_label, y_label, x_limits, y_limits)`.
-    xpad_label : int or float, default=2
+    xpad_label : int or float, default=5
         Padding for the x-axis label.
-    ypad_label : int or float, default=2
+    ypad_label : int or float, default=5
         Padding for the y-axis label.
     minor_ticks_axes : bool, default=True
         Whether to add minor ticks to all axes.
@@ -636,8 +636,8 @@ class Label:
         ax: Axes,
         x_lab: str | None,
         y_lab: str | None,
-        xpad_label: int | float = 2,
-        ypad_label: int | float = 2,
+        xpad_label: int | float = 10,
+        ypad_label: int | float = 10,
         **kwargs: Any,
     ) -> None:
         """
@@ -651,9 +651,9 @@ class Label:
             The label for the x-axis. If `None`, the x-axis label is removed.
         y_lab : str, optional
             The label for the y-axis. If `None`, the y-axis label is removed.
-        xpad_label : int or float, default=2
+        xpad_label : int or float, default=5
             Padding for the x-axis label.
-        ypad_label : int or float, default=2
+        ypad_label : int or float, default=5
             Padding for the y-axis label.
         **kwargs : Any
             Additional keyword arguments for the labels.
@@ -891,8 +891,8 @@ class Label:
 @track_order
 def label(
     lab_lims: list[Any],
-    xpad_label: int | float = 2,
-    ypad_label: int | float = 2,
+    xpad_label: int | float = 5,
+    ypad_label: int | float = 5,
     minor_ticks_axes: bool = True,
     tight_layout: bool = True,
     xpad_layout: int = 2,
@@ -910,9 +910,9 @@ def label(
     lab_lims : list[Any]
         A list specifying labels and limits for each axis in the figure. Each entry
         should be a tuple of the form `(x_label, y_label, x_limits, y_limits)`.
-    xpad_label : int or float, default=2
+    xpad_label : int or float, default=5
         Padding for the x-axis label.
-    ypad_label : int or float, default=2
+    ypad_label : int or float, default=5
         Padding for the y-axis label.
     minor_ticks_axes : bool, default=True
         Whether to add minor ticks to all axes.
