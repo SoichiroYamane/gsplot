@@ -32,7 +32,7 @@ Welcome to **gsplot** (General-Scientific Plot), a toolkit designed to elevate c
 
 ### 📈 Example using gsplot
 
-[See more details](https://soichiroyamane.github.io/gsplot/guides/stable/demo/4_paper_plot.html)
+[See more details](https://soichiroyamane.github.io/gsplot/stable/guides/demo/4_paper_plot.html)
 
 ![example](docs/_static/tutorial/SC_cal.png)
 
