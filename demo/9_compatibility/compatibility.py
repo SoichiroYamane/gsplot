@@ -31,7 +31,7 @@ gs.label(
         # add label with limits and scale
         ["$x_4$", "$y_4$", [1, 100, "log"], [0, 30]],
     ],
-    minor_ticks_all=False,
+    minor_ticks_axes=False,
 )
 gs.label_add_index(loc="in")
 gs.show("compatibility")

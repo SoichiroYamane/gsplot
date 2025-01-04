@@ -30,10 +30,6 @@ class InsetAxesBase:
     lab_lims : list[Any] | None, optional
         List specifying axis labels and limits for the inset axis.
         Expected format: [x_label, y_label, x_lim_min, x_lim_max, y_lim_min, y_lim_max].
-    x_pad : int | float, default=2
-        Horizontal padding for axis labels.
-    y_pad : int | float, default=2
-        Vertical padding for axis labels.
     minor_ticks : bool, default=True
         Whether to enable minor ticks on the inset axis.
     zoom : bool or tuple[tuple[int, int], tuple[int, int]], default=True
@@ -97,8 +93,6 @@ class InsetAxesBase:
         ax,
         axins,
         lab_lims: list[Any] | None = None,
-        x_pad: int | float = 2,
-        y_pad: int | float = 2,
         minor_ticks: bool = True,
         zoom: bool | tuple[tuple[int, int], tuple[int, int]] = True,
         zoom_color: ColorType = "black",
@@ -108,8 +102,6 @@ class InsetAxesBase:
         self.ax: Axes = ax
         self.axins: Axes = axins
         self.lab_lims: list[Any] | None = lab_lims
-        self.x_pad: int | float = x_pad
-        self.y_pad: int | float = y_pad
         self.minor_ticks: bool = minor_ticks
         self.zoom: bool | tuple[tuple[int, int], tuple[int, int]] = zoom
         self.zoom_color: ColorType = zoom_color
@@ -233,8 +225,6 @@ class InsetAxesBase:
 
         _label = Label(
             self.lab_lims,
-            self.x_pad,
-            self.y_pad,
             minor_ticks_axes=False,
             tight_layout=False,
             **self.kwargs,
@@ -246,7 +236,7 @@ class InsetAxesBase:
             raise ValueError("lab_lims has invalid shape")
 
         # Label the inset axes
-        _label.configure_axis_labels(self.axins, x_lab, y_lab)
+        _label.configure_axis_labels(self.axins, x_lab, y_lab, **self.kwargs)
         # Set the axis limits
         _label.configure_axis_limits(self.axins, lims)
 
