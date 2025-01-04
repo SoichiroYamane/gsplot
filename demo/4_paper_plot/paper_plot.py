@@ -35,6 +35,8 @@ axins1 = gs.axes_inset(
     bounds=(0.57, 0.12, 0.25, 0.25),
     lab_lims=["$T/T_{\\rm{c}}$", "$C_{\\rm}/C_{\\rm{n}}$", [0.9, 1.01], [1.5, 1.8]],
     zoom=((3, 2), (4, 1)),
+    xpad_label=0,
+    ypad_label=0,
 )
 
 axins2 = gs.axes_inset(
@@ -42,6 +44,8 @@ axins2 = gs.axes_inset(
     bounds=(0.2, 0.55, 0.35, 0.35),
     lab_lims=["($T/T_{\\rm{c}})^2$", "$C_{\\rm}/C_{\\rm{n}}$", [0, 0.25], [0, 1.0]],
     zoom=False,
+    xpad_label=0,
+    ypad_label=0,
 )
 
 # Plot the data
