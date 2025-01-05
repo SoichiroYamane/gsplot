@@ -10,7 +10,7 @@ jobs: # Define jobs for the workflow
     runs-on: ubuntu-latest # Run the job on Ubuntu Linux
     strategy: # Configure matrix strategy
       matrix:
-        python-version: [3.9] # Use Python version 3.9
+        python-version: ["3.10"] # Use Python version 3.10
     permissions:
       contents: write # Grant write permissions to the contents
     steps: # Define the steps within the job
@@ -19,7 +19,7 @@ jobs: # Define jobs for the workflow
         with:
           ref: ${{ github.head_ref }} # Specify the GitHub head reference
       - name: Set up Python ${{ matrix.python-version }} # Set up the Python environment
-        uses: actions/setup-python@v4 # Use the setup-python action
+        uses: actions/setup-python@v5 # Use the setup-python action
         with:
           python-version: ${{ matrix.python-version }} # Use the Python version defined in the matrix
       - name: Install Dependencies # Install necessary dependencies
