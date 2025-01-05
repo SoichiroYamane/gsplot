@@ -76,7 +76,8 @@ jobs:
 
       - name: Build with Sphinx
         run: |
-          export PYTHONPATH=$PYTHONPATH:$(pwd)
+          CURRENT_DIR=$(pwd)
+          export PYTHONPATH="$PYTHONPATH:$CURRENT_DIR"
           poetry run make -C docs clean
           poetry run make -C docs html-dev-deploy
         
@@ -112,12 +113,18 @@ jobs:
       - name: Copy latest version as stable
         run: |
           echo "Finding the latest version..."
-          latest_version=$(ls -1 ./docs/_build/html/ | grep '^v[0-9]' | sort -V | tail -n 1)
+          latest_version=""
+          for dir in ./docs/_build/html/v[0-9]*; do
+            dir_name=$(basename "$dir")
+            if [[ -z "$latest_version" || "$dir_name" > "$latest_version" ]]; then
+              latest_version="$dir_name"
+            fi
+          done
           echo "Latest version detected: $latest_version"
 
           echo "Copying the latest version to stable..."
           mkdir -p ./docs/_build/html/stable
-          cp -r ./docs/_build/html/$latest_version/* ./docs/_build/html/stable/
+          cp -r "./docs/_build/html/$latest_version/"* ./docs/_build/html/stable/
 
       - name: Combine Sphinx and Jekyll Outputs
         run: |
