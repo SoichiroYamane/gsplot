@@ -35,12 +35,13 @@ jobs:
         run: poetry install --no-root
 
       - name: Get Git commit hash
-        run: echo "COMMIT_HASH=${GITHUB_SHA}" >> $GITHUB_ENV
+        run: echo "COMMIT_HASH=${GITHUB_SHA}" >> "$GITHUB_ENV"
+
 
       - name: Get package version
         run: |
-          VERSION=$(poetry version -s)
-          echo "PACKAGE_VERSION=${VERSION}" >> $GITHUB_ENV
+          VERSION="$(poetry version -s)"
+          echo "PACKAGE_VERSION=${VERSION}" >> "$GITHUB_ENV"
 
       - name: Write version info to file
         run: |
