@@ -22,6 +22,7 @@ from .style.legend import (legend, legend_axes, legend_get_handlers,
                            legend_handlers, legend_reverse)
 from .style.legend_colormap import legend_colormap
 from .style.ticks import ticks_off, ticks_on, ticks_on_axes
+from .style.title import title
 from .version import __commit__, __version__
 
 # ╭──────────────────────────────────────────────────────────╮
@@ -103,4 +104,6 @@ __all__ = [
     "ticks_off",
     "ticks_on",
     "ticks_on_axes",
+    # style/title.py
+    "title",
 ]
