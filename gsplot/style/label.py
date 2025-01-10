@@ -902,7 +902,6 @@ def label(
 ) -> None:
     """
     Configures labels, limits, ticks, and layouts for Matplotlib axes.
-
     This function is a wrapper for the `Label` class.
 
     Parameters
@@ -923,7 +922,7 @@ def label(
     ypad_layout : int, default=2
         Vertical padding for tight layout.
     *args : Any
-        Additional arguments for `ax.set_xlabel` and `ax.set_ylabel.
+        Additional arguments for `ax.set_xlabel` and `ax.set_ylabel`.
     **kwargs : Any
         Additional keyword arguments for `ax.set_xlabel` and `ax.set_ylabel`.
 

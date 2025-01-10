@@ -22,4 +22,5 @@
    gsplot.style.legend
    gsplot.style.legend_colormap
    gsplot.style.label
+   gsplot.style.title
    gsplot.data.load_file
