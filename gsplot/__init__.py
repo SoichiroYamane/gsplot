@@ -22,7 +22,7 @@ from .style.legend import (legend, legend_axes, legend_get_handlers,
                            legend_handlers, legend_reverse)
 from .style.legend_colormap import legend_colormap
 from .style.ticks import ticks_off, ticks_on, ticks_on_axes
-from .style.title import title
+from .style.title import title, title_axes
 from .version import __commit__, __version__
 
 # ╭──────────────────────────────────────────────────────────╮
@@ -71,8 +71,6 @@ __all__ = [
     "pwd_main",
     # plot/line.py
     "line",
-    # plot/line_colormap.py
-    "line_colormap",
     # plot/line_colormap_solid.py
     "line_colormap_solid",
     # plot/line_colormap_dashed.py
@@ -106,4 +104,5 @@ __all__ = [
     "ticks_on_axes",
     # style/title.py
     "title",
+    "title_axes",
 ]
