@@ -141,7 +141,7 @@ class Scatter:
             self.x,
             self.y,
             s=self.size,
-            c=self.color,
+            color=self.color,
             alpha=self.alpha,
             **self.kwargs,
         )
@@ -187,7 +187,6 @@ def scatter(
     - Alias validation is performed using the `AliasValidator` class.
 
         - 's' (size)
-        - 'c' (color)
 
     Returns
     --------------------
@@ -204,7 +203,6 @@ def scatter(
     """
     alias_map = {
         "s": "size",
-        "c": "color",
     }
 
     passed_params: dict[str, Any] = ParamsGetter("passed_params").get_bound_params()
