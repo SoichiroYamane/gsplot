@@ -1,7 +1,7 @@
 from .color.colormap import get_cmap
 from .config.config import (Config, config_dict, config_entry_option,
                             config_load, save_metadata)
-from .data.load_file import load_file
+from .data.load_file import load_file, load_file_fast
 from .figure.axes import axes
 from .figure.axes_inset import axes_inset, axes_inset_padding
 from .figure.figure_tools import get_figure_size
@@ -49,6 +49,7 @@ __all__ = [
     "get_cmap",
     # data/load_file.py
     "load_file",
+    "load_file_fast",
     # figure/axes.py
     "axes",
     # figure/axes_inset.py
