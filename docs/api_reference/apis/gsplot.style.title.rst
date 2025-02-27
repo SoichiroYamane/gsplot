@@ -9,4 +9,5 @@
    .. autosummary::
    
       title
+      title_axes
    
