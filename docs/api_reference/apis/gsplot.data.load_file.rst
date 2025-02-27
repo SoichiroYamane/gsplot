@@ -9,4 +9,5 @@
    .. autosummary::
    
       load_file
+      load_file_fast
    
