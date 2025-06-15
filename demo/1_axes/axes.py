@@ -4,7 +4,7 @@ import gsplot as gs
 # Unit can be "in", "cm", "mm", and "pt". Default is "in".
 axs = gs.axes(
     store=True,
-    size=[10, 5],
+    size=(10, 5),
     unit="in",
     mosaic="""
            ABBB
@@ -12,7 +12,7 @@ axs = gs.axes(
            """,
 )
 # You can also use the following syntax
-# axs = gs.axes(store=True, size=[10, 5], unit="in", mosaic="ABBB;ACCD")
+# axs = gs.axes(store=True, size=(10, 5), unit="in", mosaic="ABBB;ACCD")
 
 # Show figure and store figure with the name "axes"
 gs.show("axes")

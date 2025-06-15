@@ -3,7 +3,7 @@ import gsplot as gs
 # Set the facecolor of axes to transparent
 gs.graph_transparent_axes()
 
-axs = gs.axes(store=True, size=[10, 5], mosaic="AB")
+axs = gs.axes(store=True, size=(10, 5), mosaic="AB")
 
 x = [1, 2, 3, 4, 5]
 y = [1, 4, 9, 16, 25]
