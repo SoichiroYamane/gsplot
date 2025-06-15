@@ -3,7 +3,7 @@ import gsplot as gs
 # Set the facecolor of the graph to black
 gs.graph_facecolor("black")
 
-axs = gs.axes(store=True, size=[9, 3], mosaic="ABC")
+axs = gs.axes(store=True, size=(9, 3), mosaic="ABC")
 
 x = [1, 2, 3, 4, 5]
 y = [1, 4, 9, 16, 25]

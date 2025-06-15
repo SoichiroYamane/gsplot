@@ -150,8 +150,8 @@ class AxesHandler(Generic[_T]):
     --------------------
     store : bool, optional
         Whether to use a shared storage for axes or figure states (default is False).
-    size : list of int or float, optional
-        The size of the figure in the specified unit (default is [5, 5]).
+    size : tuple of int or float, optional
+        The size of the figure in the specified unit (default is (5, 5)).
     unit : str, optional
         The unit for the figure size. Supported units are "mm", "cm", "in", and "pt" (default is "in").
     mosaic : str or list of HashableList[_T] or list of HashableList[Hashable], optional
@@ -167,7 +167,7 @@ class AxesHandler(Generic[_T]):
     --------------------
     store : bool
         Indicates whether shared storage is used.
-    size : list of int or float
+    size : tuple of int or float
         The size of the figure in the specified unit.
     unit : {"mm", "cm", "in", "pt"}
         The unit for the figure size.
@@ -192,7 +192,7 @@ class AxesHandler(Generic[_T]):
     Examples
     --------------------
     >>> handler = AxesHandler(
-    ...     size=[10, 8],
+    ...     size=(10, 8),
     ...     unit="cm",
     ...     mosaic="AB;CD",
     ...     ion=True
@@ -206,7 +206,7 @@ class AxesHandler(Generic[_T]):
     def __init__(
         self,
         store: bool = False,
-        size: list[int | float] = [5, 5],
+        size: tuple[int | float, int | float] = (5, 5),
         unit: Literal["mm", "cm", "in", "pt"] = "in",
         mosaic: str | list[HashableList[_T]] | list[HashableList[Hashable]] = "A",
         clear: bool = True,
@@ -214,7 +214,7 @@ class AxesHandler(Generic[_T]):
         **kwargs: Any,
     ) -> None:
         self.store = store
-        self.size: list[int | float] = size
+        self.size: tuple[int | float, int | float] = size
         self.unit: str = unit
         self.mosaic: str | list[HashableList[_T]] | list[HashableList[Hashable]] = (
             mosaic
@@ -253,7 +253,7 @@ class AxesHandler(Generic[_T]):
 
         Examples
         --------------------
-        >>> handler = AxesHandler(size=[10, 8], unit="cm", mosaic="AB;CD", ion=True)
+        >>> handler = AxesHandler(size=(10, 8), unit="cm", mosaic="AB;CD", ion=True)
         >>> handler.create_figure()
         """
         NumLines().reset()
@@ -287,7 +287,7 @@ class AxesHandler(Generic[_T]):
 @bind_passed_params()
 def axes(
     store: bool = False,
-    size: list[int | float] = [5, 5],
+    size: tuple[int | float, int | float] = (5, 5),
     unit: Literal["mm", "cm", "in", "pt"] = "in",
     mosaic: str | list[HashableList[_T]] | list[HashableList[Hashable]] = "A",
     clear: bool = True,
@@ -305,8 +305,8 @@ def axes(
     --------------------
     store : bool, optional
         Whether to use a shared storage for axes or figure states (default is False).
-    size : list of int or float, optional
-        The size of the figure in the specified unit (default is [5, 5]).
+    size : tuple of int or float, optional
+        The size of the figure in the specified unit (default is (5, 5)).
     unit : {"mm", "cm", "in", "pt"}, optional
         The unit for the figure size. Supported units are "mm", "cm", "in", and "pt" (default is "in").
     mosaic : str or list of HashableList[_T] or list of HashableList[Hashable], optional
@@ -332,7 +332,7 @@ def axes(
     Examples
     --------------------
     >>> import gsplot as
-    >>> axs = gs.axes(size=[10, 8], unit="cm", mosaic="AB;CD", ion=True)
+    >>> axs = gs.axes(size=(10, 8), unit="cm", mosaic="AB;CD", ion=True)
     >>> print(axs)
     [<Axes: label='A'>, <Axes: label='B'>, <Axes: label='C'>, <Axes: label='D'>]
     """

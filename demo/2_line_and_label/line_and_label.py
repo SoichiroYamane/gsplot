@@ -1,6 +1,6 @@
 import gsplot as gs
 
-axs = gs.axes(store=True, size=[10, 5], mosaic="AB")
+axs = gs.axes(store=True, size=(10, 5), mosaic="AB")
 
 for i in range(7):
     x = [i, i + 1, i + 2]

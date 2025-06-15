@@ -11,7 +11,7 @@ t = np.sin(2 * x)
 n = [0, 1, 2, 3, 4]
 m = [0, 1, 0, 1, 0]
 l = [-1, 0, 1, 2, 3]
-axs = gs.axes(store=True, size=[10, 5], mosaic="AB")
+axs = gs.axes(store=True, size=(10, 5), mosaic="AB")
 
 # Line plot with solid colormap
 gs.line_colormap_solid(axs[0], x, u, x, label="sin(x)", lw=3)

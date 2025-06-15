@@ -2,7 +2,7 @@ import numpy as np
 
 import gsplot as gs
 
-axs = gs.axes(store=True, size=[10, 5], mosaic="AB")
+axs = gs.axes(store=True, size=(10, 5), mosaic="AB")
 
 x = np.linspace(0, 10, 100)
 y = np.sin(x)

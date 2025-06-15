@@ -6,7 +6,7 @@ import gsplot as gs
 x = np.array([1, 2, 3, 4, 5])
 y = np.array([1, 4, 9, 16, 25])
 
-axs = gs.axes(store=True, size=[10, 10], unit="in", mosaic="AB;CD")
+axs = gs.axes(store=True, size=(10, 10), unit="in", mosaic="AB;CD")
 gs.line(axs[0], x=x, y=y, label="Line 1")
 gs.line(axs[0], x=x + 1, y=y + 1, label="Line 2")
 gs.line(axs[1], x=x, y=y)
