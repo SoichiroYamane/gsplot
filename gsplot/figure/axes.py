@@ -160,10 +160,8 @@ class AxesHandler(Generic[_T]):
         Whether to clear the current figure before creating a new one (default is True).
     ion : bool, optional
         Whether to enable interactive mode for the figure (default is False).
-    *args : Any
-        Additional positional arguments to pass to Matplotlib's figure creation methods.
     **kwargs : Any
-        Additional keyword arguments to pass to Matplotlib's figure creation methods.
+        Additional keyword arguments to pas to `subplot_mosaic`.
 
     Attributes
     --------------------
@@ -213,7 +211,6 @@ class AxesHandler(Generic[_T]):
         mosaic: str | list[HashableList[_T]] | list[HashableList[Hashable]] = "A",
         clear: bool = True,
         ion: bool = False,
-        *args: Any,
         **kwargs: Any,
     ) -> None:
         self.store = store
@@ -222,9 +219,9 @@ class AxesHandler(Generic[_T]):
         self.mosaic: str | list[HashableList[_T]] | list[HashableList[Hashable]] = (
             mosaic
         )
+
         self.clear: bool = clear
         self.ion: bool = ion
-        self.args: Any = args
         self.kwargs: Any = kwargs
 
         self._store_singleton = StoreSingleton()
@@ -274,11 +271,10 @@ class AxesHandler(Generic[_T]):
             self.unit_conv.convert(self.size[0], self.unit_enum),
             self.unit_conv.convert(self.size[1], self.unit_enum),
         )
-        plt.gcf().set_size_inches(*conv_size, *self.args, **self.kwargs)
+        plt.gcf().set_size_inches(*conv_size)
 
         if self.mosaic != "":
-            plt.gcf().subplot_mosaic(self.mosaic)
-
+            plt.gcf().subplot_mosaic(mosaic=self.mosaic, **self.kwargs)
             # To ensure that the axes are tightly packed, otherwise axes sizes will be different after tight_layout is called
             plt.tight_layout()
         else:
@@ -296,7 +292,6 @@ def axes(
     mosaic: str | list[HashableList[_T]] | list[HashableList[Hashable]] = "A",
     clear: bool = True,
     ion: bool = False,
-    *args: Any,
     **kwargs: Any,
 ):
     """
@@ -320,10 +315,8 @@ def axes(
         Whether to clear the current figure before creating a new one (default is True).
     ion : bool, optional
         Whether to enable interactive mode for the figure (default is False).
-    *args : Any
-        Additional positional arguments to pass to Matplotlib's figure creation methods.
     **kwargs : Any
-        Additional keyword arguments to pass to Matplotlib's figure creation methods.
+        Additional keyword arguments to pass to `subplot_mosaic`.
 
     Notes
     --------------------
