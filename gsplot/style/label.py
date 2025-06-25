@@ -787,11 +787,18 @@ class Label:
         ax.set_xlabel(x_lab, labelpad=self.xpad_label, **self.kwargs)
         ax.set_ylabel(y_lab, labelpad=self.ypad_label, **self.kwargs)
         # Set limits for polar axis: theta
-        ax.set_thetamin(lims[0][0])  # type: ignore # mypy-ignore[no-untyped-call]
-        ax.set_thetamax(lims[0][1])  # type: ignore # mypy-ignore[no-untyped-call]
+        # check if component is a number
+        if isinstance(lims[0][0], (int, float)) and isinstance(
+            lims[0][1], (int, float)
+        ):
+            ax.set_thetamin(lims[0][0])  # type: ignore # mypy-ignore[no-untyped-call]
+            ax.set_thetamax(lims[0][1])  # type: ignore # mypy-ignore[no-untyped-call]
         # Set limits for polar axis: r
-        ax.set_rmin(lims[1][0])  # type: ignore # mypy-ignore[no-untyped-call]
-        ax.set_rmax(lims[1][1])  # type: ignore # mypy-ignore[no-untyped-call]
+        if isinstance(lims[1][0], (int, float)) and isinstance(
+            lims[1][1], (int, float)
+        ):
+            ax.set_rmin(lims[1][0])  # type: ignore # mypy-ignore[no-untyped-call]
+            ax.set_rmax(lims[1][1])  # type: ignore # mypy-ignore[no-untyped-call]
 
     def _calculate_padding_range(self, range: NDArray[Any]) -> NDArray[Any]:
         """
