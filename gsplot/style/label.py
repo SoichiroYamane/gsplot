@@ -758,8 +758,9 @@ class Label:
                 ax, x_lab, y_lab, self.xpad_label, self.ypad_label, **self.kwargs
             )
 
-            # Configure axis limits and scales
-            self.configure_axis_limits(ax, lims, final_axes_ranges)
+            # Configure axis limits and scales if not polar axis
+            if not ax.name.startswith("polar"):
+                self.configure_axis_limits(ax, lims, final_axes_ranges)
 
     def _calculate_padding_range(self, range: NDArray[Any]) -> NDArray[Any]:
         """
