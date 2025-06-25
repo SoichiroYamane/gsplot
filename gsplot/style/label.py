@@ -762,17 +762,36 @@ class Label:
             if not ax.name.startswith("polar"):
                 self.configure_axis_limits(ax, lims, final_axes_ranges)
             else:
-                # set label for polar axis
-                ax.set_xlabel(x_lab, labelpad=self.xpad_label, **self.kwargs)
-                ax.set_ylabel(y_lab, labelpad=self.ypad_label, **self.kwargs)
+                self._configure_polar_axis(ax, x_lab, y_lab, lims)
 
-                # set limits for polar axis: theta
-                ax.set_thetamin(lims[0][0])  # type: ignore # mypy-ignore[no-untyped-call]
-                ax.set_thetamax(lims[0][1])  # type: ignore # mypy-ignore[no-untyped-call]
-
-                # set limits for polar axis: r
-                ax.set_rmin(lims[1][0])  # type: ignore # mypy-ignore[no-untyped-call]
-                ax.set_rmax(lims[1][1])  # type: ignore # mypy-ignore[no-untyped-call]
+    def _configure_polar_axis(
+        self, ax: Axes, x_lab: str, y_lab: str, lims: list
+    ) -> None:
+        """
+        Configures labels and limits for a polar axis.
+        Parameters
+        --------------------
+        ax : Axes
+            The polar axis to configure.
+        x_lab : str
+            The label for the x-axis (theta).
+        y_lab : str
+            The label for the y-axis (r).
+        lims : list
+            The limits for the polar axis, where lims[0] is theta limits and lims[1] is r limits.
+        Returns
+        --------------------
+        None
+        """
+        # Set labels for polar axis
+        ax.set_xlabel(x_lab, labelpad=self.xpad_label, **self.kwargs)
+        ax.set_ylabel(y_lab, labelpad=self.ypad_label, **self.kwargs)
+        # Set limits for polar axis: theta
+        ax.set_thetamin(lims[0][0])  # type: ignore # mypy-ignore[no-untyped-call]
+        ax.set_thetamax(lims[0][1])  # type: ignore # mypy-ignore[no-untyped-call]
+        # Set limits for polar axis: r
+        ax.set_rmin(lims[1][0])  # type: ignore # mypy-ignore[no-untyped-call]
+        ax.set_rmax(lims[1][1])  # type: ignore # mypy-ignore[no-untyped-call]
 
     def _calculate_padding_range(self, range: NDArray[Any]) -> NDArray[Any]:
         """
