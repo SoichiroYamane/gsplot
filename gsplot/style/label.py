@@ -761,6 +761,18 @@ class Label:
             # Configure axis limits and scales if not polar axis
             if not ax.name.startswith("polar"):
                 self.configure_axis_limits(ax, lims, final_axes_ranges)
+            else:
+                # set label for polar axis
+                ax.set_xlabel(x_lab, labelpad=self.xpad_label, **self.kwargs)
+                ax.set_ylabel(y_lab, labelpad=self.ypad_label, **self.kwargs)
+
+                # set limits for polar axis: theta
+                ax.set_thetamin(lims[0][0])  # type: ignore # mypy-ignore[no-untyped-call]
+                ax.set_thetamax(lims[0][1])  # type: ignore # mypy-ignore[no-untyped-call]
+
+                # set limits for polar axis: r
+                ax.set_rmin(lims[1][0])  # type: ignore # mypy-ignore[no-untyped-call]
+                ax.set_rmax(lims[1][1])  # type: ignore # mypy-ignore[no-untyped-call]
 
     def _calculate_padding_range(self, range: NDArray[Any]) -> NDArray[Any]:
         """
