@@ -8,6 +8,7 @@ on:
     types: [opened, synchronize, reopened]
   workflow_dispatch:
 
+# CodeQL Default setup analyzes this workflow separately for unsafe patterns.
 permissions:
   contents: read
 
