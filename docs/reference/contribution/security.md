@@ -24,9 +24,11 @@ The repository uses layered safeguards:
 - CodeQL Default setup for Python and GitHub Actions, using the default query
   suite on standard GitHub-hosted runners;
 - protected `main` with required CI and security checks, resolved review
-  conversations, linear history, and an independent approval when a second
-  maintainer is available. A single-maintainer repository uses the public
-  Review 1 / Review 2 protocol instead of self-approval or an admin bypass.
+  conversations, linear history, and an independent approval plus
+  latest-push approval when a second maintainer is available. A
+  single-maintainer repository disables those review-dependent requirements
+  and uses the public Review 1 / Review 2 protocol instead of self-approval or
+  an admin bypass.
 
 These controls complement one another. A passing check does not replace
 maintainer review, and a new alert is reviewed before it is resolved or

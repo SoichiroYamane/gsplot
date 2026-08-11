@@ -117,10 +117,11 @@ tracked YAML source:
    and security checks, resolved conversations, linear history, stale-review
    dismissal, latest-push approval, and no force-push or deletion. Require at
    least one independent GitHub approval when at least two maintainers are
-   available. With one maintainer, set the required approval count to zero
-   rather than using self-approval or an administrative bypass; the
-   repository's separate public protocol still requires Review 1 and Review
-   2.
+   available. With one maintainer, set the required approval count and
+   latest-push approval to zero/off rather than using self-approval or an
+   administrative bypass; the repository's separate public protocol still
+   requires Review 1 and Review 2. Restore both approval settings when a
+   second maintainer becomes available.
 7. Apply GitHub settings only after the Issue and implementation record are
    current and the user has authorized the settings change. Read back every
    mutated endpoint, compare it with the requested policy, and record the

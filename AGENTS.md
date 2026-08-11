@@ -94,9 +94,10 @@ machine-specific operational details here.
   dismissal, latest-push approval, and no force-push or deletion. When at least
   two maintainers are available, require at least one independent GitHub
   approval. While the repository has one maintainer, use zero required GitHub
-  approvals rather than self-approval or an administrative bypass; the public
-  maintenance process still requires Review 1 and Review 2 records before
-  merge.
+  approvals and disable latest-push approval rather than self-approval or an
+  administrative bypass; the public maintenance process still requires Review
+  1 and Review 2 records before merge. Restore both approval settings when a
+  second maintainer becomes available.
 - Automation that generates tracked files must create or update a reviewable
   pull request. Do not grant a workflow a direct-main bypass merely to preserve
   an auto-commit convenience.
