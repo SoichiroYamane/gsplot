@@ -65,6 +65,7 @@ def test_mapping_values_are_validated_and_precedence_is_explicit() -> None:
         {"plotting": {"nonfinite": "ignore"}},
         {"schema_version": 2},
         {"figure": {"figsize": [1]}},
+        {"figure": {"unit": []}},
         {"plotting": {"default_color": [0, 0]}},
     ],
 )
@@ -73,6 +74,9 @@ def test_invalid_mapping_is_rejected(mapping: dict[str, object]) -> None:
 
     with pytest.raises(ConfigError):
         Config.from_mapping(mapping)
+
+    with pytest.raises(ConfigError, match="keys must be strings"):
+        Config.from_mapping({1: {}})  # type: ignore[dict-item]
 
 
 def test_json_parser_rejects_duplicates_trailing_data_and_nonfinite(tmp_path) -> None:

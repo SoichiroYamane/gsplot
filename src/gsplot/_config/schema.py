@@ -109,7 +109,7 @@ def parse_schema_version(value: Any) -> Literal[1]:
 def parse_unit(value: Any) -> Literal["mm", "cm", "in", "pt"]:
     """Validate a figure size unit."""
 
-    if value not in UNITS:
+    if not isinstance(value, str) or value not in UNITS:
         allowed = ", ".join(sorted(UNITS))
         raise ConfigError(f"figure.unit must be one of: {allowed}")
     return cast(Literal["mm", "cm", "in", "pt"], value)

@@ -12,6 +12,7 @@ from .._core.types import ColorSpec
 from .._core.validation import (
     MISSING,
     ensure_bool,
+    ensure_mapping,
     ensure_nonempty_text,
     reject_unknown_keys,
 )
@@ -103,8 +104,7 @@ class Config:
     def from_mapping(cls, mapping: Mapping[str, Any]) -> "Config":
         """Create validated configuration from a mapping without retaining it."""
 
-        if not isinstance(mapping, Mapping):
-            raise ConfigError("configuration must be an object")
+        mapping = ensure_mapping(mapping, "configuration")
         reject_unknown_keys(mapping, ROOT_KEYS, "configuration")
         schema_version = parse_schema_version(mapping.get("schema_version", 1))
 
