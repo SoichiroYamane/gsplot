@@ -1,4 +1,5 @@
-from typing import Any
+from collections.abc import Sequence
+from typing import Any, cast
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -402,9 +403,10 @@ class LineColormapDashed:
                         self.x_interpolated[idx_start : i + 1],
                         self.y_interpolated[idx_start : i + 1],
                     )
+                    collection_segments = cast(Sequence[ArrayLike], segments.tolist())
 
                     lc = LineCollection(
-                        segments.tolist(),
+                        collection_segments,
                         cmap=self.cmap,
                         norm=norm,
                         capstyle="projecting",
@@ -431,9 +433,10 @@ class LineColormapDashed:
                     self.x_interpolated[idx_start:],
                     self.y_interpolated[idx_start:],
                 )
+                collection_segments = cast(Sequence[ArrayLike], segments.tolist())
 
                 lc = LineCollection(
-                    segments.tolist(),
+                    collection_segments,
                     cmap=self.cmap,
                     norm=norm,
                 )

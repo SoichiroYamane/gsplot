@@ -1,7 +1,9 @@
 # 2. Line and Label
 
-- [gsplot.line](#gsplot.plot.line.line) is a type of plot that displays information as a series of data points called 'markers' connected by straight lines. It is one of the most basic types of plots and is commonly used in data visualization.
-- [gsplot.label](#gsplot.style.label.label) adds labels, limits, and ticks to all axes of the plot. It is used to provide additional information on axes. Argument of [gsplot.label](#gsplot.style.label.label) is `[x_label, y_label, [xlim, *args], [ylim, *args]]`. More details can be found in [gsplot.label](#gsplot.style.label.label).
+`gsplot.line` draws a line on a target axis. `gsplot.label` adds labels,
+limits, and tick settings to the axes in a figure. A label entry can contain
+`[x_label, y_label, [xlim, *args], [ylim, *args]]`; see the API reference for
+the complete form.
 
 ## Example
 

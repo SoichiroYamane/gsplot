@@ -3,8 +3,7 @@ from typing import Any, cast
 from matplotlib.axes import Axes
 from matplotlib.transforms import BboxBase, Transform, TransformedBbox
 from matplotlib.typing import ColorType
-from mpl_toolkits.axes_grid1.inset_locator import (BboxConnector, BboxPatch,
-                                                   inset_axes)
+from mpl_toolkits.axes_grid1.inset_locator import BboxConnector, BboxPatch, inset_axes
 
 from ..base.base import CreateClassParams, ParamsGetter, bind_passed_params
 from ..style.label import Label

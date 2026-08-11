@@ -1,6 +1,9 @@
 # 1. Axes
 
-- [gsplot.axes](#gsplot.figure.axes.axes) provide a [list](https://docs.python.org/3/library/stdtypes.html#list) of [matplotlib.axes.Axes](https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.html). They are the most important part of a figure and are axes where the data are plotted. You can have multiple axes in a single figure by `mosaic`, each axis is compatible to [matplotlib](https://matplotlib.org).
+`gsplot.axes` returns a [list](https://docs.python.org/3/library/stdtypes.html#list)
+of [matplotlib.axes.Axes](https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.html)
+objects. You can create multiple axes in one figure with `mosaic`, and each
+axis remains compatible with [Matplotlib](https://matplotlib.org).
 
 ## Example
 
@@ -14,12 +17,15 @@
 ### Code
 
 :::{tip}
-`unit` provides a way to set [gsplot.label](#gsplot.style.label.label) of `10 px` (default) to all axes of the figure. This ensures consistency when creating presentations with a unified style.
-his ensures consistency when creating presentations with a unified style.
+`unit` lets the layout use a physical size such as `cm`, `mm`, or `pt`. This
+helps keep figure dimensions and the default label sizing consistent when a
+figure is prepared for a presentation or paper.
 
-**PowerPoint**: Set the `unit` to `cm` and insert the figure with the same size in PowerPoint. The font size will default to `10 pt` on the PowerPoint slide
+**PowerPoint**: Set `unit` to `cm` and insert the figure with the same size in
+PowerPoint.
 
-**Keynote**: Set the `unit` to `pt` and insert the figure with the same size in Keynote. The font size will default to `10 pt` on the Keynote slide
+**Keynote**: Set `unit` to `pt` and insert the figure with the same size in
+Keynote.
 :::
 
 ```{literalinclude} ../../../demo/1_axes/axes.py

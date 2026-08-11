@@ -6,7 +6,7 @@
 
 | Function                                                                  | A Brief Overview                                                  |
 | :---:                                                                     | :-------:                                                         |
-| [gsplot.scatter](#gsplot.plot.scatter.scatter)                            | Add scatter plot to to the axis specified by axis_target          |
+| [gsplot.scatter](#gsplot.plot.scatter.scatter)                            | Add a scatter plot to the target axis                              |
 | [gsplot.scatter_colormap](#gsplot.plot.scatter_colormap.scatter_colormap) | Add scatter plot with a colormap to axis specified by axis_target |
 
 ### Code

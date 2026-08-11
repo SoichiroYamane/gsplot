@@ -1,104 +1,40 @@
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
+import numpy as np
 import pytest
-from matplotlib.axes import Axes
 
 from gsplot.figure.axes import AxesHandler, Unit, UnitConv
 
 
-class TestUnitConv:
-    def setup_method(self):
-        # Creating instance of UnitConv
-        self.unit_conv = UnitConv()
+def test_unit_conversion() -> None:
+    converter = UnitConv()
 
-    def test_convert(self):
-        # Asserting that convert method works as expected
-        assert self.unit_conv.convert(1, Unit.MM) == pytest.approx(1 / 25.4)
-        assert self.unit_conv.convert(1, Unit.CM) == pytest.approx(1 / 2.54)
-        assert self.unit_conv.convert(1, Unit.IN) == pytest.approx(1)
-        assert self.unit_conv.convert(1, Unit.PT) == pytest.approx(1 / 72)
+    assert converter.convert(1, Unit.MM) == pytest.approx(1 / 25.4)
+    assert converter.convert(1, Unit.CM) == pytest.approx(1 / 2.54)
+    assert converter.convert(1, Unit.IN) == pytest.approx(1)
+    assert converter.convert(1, Unit.PT) == pytest.approx(1 / 72)
 
-        # Asserting that convert method raises a ValueError when the unit is invalid
-        with pytest.raises(ValueError):
-            self.unit_conv.convert(1, Unit.INVALID)
+    with pytest.raises(ValueError, match="Invalid unit"):
+        converter.convert(1, Unit.INVALID)
 
 
-class TestAxesHandler:
-    def setup_method(self):
-        # Creating instance of AxesHandler
-        self.axes_handler = AxesHandler(mosaic="AB")
+def test_axes_handler_creates_a_mosaic_and_applies_size() -> None:
+    import matplotlib.pyplot as plt
 
-    @patch("matplotlib.pyplot.gcf")
-    @patch("matplotlib.pyplot.ion")
-    def test_init_ion(self, mock_ion, mock_gcf):
-        # Mocking Axes class
-        mock_axes1 = MagicMock(spec=Axes)
-        mock_axes2 = MagicMock(spec=Axes)
+    with patch.object(plt, "ion") as ion:
+        handler = AxesHandler(size=(10, 8), unit="cm", mosaic="AB", ion=True)
+        handler.create_figure()
 
-        # Mocking gcf().subplot_mosaic() to return a dictionary of mock Axes
-        mock_gcf.return_value.subplot_mosaic.return_value = {
-            "A": mock_axes1,
-            "B": mock_axes2,
-        }
+        assert len(handler.get_axes) == 2
+        np.testing.assert_allclose(plt.gcf().get_size_inches(), [10 / 2.54, 8 / 2.54])
+        ion.assert_called_once()
 
-        # Asserting that ion() was called if self.ion is True
-        self.axes_handler.ion = True
-        self.axes_handler._open_figure()
-        mock_ion.assert_called_once()
 
-        # Reset the mock objects
-        mock_ion.reset_mock()
-        mock_gcf.reset_mock()
+def test_axes_handler_rejects_invalid_size_and_mosaic() -> None:
+    invalid_size = AxesHandler(size=(5,), mosaic="A")
+    with pytest.raises(ValueError, match="Size must contain exactly two elements"):
+        invalid_size.create_figure()
 
-    @patch("matplotlib.pyplot.gcf")
-    @patch("matplotlib.pyplot.ion")
-    def test_init_clear(self, mock_ion, mock_gcf):
-        # Mocking Axes class
-        mock_axes1 = MagicMock(spec=Axes)
-        mock_axes2 = MagicMock(spec=Axes)
-
-        # Mocking gcf().subplot_mosaic() to return a dictionary of mock Axes
-        mock_gcf.return_value.subplot_mosaic.return_value = {
-            "A": mock_axes1,
-            "B": mock_axes2,
-        }
-
-        # Asserting that gcf().clear() was called if self.clear is True
-        self.axes_handler.clear = True
-        self.axes_handler._open_figure()
-        mock_gcf.return_value.clear.assert_called_once()
-
-        # Asserting that gcf().set_size_inches() is called with the correct arguments
-        expected_size = [
-            int(x) for x in (5.0, 5.0)
-        ]  # Replace with your expected size tuple
-
-        self.axes_handler.size = expected_size  # Set the expected size
-
-        # Reset the mock objects before invoking _open_figure() again
-        mock_gcf.return_value.reset_mock()
-
-        # Call _open_figure() again to trigger set_size_inches()
-        self.axes_handler._open_figure()
-
-        # Assert that set_size_inches() was called exactly once with expected_size
-        mock_gcf.return_value.set_size_inches.assert_called_once_with(*expected_size)
-
-        # Asserting that the axes were correctly set
-        assert self.axes_handler.get_axes == [mock_axes1, mock_axes2]
-
-        # Reset the mock objects
-        mock_ion.reset_mock()
-        mock_gcf.reset_mock()
-
-    @patch("matplotlib.pyplot.gcf")
-    @patch("matplotlib.pyplot.ion")
-    def test_invalid_mosaic(self, mock_ion, mock_gcf):
-        # Asserting that a ValueError is raised when mosaic is an empty string
-        with pytest.raises(ValueError):
-            self.axes_handler.mosaic = ""
-            self.axes_handler._open_figure()
-
-        # Reset the mock objects
-        mock_ion.reset_mock()
-        mock_gcf.reset_mock()
+    invalid_mosaic = AxesHandler(mosaic="")
+    with pytest.raises(ValueError, match="Mosaic must be specified"):
+        invalid_mosaic.create_figure()

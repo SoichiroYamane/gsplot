@@ -14,8 +14,15 @@ def get_git_versions():
         raise FileNotFoundError(f"Versions file '{versions_file}' not found.")
 
     # Read versions (tags) from the file
-    with open(versions_file, "r") as f:
+    with open(versions_file, "r", encoding="utf-8") as f:
         tags = [line.strip() for line in f if line.strip()]
+
+    tags.sort(
+        key=lambda tag: tuple(
+            int(component) for component in tag.removeprefix("v").split(".")
+        ),
+        reverse=True,
+    )
 
     # Optionally, include branches
     # Get Git branches if needed
@@ -48,8 +55,8 @@ def generate_version_data():
         )
 
     # Add tag versions
-    for tag in sorted(tags, reverse=True):  # Sort tags in descending order
-        if tag == tags[-1]:
+    for index, tag in enumerate(tags):
+        if index == 0:
             version_info = {
                 "name": f"{tag} (stable)",  # Mark the latest tag as stable
                 "version": f"{tag}",
@@ -84,7 +91,7 @@ def write_version_switcher():
     output_dir.mkdir(parents=True, exist_ok=True)
 
     # Write version data to the JSON file
-    with open(output_file, "w") as f:
+    with open(output_file, "w", encoding="utf-8") as f:
         json.dump(versions, f, indent=2)
 
 

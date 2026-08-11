@@ -1,4 +1,5 @@
-from typing import Any
+from collections.abc import Sequence
+from typing import Any, cast
 
 import numpy as np
 from matplotlib.axes import Axes
@@ -182,9 +183,10 @@ class LineColormapSolid:
             self.x, self.y
         )
         norm = LineColormapBase()._create_cmap(self.cmapdata)
+        collection_segments = cast(Sequence[ArrayLike], segments.tolist())
 
         lc: LineCollection = LineCollection(
-            segments.tolist(), cmap=self.cmap, norm=norm
+            collection_segments, cmap=self.cmap, norm=norm
         )
         lc.set_array(self.cmapdata)
         lc.set_linewidth(self.linewidth)

@@ -1,99 +1,116 @@
-# 🛠️ Setting up gsplot for developer
+# Set up gsplot for development
 
-This document describes how to set up gsplot for development.
-
-```{Warning}
-An admonition note!
-```
-
-## Flow of setting up gsplot for development
-
-1. [Fork the gsplot repository](fork_the_gsplot_repository)
-2. [Clone the forked repository](clone_the_forked_repository)
-3. [Create an environment](create_an_environment)
-4. [Draw the test plot](draw_the_test_plot)
-
-(fork_the_gsplot_repository)=
-
-### 1. Fork the gsplot repository
-
-(clone_the_forked_repository)=
-
-### 2. Clone the forked repository
-
-```bash
-git clone xxxx
-```
-
-(create_an_environment)=
-
-### 3.Create an environment
-
-gsplot provides three ways to create an environment: Poetry, Local, and Docker. You can choose any of them according to your preference.
-
-::::{tab-set}
-
-:::{tab-item} Poetry
+This guide describes the supported local development workflow. The repository
+uses Poetry for dependency resolution and targets Python 3.10 or newer. Python
+3.12 is recommended for the locked development environment and for CI.
 
 ```{important}
-Ensure you have [Poetry](<https://python-poetry.org/docs/>) installed on your system.
+Use a virtual environment and run plotting tests with `MPLBACKEND=Agg` on
+headless machines. Do not commit `.venv`, build output, demo images, or local
+`.gsplot` metadata.
 ```
 
+## 1. Fork and clone
+
+Fork [the repository on GitHub](https://github.com/SoichiroYamane/gsplot), then
+clone your fork:
+
 ```bash
+git clone https://github.com/<your-account>/gsplot.git
 cd gsplot
+git remote add upstream git@github.com:SoichiroYamane/gsplot.git
+```
+
+## 2. Poetry environment
+
+Install [Poetry](https://python-poetry.org/docs/) 2.4.1 and select a compatible
+interpreter:
+
+```bash
+python -m pip install "poetry==2.4.1"
+poetry env use python3.12
 poetry install
-poetry shell
 ```
 
-:::
-
-:::{tab-item} Local
-
-```{important}
-- Ensure you have [pip](<https://pip.pypa.io/en/stable/>) installed on your system.
-- Ensure you have [setuptools](<https://setuptools.pypa.io/en/latest/>) installed on your system.
-```
+Run commands inside the environment with `poetry run`; there is no need to
+activate a shell:
 
 ```bash
-cd gsplot
-pip install -e .
+MPLBACKEND=Agg poetry run pytest -q
+poetry run black --check gsplot tests scripts
+poetry run isort --check-only gsplot tests scripts
+poetry run pyright gsplot
+poetry run pip-audit --local
 ```
 
-:::
+## 3. Install only the package locally
 
-:::{tab-item} Docker
-
-```{important}
-Ensure you have docker and X11 installed on your system. For MAC users, you can install [XQuartz](<https://www.xquartz.org/>), and it needs to allow connections from the network in the security settings in order to show an interactive plot.
-```
+If you need an editable runtime install without the full development group,
+create a virtual environment and install the package with pip:
 
 ```bash
-cd gsplot
-docker-composer up -d --build
-docker-composer exec gsplot bash
-cd opt
-poetry shell
+python3.12 -m venv .venv
+source .venv/bin/activate
+python -m pip install --upgrade pip
+python -m pip install -e .
 ```
 
-:::
+The Poetry workflow is preferred when running tests, type checkers, or docs
+because those tools are development dependencies.
 
-::::
+## 4. Docker (optional)
 
-(draw_the_test_plot)=
-
-### 4. Draw the test plot
-
-Our repository has a demo folder that contains a quick start script. You can run the script to draw a test plot.
+The repository includes a Compose service for users who prefer an isolated
+Linux environment. Start it from the repository root:
 
 ```bash
-python demo/test_plot/gsplot_demo.py
+docker compose up --build -d
+docker compose exec gsplot bash
+cd /root/opt
+MPLBACKEND=Agg poetry run pytest -q
 ```
 
-After running the script, you will see a plot like this:
+Interactive GUI plots require a host display configuration. For headless CI or
+documentation builds, use the `Agg` backend and do not rely on an X11 display.
 
-```{image} ../../../demo/test_plot/SC_cal.png
-:alt: SC_cal.png
-:class: bg-primary
-:width: 1500px
-:align: center
+## 5. Run a demo
+
+Demo scripts use paths relative to their own directories. Run them from the
+matching demo directory:
+
+```bash
+cd demo/test_plot
+MPLBACKEND=Agg python gsplot_demo.py
+```
+
+The demo writes its figure next to the script. PNG output is intentionally
+ignored by Git.
+
+## 6. Build documentation and the package
+
+The Sphinx configuration runs demo scripts to refresh image assets. Build the
+HTML site with:
+
+```bash
+MPLBACKEND=Agg poetry run sphinx-build -b html docs docs/_build/html
+```
+
+For a strict CI-equivalent build, treat warnings as errors:
+
+```bash
+MPLBACKEND=Agg poetry run sphinx-build -W -b html docs docs/_build/html
+```
+
+Build distribution artifacts without publishing them:
+
+```bash
+poetry build
+```
+
+Before submitting a change, also run:
+
+```bash
+python -m compileall -q gsplot tests scripts
+git diff --check
+git status --short
 ```

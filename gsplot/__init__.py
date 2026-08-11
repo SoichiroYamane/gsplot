@@ -1,6 +1,11 @@
 from .color.colormap import get_cmap
-from .config.config import (Config, config_dict, config_entry_option,
-                            config_load, save_metadata)
+from .config.config import (
+    Config,
+    config_dict,
+    config_entry_option,
+    config_load,
+    save_metadata,
+)
 from .data.load_file import load_file, load_file_fast
 from .figure.axes import axes
 from .figure.axes_inset import axes_inset, axes_inset_padding
@@ -14,12 +19,23 @@ from .plot.line_colormap_dashed import line_colormap_dashed
 from .plot.line_colormap_solid import line_colormap_solid
 from .plot.scatter import scatter
 from .plot.scatter_colormap import scatter_colormap
-from .style.graph import (graph_facecolor, graph_square, graph_square_axes,
-                          graph_transparent, graph_transparent_axes,
-                          graph_white, graph_white_axes)
+from .style.graph import (
+    graph_facecolor,
+    graph_square,
+    graph_square_axes,
+    graph_transparent,
+    graph_transparent_axes,
+    graph_white,
+    graph_white_axes,
+)
 from .style.label import label, label_add_index
-from .style.legend import (legend, legend_axes, legend_get_handlers,
-                           legend_handlers, legend_reverse)
+from .style.legend import (
+    legend,
+    legend_axes,
+    legend_get_handlers,
+    legend_handlers,
+    legend_reverse,
+)
 from .style.legend_colormap import legend_colormap
 from .style.ticks import ticks_off, ticks_on, ticks_on_axes
 from .style.title import title, title_axes

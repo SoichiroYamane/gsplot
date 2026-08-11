@@ -1,6 +1,7 @@
-# 4. Example Plot for Paper
+# 4. Example plot for a paper
 
-Create a cool plot with `gsplot` ✨
+This example combines configuration, data loading, inset axes, colormaps,
+labels, legends, and square plot geometry in a publication-style figure.
 
 ## Example
 
@@ -16,7 +17,7 @@ Create a cool plot with `gsplot` ✨
 | [gsplot.graph_square_axes](#gsplot.style.graph.graph_square_axes) | Make all axes square                                      |
 | [gsplot.label](#gsplot.style.label.label)                         | Add labels, limits, and ticks to all axes                 |
 | [gsplot.label_add_index](#gsplot.style.label.label_add_index)     | Add index to all axes                                     |
-| [gsplot.show](#gsplot.figure.show.show)                           | Show a figure and save it if store in gsplot.axes is True |
+| [gsplot.show](#gsplot.figure.show.show)                           | Save a figure when storage is enabled and optionally display it |
 
 ### Code
 
@@ -24,7 +25,8 @@ Create a cool plot with `gsplot` ✨
 ```
 
 ```{note}
-Data can be available from [here](https://github.com/SoichiroYamane/gsplot/tree/main/demo/data)
+The example data is included in the repository and is also available
+[here](https://github.com/SoichiroYamane/gsplot/tree/main/demo/data).
 ```
 
 ### Configuration

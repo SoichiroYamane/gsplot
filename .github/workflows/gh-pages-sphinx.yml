@@ -3,16 +3,14 @@ name: GitHub Pages
 on:
   push:
     branches:
-      - "main"  
+      - "main"
   release:
     types:
-      - published 
+      - published
   workflow_dispatch:
 
 permissions:
   contents: read
-  pages: write
-  id-token: write
 
 concurrency:
   group: "pages"
@@ -20,131 +18,88 @@ concurrency:
 
 jobs:
   build:
+    permissions:
+      contents: read
+      pages: write
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
 
       - name: Setup Pages
-        uses: actions/configure-pages@v5
+        uses: actions/configure-pages@983d7736d9b0ae728b81ab479565c72886d7745b # v5
 
       - name: Setup Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
         with:
           python-version: '3.12'
 
-      - name: Upgrade pip and setuptools
-        run: |
-          pip install --upgrade pip setuptools
-
-      - name: Install latest Poetry
-        uses: snok/install-poetry@v1
-        with:
-          version: latest
-          virtualenvs-create: true
-          virtualenvs-in-project: false
+      - name: Install pinned Poetry
+        run: python -m pip install --disable-pip-version-check "poetry==2.4.1"
 
       - name: Verify Poetry version
         run: poetry --version
 
-      - name: Clear Poetry cache
-        run: |
-          poetry cache clear --all pypi
-          poetry cache clear --all virtualenvs
-
       - name: Install dependencies
-        run: poetry install --no-root
-
-      - name: Install gsplot locally
-        run: |
-          poetry run pip install -e .
-      
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0  # collect all history for git tags
-
-      - name: Debug tags
-        run: |
-          echo "Current ref: $GITHUB_REF"
-          git tag
-          git branch
+        run: poetry install --no-interaction
 
       - name: Create switcher.json
         run: |
           cd docs/_static
           poetry run python create_switcher.py
 
-      - name: Debug list of files
-        run: |
-          ls -R ./docs/_static
-          cat ./docs/_static/switcher.json
-
-
       - name: Build with Sphinx
         run: |
-          CURRENT_DIR=$(pwd)
-          export PYTHONPATH="$PYTHONPATH:$CURRENT_DIR"
+          export MPLBACKEND=Agg
           poetry run make -C docs clean
           poetry run make -C docs html-dev-deploy
-        
-      - name: Stash local changes
-        run: |
-          git stash --include-untracked || echo "No changes to stash"
 
       - name: Run docs/multiversions.sh
         run: |
           cd docs
           poetry run bash multiversions.sh
 
-      - name: Restore stashed changes
-        run: |
-          git stash pop || echo "No stashed changes to restore"
-
       - name: Build with Jekyll
-        uses: actions/jekyll-build-pages@v1
+        uses: actions/jekyll-build-pages@44a6e6beabd48582f863aeeb6cb2151cc1716697 # v1
         with:
           source: ./
           destination: ./_site
 
       - name: Clean _site directory
         run: |
-          sudo chmod -R 777 ./_site
+          chmod -R u+rwX ./_site
           find ./_site -type f -name "README.md" -delete
 
-
-      - name: Debug list of files
-        run: |
-          ls -R ./docs/_build/html/
 
       - name: Copy latest version as stable
         run: |
           echo "Finding the latest version..."
-          latest_version=""
-          for dir in ./docs/_build/html/v[0-9]*; do
-            dir_name=$(basename "$dir")
-            if [[ -z "$latest_version" || "$dir_name" > "$latest_version" ]]; then
-              latest_version="$dir_name"
-            fi
-          done
+          latest_version="$(sort -V docs/versions | tail -n 1)"
           echo "Latest version detected: $latest_version"
 
           echo "Copying the latest version to stable..."
+          test -n "$latest_version"
           mkdir -p ./docs/_build/html/stable
           cp -r "./docs/_build/html/$latest_version/"* ./docs/_build/html/stable/
 
       - name: Combine Sphinx and Jekyll Outputs
         run: |
-          sudo mkdir -p ./_site/docs
+          mkdir -p ./_site/docs
           cp -r ./docs/_build/html/* ./_site/docs/
 
 
       - name: Upload combined output as GitHub Pages artifact
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa # v3
         with:
           path: ./_site/docs
 
   deploy:
+    permissions:
+      pages: write
+      id-token: write
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
@@ -153,4 +108,4 @@ jobs:
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e # v4

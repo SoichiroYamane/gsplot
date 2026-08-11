@@ -1,0 +1,4 @@
+interface:
+  display_name: "gsplot Maintenance"
+  short_description: "Secure, redesign, and maintain public gsplot"
+  default_prompt: "Use $gsplot-maintenance to review or redesign gsplot safely, process security and PR work, and run the appropriate checks."

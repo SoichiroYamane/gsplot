@@ -63,7 +63,7 @@ class Config:
     Methods
     --------------------
     load(config_path=None)
-        Loads configuration data from a specified path or reloads the default configuration.
+        Loads configuration data from a specified path or searches the default locations again.
     get_config_entry_option(key)
         Retrieves a specific entry from the configuration dictionary based on the provided key.
 
@@ -129,12 +129,12 @@ class Config:
 
     def load(self, config_path: str | None = None) -> dict[str, Any]:
         """
-        Loads configuration data from a file or reloads the current configuration.
+        Loads configuration data from a file or searches the default locations again.
 
         Parameters
         --------------------
         config_path : str or None, optional
-            The path to the configuration file. If `None`, reloads the existing configuration (default is None).
+            The path to the configuration file. If `None`, searches the default locations again (default is None).
 
         Returns
         --------------------
@@ -149,9 +149,7 @@ class Config:
         {'setting1': 'value1', 'setting2': 'value2'}
         """
         loader: ConfigLoad = ConfigLoad(config_path)
-        config_dict: dict[str, Any] = (
-            loader.init_load() if config_path else loader.get_config()
-        )
+        config_dict: dict[str, Any] = loader.init_load()
         self.config_dict = config_dict
 
         # Save metadata
@@ -322,10 +320,14 @@ class ConfigLoad:
         >>> rc_params = {"figure.dpi": 100, "backend": "TkAgg"}
         >>> ConfigLoad.apply_rc_params(rc_params)
         """
-        backend = rc_params.pop("backends", None)
+        params = dict(rc_params)
+        backend = params.pop("backend", None)
+        if backend is None:
+            # Keep accepting the historical plural spelling in existing files.
+            backend = params.pop("backends", None)
         if backend:
-            mpl.use(backend)
-        rcParams.update(rc_params)
+            mpl.use(str(backend))
+        rcParams.update(cast(Any, params))
 
     def get_config(self) -> dict[str, Any]:
         """
@@ -346,13 +348,13 @@ class ConfigLoad:
         """
         if not self.config_path:
             return {}
-        with open(self.config_path, "r") as f:
+        with open(self.config_path, "r", encoding="utf-8") as f:
             return cast(dict[str, Any], json.load(f))
 
 
 def config_load(config_path: str | None = None) -> dict[str, Any]:
     """
-    Loads the configuration data from a specified file or reloads the existing configuration.
+    Loads configuration data from a specified file or searches the default locations again.
 
     This function initializes the `Config` singleton, loads the configuration file,
     and returns the loaded configuration dictionary.
@@ -360,7 +362,7 @@ def config_load(config_path: str | None = None) -> dict[str, Any]:
     Parameters
     --------------------
     config_path : str or None, optional
-        The path to the configuration file. If `None`, the existing configuration is reloaded (default is None).
+        The path to the configuration file. If `None`, the default locations are searched again (default is None).
 
     Returns
     --------------------

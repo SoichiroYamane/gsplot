@@ -1,6 +1,6 @@
 from collections.abc import Hashable
 from enum import Enum
-from typing import Any, Generic, Literal, TypeVar
+from typing import Any, Generic, Literal, TypeVar, cast
 
 import matplotlib.pyplot as plt
 from matplotlib.axes import Axes
@@ -240,7 +240,7 @@ class AxesHandler(Generic[_T]):
         list of matplotlib.axes.Axes
             A list of axes in the current figure.
         """
-        return plt.gcf().axes
+        return cast(list[Axes], plt.gcf().axes)
 
     def create_figure(self) -> None:
         """

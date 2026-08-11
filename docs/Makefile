@@ -6,6 +6,7 @@
 SPHINXOPTS    ?=
 SPHINXBUILD   ?= sphinx-build
 SPHINXMULTI   ?= sphinx-multiversion
+PYTHON        ?= python
 SOURCEDIR     = .
 BUILDDIR      = _build
 
@@ -29,15 +30,18 @@ clear:
 autobuild:
 	sphinx-autobuild "$(SOURCEDIR)" "$(BUILDDIR)/html" --watch "../gsplot" --watch "reference" --watch "api_reference" --host 0.0.0.0 -d "$(BUILDDIR)/doctrees" --pre-build "make clean html" --ignore "$(BUILDDIR)/*" --re-ignore "^\..*" --re-ignore "__pycache__" --re-ignore "\.DS_Store" --re-ignore "./api_reference/apis" --re-ignore "./api_reference/apis.rst"
 
+# Run all demo scripts explicitly. The Sphinx configuration also performs this
+# step for normal builds so that generated image assets are never stale.
+build-images:
+	MPLBACKEND=Agg $(PYTHON) ../scripts/docs/build_demo_images.py
+
 # Multiversion target: build documentation for multiple versions
 multiversion:
 	$(SPHINXMULTI) "$(SOURCEDIR)" "$(BUILDDIR)/html"
 
 html-dev-deploy:
-	@echo "Setting __version__ to 'dev' in gsplot/version.py"
-	sed -i "s/^__version__ = .*/__version__ = 'dev'/" ../gsplot/version.py
 	@echo "Building HTML documentation..."
-	$(SPHINXBUILD) -b html "$(SOURCEDIR)" "$(BUILDDIR)/html"
+	MPLBACKEND=Agg $(SPHINXBUILD) -b html "$(SOURCEDIR)" "$(BUILDDIR)/html"
 
 # Catch-all target: route all unknown targets to Sphinx using the new
 # "make mode" option.  $(O) is meant as a shortcut for $(SPHINXOPTS).
