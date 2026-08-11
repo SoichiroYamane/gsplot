@@ -61,11 +61,14 @@ def test_subplots_reuses_without_resizing_and_clears_only_when_requested() -> No
 
     figure, _ = subplots(figsize=(2, 3))
     original_size = figure.get_size_inches().copy()
-    reused, axes = subplots(fig=figure, figsize=(10, 10), clear=False)
+    reused, axes = subplots(fig=figure, clear=False)
     assert reused is figure
     assert np.allclose(figure.get_size_inches(), original_size)
     assert axes.figure is figure
     assert len(figure.axes) == 2
+
+    with pytest.raises(LayoutError, match="figsize"):
+        subplots(fig=figure, figsize=(10, 10), clear=False)
 
     subplots(fig=figure, clear=True)
     assert len(figure.axes) == 1

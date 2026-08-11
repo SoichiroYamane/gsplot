@@ -16,7 +16,7 @@ from .._core.numerics import validate_color_values
 from .._core.types import NormalizeSpec
 
 
-def _validate_norm(norm: NormalizeSpec | tuple[float, float] | None) -> Any:
+def _validate_norm(norm: NormalizeSpec | None) -> Any:
     """Validate and normalize the supported normalizer forms."""
 
     if norm is None or callable(norm):
@@ -70,7 +70,7 @@ def map_values(
     values: ArrayLike,
     *,
     cmap: str,
-    norm: NormalizeSpec | tuple[float, float] | None = None,
+    norm: NormalizeSpec | None = None,
 ) -> NDArray[np.float64]:
     """Map finite values to RGBA rows without touching an Axes."""
 
@@ -89,7 +89,7 @@ def sample_cmap(
     *,
     count: int | None = None,
     values: ArrayLike | None = None,
-    norm: NormalizeSpec | tuple[float, float] | None = None,
+    norm: NormalizeSpec | None = None,
     reverse: bool = False,
 ) -> NDArray[np.float64]:
     """Sample a Matplotlib colormap as an ``(n, 4)`` RGBA array.

@@ -17,11 +17,14 @@ ColorSpec: TypeAlias = str | RGBColor
 MosaicSpec: TypeAlias = str | Sequence[Sequence[str | None]]
 
 
-class NormalizeSpec(Protocol):
+class _NormalizeProtocol(Protocol):
     """Protocol for a Matplotlib-compatible color normalizer."""
 
     def __call__(self, value: Any, clip: bool | None = None) -> Any:
         """Normalize one or more scalar values."""
+
+
+NormalizeSpec: TypeAlias = tuple[float, float] | _NormalizeProtocol
 
 
 _SCALES = {"linear", "log", "symlog", "logit"}

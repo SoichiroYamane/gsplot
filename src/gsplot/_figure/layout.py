@@ -45,6 +45,15 @@ def _validate_mosaic(mosaic: MosaicSpec | None) -> MosaicSpec | None:
         raise LayoutError("mosaic must contain non-empty rows")
     if any(isinstance(row, (str, bytes)) for row in rows):
         raise LayoutError("mosaic rows must be sequences of labels")
+    width = len(rows[0])
+    if any(len(row) != width for row in rows):
+        raise LayoutError("mosaic rows must be rectangular")
+    for row_index, row in enumerate(rows):
+        for column_index, label in enumerate(row):
+            if label is not None and (not isinstance(label, str) or not label.strip()):
+                raise LayoutError(
+                    f"mosaic label at ({row_index}, {column_index}) must be text or None"
+                )
     return mosaic
 
 
@@ -194,8 +203,24 @@ def subplots(
         config=config,
     )
 
+    if not isinstance(clear, bool):
+        raise LayoutError("clear must be a boolean")
     if fig is not None and not isinstance(fig, Figure):
         raise LayoutError("fig must be a Matplotlib Figure")
+    if fig is not None:
+        if figsize is not None:
+            raise LayoutError("figsize cannot be supplied when reusing a Figure")
+        if config is not None:
+            if config.figure.figsize is not None:
+                raise LayoutError(
+                    "config.figure.figsize cannot be used when reusing a Figure"
+                )
+            if config.figure.unit != "in":
+                raise LayoutError(
+                    "a non-default config.figure.unit cannot be used when reusing a Figure"
+                )
+        if unit is not None and unit != "in":
+            raise LayoutError("a non-default unit cannot be used when reusing a Figure")
     target = fig
     if target is None:
         target = plt.figure(

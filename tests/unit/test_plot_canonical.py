@@ -22,9 +22,8 @@ def test_sample_cmap_is_bounded_and_deterministic() -> None:
 
     constant = sample_cmap("viridis", values=[4.0, 4.0])
     assert np.allclose(constant[0], sample_cmap("viridis", values=[0.5])[0])
-    with pytest.raises(PlotError, match="exactly one"):
-        sample_cmap("viridis")
-    with pytest.raises(PlotError, match="exactly one"):
+    assert sample_cmap("viridis").shape == (10, 4)
+    with pytest.raises(PlotError, match="cannot"):
         sample_cmap("viridis", count=2, values=[0, 1])
 
 

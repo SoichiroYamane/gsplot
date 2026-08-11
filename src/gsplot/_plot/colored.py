@@ -57,7 +57,7 @@ _COLORED_SCATTER_PROPS = frozenset(
 
 def _validate_cmap_args(
     cmap: str | None,
-    norm: NormalizeSpec | tuple[float, float] | None,
+    norm: NormalizeSpec | None,
     config: Config | None,
 ) -> tuple[str, NormalizeSpec | tuple[float, float] | None]:
     """Validate explicit color configuration before an Axes is touched."""
@@ -115,7 +115,7 @@ def cmap_line(
     values: ArrayLike,
     *,
     cmap: str | None = None,
-    norm: NormalizeSpec | tuple[float, float] | None = None,
+    norm: NormalizeSpec | None = None,
     props: Mapping[str, Any] | None = None,
     config: Config | None = None,
 ) -> LineCollection:
@@ -142,7 +142,7 @@ def cmap_dash(
     *,
     dash: tuple[float, float] = (5.0, 5.0),
     cmap: str | None = None,
-    norm: NormalizeSpec | tuple[float, float] | None = None,
+    norm: NormalizeSpec | None = None,
     props: Mapping[str, Any] | None = None,
     config: Config | None = None,
 ) -> tuple[LineCollection, ...]:
@@ -190,7 +190,7 @@ def cmap_scatter(
     values: ArrayLike,
     *,
     cmap: str | None = None,
-    norm: NormalizeSpec | tuple[float, float] | None = None,
+    norm: NormalizeSpec | None = None,
     props: Mapping[str, Any] | None = None,
     config: Config | None = None,
 ) -> PathCollection:
