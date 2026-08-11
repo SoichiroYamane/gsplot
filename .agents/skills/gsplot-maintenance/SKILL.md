@@ -112,7 +112,10 @@ tracked YAML source:
    Re-run actionlint and a workflow security scanner after changes.
 5. Do not protect `main` until tracked-file automation is compatible with the
    protection rule. Replace direct privileged commits with a bounded,
-   loop-safe pull-request workflow or record the explicit blocker in the Issue.
+   loop-safe pull-request workflow. If the restricted Actions token cannot
+   create a pull request, allow only a fixed topic-branch push plus a
+   public-safe manual PR handoff in the job summary; record that fallback in
+   the Issue and never add approval or direct-main bypass capability.
 6. Prefer a reviewable main-branch policy: required pull request, required CI
    and security checks, resolved conversations, linear history, stale-review
    dismissal, latest-push approval, and no force-push or deletion. Require at

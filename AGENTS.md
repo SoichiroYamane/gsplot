@@ -98,9 +98,13 @@ machine-specific operational details here.
   administrative bypass; the public maintenance process still requires Review
   1 and Review 2 records before merge. Restore both approval settings when a
   second maintainer becomes available.
-- Automation that generates tracked files must create or update a reviewable
-  pull request. Do not grant a workflow a direct-main bypass merely to preserve
-  an auto-commit convenience.
+- Automation that generates tracked files must send them through the same
+  reviewable pull-request path as other changes. When the restricted Actions
+  token cannot create pull requests, it may update only the fixed
+  `automation/version-metadata` topic branch and must write a public-safe manual
+  PR link to the job summary. A maintainer then opens the PR; never grant a
+  workflow a direct-main bypass or pull-request approval capability merely to
+  preserve automation convenience.
 - A repository-settings change needs a public Issue, a linked Draft PR or
   equivalent implementation record, explicit user authorization, and a
   read-back verification after the API/UI mutation. Do not change secrets,

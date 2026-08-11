@@ -1,9 +1,8 @@
-# .github/workflows/build.yml
+# .github/workflows/version_log.yml
 name: Build and Save Version Info
 
 permissions:
   contents: write
-  pull-requests: write
 
 on:
   push:
@@ -57,9 +56,8 @@ jobs:
           printf "__version__ = '%s'\n" "$PACKAGE_VERSION" > gsplot/version.py
           printf "__commit__ = '%s'\n" "$COMMIT_HASH" >> gsplot/version.py
 
-      - name: Create or update version metadata pull request
+      - name: Push version metadata branch for manual pull request
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           VERSION_BRANCH: automation/version-metadata
         run: |
           set -euo pipefail
@@ -75,24 +73,21 @@ jobs:
           git add gsplot/version.py
           git commit --message "chore: update version metadata"
 
-          gh auth setup-git
           git fetch origin "$VERSION_BRANCH" || true
           git push --force-with-lease origin "HEAD:$VERSION_BRANCH"
 
-          if ! gh pr list \
-            --repo "$GITHUB_REPOSITORY" \
-            --base main \
-            --head "$VERSION_BRANCH" \
-            --state open \
-            --json number \
-            --jq '.[0].number' | grep -q '[0-9]'; then
-            gh pr create \
-              --repo "$GITHUB_REPOSITORY" \
-              --base main \
-              --head "$VERSION_BRANCH" \
-              --title "chore: update version metadata" \
-              --body "Generated from main commit $GITHUB_SHA. Review and merge this pull request to update the tracked package version and commit metadata."
-          fi
+          VERSION_COMPARE_URL="https://github.com/${GITHUB_REPOSITORY}/compare/main...${VERSION_BRANCH}?expand=1"
+          {
+            echo "## Version metadata is ready for manual review"
+            echo
+            echo "The restricted Actions token intentionally does not create or approve pull requests."
+            echo "The generated branch \`${VERSION_BRANCH}\` was pushed successfully."
+            echo
+            echo "[Open a pull request from the generated branch](${VERSION_COMPARE_URL})"
+            echo
+            echo "Review and merge it through the protected \`main\` workflow using the public Issue, Review 1, and Review 2 protocol."
+          } >> "$GITHUB_STEP_SUMMARY"
+          echo "::notice title=Version metadata PR required::Open ${VERSION_COMPARE_URL} and review the generated metadata."
 
       - name: Build package
         run: poetry build
