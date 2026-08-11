@@ -363,13 +363,13 @@ Run the smallest relevant set, then expand for the affected surface:
 MPLBACKEND=Agg poetry run pytest -q
 
 # Formatting and imports
-poetry run black --check src/gsplot tests scripts docs/conf.py
-poetry run isort --profile black --check-only src/gsplot tests scripts docs/conf.py
+poetry run black --check src/gsplot tests scripts tools/maintenance docs/conf.py
+poetry run isort --profile black --check-only src/gsplot tests scripts tools/maintenance docs/conf.py
 
 # Types and syntax
 poetry run mypy --config-file .mypy.ini src/gsplot
 poetry run pyright src/gsplot
-python -m compileall -q src/gsplot tests scripts
+python -m compileall -q src/gsplot tests scripts tools/maintenance
 
 # Documentation and packaging, only when relevant
 MPLBACKEND=Agg poetry run sphinx-build -W -b html docs docs/_build/html

@@ -388,13 +388,13 @@ Run the checks relevant to the changed surface:
 MPLBACKEND=Agg poetry run pytest -q
 
 # Formatting and imports
-poetry run black --check src/gsplot tests scripts
-poetry run isort --check-only src/gsplot tests scripts
+poetry run black --check src/gsplot tests scripts tools/maintenance
+poetry run isort --check-only src/gsplot tests scripts tools/maintenance
 
 # Types and syntax
 poetry run mypy --config-file .mypy.ini src/gsplot
 poetry run pyright src/gsplot
-python -m compileall -q src/gsplot tests scripts
+python -m compileall -q src/gsplot tests scripts tools/maintenance
 
 # Documentation and packaging
 MPLBACKEND=Agg poetry run sphinx-build -W -b html docs docs/_build/html
