@@ -623,20 +623,21 @@ woff = ["brotli (>=1.0.1) ; platform_python_implementation == \"CPython\"", "bro
 
 [[package]]
 name = "furo"
-version = "2024.8.6"
+version = "2025.12.19"
 description = "A clean customisable Sphinx documentation theme."
 optional = false
 python-versions = ">=3.8"
 groups = ["dev"]
 files = [
-    {file = "furo-2024.8.6-py3-none-any.whl", hash = "sha256:6cd97c58b47813d3619e63e9081169880fbe331f0ca883c871ff1f3f11814f5c"},
-    {file = "furo-2024.8.6.tar.gz", hash = "sha256:b63e4cee8abfc3136d3bc03a3d45a76a850bada4d6374d24c1716b0e01394a01"},
+    {file = "furo-2025.12.19-py3-none-any.whl", hash = "sha256:bb0ead5309f9500130665a26bee87693c41ce4dbdff864dbfb6b0dae4673d24f"},
+    {file = "furo-2025.12.19.tar.gz", hash = "sha256:188d1f942037d8b37cd3985b955839fea62baa1730087dc29d157677c857e2a7"},
 ]
 
 [package.dependencies]
+accessible-pygments = ">=0.0.5"
 beautifulsoup4 = "*"
 pygments = ">=2.7"
-sphinx = ">=6.0,<9.0"
+sphinx = ">=7.0,<10.0"
 sphinx-basic-ng = ">=1.0.0b2"
 
 [[package]]
@@ -2729,4 +2730,4 @@ packaging = ">=24.0"
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.10"
-content-hash = "b32dd229f612c68fde3f30b2eab2df8e36348304128a6038cfbb9511e250cde9"
+content-hash = "0c6aae769731d62a7f0307a4f484085bd64c0f09b9d8db00b4e994bbf4084ec9"
