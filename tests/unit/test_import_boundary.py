@@ -50,3 +50,22 @@ assert callable(gsplot.line)
 assert 'matplotlib.pyplot' in sys.modules
 """)
     assert result.returncode == 0, result.stderr
+
+
+def test_backend_selection_is_explicit_and_locked_after_pyplot() -> None:
+    """Backend selection works before pyplot and fails after the lock."""
+
+    result = _run_probe("""
+import gsplot
+import matplotlib
+gsplot.use_backend('Agg')
+assert matplotlib.get_backend().lower() == 'agg'
+import matplotlib.pyplot
+try:
+    gsplot.use_backend('Agg')
+except Exception as error:
+    assert type(error).__name__ == 'LayoutError'
+else:
+    raise AssertionError('backend selection after pyplot must fail')
+""")
+    assert result.returncode == 0, result.stderr
