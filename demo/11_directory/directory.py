@@ -1,9 +1,5 @@
-from pathlib import Path
-
 import gsplot as gs
 
-print("current directory:", Path.cwd())
-print("home directory:", Path.home())
-
-# Canonical gsplot operations receive paths explicitly; they do not change cwd.
+# Canonical gsplot operations receive paths explicitly; they do not change the
+# caller's directory or inspect machine-specific path state.
 print("package metadata:", gs.build_info())

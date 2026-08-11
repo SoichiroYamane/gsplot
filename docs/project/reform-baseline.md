@@ -49,6 +49,48 @@ Documentation and package-artifact validation remain required for the
 packaging and documentation slices; they are not inferred from the checks
 above.
 
+## Documentation/demo output allowlist
+
+The docs build runs every demo in an isolated headless subprocess. The only
+files a demo may create or modify are the declared image outputs below; source
+data, configuration, and Python files are inputs and must remain unchanged.
+
+| Demo | Allowed outputs |
+| --- | --- |
+| `0_hello_world`, `11_directory` | none |
+| `1_axes` | `axes.png`, `axes.pdf` |
+| `2_line_and_label` | `line_and_label.png`, `line_and_label.pdf` |
+| `3_config` | `config.png`, `config.pdf` |
+| `4_paper_plot`, `test_plot` | `SC_cal.png`, `SC_cal.pdf` |
+| `5_scatter` | `scatter.png`, `scatter.pdf` |
+| `6_line_colormap` | `line_colormap.png`, `line_colormap.pdf` |
+| `7_graph_white` | `graph_white.png`, `graph_white.pdf` |
+| `8_graph_transparent` | `graph_transparent.png`, `graph_transparent.pdf` |
+| `9_compatibility` | `compatibility.png`, `compatibility.pdf` |
+| `10_subplots` | `subplots.png` |
+
+The allowlist is enforced by `docs/conf.py`; an unexpected created or modified
+file fails the Sphinx build. Demo subprocesses run with bytecode generation
+disabled, and the compatibility demo's non-interactive display warning is
+expected under the Agg backend.
+
+## Reform validation snapshot
+
+The canonical implementation now reports 85.99 percent coverage across the
+`_core`, `_config`, `_figure`, `_plot`, `_style`, and `_io` modules, while the
+pure `_core` modules report 98.67 percent. These are enforced as CI minimums
+of 85 percent and 95 percent respectively; historical compatibility modules
+remain covered by their characterization tests but are not part of the
+canonical implementation threshold.
+
+The reform benchmark uses 30 warmed iterations and closes each temporary
+Figure. Its recorded medians are approximately 45.65 ms for a fresh import,
+2.68 ms for an ordinary line, 2.93 ms for an ordinary scatter, and 3.20 ms
+for a colored line. The memory-retention integration test creates and closes
+repeated Figures and confirms that the canonical package owns no Figure/Axes
+registry or cache. Values are environment-dependent reference points, not
+machine-specific performance promises.
+
 ## Import and state characterization
 
 An isolated-process probe observed the following behavior when importing the

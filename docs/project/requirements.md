@@ -115,11 +115,11 @@ Configuration is optional. When used, gsplot must:
 - resolve values with this precedence:
 
   1. explicit function arguments;
-  2. the matching function entry in `gsplot.json`;
+  2. the supplied immutable `Config` value;
   3. the function signature defaults;
 
-- preserve supported aliases and pass-through keyword arguments when a
-  configurable API is changed;
+- translate legacy function-entry configuration only inside the compatibility
+  facade during the documented migration window;
 - avoid mutating caller-owned configuration dictionaries or unrelated
   Matplotlib `rcParams`; and
 - apply `rcParams` and backend settings with the documented process-wide
@@ -223,8 +223,8 @@ typed `AxisSpec`, `Theme`, and related values and never rely on a global
 
 ### Compatibility and documentation
 
-All current root exports and every module/symbol in the pre-cutover API
-reference have a reviewed mapping in
+All legacy root forms and every module/symbol in the pre-cutover API reference
+have a reviewed mapping in
 [`api-migration.md`](api-migration.md). They remain forwarding-only adapters
 through 0.4.x and 1.x unless a separate Issue changes that decision. The
 candidate removal point is no earlier than 2.0 and requires downstream audit
@@ -285,6 +285,8 @@ Relevant changes must pass focused tests and then the applicable broad checks:
 - demo and multiversion documentation builds when documentation paths change;
 - Poetry package builds with inspection of both artifacts;
 - local dependency auditing and available secret/workflow scanners; and
+- coverage reporting with at least 85 percent across canonical implementation
+  modules and at least 95 percent across the pure `_core` modules; and
 - `git diff --check` plus a complete manual diff review.
 
 Skipped or unavailable checks must be reported as blocked or skipped, never as

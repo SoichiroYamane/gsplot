@@ -39,6 +39,24 @@ jobs:
           MPLBACKEND: Agg
         run: poetry run pytest -q
 
+      - name: Enforce coverage thresholds
+        env:
+          MPLBACKEND: Agg
+        run: |
+          poetry run pytest -q \
+            --cov=src/gsplot/_core \
+            --cov=src/gsplot/_config \
+            --cov=src/gsplot/_figure \
+            --cov=src/gsplot/_plot \
+            --cov=src/gsplot/_style \
+            --cov=src/gsplot/_io \
+            --cov-report=term-missing \
+            --cov-fail-under=85
+          poetry run pytest -q \
+            --cov=src/gsplot/_core \
+            --cov-report=term-missing \
+            --cov-fail-under=95
+
       - name: Run type checks
         run: |
           poetry run mypy --config-file .mypy.ini src/gsplot
@@ -63,6 +81,10 @@ jobs:
         run: |
           python -m pip install --disable-pip-version-check "poetry==2.4.1"
           poetry install --no-interaction
+
+      - name: Verify installed package boundary
+        run: |
+          poetry run python -c 'import gsplot; from pathlib import Path; assert Path(gsplot.__file__).parent.name == "gsplot"'
 
       - name: Build documentation with warnings as errors
         env:

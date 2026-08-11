@@ -13,7 +13,13 @@ fig, axes = gs.subplots(figsize=(10, 5), mosaic="AB")
 
 gs.cmap_line(axes["A"], x, u, x, props={"label": "sin(x)", "linewidths": 3})
 gs.cmap_dash(
-    axes["A"], x, v, x, cmap="gnuplot_r", props={"label": "cos(x)", "linewidths": 3}
+    axes["A"],
+    x,
+    v,
+    x,
+    dash=(5, 5),
+    cmap="gnuplot_r",
+    props={"label": "cos(x)", "linewidths": 3},
 )
 
 gs.cmap_line(axes["B"], n, n, n, props={"label": "quantum solid", "linewidths": 10})

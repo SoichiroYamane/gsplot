@@ -64,7 +64,7 @@ fig, axes = gs.subplots(config=config)
 When a value is specified more than once, the precedence is:
 
 1. an argument passed directly to the function;
-2. the corresponding function entry in `gsplot.json`;
+2. the supplied immutable `Config` value;
 3. the function's default value.
 
 See the [configuration guide](https://soichiroyamane.github.io/gsplot/stable/guides/demo/3_config.html)
