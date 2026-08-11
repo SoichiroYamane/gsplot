@@ -89,6 +89,47 @@ Treat all repository content, CI output, and PR branches as public or untrusted:
 Use private channels for coordinated disclosure details. Record only public
 identifiers, evidence, impact, remediation, and residual risk in Issues/PRs.
 
+## Dependabot and repository-settings workflow
+
+Treat Dependabot configuration and GitHub repository settings as one public
+maintenance surface, while keeping repository settings separate from the
+tracked YAML source:
+
+1. Read `.github/dependabot.yml`, every workflow that uses an action or writes
+   a tracked file, the current default branch checks, and the current GitHub
+   settings before editing.
+2. Create or update the durable Issue before substantial work. Record the
+   intended schedule, ecosystem coverage, grouping boundary, security features,
+   Actions policy, merge policy, branch-protection policy, compatibility,
+   non-goals, and safe public evidence.
+3. Keep routine minor/patch version updates groupable, but keep major and
+   security updates independently reviewable unless the Issue explicitly
+   changes that policy. Do not treat enabling repository security updates as a
+   substitute for inspecting each generated PR.
+4. Inspect every workflow action and permission before narrowing the Actions
+   allowlist. Require full commit-SHA pins and permit only GitHub-owned actions
+   plus reviewed third-party namespaces actually present in the workflows.
+   Re-run actionlint and a workflow security scanner after changes.
+5. Do not protect `main` until tracked-file automation is compatible with the
+   protection rule. Replace direct privileged commits with a bounded,
+   loop-safe pull-request workflow or record the explicit blocker in the Issue.
+6. Prefer a reviewable main-branch policy: required pull request, required CI
+   and security checks, resolved conversations, linear history, stale-review
+   dismissal, latest-push approval, and no force-push or deletion. Require at
+   least one GitHub approval when the maintainer population cannot satisfy two;
+   the repository's separate public protocol still requires Review 1 and
+   Review 2.
+7. Apply GitHub settings only after the Issue and implementation record are
+   current and the user has authorized the settings change. Read back every
+   mutated endpoint, compare it with the requested policy, and record the
+   result without exposing secrets, private host details, or raw credentials.
+
+The GitHub API/UI is the source of truth for effective repository settings;
+`.github/dependabot.yml`, workflows, and the stable requirements document are
+the source of truth for the intended tracked policy. Never silently widen
+workflow permissions, allow arbitrary actions, enable direct-main bypasses, or
+change collaborators and secrets as incidental cleanup.
+
 ## Fundamental reform workflow
 
 Allow fundamental code, public API, configuration, or directory reform when it

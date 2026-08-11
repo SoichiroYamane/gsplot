@@ -3,22 +3,28 @@ name: Build and Save Version Info
 
 permissions:
   contents: write
+  pull-requests: write
 
 on:
   push:
     branches:
       - main
+    paths-ignore:
+      - "gsplot/version.py"
 
 jobs:
   build:
     if: github.actor != 'github-actions[bot]'
+    concurrency:
+      group: version-metadata
+      cancel-in-progress: false
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          persist-credentials: true
+          persist-credentials: false
 
       - name: Setup Python
         uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
@@ -51,11 +57,42 @@ jobs:
           printf "__version__ = '%s'\n" "$PACKAGE_VERSION" > gsplot/version.py
           printf "__commit__ = '%s'\n" "$COMMIT_HASH" >> gsplot/version.py
 
-      - name: Commit and push changes
-        uses: EndBug/add-and-commit@290ea2c423ad77ca9c62ae0f5b224379612c0321 # v10.0.0
-        with:
-          message: "Update version.py with build information"
-          add: "gsplot/version.py"
+      - name: Create or update version metadata pull request
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION_BRANCH: automation/version-metadata
+        run: |
+          set -euo pipefail
+
+          if git diff --quiet -- gsplot/version.py; then
+            echo "Version metadata is already current."
+            exit 0
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git switch --create "$VERSION_BRANCH"
+          git add gsplot/version.py
+          git commit --message "chore: update version metadata"
+
+          gh auth setup-git
+          git fetch origin "$VERSION_BRANCH" || true
+          git push --force-with-lease origin "HEAD:$VERSION_BRANCH"
+
+          if ! gh pr list \
+            --repo "$GITHUB_REPOSITORY" \
+            --base main \
+            --head "$VERSION_BRANCH" \
+            --state open \
+            --json number \
+            --jq '.[0].number' | grep -q '[0-9]'; then
+            gh pr create \
+              --repo "$GITHUB_REPOSITORY" \
+              --base main \
+              --head "$VERSION_BRANCH" \
+              --title "chore: update version metadata" \
+              --body "Generated from main commit $GITHUB_SHA. Review and merge this pull request to update the tracked package version and commit metadata."
+          fi
 
       - name: Build package
         run: poetry build
