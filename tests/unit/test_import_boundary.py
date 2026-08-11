@@ -39,15 +39,15 @@ assert gsplot.__commit__ is None
     assert result.returncode == 0, result.stderr
 
 
-def test_legacy_attribute_loads_only_when_requested() -> None:
-    """Legacy use remains available while its imports are deferred."""
+def test_canonical_attribute_loads_only_when_requested() -> None:
+    """Canonical use remains lazy until a root attribute is requested."""
 
     result = _run_probe("""
 import sys
 import gsplot
 assert 'matplotlib.pyplot' not in sys.modules
 assert callable(gsplot.line)
-assert 'matplotlib.pyplot' in sys.modules
+assert 'matplotlib.pyplot' not in sys.modules
 """)
     assert result.returncode == 0, result.stderr
 

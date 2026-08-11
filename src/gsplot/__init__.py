@@ -10,7 +10,11 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
 
-from ._compat.root import canonical_names, legacy_names, resolve_export
+from ._compat.root import canonical_names as _canonical_names
+from ._compat.root import legacy_names as _legacy_names
+from ._compat.root import (
+    resolve_export,
+)
 from .version import __commit__, __version__
 
 if TYPE_CHECKING:
@@ -57,53 +61,87 @@ if TYPE_CHECKING:
     ticks_on_axes: Any
     title: Any
     title_axes: Any
+    inset_axes: Any
+    savefig: Any
+    style_axes: Any
+    suptitle: Any
+    minor_ticks: Any
+    box_aspect: Any
+    panel_labels: Any
+    fig_facecolor: Any
+    legends: Any
+    legend_entries: Any
+    cmap_legend: Any
+    set_theme: Any
+    load_config: Any
+    read_array: Any
+    write_meta: Any
+    build_info: Any
+    Config: Any
+    AxisSpec: Any
+    Theme: Any
+    InsetSpec: Any
+    MetadataSnapshot: Any
+    BuildInfo: Any
+    LegendEntries: Any
+    GsplotError: Any
+    ConfigError: Any
+    DataError: Any
+    LayoutError: Any
+    PlotError: Any
+    OutputError: Any
+    MetadataError: Any
+    MosaicSpec: Any
+    NormalizeSpec: Any
+    ColorSpec: Any
     subplots: Any
     use_backend: Any
 
 __all__ = [
     "subplots",
-    "use_backend",
-    "get_cmap",
-    "load_file",
-    "load_file_fast",
-    "axes",
-    "axes_inset",
-    "axes_inset_padding",
-    "get_figure_size",
-    "show",
-    "hello_world",
-    "config_load",
-    "config_dict",
-    "config_entry_option",
-    "home",
-    "pwd",
-    "pwd_move",
-    "pwd_main",
+    "inset_axes",
     "line",
-    "line_colormap_solid",
-    "line_colormap_dashed",
     "scatter",
-    "scatter_colormap",
-    "graph_square",
-    "graph_square_axes",
-    "graph_white",
-    "graph_white_axes",
-    "graph_transparent",
-    "graph_transparent_axes",
-    "graph_facecolor",
-    "label",
-    "label_add_index",
-    "legend",
-    "legend_axes",
-    "legend_handlers",
-    "legend_reverse",
-    "legend_get_handlers",
-    "legend_colormap",
-    "ticks_off",
-    "ticks_on",
-    "ticks_on_axes",
+    "cmap_line",
+    "cmap_dash",
+    "cmap_scatter",
+    "sample_cmap",
+    "style_axes",
     "title",
-    "title_axes",
+    "suptitle",
+    "minor_ticks",
+    "box_aspect",
+    "panel_labels",
+    "fig_facecolor",
+    "legend",
+    "legends",
+    "legend_entries",
+    "cmap_legend",
+    "set_theme",
+    "savefig",
+    "show",
+    "load_config",
+    "read_array",
+    "write_meta",
+    "build_info",
+    "use_backend",
+    "Config",
+    "AxisSpec",
+    "Theme",
+    "InsetSpec",
+    "MetadataSnapshot",
+    "BuildInfo",
+    "LegendEntries",
+    "GsplotError",
+    "ConfigError",
+    "DataError",
+    "LayoutError",
+    "PlotError",
+    "OutputError",
+    "MetadataError",
+    "MosaicSpec",
+    "NormalizeSpec",
+    "ColorSpec",
 ]
 
 
@@ -120,7 +158,7 @@ def __dir__() -> list[str]:
 
     return sorted(
         set(globals())
-        | set(legacy_names())
-        | set(canonical_names())
+        | set(_legacy_names())
+        | set(_canonical_names())
         | {"__commit__", "__version__"}
     )

@@ -94,16 +94,19 @@ def sample_cmap(
 ) -> NDArray[np.float64]:
     """Sample a Matplotlib colormap as an ``(n, 4)`` RGBA array.
 
-    Exactly one of ``count`` and ``values`` is required.  Count-based samples
-    cover the inclusive interval from zero to one.  Value-based samples use
-    their finite data range; constant values map to the midpoint unless an
-    explicit normalizer supplies bounds.
+    When both ``count`` and ``values`` are omitted, ten count-based samples are
+    returned.  Otherwise exactly one of the two controls is accepted.
+    Count-based samples cover the inclusive interval from zero to one.
+    Value-based samples use their finite data range; constant values map to
+    the midpoint unless an explicit normalizer supplies bounds.
     """
 
     if not isinstance(name, str) or not name.strip():
         raise PlotError("name must be a non-empty colormap name")
-    if (count is None) == (values is None):
-        raise PlotError("provide exactly one of count or values")
+    if count is not None and values is not None:
+        raise PlotError("count and values cannot be supplied together")
+    if count is None and values is None:
+        count = 10
     if not isinstance(reverse, bool):
         raise PlotError("reverse must be a boolean")
     if count is not None:
