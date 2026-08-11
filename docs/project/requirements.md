@@ -254,8 +254,9 @@ source, documentation, tests, Issues, PRs, or built distributions.
 
 - The supported Python range is Python 3.10 or newer, subject to the support
   policy of declared dependencies.
-- Runtime dependencies are Matplotlib, NumPy, Rich, PyYAML, and the declared
-  typing support package in `pyproject.toml`.
+- Runtime dependencies are Matplotlib and NumPy. Rich, PyYAML, and
+  `types-PyYAML` are not required by the canonical package or its compatibility
+  shims; legacy YAML/Rich settings are ignored with a deprecation warning.
 - `pyproject.toml` is authoritative for package metadata and dependency
   declarations. `poetry.lock` is the reproducibility record for development
   and validation.

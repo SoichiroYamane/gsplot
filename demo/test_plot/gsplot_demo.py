@@ -1,5 +1,5 @@
 import numpy as np
-from rich import print
+from pprint import pprint as print
 
 import gsplot as gs
 

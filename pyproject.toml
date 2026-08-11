@@ -18,9 +18,6 @@ Homepage = "https://soichiroyamane.github.io/gsplot/"
 python = ">=3.10"
 matplotlib = ">=3.9.0"
 numpy = ">=1.26.4"
-rich = ">=13.9.4"
-pyyaml = ">=6.0.2"
-types-pyyaml = ">=6.0.12.20240917"
 
 
 [tool.poetry.group.dev.dependencies]

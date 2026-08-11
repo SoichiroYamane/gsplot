@@ -1,4 +1,4 @@
-from rich import print
+from pprint import pprint as print
 
 import gsplot as gs
 
