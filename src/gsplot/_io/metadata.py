@@ -23,7 +23,7 @@ def _payload(snapshot: MetadataSnapshot) -> bytes:
         "package_version": snapshot.package_version,
         "commit": snapshot.commit,
         "config_digest": snapshot.config_digest,
-        "labels": dict(snapshot.labels),
+        "labels": dict(snapshot.labels or {}),
     }
     try:
         encoded = (

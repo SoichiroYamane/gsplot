@@ -11,6 +11,7 @@ from matplotlib.axes import Axes
 from matplotlib.colors import Colormap, Normalize
 from matplotlib.figure import Figure
 from matplotlib.legend import Legend
+from matplotlib.legend_handler import HandlerBase
 from matplotlib.lines import Line2D
 
 from .._core.errors import LayoutError, OptionError, PlotError
@@ -59,6 +60,8 @@ def _props(props: Mapping[str, Any] | None, context: str) -> dict[str, Any]:
     if unknown:
         joined = ", ".join(repr(key) for key in unknown)
         raise OptionError(f"{context} props contains unknown key(s): {joined}")
+    if "ncol" in props and "ncols" in props:
+        raise OptionError(f"{context} props cannot contain both 'ncol' and 'ncols'")
     return dict(props)
 
 
@@ -107,7 +110,7 @@ def legend(
     *,
     handles: Sequence[Any] | None = None,
     labels: Sequence[str] | None = None,
-    handler_map: Mapping[Any, Any] | None = None,
+    handler_map: Mapping[Any, HandlerBase] | None = None,
     reverse: bool = False,
     replace: bool = False,
     props: Mapping[str, Any] | None = None,
@@ -152,14 +155,16 @@ def legend(
     >>> figure.clear()
     """
 
-    target = axes_targets(ax)[0]
-    selected_handles, selected_labels = _entries(target, handles, labels)
+    if not isinstance(ax, Axes):
+        raise PlotError("ax must be a matplotlib.axes.Axes instance")
+    target = ax
     if not isinstance(reverse, bool) or not isinstance(replace, bool):
         raise LayoutError("reverse and replace must be booleans")
     selected_props = _props(props, "legend")
     if not isinstance(handler_map, Mapping) and handler_map is not None:
         raise PlotError("handler_map must be a mapping")
     selected_handlers = {} if handler_map is None else dict(handler_map)
+    selected_handles, selected_labels = _entries(target, handles, labels)
     if reverse:
         selected_handles = selected_handles[::-1]
         selected_labels = selected_labels[::-1]
@@ -258,7 +263,7 @@ def legends(
 def legend_entries(
     ax: Axes,
     *,
-    handler_map: Mapping[Any, Any] | None = None,
+    handler_map: Mapping[Any, HandlerBase] | None = None,
 ) -> LegendEntries:
     """Return discovered handles and labels without creating or printing.
 
@@ -291,7 +296,9 @@ def legend_entries(
     >>> figure.clear()
     """
 
-    target = axes_targets(ax)[0]
+    if not isinstance(ax, Axes):
+        raise PlotError("ax must be a matplotlib.axes.Axes instance")
+    target = ax
     handles, labels = target.get_legend_handles_labels()
     if handler_map is not None and not isinstance(handler_map, Mapping):
         raise PlotError("handler_map must be a mapping")

@@ -64,7 +64,7 @@ import matplotlib.pyplot
 try:
     gsplot.use_backend('Agg')
 except Exception as error:
-    assert type(error).__name__ == 'LayoutError'
+    assert type(error).__name__ == 'ConfigError'
 else:
     raise AssertionError('backend selection after pyplot must fail')
 """)

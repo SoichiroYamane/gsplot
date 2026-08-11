@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 import math
 from collections.abc import Mapping, Sequence
+from os import PathLike
 from pathlib import Path
 from typing import Any, Literal, cast
 
@@ -77,7 +78,7 @@ def parse_json_text(text: str) -> dict[str, Any]:
     return dict(mapping)
 
 
-def read_json_file(path: str | Path) -> dict[str, Any]:
+def read_json_file(path: str | PathLike[str]) -> dict[str, Any]:
     """Read a bounded UTF-8 JSON configuration file."""
 
     config_path = Path(path).expanduser()

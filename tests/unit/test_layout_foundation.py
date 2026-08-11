@@ -26,7 +26,10 @@ def test_subplots_applies_config_and_converts_units() -> None:
     """Config values are used only when explicit arguments are omitted."""
 
     config = Config.from_mapping(
-        {"figure": {"figsize": [2.54, 5.08], "unit": "cm", "squeeze": False}}
+        {
+            "schema_version": 1,
+            "figure": {"figsize": [2.54, 5.08], "unit": "cm", "squeeze": False},
+        }
     )
     figure, axes = subplots(config=config)
     assert np.allclose(figure.get_size_inches(), [1.0, 2.0])
@@ -72,4 +75,21 @@ def test_subplots_reuses_without_resizing_and_clears_only_when_requested() -> No
 
     subplots(fig=figure, clear=True)
     assert len(figure.axes) == 1
+    plt.close(figure)
+
+
+def test_subplots_rejects_layout_engine_conflicts_before_clearing() -> None:
+    """A requested engine never replaces a conflicting caller-owned engine."""
+
+    figure, _ = subplots()
+    figure.set_layout_engine("constrained")
+    original_axes = tuple(figure.axes)
+    with pytest.raises(LayoutError, match="tight_layout"):
+        subplots(fig=figure, tight_layout=True, clear=True)
+    assert tuple(figure.axes) == original_axes
+
+    figure.set_layout_engine("tight")
+    with pytest.raises(LayoutError, match="constrained_layout"):
+        subplots(fig=figure, constrained_layout=True, clear=True)
+    assert tuple(figure.axes) == original_axes
     plt.close(figure)

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import sys
 
-from .._core.errors import ConfigError, LayoutError
+from .._core.errors import ConfigError
 from .._core.validation import ensure_nonempty_text
 
 
@@ -35,12 +35,12 @@ def use_backend(name: str) -> None:
 
     backend = ensure_nonempty_text(name, "backend", error=ConfigError)
     if "matplotlib.pyplot" in sys.modules:
-        raise LayoutError("use_backend must be called before pyplot is imported")
+        raise ConfigError("use_backend must be called before pyplot is imported")
     pylab_helpers = sys.modules.get("matplotlib._pylab_helpers")
     if pylab_helpers is not None:
         managers = getattr(pylab_helpers, "Gcf", None)
         if managers is not None and managers.get_all_fig_managers():
-            raise LayoutError(
+            raise ConfigError(
                 "use_backend must be called before a managed Matplotlib Figure exists"
             )
 

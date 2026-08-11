@@ -8,6 +8,7 @@ from typing import Any
 import numpy as np
 from matplotlib.axes import Axes
 from matplotlib.collections import PathCollection
+from matplotlib.colors import to_rgba
 from matplotlib.lines import Line2D
 from numpy.typing import ArrayLike
 
@@ -66,6 +67,19 @@ _SCATTER_PROPS = frozenset(
         "zorder",
     }
 )
+
+# Characterized 0.x visual defaults retained by the canonical operations.
+# Colors still come from the target Axes property cycle; these values do not
+# introduce a gsplot-owned counter or any other process-wide state.
+_LINE_DEFAULTS: dict[str, Any] = {
+    "marker": "o",
+    "markersize": 7.0,
+    "markeredgewidth": 1.5,
+    "linestyle": "--",
+    "linewidth": 1.0,
+    "alpha": 1.0,
+}
+_SCATTER_DEFAULTS: dict[str, Any] = {"s": 1.0, "alpha": 1.0}
 
 
 def validate_axes(ax: Any) -> Axes:
@@ -158,8 +172,16 @@ def line(
     target = validate_axes(ax)
     x_values, y_values = validate_xy(x, y)
     selected_props = validate_props(props, _LINE_PROPS, "line")
+    for name, default in _LINE_DEFAULTS.items():
+        selected_props.setdefault(name, default)
     _resolve_config_color(config, selected_props)
-    return list(target.plot(x_values, y_values, **selected_props))
+    artists = list(target.plot(x_values, y_values, **selected_props))
+    if "markerfacecolor" not in selected_props:
+        alpha = float(selected_props["alpha"])
+        for artist in artists:
+            red, green, blue, _ = to_rgba(artist.get_color())
+            artist.set_markerfacecolor((red, green, blue, 0.2 * alpha))
+    return artists
 
 
 def scatter(
@@ -206,6 +228,15 @@ def scatter(
     target = validate_axes(ax)
     x_values, y_values = validate_xy(x, y)
     selected_props = validate_props(props, _SCATTER_PROPS, "scatter")
+    color_controls = tuple(
+        name for name in ("color", "c", "facecolors") if name in selected_props
+    )
+    if len(color_controls) > 1:
+        raise OptionError(
+            "scatter props cannot combine color controls: " + ", ".join(color_controls)
+        )
+    for name, default in _SCATTER_DEFAULTS.items():
+        selected_props.setdefault(name, default)
     _resolve_config_color(config, selected_props)
     return target.scatter(x_values, y_values, **selected_props)
 

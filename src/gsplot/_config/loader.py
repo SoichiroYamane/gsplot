@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from collections.abc import Mapping
+from os import PathLike
 from pathlib import Path
 from typing import Any, Literal, TypeVar
 
@@ -32,7 +33,7 @@ def discover_config_path(
 
 
 def load_config(
-    path: str | Path | None = None,
+    path: str | PathLike[str] | None = None,
     *,
     cwd: str | Path | None = None,
     home: str | Path | None = None,

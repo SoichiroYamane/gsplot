@@ -5,6 +5,7 @@ from __future__ import annotations
 from collections.abc import Mapping, Sequence
 from typing import Any
 
+import numpy as np
 from matplotlib.axes import Axes
 from matplotlib.text import Text
 
@@ -43,6 +44,8 @@ def _panel_targets(target: Sequence[Axes] | Mapping[str, Axes]) -> tuple[Axes, .
 
     if isinstance(target, Mapping):
         axes = tuple(target.values())
+    elif isinstance(target, np.ndarray):
+        axes = tuple(target.flat)
     elif isinstance(target, Sequence) and not isinstance(target, (str, bytes)):
         axes = tuple(target)
     else:

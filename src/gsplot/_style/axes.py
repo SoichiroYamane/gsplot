@@ -53,6 +53,8 @@ def axes_targets(target: AxesTarget) -> tuple[Axes, ...]:
         values = (target,)
     elif isinstance(target, Mapping):
         values = tuple(target.values())
+    elif isinstance(target, np.ndarray):
+        values = tuple(target.flat)
     elif isinstance(target, Sequence) and not isinstance(target, (str, bytes)):
         values = tuple(target)
     else:
@@ -223,9 +225,10 @@ def title(ax: Axes, text: str, *, props: Mapping[str, Any] | None = None) -> Tex
     >>> figure.clear()
     """
 
-    axes = axes_targets(ax)
+    if not isinstance(ax, Axes):
+        raise PlotError("ax must be a Matplotlib Axes")
     selected_props = _validate_props(props, _TITLE_PROPS, "title")
-    return axes[0].set_title(_text(text, "text"), **selected_props)
+    return ax.set_title(_text(text, "text"), **selected_props)
 
 
 def suptitle(fig: Figure, text: str, *, props: Mapping[str, Any] | None = None) -> Text:

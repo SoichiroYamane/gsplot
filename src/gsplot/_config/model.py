@@ -3,9 +3,9 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from pathlib import Path
+from os import PathLike
 from types import MappingProxyType
-from typing import Any, Literal, Mapping
+from typing import Any, Literal, Mapping, TypeAlias, overload
 
 from .._core.errors import ConfigError
 from .._core.types import ColorSpec
@@ -28,6 +28,9 @@ from .schema import (
     read_json_file,
     validate_section,
 )
+
+# Internal value union used by the literal-sensitive Config accessors.
+ConfigValue: TypeAlias = tuple[float, float] | ColorSpec | bool | str | None
 
 
 @dataclass(frozen=True, slots=True)
@@ -56,6 +59,12 @@ class FigureConfig:
             "constrained_layout",
             ensure_bool(self.constrained_layout, "figure.constrained_layout"),
         )
+        if self.tight_layout and self.constrained_layout:
+            raise ConfigError(
+                "figure.tight_layout and figure.constrained_layout cannot both be true"
+            )
+        if self.figsize is None and self.unit != "in":
+            raise ConfigError("figure.unit must be 'in' when figure.figsize is null")
 
 
 @dataclass(frozen=True, slots=True)
@@ -148,14 +157,18 @@ class Config:
         Examples
         --------
         >>> import gsplot as gs
-        >>> config = gs.Config.from_mapping({"plotting": {"default_cmap": "plasma"}})
+        >>> config = gs.Config.from_mapping(
+        ...     {"schema_version": 1, "plotting": {"default_cmap": "plasma"}}
+        ... )
         >>> config.plotting.default_cmap
         'plasma'
         """
 
         mapping = ensure_mapping(mapping, "configuration")
         reject_unknown_keys(mapping, ROOT_KEYS, "configuration")
-        schema_version = parse_schema_version(mapping.get("schema_version", 1))
+        if "schema_version" not in mapping:
+            raise ConfigError("configuration requires schema_version")
+        schema_version = parse_schema_version(mapping["schema_version"])
 
         figure_mapping = validate_section(
             mapping.get("figure", {}), "figure", FIGURE_KEYS
@@ -189,7 +202,7 @@ class Config:
         return cls(schema_version=schema_version, figure=figure, plotting=plotting)
 
     @classmethod
-    def from_file(cls, path: str | Path) -> "Config":
+    def from_file(cls, path: str | PathLike[str]) -> "Config":
         """Load one explicit bounded JSON file into immutable values.
 
         Parameters
@@ -215,9 +228,12 @@ class Config:
         1
         """
 
-        return cls.from_mapping(read_json_file(path))
+        mapping = read_json_file(path)
+        if "schema_version" not in mapping:
+            raise ConfigError("configuration requires schema_version")
+        return cls.from_mapping(mapping)
 
-    def section(self, name: Literal["figure", "plotting"]) -> Mapping[str, Any]:
+    def section(self, name: Literal["figure", "plotting"]) -> Mapping[str, ConfigValue]:
         """Return an immutable top-level section mapping.
 
         Parameters
@@ -261,10 +277,50 @@ class Config:
             raise ConfigError(f"unknown configuration section: {name!r}")
         return MappingProxyType(values)
 
+    @overload
+    def get(
+        self, section: Literal["figure"], option: Literal["figsize"]
+    ) -> tuple[float, float] | None: ...
+
+    @overload
+    def get(
+        self, section: Literal["figure"], option: Literal["unit"]
+    ) -> Literal["mm", "cm", "in", "pt"]: ...
+
+    @overload
+    def get(
+        self,
+        section: Literal["figure"],
+        option: Literal["squeeze", "tight_layout", "constrained_layout"],
+    ) -> bool: ...
+
+    @overload
+    def get(
+        self, section: Literal["plotting"], option: Literal["default_color"]
+    ) -> Literal["axes"] | ColorSpec: ...
+
+    @overload
+    def get(
+        self, section: Literal["plotting"], option: Literal["default_cmap"]
+    ) -> str: ...
+
+    @overload
+    def get(
+        self, section: Literal["plotting"], option: Literal["nonfinite"]
+    ) -> Literal["raise"]: ...
+
+    @overload
     def get(
         self,
         section: Literal["figure", "plotting"],
-        key: str,
+        option: str,
+        default: Any = MISSING,
+    ) -> Any: ...
+
+    def get(
+        self,
+        section: Literal["figure", "plotting"],
+        option: str,
         default: Any = MISSING,
     ) -> Any:
         """Return one validated value from a section.
@@ -273,10 +329,10 @@ class Config:
         ----------
         section
             Section name, either ``"figure"`` or ``"plotting"``.
-        key
+        option
             Validated key within that section.
         default
-            Optional fallback used only when ``key`` is absent.
+            Optional fallback used only when ``option`` is absent.
 
         Returns
         -------
@@ -296,11 +352,11 @@ class Config:
         """
 
         values = self.section(section)
-        if key not in values:
+        if option not in values:
             if default is not MISSING:
                 return default
-            raise ConfigError(f"unknown configuration key: {section}.{key}")
-        return values[key]
+            raise ConfigError(f"unknown configuration key: {section}.{option}")
+        return values[option]
 
     def as_mapping(self) -> Mapping[str, Any]:
         """Return an immutable top-level representation suitable for metadata.

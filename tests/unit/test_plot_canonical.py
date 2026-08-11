@@ -53,7 +53,9 @@ def test_basic_plotters_own_their_axes_and_validate_before_mutation() -> None:
         ax,
         [0, 1],
         [1, 2],
-        config=Config.from_mapping({"plotting": {"default_color": "red"}}),
+        config=Config.from_mapping(
+            {"schema_version": 1, "plotting": {"default_color": "red"}}
+        ),
     )
     assert len(artists) == 1
     assert artists[0].axes is ax

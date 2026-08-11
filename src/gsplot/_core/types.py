@@ -4,11 +4,14 @@ from __future__ import annotations
 
 import math
 import re
+from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
 from types import MappingProxyType
-from typing import Any, Literal, Mapping, Protocol, Sequence, TypeAlias, cast
+from typing import Any, Literal, Protocol, TypeAlias, cast
 
+from matplotlib.artist import Artist
 from matplotlib.colors import is_color_like
+from matplotlib.legend_handler import HandlerBase
 
 from .errors import LayoutError, MetadataError, PlotError
 
@@ -198,9 +201,9 @@ class AxisSpec:
         )
         object.__setattr__(self, "xlim", _limits(self.xlim, "xlim"))
         object.__setattr__(self, "ylim", _limits(self.ylim, "ylim"))
-        if self.xscale not in _SCALES:
+        if not isinstance(self.xscale, str) or self.xscale not in _SCALES:
             raise LayoutError(f"xscale must be one of: {', '.join(sorted(_SCALES))}")
-        if self.yscale not in _SCALES:
+        if not isinstance(self.yscale, str) or self.yscale not in _SCALES:
             raise LayoutError(f"yscale must be one of: {', '.join(sorted(_SCALES))}")
         object.__setattr__(self, "xticks", _ticks(self.xticks, "xticks"))
         object.__setattr__(self, "yticks", _ticks(self.yticks, "yticks"))
@@ -489,6 +492,8 @@ def _readonly_labels(value: Mapping[str, str] | None) -> Mapping[str, str]:
 
     if value is None:
         return MappingProxyType({})
+    if not isinstance(value, Mapping):
+        raise MetadataError("labels must be a string-to-string mapping")
     if len(value) > 64:
         raise MetadataError("labels must contain at most 64 entries")
     labels: dict[str, str] = {}
@@ -538,7 +543,7 @@ class MetadataSnapshot:
     schema_version: Literal[1] = 1
     commit: str | None = None
     config_digest: str | None = None
-    labels: Mapping[str, str] = field(default_factory=dict)
+    labels: Mapping[str, str] | None = None
 
     def __post_init__(self) -> None:
         """Validate identifiers and freeze caller-owned metadata."""
@@ -623,21 +628,30 @@ class LegendEntries:
     ()
     """
 
-    handles: tuple[Any, ...]
-    labels: tuple[str, ...]
-    handler_map: Mapping[Any, Any] = field(default_factory=dict)
+    handles: Sequence[Artist]
+    labels: Sequence[str]
+    handler_map: Mapping[Any, HandlerBase] | None = None
 
     def __post_init__(self) -> None:
         """Normalize sequences and validate the entry relationship."""
 
-        handles = tuple(self.handles)
-        labels = tuple(self.labels)
+        if isinstance(self.handles, (str, bytes)) or isinstance(
+            self.labels, (str, bytes)
+        ):
+            raise PlotError("handles and labels must be sequences")
+        try:
+            handles = tuple(self.handles)
+            labels = tuple(self.labels)
+        except TypeError as exc:
+            raise PlotError("handles and labels must be sequences") from exc
         if len(handles) != len(labels):
             raise PlotError("handles and labels must have the same length")
         if any(not isinstance(label, str) for label in labels):
             raise PlotError("legend labels must be strings")
         object.__setattr__(self, "handles", handles)
         object.__setattr__(self, "labels", labels)
+        if self.handler_map is not None and not isinstance(self.handler_map, Mapping):
+            raise PlotError("handler_map must be a mapping")
         handler_map = {} if self.handler_map is None else dict(self.handler_map)
         object.__setattr__(self, "handler_map", MappingProxyType(handler_map))
 

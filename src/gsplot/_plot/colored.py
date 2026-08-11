@@ -41,7 +41,6 @@ _COLORED_SCATTER_PROPS = frozenset(
         "alpha",
         "antialiaseds",
         "edgecolors",
-        "facecolors",
         "label",
         "linewidths",
         "marker",

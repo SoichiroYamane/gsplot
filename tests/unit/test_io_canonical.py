@@ -99,3 +99,18 @@ def test_metadata_is_bounded_stable_and_no_replace_by_default(tmp_path) -> None:
     replacement = write_meta(snapshot, destination, overwrite=True)
     assert replacement == destination
     assert build_info().version
+
+
+def test_metadata_and_legend_value_inputs_are_defensively_normalized() -> None:
+    """Public sequence and optional mapping inputs are normalized and frozen."""
+
+    from gsplot import LegendEntries
+
+    labels = ["one"]
+    handles = [object()]
+    snapshot = MetadataSnapshot("0.4.0", labels={"run": "one"})
+    entries = LegendEntries(handles=handles, labels=labels)
+    labels.append("two")
+    assert snapshot.labels == {"run": "one"}
+    assert entries.labels == ("one",)
+    assert entries.handler_map == {}
