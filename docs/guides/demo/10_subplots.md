@@ -1,7 +1,7 @@
 # 10. Subplots
 
-This example shows Matplotlib compatibility: the axes returned by
-`plt.subplots` can be passed directly to gsplot functions.
+This example shows Matplotlib compatibility: axes returned by `plt.subplots`
+can be passed directly to canonical gsplot functions.
 
 ## Example
 

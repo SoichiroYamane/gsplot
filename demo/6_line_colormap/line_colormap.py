@@ -6,40 +6,34 @@ import gsplot as gs
 x = np.linspace(0, 11, 1000)
 u = np.sin(x)
 v = np.cos(x)
-t = np.sin(2 * x)
 
 n = [0, 1, 2, 3, 4]
-m = [0, 1, 0, 1, 0]
 l = [-1, 0, 1, 2, 3]
-axs = gs.axes(store=True, size=(10, 5), mosaic="AB")
+fig, axes = gs.subplots(figsize=(10, 5), mosaic="AB")
 
-# Line plot with solid colormap
-gs.line_colormap_solid(axs[0], x, u, x, label="sin(x)", lw=3)
-# Line plot with dashed colormap
-gs.line_colormap_dashed(
-    axs[0], x, v, x[::-1,], label="cos(x)", lw=3, cmap="gnuplot", reverse=True
+gs.cmap_line(axes["A"], x, u, x, props={"label": "sin(x)", "linewidths": 3})
+gs.cmap_dash(
+    axes["A"],
+    x,
+    v,
+    x,
+    dash=(5, 5),
+    cmap="gnuplot_r",
+    props={"label": "cos(x)", "linewidths": 3},
 )
 
-# Line plot with solid colormap
-gs.line_colormap_solid(axs[1], n, n, n, label="quantum solid", lw=10)
-# Line plot with dashed colormap
-gs.line_colormap_dashed(
-    axs[1],
+gs.cmap_line(axes["B"], n, n, n, props={"label": "quantum solid", "linewidths": 10})
+gs.cmap_dash(
+    axes["B"],
     n,
     l,
     n,
-    label="dash",
-    lw=10,
-    line_pattern=(
-        20,
-        40,
-    ),
+    dash=(20, 40),
     cmap="gnuplot",
+    props={"label": "dash", "linewidths": 10},
 )
 
-gs.legend(axs[0])
-gs.legend(axs[1], loc="upper left")
-
-gs.label([["x", "y"], ["x", "y"]])
-
-gs.show("line_colormap")
+gs.legend(axes["A"])
+gs.legend(axes["B"], props={"loc": "upper left"})
+gs.style_axes(axes, gs.AxisSpec(xlabel="x", ylabel="y"))
+gs.savefig(fig, "line_colormap", show=False, overwrite=True)

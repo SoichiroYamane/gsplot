@@ -15,12 +15,20 @@ class DataError(GsplotError):
     """Raised when plotting or numerical input violates the data contract."""
 
 
-class LayoutError(GsplotError):
-    """Raised when a figure or axes layout is invalid."""
+class LayoutError(ConfigError):
+    """Raised when a figure or axes layout is invalid.
+
+    Layout failures are configuration failures as well, so callers may catch
+    either the specific layout type or the broader :class:`ConfigError`.
+    """
 
 
 class PlotError(GsplotError):
     """Raised when a plotting operation cannot be completed safely."""
+
+
+class OptionError(PlotError, TypeError):
+    """Internal typed error for an unknown or duplicate public option."""
 
 
 class OutputError(GsplotError):
@@ -37,6 +45,7 @@ __all__ = [
     "DataError",
     "LayoutError",
     "PlotError",
+    "OptionError",
     "OutputError",
     "MetadataError",
 ]

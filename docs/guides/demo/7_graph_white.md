@@ -1,23 +1,13 @@
-# 7. Graph White
+# 7. Explicit themes
 
-## Example
-
-### Main Functions
-
-| Function                                                        | A Brief Overview                   |
-| :---:                                                           | :-------:                          |
-| [gsplot.graph_facecolor](#gsplot.style.graph.graph_facecolor)   | Set the facecolor of the figure    |
-| [gsplot.graph_white_axes](#gsplot.style.graph.graph_white_axes) | Set the color of all axes to white |
-
-### Code
+`gsplot.set_theme` applies a `Theme` to an explicit Figure or Axes. It does
+not mutate Matplotlib's process-wide `rcParams`.
 
 ```{literalinclude} ../../../demo/7_graph_white/graph_white.py
 ```
 
-### Plot
-
 ```{image} ../../../demo/7_graph_white/graph_white.png
-:alt: graph_white
+:alt: Explicit dark theme applied to a Figure
 :class: bg-primary
 :width: 900px
 :align: center

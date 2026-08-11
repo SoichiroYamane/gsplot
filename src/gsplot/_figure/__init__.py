@@ -5,10 +5,13 @@ from __future__ import annotations
 from importlib import import_module
 from typing import TYPE_CHECKING, Any
 
-__all__ = ["subplots", "use_backend"]
+__all__ = ["subplots", "inset_axes", "savefig", "show", "use_backend"]
 
 if TYPE_CHECKING:
     subplots: Any
+    inset_axes: Any
+    savefig: Any
+    show: Any
     use_backend: Any
 
 
@@ -17,6 +20,10 @@ def __getattr__(name: str) -> Any:
 
     if name == "subplots":
         value = getattr(import_module("gsplot._figure.layout"), name)
+    elif name == "inset_axes":
+        value = getattr(import_module("gsplot._figure.inset"), name)
+    elif name in {"savefig", "show"}:
+        value = getattr(import_module("gsplot._figure.output"), name)
     elif name == "use_backend":
         value = getattr(import_module("gsplot._figure.backend"), name)
     else:

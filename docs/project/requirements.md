@@ -35,9 +35,10 @@ The project serves people who need to:
 
 ### FR-1: Public plotting API
 
-The package root must expose the documented public functions through
-`src/gsplot/__init__.py` and the module-level `__all__` declarations. The current
-public API is grouped as follows:
+The package root must expose the documented canonical functions through
+`src/gsplot/__init__.py` and the module-level `__all__` declarations. The
+following table records the 0.3.x compatibility baseline; the canonical
+replacement is defined in the structural reform target contract below:
 
 | Area | Public capabilities |
 | --- | --- |
@@ -56,14 +57,15 @@ explicit compatibility classification.
 
 ### FR-2: Figure and layout helpers
 
-- `axes` must create ordinary Matplotlib figures and axes while supporting the
-  documented size, unit, mosaic, clearing, interactive, and storage options.
+- `subplots` must create or reuse ordinary Matplotlib figures and axes while
+  supporting validated size, unit, mosaic, clearing, and layout options.
 - Layout validation must reject invalid dimensions or mosaics with a clear
   error rather than silently producing an unusable figure.
-- Inset helpers must create Matplotlib-compatible inset axes and preserve the
-  documented padding and placement behavior.
-- `show` must save the current figure only when storage is enabled, use the
-  requested filename, formats, and resolution, and optionally display it.
+- `inset_axes` must create Matplotlib-compatible inset axes below an explicit
+  parent Axes.
+- `savefig` must save an explicit Figure in the requested formats and display
+  it only after all successful writes when `show=True`.
+- `show` must be display-only and must never save or close a Figure.
 - Figure lifecycle behavior must remain explicit. A helper must not close or
   replace a user-owned figure unless that behavior is documented for the
   specific function.
@@ -77,18 +79,17 @@ explicit compatibility classification.
   and must validate the input shape and color-related options.
 - Plotting helpers must preserve relevant Matplotlib keyword arguments unless
   gsplot intentionally documents an override.
-- `load_file` must provide the documented `numpy.genfromtxt`-based behavior;
-  `load_file_fast` must provide the documented `numpy.loadtxt`-based behavior.
-  File paths, path-like values, and supported iterable sources must remain
-  usable.
+- `read_array` must provide one explicit boundary for the documented
+  `numpy.genfromtxt` and `numpy.loadtxt` behaviors. File paths and path-like
+  values must remain usable without changing the working directory.
 - Numerical helpers must not silently alter the caller's input arrays.
 
 ### FR-4: Styling helpers
 
 Graph, label, title, legend, tick, and colormap-legend helpers must operate on
-the current figure or the explicitly supplied axes according to their public
-documentation. They must remain composable with direct Matplotlib styling
-calls and must not require users to use private gsplot classes.
+explicit Figure or Axes targets according to their public documentation. They
+must remain composable with direct Matplotlib styling calls and must not
+require users to use private gsplot classes.
 
 ### FR-5: Matplotlib compatibility
 
@@ -109,17 +110,16 @@ Configuration is optional. When used, gsplot must:
 
 - discover `gsplot.json` in the documented order: the current working
   directory, the user configuration directory, then the home directory;
-- allow an explicit path through `config_load`;
-- expose the loaded configuration through `config_dict` and a named entry
-  through `config_entry_option`;
+- allow an explicit path through `load_config`;
+- expose the loaded immutable value through `Config` accessors;
 - resolve values with this precedence:
 
   1. explicit function arguments;
-  2. the matching function entry in `gsplot.json`;
+  2. the supplied immutable `Config` value;
   3. the function signature defaults;
 
-- preserve supported aliases and pass-through keyword arguments when a
-  configurable API is changed;
+- translate legacy function-entry configuration only inside the compatibility
+  facade during the documented migration window;
 - avoid mutating caller-owned configuration dictionaries or unrelated
   Matplotlib `rcParams`; and
 - apply `rcParams` and backend settings with the documented process-wide
@@ -131,15 +131,15 @@ function signature is unchanged.
 
 ### FR-7: Reproducibility and metadata
 
-- Version and commit metadata must be available through the documented public
-  attributes.
-- Optional metadata recording must write only the documented `.gsplot/`
-  outputs and must not run network access or disclose private machine data.
+- Version and build metadata must be available through `__version__` and
+  `build_info()`.
+- Optional metadata recording through `write_meta()` must use an explicit
+  destination and must not run network access or disclose private machine data.
 - Reproducibility examples must identify the inputs, configuration, output
   settings, and relevant package metadata needed to understand a generated
   figure.
-- Ordinary imports and plotting calls must not create undocumented project
-  files, credentials, or unbounded logs.
+- Ordinary imports and plotting calls must not create project files,
+  credentials, or unbounded logs.
 
 ### FR-8: Documentation and examples
 
@@ -216,15 +216,15 @@ typed `AxisSpec`, `Theme`, and related values and never rely on a global
   the supplied `Config`, then validated defaults. It has no backend, logging,
   Rich, YAML, output, or metadata section.
 - The reform target removes Rich, PyYAML, and `types-PyYAML` from direct
-  runtime/development dependencies and does not parse legacy YAML after the
-  cutover. No unrelated dependency is introduced to replace them.
+  runtime dependencies and does not parse legacy YAML after the cutover. No
+  unrelated dependency is introduced to replace them.
 - `read_array()` never changes the working directory. `write_meta()` writes a
   typed snapshot using stable JSON and explicit atomic/exclusive policies.
 
 ### Compatibility and documentation
 
-All current root exports and every module/symbol in the pre-cutover API
-reference have a reviewed mapping in
+All legacy root forms and every module/symbol in the pre-cutover API reference
+have a reviewed mapping in
 [`api-migration.md`](api-migration.md). They remain forwarding-only adapters
 through 0.4.x and 1.x unless a separate Issue changes that decision. The
 candidate removal point is no earlier than 2.0 and requires downstream audit
@@ -254,8 +254,9 @@ source, documentation, tests, Issues, PRs, or built distributions.
 
 - The supported Python range is Python 3.10 or newer, subject to the support
   policy of declared dependencies.
-- Runtime dependencies are Matplotlib, NumPy, Rich, PyYAML, and the declared
-  typing support package in `pyproject.toml`.
+- Runtime dependencies are Matplotlib and NumPy. Rich, PyYAML, and
+  `types-PyYAML` are not required by the canonical package or its compatibility
+  shims; legacy YAML/Rich settings are ignored with a deprecation warning.
 - `pyproject.toml` is authoritative for package metadata and dependency
   declarations. `poetry.lock` is the reproducibility record for development
   and validation.
@@ -284,6 +285,8 @@ Relevant changes must pass focused tests and then the applicable broad checks:
 - demo and multiversion documentation builds when documentation paths change;
 - Poetry package builds with inspection of both artifacts;
 - local dependency auditing and available secret/workflow scanners; and
+- coverage reporting with at least 85 percent across canonical implementation
+  modules and at least 95 percent across the pure `_core` modules; and
 - `git diff --check` plus a complete manual diff review.
 
 Skipped or unavailable checks must be reported as blocked or skipped, never as
@@ -304,9 +307,8 @@ The publishing workflow must build distributions without OIDC permissions,
 transfer them as a reviewable artifact, and grant `id-token: write` only to
 the separate publish job. The publish job must use the dedicated `pypi`
 environment and retain only `contents: read` alongside the OIDC permission.
-Token publishing is a temporary, explicitly reviewed rollback path only; the
-legacy token must not be removed until the PyPI publisher and a safe rehearsal
-or production upload have both been verified.
+The repository must not depend on a long-lived PyPI API token for normal
+publishing.
 
 Security findings must use the private disclosure process in `SECURITY.md`.
 Public records should contain only safe advisory identifiers, affected and

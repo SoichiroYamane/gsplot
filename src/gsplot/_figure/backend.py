@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import sys
 
-from .._core.errors import LayoutError
+from .._core.errors import ConfigError
 from .._core.validation import ensure_nonempty_text
 
 
@@ -18,21 +18,38 @@ def use_backend(name: str) -> None:
 
     Raises
     ------
-    LayoutError
+    ConfigError
         If pyplot has already been imported, the name is invalid, or Matplotlib
         rejects the backend.
+
+    Returns
+    -------
+    None
+        The selection is applied to Matplotlib's process-wide backend state.
+
+    Examples
+    --------
+    >>> import gsplot as gs
+    >>> gs.use_backend("Agg")
     """
 
-    backend = ensure_nonempty_text(name, "backend", error=LayoutError)
+    backend = ensure_nonempty_text(name, "backend", error=ConfigError)
     if "matplotlib.pyplot" in sys.modules:
-        raise LayoutError("use_backend must be called before pyplot is imported")
+        raise ConfigError("use_backend must be called before pyplot is imported")
+    pylab_helpers = sys.modules.get("matplotlib._pylab_helpers")
+    if pylab_helpers is not None:
+        managers = getattr(pylab_helpers, "Gcf", None)
+        if managers is not None and managers.get_all_fig_managers():
+            raise ConfigError(
+                "use_backend must be called before a managed Matplotlib Figure exists"
+            )
 
     try:
         import matplotlib
 
         matplotlib.use(backend)
     except Exception as exc:
-        raise LayoutError(f"could not select Matplotlib backend {backend!r}") from exc
+        raise ConfigError(f"could not select Matplotlib backend {backend!r}") from exc
 
 
 __all__ = ["use_backend"]

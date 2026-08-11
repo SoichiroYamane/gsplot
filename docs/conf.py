@@ -9,15 +9,27 @@ import sys
 from pathlib import Path
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(PROJECT_ROOT / "src"))
-sys.path.insert(1, str(PROJECT_ROOT))
 
-from gsplot.version import __version__  # noqa: E402
+try:
+    import gsplot
+except ImportError as exc:  # pragma: no cover - exercised by docs CI setup
+    raise RuntimeError(
+        "Sphinx requires an installed or editable gsplot package; "
+        "run `poetry install` before building the documentation"
+    ) from exc
+
+__version__ = gsplot.__version__
+package_file = Path(gsplot.__file__).resolve()
+if package_file.parent.name != "gsplot":
+    raise RuntimeError(f"unexpected gsplot package location: {package_file}")
+if package_file.parent == PROJECT_ROOT / "gsplot":
+    raise RuntimeError("documentation must not import a repository-root package")
 
 project = "gsplot"
 copyright = "2024, Giordano Mattoni and Soichiro Yamane"
 author = "Giordano Mattoni and Soichiro Yamane"
-version = os.environ.get("GSPLOT_DOCS_VERSION", __version__)
+default_docs_version = "dev" if __version__ == "0+unknown" else __version__
+version = os.environ.get("GSPLOT_DOCS_VERSION", default_docs_version)
 release = version
 root_doc = "index"
 master_doc = root_doc
@@ -81,11 +93,11 @@ myst_enable_extensions = ["colon_fence", "dollarmath", "amsmath", "deflist"]
 
 # Autodoc
 autodoc_inherit_docstrings = True
-autodoc_typehints = "none"
+autodoc_typehints = "description"
 autodoc_default_options = {
     "members": True,
     "toctree": True,
-    "undoc-members": True,
+    "undoc-members": False,
     "show-inheritance": True,
     "special-members": "__init__",
     "exclude-members": "__weakref__",
@@ -122,11 +134,84 @@ def _demo_environment() -> dict[str, str]:
 
     environment = os.environ.copy()
     environment.setdefault("MPLBACKEND", "Agg")
-    pythonpath = [str(PROJECT_ROOT / "src"), str(PROJECT_ROOT)]
-    if environment.get("PYTHONPATH"):
-        pythonpath.append(environment["PYTHONPATH"])
-    environment["PYTHONPATH"] = os.pathsep.join(pythonpath)
+    # Demos must resolve the installed/editable package from the Poetry
+    # environment, never a checkout-root path injected by the documentation
+    # build.  Remove an inherited path so local shell state cannot mask it.
+    environment.pop("PYTHONPATH", None)
     return environment
+
+
+_DEMO_OUTPUTS = {
+    "demo/0_hello_world": set(),
+    "demo/1_axes": {"demo/1_axes/axes.png", "demo/1_axes/axes.pdf"},
+    "demo/2_line_and_label": {
+        "demo/2_line_and_label/line_and_label.png",
+        "demo/2_line_and_label/line_and_label.pdf",
+    },
+    "demo/3_config": {
+        "demo/3_config/config.png",
+        "demo/3_config/config.pdf",
+    },
+    "demo/4_paper_plot": {
+        "demo/4_paper_plot/SC_cal.png",
+        "demo/4_paper_plot/SC_cal.pdf",
+    },
+    "demo/5_scatter": {
+        "demo/5_scatter/scatter.png",
+        "demo/5_scatter/scatter.pdf",
+    },
+    "demo/6_line_colormap": {
+        "demo/6_line_colormap/line_colormap.png",
+        "demo/6_line_colormap/line_colormap.pdf",
+    },
+    "demo/7_graph_white": {
+        "demo/7_graph_white/graph_white.png",
+        "demo/7_graph_white/graph_white.pdf",
+    },
+    "demo/8_graph_transparent": {
+        "demo/8_graph_transparent/graph_transparent.png",
+        "demo/8_graph_transparent/graph_transparent.pdf",
+    },
+    "demo/9_compatibility": {
+        "demo/9_compatibility/compatibility.png",
+        "demo/9_compatibility/compatibility.pdf",
+    },
+    "demo/10_subplots": {"demo/10_subplots/subplots.png"},
+    "demo/11_directory": set(),
+    "demo/test_plot": {
+        "demo/test_plot/SC_cal.png",
+        "demo/test_plot/SC_cal.pdf",
+    },
+}
+
+
+def _file_state(root: Path) -> dict[str, tuple[int, int]]:
+    """Return file size and timestamp state under ``root``."""
+
+    return {
+        path.relative_to(PROJECT_ROOT).as_posix(): (
+            path.stat().st_size,
+            path.stat().st_mtime_ns,
+        )
+        for path in root.rglob("*")
+        if path.is_file()
+    }
+
+
+def _check_demo_outputs(
+    before: dict[str, tuple[int, int]], allowed: set[str], demo_name: str
+) -> None:
+    """Reject one demo's created, modified, or deleted files outside its allowlist."""
+
+    after = _file_state(PROJECT_ROOT / "demo")
+    changed = {path for path, state in after.items() if before.get(path) != state}
+    changed.update(set(before) - set(after))
+    unexpected = sorted(changed - allowed)
+    if unexpected:
+        raise RuntimeError(
+            f"{demo_name} created, modified, or deleted files outside its "
+            "output allowlist: " + ", ".join(unexpected)
+        )
 
 
 def generate_images() -> None:
@@ -148,13 +233,16 @@ def generate_images() -> None:
         raise FileNotFoundError(f"No demo scripts found under {demo_path}")
 
     for demo_file in demo_files:
+        before = _file_state(demo_path)
         print(f"Running demo: {demo_file.relative_to(PROJECT_ROOT)}")
         subprocess.run(
-            [sys.executable, str(demo_file)],
+            [sys.executable, "-B", str(demo_file)],
             cwd=demo_file.parent,
             env=_demo_environment(),
             check=True,
         )
+        demo_name = demo_file.parent.relative_to(PROJECT_ROOT).as_posix()
+        _check_demo_outputs(before, _DEMO_OUTPUTS[demo_name], demo_name)
 
 
 # Sphinx Multiversion configuration
@@ -180,7 +268,7 @@ def setup(app):
 
 
 json_url = "https://soichiroyamane.github.io/gsplot/_static/switcher.json"
-version_match = "dev" if __version__ == "dev" else f"v{__version__}"
+version_match = "dev" if default_docs_version == "dev" else f"v{default_docs_version}"
 
 html_show_sphinx = False
 html_theme = "pydata_sphinx_theme"

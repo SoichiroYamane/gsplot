@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from collections.abc import Mapping
+from os import PathLike
 from pathlib import Path
 from typing import Any, Literal, TypeVar
 
@@ -32,12 +33,39 @@ def discover_config_path(
 
 
 def load_config(
-    path: str | Path | None = None,
+    path: str | PathLike[str] | None = None,
     *,
     cwd: str | Path | None = None,
     home: str | Path | None = None,
 ) -> Config:
-    """Explicitly load one file or discover a JSON file without import effects."""
+    """Explicitly load one file or discover a JSON file without import effects.
+
+    Parameters
+    ----------
+    path
+        Explicit JSON configuration file, or ``None`` to discover one.
+    cwd, home
+        Optional discovery roots useful for tests and isolated applications.
+
+    Returns
+    -------
+    Config
+        A fresh immutable configuration value.  No file is selected when no
+        candidate exists, so the library defaults are returned.
+
+    Raises
+    ------
+    ConfigError
+        If the selected file is missing, malformed, too large, or violates
+        the versioned schema.
+
+    Examples
+    --------
+    >>> import gsplot as gs
+    >>> config = gs.load_config(path=None, cwd="/tmp", home="/tmp")
+    >>> config.schema_version
+    1
+    """
 
     if path is not None:
         return Config.from_file(str(path))

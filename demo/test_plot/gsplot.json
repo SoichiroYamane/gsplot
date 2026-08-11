@@ -1,41 +1,12 @@
 {
-  "rich": {
-    "traceback": {}
-  },
-  "rcParams": {
-    "xtick.major.pad": 6,
-    "ytick.major.pad": 6
-  },
-  "load_file": {
-    "skip_header": 1,
-    "delimiter": "\t",
-    "unpack": true
-  },
-  "axes": {
-    "ion": false,
-    "size": [
-      15.0,
-      5.0
-    ],
+  "schema_version": 1,
+  "figure": {
+    "figsize": [15, 5],
     "unit": "in",
-    "clear": true,
-    "mosaic": "ABC"
-  },
-  "show": {
-    "show": true
-  },
-  "label": {
+    "squeeze": true,
     "tight_layout": true
   },
-  "line": {
-    "ms": 2
-  },
-  "legend": {
-    "loc": "lower left"
-  },
-  "line_colormap": {
-    "linewidth": 1,
-    "loc": "upper right",
-    "ls": "-"
+  "plotting": {
+    "default_cmap": "plasma"
   }
 }

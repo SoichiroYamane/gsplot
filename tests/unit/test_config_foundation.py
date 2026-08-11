@@ -30,6 +30,11 @@ def test_default_config_is_immutable_and_has_only_target_sections() -> None:
     section = config.section("figure")
     with pytest.raises(TypeError):
         section["unit"] = "cm"  # type: ignore[index]
+    with pytest.raises(TypeError):
+        Config(1)  # type: ignore[call-arg]
+
+    assert Config().get("figure", "figsize") is None
+    assert Config().get("figure", "unit") == "in"
 
 
 def test_mapping_values_are_validated_and_precedence_is_explicit() -> None:
@@ -78,6 +83,9 @@ def test_invalid_mapping_is_rejected(mapping: dict[str, object]) -> None:
     with pytest.raises(ConfigError, match="keys must be strings"):
         Config.from_mapping({1: {}})  # type: ignore[dict-item]
 
+    with pytest.raises(ConfigError, match="schema_version"):
+        Config.from_mapping({"figure": {}})
+
 
 def test_json_parser_rejects_duplicates_trailing_data_and_nonfinite(tmp_path) -> None:
     """The file boundary rejects ambiguous or unsafe JSON input."""
@@ -106,14 +114,21 @@ def test_discovery_order_and_missing_explicit_file(tmp_path) -> None:
     user_config = home / ".config" / "gsplot"
     cwd.mkdir()
     user_config.mkdir(parents=True)
-    (home / "gsplot.json").write_text('{"figure": {"unit": "pt"}}', encoding="utf-8")
+    (home / "gsplot.json").write_text(
+        '{"schema_version": 1, "figure": {"figsize": [1, 1], "unit": "pt"}}',
+        encoding="utf-8",
+    )
     (user_config / "gsplot.json").write_text(
-        '{"figure": {"unit": "cm"}}', encoding="utf-8"
+        '{"schema_version": 1, "figure": {"figsize": [1, 1], "unit": "cm"}}',
+        encoding="utf-8",
     )
     assert discover_config_path(cwd=cwd, home=home) == user_config / "gsplot.json"
     assert load_config(cwd=cwd, home=home).figure.unit == "cm"
 
-    (cwd / "gsplot.json").write_text('{"figure": {"unit": "mm"}}', encoding="utf-8")
+    (cwd / "gsplot.json").write_text(
+        '{"schema_version": 1, "figure": {"figsize": [1, 1], "unit": "mm"}}',
+        encoding="utf-8",
+    )
     assert discover_config_path(cwd=cwd, home=home) == cwd / "gsplot.json"
     assert load_config(cwd=cwd, home=home).figure.unit == "mm"
 

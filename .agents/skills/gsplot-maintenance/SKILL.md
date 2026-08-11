@@ -182,11 +182,22 @@ structure merely to minimize the diff.
 
 Follow these invariants when changing code:
 
-- Keep the public wrapper in `src/gsplot/__init__.py` and the module's `__all__` synchronized with any API change.
-- Preserve the common wrapper flow: `@bind_passed_params()` captures explicit arguments, `ParamsGetter` reads them, and `CreateClassParams` merges defaults, config, and passed values.
-- Treat configuration precedence as direct arguments > the matching `gsplot.json` entry > function defaults. Check both alias names and canonical names when modifying a configurable function.
+- Keep the root facade in `src/gsplot/__init__.py`, the canonical export
+  manifest, and the module-level `__all__` synchronized with any API change.
+- The historical `@bind_passed_params()` -> `ParamsGetter` ->
+  `CreateClassParams` flow is compatibility-only under `_compat/legacy`.
+  Canonical implementations receive explicit targets and immutable values and
+  must never depend on caller-frame inspection or wrapper attributes.
+- Treat canonical configuration precedence as direct arguments > an explicit
+  immutable `Config` > validated library defaults. Legacy `gsplot.json`
+  translation is isolated at the compatibility boundary and must not become a
+  second canonical schema.
 - Keep Matplotlib `Axes` compatibility. A gsplot plot function should cooperate with regular `Axes.plot`, `Axes.scatter`, `plt.sca`, and existing figure lifecycle behavior.
-- Treat `Config`, `StoreSingleton`, `AxesRangeSingleton`, `rcParams`, current figure, and current working directory as shared state. Reset or restore state in tests and avoid leaking it between cases.
+- Treat canonical `Config` values as immutable explicit inputs. Treat
+  `StoreSingleton` and `AxesRangeSingleton` as historical compatibility state;
+  canonical code must not depend on them. Matplotlib `rcParams`, the current
+  figure, and the current working directory remain process-wide state. Reset
+  or restore shared state in tests and avoid leaking it between cases.
 - Prefer assertions about returned artists, labels, limits, colors, collections, and axis state. Add image comparisons only when a visual regression cannot be expressed structurally.
 - Keep scientific data and demo examples deterministic. Use small explicit arrays, fixed random seeds when randomness is necessary, and `MPLBACKEND=Agg` for headless checks.
 
@@ -204,9 +215,16 @@ Follow these invariants when changing code:
 
 ### Configuration change
 
-1. Inspect `Config`, `ConfigLoad`, `config_load`, the target function signature, and a representative `demo/*/gsplot.json`.
-2. Confirm the key is the function name expected by `CreateClassParams`; preserve the handling of unknown keys passed through `kwargs`.
-3. Test direct arguments, config-only values, defaults, and invalid values. Do not mutate a shared config dictionary or `rcParams` unintentionally.
+1. Inspect `gsplot._config.Config`, the strict schema, the target canonical
+   signature, and a representative `demo/*/gsplot.json` compatibility fixture.
+2. Confirm that explicit function arguments override values from the supplied
+   immutable `Config`, and that unknown schema keys or plot properties fail at
+   the validation boundary. Legacy schema-less files may be translated only
+   inside `_compat`; they must not become a second canonical configuration
+   path.
+3. Test direct arguments, config-only values, defaults, and invalid values.
+   Do not mutate a shared config dictionary, returned value, or `rcParams`
+   unintentionally.
 
 ## Security-update workflow
 
@@ -370,6 +388,8 @@ poetry run isort --profile black --check-only src/gsplot tests scripts tools/mai
 poetry run mypy --config-file .mypy.ini src/gsplot
 poetry run pyright src/gsplot
 python -m compileall -q src/gsplot tests scripts tools/maintenance
+PYTHONPATH=src poetry run python tools/maintenance/check_architecture.py
+PYTHONPATH=src poetry run python tools/maintenance/check_docstrings.py
 
 # Documentation and packaging, only when relevant
 MPLBACKEND=Agg poetry run sphinx-build -W -b html docs docs/_build/html

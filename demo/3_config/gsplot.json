@@ -1,22 +1,13 @@
 {
-  "rich": {
-    "traceback": {}
-  },
-  "rcParams": {
-    "xtick.major.pad": 6,
-    "ytick.major.pad": 6
-  },
-  "axes": {
-    "ion": false,
-    "size": [
-      15.0,
-      5.0
-    ],
+  "schema_version": 1,
+  "figure": {
+    "figsize": [5, 5],
     "unit": "in",
-    "clear": false,
-    "mosaic": "ABC"
+    "squeeze": true,
+    "tight_layout": true
   },
-  "show": {
-    "show": true
+  "plotting": {
+    "default_color": "#3b5bdb",
+    "default_cmap": "viridis"
   }
 }

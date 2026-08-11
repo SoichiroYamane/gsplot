@@ -5,7 +5,6 @@ from __future__ import annotations
 from collections.abc import Sequence
 from typing import Any, Literal, cast
 
-import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.axes import Axes
 from matplotlib.figure import Figure
@@ -45,6 +44,15 @@ def _validate_mosaic(mosaic: MosaicSpec | None) -> MosaicSpec | None:
         raise LayoutError("mosaic must contain non-empty rows")
     if any(isinstance(row, (str, bytes)) for row in rows):
         raise LayoutError("mosaic rows must be sequences of labels")
+    width = len(rows[0])
+    if any(len(row) != width for row in rows):
+        raise LayoutError("mosaic rows must be rectangular")
+    for row_index, row in enumerate(rows):
+        for column_index, label in enumerate(row):
+            if label is not None and (not isinstance(label, str) or not label.strip()):
+                raise LayoutError(
+                    f"mosaic label at ({row_index}, {column_index}) must be text or None"
+                )
     return mosaic
 
 
@@ -52,6 +60,8 @@ def _size_in_inches(figsize: Any, unit: Unit | None) -> tuple[float, float] | No
     """Validate and convert an optional figure size to inches."""
 
     if figsize is None:
+        if unit not in {None, "in"}:
+            raise LayoutError("unit requires an explicit figsize")
         return None
     if unit is None:
         unit = "in"
@@ -125,6 +135,39 @@ def _resolve_layout(
     )
 
 
+def _layout_engine_kind(
+    figure: Figure,
+) -> Literal["none", "tight", "constrained", "other"]:
+    """Classify a Figure's existing layout engine without changing it."""
+
+    engine = figure.get_layout_engine()
+    if engine is None:
+        return "none"
+    from matplotlib.layout_engine import ConstrainedLayoutEngine, TightLayoutEngine
+
+    if isinstance(engine, TightLayoutEngine):
+        return "tight"
+    if isinstance(engine, ConstrainedLayoutEngine):
+        return "constrained"
+    return "other"
+
+
+def _validate_existing_layout_engine(
+    figure: Figure, *, tight_layout: bool, constrained_layout: bool
+) -> None:
+    """Reject a requested layout mode before touching a caller-owned Figure."""
+
+    current = _layout_engine_kind(figure)
+    if tight_layout and current not in {"none", "tight"}:
+        raise LayoutError(
+            "tight_layout conflicts with the existing Figure layout engine"
+        )
+    if constrained_layout and current not in {"none", "constrained"}:
+        raise LayoutError(
+            "constrained_layout conflicts with the existing Figure layout engine"
+        )
+
+
 def subplots(
     *,
     nrows: int = 1,
@@ -172,6 +215,13 @@ def subplots(
     LayoutError
         If layout arguments are invalid or the existing target is not a
         Matplotlib figure.
+
+    Examples
+    --------
+    >>> import gsplot as gs
+    >>> figure, axes = gs.subplots(nrows=1, ncols=2)
+    >>> gs.savefig(figure, "figure.png", show=False, overwrite=True)
+    >>> figure.clear()
     """
 
     (
@@ -194,10 +244,33 @@ def subplots(
         config=config,
     )
 
+    if not isinstance(clear, bool):
+        raise LayoutError("clear must be a boolean")
     if fig is not None and not isinstance(fig, Figure):
         raise LayoutError("fig must be a Matplotlib Figure")
+    if fig is not None:
+        if figsize is not None:
+            raise LayoutError("figsize cannot be supplied when reusing a Figure")
+        if config is not None:
+            if config.figure.figsize is not None:
+                raise LayoutError(
+                    "config.figure.figsize cannot be used when reusing a Figure"
+                )
+            if config.figure.unit != "in":
+                raise LayoutError(
+                    "a non-default config.figure.unit cannot be used when reusing a Figure"
+                )
+        if unit is not None and unit != "in":
+            raise LayoutError("a non-default unit cannot be used when reusing a Figure")
+        _validate_existing_layout_engine(
+            fig,
+            tight_layout=selected_tight,
+            constrained_layout=selected_constrained,
+        )
     target = fig
     if target is None:
+        import matplotlib.pyplot as plt
+
         target = plt.figure(
             figsize=size_in_inches, constrained_layout=selected_constrained
         )
@@ -205,7 +278,7 @@ def subplots(
         target.clear()
 
     if selected_constrained:
-        cast(Any, target).set_constrained_layout(True)
+        cast(Any, target).set_layout_engine("constrained")
     if selected_mosaic is not None:
         axes: Axes | NDArray[Any] | dict[str, Axes] = cast(
             dict[str, Axes],
@@ -214,7 +287,7 @@ def subplots(
     else:
         axes = target.subplots(rows, cols, squeeze=selected_squeeze)
     if selected_tight:
-        cast(Any, target).set_tight_layout(True)
+        cast(Any, target).set_layout_engine("tight")
     return target, axes
 
 

@@ -1,23 +1,14 @@
-from rich import print
+"""Deprecated forwarding shim for ``gsplot.hello_world.hello_world``."""
 
-from ..version import __commit__, __version__
+from .._compat.shim import load_legacy, module_dir
 
-__all__ = ["hello_world"]
+_implementation = load_legacy("gsplot._compat.legacy.hello_world.hello_world", __name__)
+__all__ = tuple(getattr(_implementation, "__all__", ()))
 
 
-def hello_world() -> None:
-    """
-    Print the version, commit hash, and an ASCII art of the logo.
-    """
-    ascii_art = r"""
- ██████╗ ███████╗██████╗ ██╗      ██████╗ ████████╗
-██╔════╝ ██╔════╝██╔══██╗██║     ██╔═══██╗╚══██╔══╝
-██║  ███╗███████╗██████╔╝██║     ██║   ██║   ██║   
-██║   ██║╚════██║██╔═══╝ ██║     ██║   ██║   ██║   
-╚██████╔╝███████║██║     ███████╗╚██████╔╝   ██║   
- ╚═════╝ ╚══════╝╚═╝     ╚══════╝ ╚═════╝    ╚═╝   
-        """
+def __getattr__(name: str):
+    return getattr(_implementation, name)
 
-    print(f"Version: {__version__}")
-    print(f"Commit : {__commit__}")
-    print(ascii_art)
+
+def __dir__():
+    return module_dir(_implementation, globals())
