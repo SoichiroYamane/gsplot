@@ -130,6 +130,23 @@ the source of truth for the intended tracked policy. Never silently widen
 workflow permissions, allow arbitrary actions, enable direct-main bypasses, or
 change collaborators and secrets as incidental cleanup.
 
+For CodeQL default setup:
+
+- Prefer the default setup for public Python and GitHub Actions coverage on
+  standard GitHub-hosted runners. Keep the default query suite unless a
+  documented risk decision justifies the extended suite.
+- Inspect the default-setup configuration and the initial analysis before
+  changing branch protection. Verify whether the result is a dynamic GitHub
+  workflow or a generated workflow file, and check its triggers, permissions,
+  action provenance, secrets exposure, and selected-action compatibility.
+- Review every initial finding. Resolve or justify findings without exposing
+  exploit details or using blanket dismissals. CodeQL is additive to tests,
+  dependency auditing, Dependabot, secret scanning, and manual workflow review.
+- Add the exact CodeQL check to protected `main` only after a successful
+  baseline and a public Review 1 / Review 2 record. Keep Copilot Autofix, AI
+  findings Preview, and third-party scanners out of scope unless a separate
+  Issue accepts their cost, privacy, noise, and maintenance trade-offs.
+
 ## Fundamental reform workflow
 
 Allow fundamental code, public API, configuration, or directory reform when it

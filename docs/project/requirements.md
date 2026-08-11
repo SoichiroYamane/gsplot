@@ -240,6 +240,16 @@ fixed versions, impact, remediation, validation evidence, and residual risk.
 - Repository settings are external state. A settings change must be defined
   in a public Issue, implemented or recorded in its linked Draft PR, verified
   through the GitHub UI or API, and documented with public-safe evidence.
+- CodeQL default setup must analyze the supported `python` and `actions`
+  targets with the default query suite on standard GitHub-hosted runners.
+  Initial findings must be reviewed and resolved or justified; findings must
+  not be silently dismissed or replaced by AI-generated suggestions.
+- The CodeQL result may become a required `main` check only after a successful
+  baseline analysis, exact check-name verification, and a review of the
+  generated or dynamic workflow's permissions and action provenance.
+- Copilot Autofix, AI findings Preview, and third-party code-scanning tools are
+  optional and are not enabled by default. They require a separate Issue when
+  their privacy, cost, noise, or maintenance trade-offs are accepted.
 
 ### NFR-5: Contributor experience
 

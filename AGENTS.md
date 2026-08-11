@@ -104,6 +104,24 @@ machine-specific operational details here.
   collaborators, organization settings, or unrelated repository features as a
   side effect.
 
+## CodeQL and code-scanning controls
+
+- Prefer CodeQL Default setup for the public Python package and its GitHub
+  Actions workflows. Keep the `python` and `actions` targets, the default query
+  suite, and standard GitHub-hosted runners unless the linked Issue records a
+  different risk-based decision.
+- Inspect the generated or dynamic CodeQL workflow, permissions, triggers,
+  action provenance, and pull-request behavior. CodeQL results complement
+  tests, `pip-audit`, Dependabot, secret scanning, and manual review; they do
+  not replace them.
+- Review initial CodeQL findings before adding the result to `main` branch
+  protection. Resolve or justify findings publicly without exposing exploit
+  details, and verify the exact check name and source before making it
+  required.
+- Do not enable Copilot Autofix, AI findings Preview, or third-party scanners
+  as incidental cleanup. Treat their privacy, cost, result quality, and
+  maintenance impact as a separate Issue-level decision.
+
 ## Fundamental change policy
 
 Fundamental reform is explicitly allowed. Code, public APIs, configuration
