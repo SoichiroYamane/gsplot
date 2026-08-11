@@ -41,10 +41,10 @@ Link relevant documentation, advisories, pull requests, or upstream issues.
 
 ## Work tracking
 
-Linked Draft PR: <!-- Add the PR when implementation starts. -->
+Linked PR: <!-- Add the PR when implementation starts; Draft status is optional. -->
 
 Optional GitHub Project: <!-- Add a project view only for prioritization. -->
 
 Keep active implementation status, validation, blockers, residual risks, and
-the next action in the linked Draft PR. Keep this Issue focused on the durable
-goal and its acceptance criteria.
+the next action in the linked PR. Draft status is optional. Keep this Issue
+focused on the durable goal and its acceptance criteria.

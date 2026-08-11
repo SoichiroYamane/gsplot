@@ -3,7 +3,8 @@
 This document defines the stable repository-level requirements for `gsplot`.
 It is a product and engineering contract, not a chronological progress log.
 Task-specific scope, decisions, evidence, and blockers belong in the linked
-GitHub Issue and Draft PR.
+GitHub Issue and PR. Draft status is optional and is reserved for genuinely
+incomplete work.
 
 ## Product definition
 
@@ -249,11 +250,23 @@ fixed versions, impact, remediation, validation evidence, and residual risk.
   pull-request path as other changes. With the restricted Actions token, the
   workflow may update only the fixed `automation/version-metadata` topic branch
   and must expose a public-safe manual PR link in the job summary. A maintainer
-  opens the PR and follows Review 1 / Review 2; the workflow must never use a
-  privileged direct push or pull-request approval to bypass branch protection.
+  opens a normal PR and follows Review 1 / Review 2; eligible generated
+  metadata may enable GitHub auto-merge after the required checks pass. The
+  workflow must never use a privileged direct push, pull-request approval, or
+  auto-merge bypass to circumvent branch protection.
 - Repository settings are external state. A settings change must be defined
-  in a public Issue, implemented or recorded in its linked Draft PR, verified
+  in a public Issue, implemented or recorded in its linked PR (Draft optional), verified
   through the GitHub UI or API, and documented with public-safe evidence.
+- A linked PR is required for active implementation, but Draft status is
+  optional. Review 1 and Review 2 remain mandatory public records before any
+  merge. GitHub auto-merge may be enabled only for generated metadata and
+  explicitly classified low-risk routine maintenance after the review and
+  required-check gate. Workflow, Actions permission, repository-settings,
+  branch-protection, release, publish, secret, major-update, breaking
+  API/configuration, and judgment-heavy security changes require manual merge.
+- Auto-merge must not approve its own PR, bypass protected `main`, expose
+  secrets to untrusted code, or replace Issue requirements, review records, or
+  required CI/security checks.
 - CodeQL default setup must analyze the supported `python` and `actions`
   targets with the default query suite on standard GitHub-hosted runners.
   Initial findings must be reviewed and resolved or justified; findings must
@@ -312,7 +325,7 @@ Every substantial change must:
 4. remove stale references and misleading compatibility shims when the new
    contract is intentional; and
 5. record the decision, alternatives, validation, and residual risks in the
-   linked Issue and Draft PR.
+   linked Issue and PR.
 
 The following are candidate directions for a future redesign and are not
 implicit permission to change behavior without an Issue-level decision:
@@ -331,7 +344,7 @@ met:
 
 - the linked Issue contains the problem, scope, non-goals, acceptance
   criteria, compatibility position, security impact, and public references;
-- the Draft PR describes status, changed surfaces, validation, blockers,
+- the linked PR describes status, changed surfaces, validation, blockers,
   residual risks, and the next action;
 - implementation, tests, demos, docs, API reference, packaging, and workflows
   agree with the new contract;
@@ -352,14 +365,15 @@ The repository adopts a four-layer work model:
 - One public GitHub Issue is the source of truth for each durable user-facing
   goal. It contains the problem, scope, non-goals, acceptance criteria,
   compatibility position, security impact, decisions, and public references.
-- One linked Draft PR is the source of truth for active implementation. Its
-  description contains current status, changed surfaces, validation results,
-  blockers, residual risks, screenshots when relevant, and the next action.
+- One linked PR is the source of truth for active implementation. Draft status
+  is optional. Its description contains current status, changed surfaces,
+  validation results, blockers, residual risks, screenshots when relevant, and
+  the next action.
 - An optional GitHub Project is a dashboard for prioritization and visibility
   across Issues and PRs. It is not a second requirements database and does not
-  replace either the Issue or the Draft PR.
+  replace either the Issue or the linked PR.
 
-Use Issue comments for durable decisions and evidence. Use the Draft PR body
+Use Issue comments for durable decisions and evidence. Use the linked PR body
 and review comments for implementation progress and code-review context. Keep
 both records concise, factual, reproducible, and safe to quote.
 
@@ -368,8 +382,9 @@ link the individual PRs, and record advisory IDs, fixed versions,
 classification, validation, and residual risk. Keep confidential vulnerability
 details in the private reporting channel described by `SECURITY.md`.
 
-The normal lifecycle is Issue intake -> acceptance criteria -> linked Draft PR
--> Review 1 (requirements and risk) -> Review 2 (complete diff and checks) ->
-ready for review -> merge and close. Temporary notes, private deliberation,
+The normal lifecycle is Issue intake -> acceptance criteria -> linked PR (Draft
+optional) -> Review 1 (requirements and risk) -> Review 2 (complete diff and
+checks) -> required checks -> enable auto-merge or merge manually -> close.
+Temporary notes, private deliberation,
 raw terminal output, credentials, and local environment details remain outside
 the repository.
