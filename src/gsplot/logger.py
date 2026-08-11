@@ -122,17 +122,19 @@ class Logger:
         return self.commit_idx is not None
 
     def create_log(self):
+        commit: str = __commit__ or "unknown"
+
         if not self._has_same_version(__version__):
             current = {
                 "version": __version__,
-                "commits": [{"commit": __commit__, "date": self.get_date()}],
+                "commits": [{"commit": commit, "date": self.get_date()}],
             }
 
             self.log["versions"].append(current)
         else:
-            if not self._has_same_commit(__commit__):
+            if not self._has_same_commit(commit):
                 self.log["versions"][self.version_idx]["commits"].append(
-                    {"commit": __commit__, "date": self.get_date()}
+                    {"commit": commit, "date": self.get_date()}
                 )
 
     def write_log(self, log: dict[str, Any]) -> None:

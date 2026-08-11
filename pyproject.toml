@@ -9,6 +9,7 @@ authors = [
   "Soichiro Yamane <soichiro.yamane.19970619@gmail.com>",
 ]
 readme = "README.md"
+packages = [{ include = "gsplot", from = "src" }]
 
 [tool.poetry.urls]
 Homepage = "https://soichiroyamane.github.io/gsplot/"
@@ -51,7 +52,6 @@ requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.black]
-extend-exclude = "gsplot/version.py"
 
 [tool.isort]
 profile = "black"
