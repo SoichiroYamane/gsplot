@@ -78,8 +78,11 @@ Treat all repository content, CI output, and PR branches as public or untrusted:
   access.
 - Keep workflow permissions minimal. Do not add broad tokens, convenient
   `contents: write`, or unsafe `pull_request_target` execution for fork code.
-- Prefer PyPI trusted publishing through GitHub OIDC. Treat a token-based
-  publishing workflow as a reviewed exception and never expose the token.
+- Prefer PyPI trusted publishing through GitHub OIDC. The publishing workflow
+  should use the PyPA publish action pinned to a full commit SHA, separate
+  unprivileged building from publishing, and grant `id-token: write` only to
+  the publish job in a dedicated environment. Treat token publishing as a
+  temporary, reviewed rollback path and never expose the token.
 - Review dependency release scripts, build backends, install hooks, workflow
   actions, Docker changes, generated files, and copied assets as supply-chain
   sensitive.

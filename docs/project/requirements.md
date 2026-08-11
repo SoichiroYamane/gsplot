@@ -203,8 +203,14 @@ unredacted logs, or machine-specific absolute paths.
 GitHub Actions must use least-privilege permissions. Untrusted pull requests
 must not receive secrets or privileged write access. Workflow actions must be
 pinned and reviewed for supply-chain risk where practical. PyPI publishing
-should use GitHub OIDC trusted publishing; token publishing is a reviewed
-fallback only.
+must use GitHub OIDC trusted publishing through the pinned PyPA publish action.
+The publishing workflow must build distributions without OIDC permissions,
+transfer them as a reviewable artifact, and grant `id-token: write` only to
+the separate publish job. The publish job must use the dedicated `pypi`
+environment and retain only `contents: read` alongside the OIDC permission.
+Token publishing is a temporary, explicitly reviewed rollback path only; the
+legacy token must not be removed until the PyPI publisher and a safe rehearsal
+or production upload have both been verified.
 
 Security findings must use the private disclosure process in `SECURITY.md`.
 Public records should contain only safe advisory identifiers, affected and
