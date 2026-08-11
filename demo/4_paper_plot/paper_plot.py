@@ -2,54 +2,35 @@ import numpy as np
 
 import gsplot as gs
 
-# Load the configuration file
-config = gs.config_load("./gsplot.json")
+config = gs.load_config("./gsplot.json")
 
-# Load the data files
 symmetries = ["A1g", "A2u", "B1g", "B1u", "Eg1i", "Eg10", "Eu10", "Eg11", "Eu11"]
 even_symmetries = ["A1g", "B1g", "Eg1i", "Eg10", "Eg11"]
-ls_list = [
-    "-",
-    "--",
-    "-.",
-    ":",
-    (0, (1, 1, 3, 1)),
-    (0, (1, 1, 5, 2)),
-    (0, (5, 2, 1, 2)),
-    (0, (5, 2, 1, 2, 1, 2)),
-    (0, (3, 1, 1, 2)),
-]
-ls_even = ["-", "-.", (0, (1, 1, 3, 1)), (0, (1, 1, 5, 2)), (0, (5, 2, 1, 2, 1, 2))]
-
-gap_data_list = [gs.load_file(f"../data/gap/Gapeq_{s}.dat") for s in symmetries]
-c_data_list = [gs.load_file(f"../data/c/C_{s}.dat") for s in symmetries]
-yosida_data_list = [
-    gs.load_file(f"../data/yosida/Y(T)_{s}.dat") for s in even_symmetries
-]
+line_styles = ["-", "--", "-.", ":", "-", "--", "-.", ":", "-"]
+even_styles = ["-", "-.", "--", ":", "-"]
 
 
-# Create axes
-axs = gs.axes(store=True)
-axins1 = gs.axes_inset(
-    axs[1],
-    bounds=(0.57, 0.12, 0.25, 0.25),
-    lab_lims=["$T/T_{\\rm{c}}$", "$C_{\\rm}/C_{\\rm{n}}$", [0.9, 1.01], [1.5, 1.8]],
-    zoom=((3, 2), (4, 1)),
-    xpad_label=0,
-    ypad_label=0,
-)
+def load_data(directory: str, prefix: str, names: list[str]) -> list[np.ndarray]:
+    """Load the tab-separated two-column data used by this example."""
 
-axins2 = gs.axes_inset(
-    axs[1],
-    bounds=(0.2, 0.55, 0.35, 0.35),
-    lab_lims=["($T/T_{\\rm{c}})^2$", "$C_{\\rm}/C_{\\rm{n}}$", [0, 0.25], [0, 1.0]],
-    zoom=False,
-    xpad_label=0,
-    ypad_label=0,
-)
+    return [
+        gs.read_array(
+            f"../data/{directory}/{prefix}{name}.dat",
+            options={"skip_header": 1, "delimiter": "\t", "unpack": True},
+        )
+        for name in names
+    ]
 
-# Plot the data
-cm = gs.get_cmap(N=9)
+
+gap_data = load_data("gap", "Gapeq_", symmetries)
+heat_capacity = load_data("c", "C_", symmetries)
+yosida_data = load_data("yosida", "Y(T)_", even_symmetries)
+
+fig, axes = gs.subplots(config=config, mosaic="ABC")
+inset_heat = gs.inset_axes(axes["B"], gs.InsetSpec(bounds=(0.57, 0.12, 0.25, 0.25)))
+inset_square = gs.inset_axes(axes["B"], gs.InsetSpec(bounds=(0.2, 0.55, 0.35, 0.35)))
+
+colors = gs.sample_cmap("viridis", count=len(symmetries))
 labels = [
     "$A_{1g}$",
     "$A_{2u}$",
@@ -61,38 +42,66 @@ labels = [
     "$E_{g}(1,1)$",
     "$E_{u}(1,1)$",
 ]
-labels_even = ["$A_{1g}$", "$B_{1g}$", "$E_{g}(1,i)$", "$E_{g}(1,0)$", "$E_{g}(1,1)$"]
-for i, (data, label, ls) in enumerate(zip(gap_data_list, labels, ls_list)):
-    gs.line(axs[0], data[0], data[1], color=cm[i], label=label, ms=0, lw=2, ls=ls)
+even_labels = ["$A_{1g}$", "$B_{1g}$", "$E_{g}(1,i)$", "$E_{g}(1,0)$", "$E_{g}(1,1)$"]
 
-    # add trivial points to the data from normal states
-    tc = np.append(c_data_list[i][0], [1, 1.5])
-    c = np.append(c_data_list[i][1], [1, 1])
-    gs.line(axs[1], tc, c, color=cm[i], label=label, ms=0, lw=2, ls=ls)
-    gs.line(axins1, tc, c, color=cm[i], label=label, ms=0, lw=2, ls=ls)
-    gs.line(axins2, tc**2, c, color=cm[i], label=label, ms=0, lw=2, ls=ls)
+for index, (gap, heat, label, linestyle) in enumerate(
+    zip(gap_data, heat_capacity, labels, line_styles)
+):
+    props = {
+        "color": colors[index],
+        "label": label,
+        "linewidth": 2,
+        "linestyle": linestyle,
+    }
+    gs.line(axes["A"], gap[0], gap[1], props=props)
+    temperature = np.append(heat[0], [1, 1.5])
+    capacity = np.append(heat[1], [1, 1])
+    gs.line(axes["B"], temperature, capacity, props=props)
+    gs.line(inset_heat, temperature, capacity, props=props)
+    gs.line(inset_square, temperature**2, capacity, props=props)
 
-for i, (data, label, ls) in enumerate(zip(yosida_data_list, labels_even, ls_even)):
-    idx = symmetries.index(even_symmetries[i])
-    gs.line(axs[2], data[0], data[1], color=cm[idx], label=label, ms=0, lw=2, ls=ls)
+for index, (data, label, linestyle) in enumerate(
+    zip(yosida_data, even_labels, even_styles)
+):
+    color_index = symmetries.index(even_symmetries[index])
+    gs.line(
+        axes["C"],
+        data[0],
+        data[1],
+        props={
+            "color": colors[color_index],
+            "label": label,
+            "linewidth": 2,
+            "linestyle": linestyle,
+        },
+    )
 
-# Add Legend
-gs.legend(axs[0], handlelength=3)
-gs.legend(axs[2], handlelength=3, loc="lower right")
-
-# Set square aspect ratio
-gs.graph_square_axes()
-
-# Add labels
-gs.label(
-    [
-        ["$T/T_{\\rm{c}}$", "$\\Delta_0(T)/k_{\\rm{B}}T_{\\rm{c}}$", [0, 1.2], [0, 3]],
-        ["$T/T_{\\rm{c}}$", "$C_{\\rm{s}}/C_{\\rm{n}}$", [0, 1.2], [0, 3]],
-        ["$T/T_{\\rm{c}}$", "$Y(T)$", [0, 1], [0, 1]],
-    ]
+gs.legend(axes["A"], props={"handlelength": 3})
+gs.legend(axes["C"], props={"handlelength": 3, "loc": "lower right"})
+gs.style_axes(
+    axes["A"],
+    gs.AxisSpec(
+        xlabel="$T/T_{\\rm{c}}$",
+        ylabel="$\\Delta_0(T)/k_{\\rm{B}}T_{\\rm{c}}$",
+        xlim=(0, 1.2),
+        ylim=(0, 3),
+    ),
 )
-
-# Add index
-gs.label_add_index(loc="in")
-
-gs.show("SC_cal")
+gs.style_axes(
+    axes["B"],
+    gs.AxisSpec(
+        xlabel="$T/T_{\\rm{c}}$",
+        ylabel="$C_{\\rm{s}}/C_{\\rm{n}}$",
+        xlim=(0, 1.2),
+        ylim=(0, 3),
+    ),
+)
+gs.style_axes(
+    axes["C"],
+    gs.AxisSpec(xlabel="$T/T_{\\rm{c}}$", ylabel="$Y(T)$", xlim=(0, 1), ylim=(0, 1)),
+)
+gs.style_axes(inset_heat, gs.AxisSpec(xlim=(0.9, 1.01), ylim=(1.5, 1.8)))
+gs.style_axes(inset_square, gs.AxisSpec(xlim=(0, 0.25), ylim=(0, 1)))
+gs.box_aspect((axes["A"], axes["B"], axes["C"]), 1)
+gs.panel_labels(axes)
+gs.savefig(fig, "SC_cal", show=False, overwrite=True)

@@ -1,26 +1,82 @@
-📖 APIs
-================
+Canonical API
+=============
+
+The root facade is the supported canonical import surface:
+
+.. code-block:: python
+
+   import gsplot as gs
+
+The implementation packages under ``gsplot._*`` are private. Historical
+module URLs remain available as compatibility references during the 0.4.x and
+1.x lines, but they are not part of this canonical API index.
+
+Functions
+---------
 
 .. autosummary::
    :toctree: ./apis
 
-   gsplot.hello_world.hello_world
-   gsplot.plot.line
-   gsplot.plot.scatter_colormap
-   gsplot.plot.scatter
-   gsplot.plot.line_colormap_dashed
-   gsplot.plot.line_colormap_solid
-   gsplot.config.config
-   gsplot.figure.show
-   gsplot.figure.figure_tools
-   gsplot.figure.axes_inset
-   gsplot.figure.axes
-   gsplot.color.colormap
-   gsplot.path.path
-   gsplot.style.ticks
-   gsplot.style.graph
-   gsplot.style.legend
-   gsplot.style.legend_colormap
-   gsplot.style.label
-   gsplot.style.title
-   gsplot.data.load_file
+   gsplot.subplots
+   gsplot.inset_axes
+   gsplot.line
+   gsplot.scatter
+   gsplot.cmap_line
+   gsplot.cmap_dash
+   gsplot.cmap_scatter
+   gsplot.sample_cmap
+   gsplot.style_axes
+   gsplot.title
+   gsplot.suptitle
+   gsplot.minor_ticks
+   gsplot.box_aspect
+   gsplot.panel_labels
+   gsplot.fig_facecolor
+   gsplot.legend
+   gsplot.legends
+   gsplot.legend_entries
+   gsplot.cmap_legend
+   gsplot.set_theme
+   gsplot.savefig
+   gsplot.show
+   gsplot.load_config
+   gsplot.read_array
+   gsplot.write_meta
+   gsplot.build_info
+   gsplot.use_backend
+
+Value types and errors
+----------------------
+
+.. autosummary::
+   :toctree: ./apis
+
+   gsplot.Config
+   gsplot.AxisSpec
+   gsplot.Theme
+   gsplot.InsetSpec
+   gsplot.MetadataSnapshot
+   gsplot.BuildInfo
+   gsplot.LegendEntries
+   gsplot.GsplotError
+   gsplot.ConfigError
+   gsplot.DataError
+   gsplot.LayoutError
+   gsplot.PlotError
+   gsplot.OutputError
+   gsplot.MetadataError
+
+Type aliases
+------------
+
+.. autosummary::
+   :toctree: ./apis
+
+   gsplot.MosaicSpec
+   gsplot.NormalizeSpec
+   gsplot.ColorSpec
+
+.. toctree::
+   :hidden:
+
+   legacy-modules

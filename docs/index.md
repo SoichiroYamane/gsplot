@@ -9,9 +9,9 @@ sd_hide_title: true
 </div>
 
 `gsplot` is a scientific-plotting toolkit built on
-[Matplotlib](https://matplotlib.org). It provides convenient figure layouts,
-plotting and styling helpers, JSON configuration, and optional metadata for
-recording the package revision used by a script.
+[Matplotlib](https://matplotlib.org). It provides explicit Figure/Axes layout,
+plotting and styling helpers, immutable JSON configuration, and opt-in
+metadata writing.
 
 ```{warning}
 gsplot is still beta software. APIs and defaults may change between releases.
@@ -22,19 +22,20 @@ Please report reproducible bugs through the
 ## Highlights
 
 - create multi-panel figures with Matplotlib-compatible `Axes` objects;
-- apply reusable function defaults through `gsplot.json`;
+- apply explicit, immutable defaults through a versioned `gsplot.json`;
 - add lines, scatter plots, legends, labels, ticks, and scientific styles;
-- record package and configuration metadata for reproducible experiments.
+- save and display one explicitly owned Figure at a time.
 
 ## Example
 
 ```python
 import gsplot as gs
 
-axes = gs.axes(size=(8, 4), mosaic="AB", store=True)
-gs.line(axes[0], [0, 1, 2], [0, 1, 4])
-gs.scatter(axes[1], [0, 1, 2], [0, 1, 4])
-gs.show("overview", show=False)
+fig, axs = gs.subplots(mosaic="AB", figsize=(8, 4))
+gs.line(axs["A"], [0, 1, 2], [0, 1, 4], props={"label": "quadratic"})
+gs.scatter(axs["B"], [0, 1, 2], [0, 1, 4], props={"label": "samples"})
+gs.legends(fig)
+gs.savefig(fig, "overview", show=False)
 ```
 
 ```{image} ../demo/4_paper_plot/SC_cal.png

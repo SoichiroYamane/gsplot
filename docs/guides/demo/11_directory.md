@@ -1,13 +1,8 @@
-# 11. Directory
+# 11. Explicit paths
 
-`gsplot` provides small helpers for inspecting the current working directory,
-the user's home directory, and the directory containing the executed main
-script. `pwd_move()` re-enters the current working directory; it is useful as a
-simple path helper but does not change to the home directory.
-
-## Example
-
-### Code
+The canonical API does not change the process working directory or infer a
+script path. Use `pathlib.Path` for path inspection and pass output paths to
+`gsplot.savefig` or `gsplot.write_meta` explicitly.
 
 ```{literalinclude} ../../../demo/11_directory/directory.py
 ```

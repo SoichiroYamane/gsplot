@@ -1,28 +1,16 @@
-from pprint import pprint as print
+from pprint import pprint
 
 import gsplot as gs
 
-# gsplot provides a configuration file to set the default values of the plot
-# gsplot will search for the configuration file in the following locations:
-# 1. Current directory: ./gsplot.json
-# 2. User config directory: ~/.config/gsplot/gsplot.json
-# 3. Home directory: ~/gsplot.json
-#
-# You can also specify the configuration file path with the `config_load` function
-config = gs.config_load(r"./gsplot.json")
+# Configuration loading is explicit and returns an immutable value object.
+config = gs.load_config("./gsplot.json")
 
-# Check the configuration
-config_dict = gs.config_dict()
-print("\nconfig_dict:", config_dict)
+print("configuration:")
+pprint(config.as_mapping())
 
-axes_config = gs.config_entry_option("axes")
-print("\naxes_config:", axes_config)
-
-# Create a figure with the configuration
-# Priority of the configuration
-# 1. Direct arguments to the function
-# 2. Configuration file
-# 3. Default values
-axs = gs.axes(store=True, size=(5, 5), mosaic="A")
-
-gs.show("config")
+# Direct arguments override values from the configuration file.
+fig, axes = gs.subplots(config=config, mosaic="A")
+axis = axes["A"]
+gs.line(axis, [0, 1, 2], [0, 1, 4], props={"label": "configured line"})
+gs.legend(axis)
+gs.savefig(fig, "config", show=False, overwrite=True)

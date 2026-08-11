@@ -10,9 +10,9 @@
 # gsplot
 
 `gsplot` is a small scientific-plotting toolkit built on Matplotlib. It adds
-convenient figure layouts, consistent styling helpers, configurable defaults,
-and lightweight version/configuration metadata while keeping ordinary
-Matplotlib `Figure` and `Axes` objects in the workflow.
+explicit figure layouts, consistent styling helpers, validated JSON defaults,
+and lightweight build metadata while keeping ordinary Matplotlib `Figure`
+and `Axes` objects in the workflow.
 
 The package is still evolving. Check the [documentation](https://soichiroyamane.github.io/gsplot/stable/)
 and the [issue tracker](https://github.com/SoichiroYamane/gsplot/issues) before
@@ -31,19 +31,19 @@ python -m pip install gsplot
 ```python
 import gsplot as gs
 
-axes = gs.axes(size=(8, 4), mosaic="AB", store=True)
-gs.line(axes[0], [0, 1, 2], [0, 1, 4], label="quadratic")
-gs.scatter(axes[1], [0, 1, 2], [0, 1, 4], label="samples")
-gs.legend_axes()
-gs.show("quickstart", show=False)
+fig, axes = gs.subplots(figsize=(8, 4), mosaic="AB")
+gs.line(axes["A"], [0, 1, 2], [0, 1, 4], props={"label": "quadratic"})
+gs.scatter(axes["B"], [0, 1, 2], [0, 1, 4], props={"label": "samples"})
+gs.legends(fig)
+gs.savefig(fig, "quickstart", show=False)
 ```
 
 This creates a two-panel Matplotlib figure, saves `quickstart.png` when
-storage is enabled, and remains compatible with regular Matplotlib operations:
+requested, and remains compatible with regular Matplotlib operations:
 
-```python
-axes[0].set_title("A regular Matplotlib Axes")
-```
+The canonical helpers always receive their Figure or Axes target explicitly.
+`savefig` displays the Figure after successful writes by default; pass
+`show=False` for batch or headless output.
 
 For a complete scientific example, see the
 [paper-plot demo](https://soichiroyamane.github.io/gsplot/stable/guides/demo/4_paper_plot.html).
@@ -57,7 +57,8 @@ The first matching location is used. A path can also be loaded explicitly:
 ```python
 import gsplot as gs
 
-gs.config_load("path/to/gsplot.json")
+config = gs.load_config("path/to/gsplot.json")
+fig, axes = gs.subplots(config=config)
 ```
 
 When a value is specified more than once, the precedence is:
@@ -67,7 +68,8 @@ When a value is specified more than once, the precedence is:
 3. the function's default value.
 
 See the [configuration guide](https://soichiroyamane.github.io/gsplot/stable/guides/demo/3_config.html)
-for the supported file layout and backend notes.
+for the supported schema and backend notes. Configuration is immutable and is
+never discovered or applied by a plain `import gsplot`.
 
 ## Development
 
@@ -85,9 +87,11 @@ The demos under `demo/` are executable documentation. Run one from its own
 directory, for example:
 
 ```bash
-cd demo/1_axes
-python axes.py
+cd demo/1_axes && python axes.py
 ```
+
+`demo/9_compatibility` intentionally demonstrates the deprecated 0.x surface.
+All other plotting demos use the canonical explicit-target API.
 
 See [the developer setup guide](docs/reference/contribution/developer_env.md)
 for formatting, type checking, packaging, and Docker instructions.

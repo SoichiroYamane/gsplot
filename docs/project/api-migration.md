@@ -1,10 +1,9 @@
 # API migration matrix
 
-This page is the reviewed Phase 0 inventory for the structural reform tracked
-in [Issue #165](https://github.com/SoichiroYamane/gsplot/issues/165). It is a
-contract map, not a promise that the new implementation is already present.
-The current 0.3.x surface remains the compatibility baseline until the
-implementation slices land.
+This page is the reviewed migration matrix for the structural reform tracked
+in [Issue #165](https://github.com/SoichiroYamane/gsplot/issues/165). It maps
+the canonical implementation to the 0.3.x compatibility baseline and is the
+starting point for downstream migration work.
 
 ## Compatibility policy
 

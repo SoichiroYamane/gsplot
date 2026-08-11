@@ -1,27 +1,16 @@
 import gsplot as gs
 
-axs = gs.axes(store=True, size=(10, 5), mosaic="AB")
+fig, axes = gs.subplots(figsize=(10, 5), mosaic="AB")
 
 for i in range(7):
     x = [i, i + 1, i + 2]
     y = [i, i, i]
 
-    # Plot line by axis
-    gs.line(axs[0], x, y, label=f"line {i}")
+    props = {"label": f"line {i}"}
+    gs.line(axes["A"], x, y, props=props)
+    gs.line(axes["B"], x, y, props=props)
 
-    # Fill the facecolor of the marker by alpha_mfc
-    gs.line(axs[1], x, y, label=f"line {i}", alpha_mfc=1)
-
-# Add legends to the all axes
-gs.legend_axes()
-
-# Add labels to the all axes
-gs.label(
-    [
-        # ["xlabel", "ylabel", [xlim, *args], [ylim, *args]]
-        ["$x_1$", "$y_1$", [-1, 10], [-1, 10]],
-        ["$x_2$", "$y_2$", [-1, 10], [-1, 10]],
-    ]
-)
-
-gs.show("line_and_label")
+gs.legends(fig)
+gs.style_axes(axes, gs.AxisSpec(xlabel="x", ylabel="y", xlim=(-1, 10), ylim=(-1, 10)))
+gs.panel_labels(axes)
+gs.savefig(fig, "line_and_label", show=False, overwrite=True)
