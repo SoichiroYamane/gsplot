@@ -54,4 +54,6 @@ guides/index.md
 reference/index.md
 api_reference/index.md
 project/requirements.md
+project/api-migration.md
+project/reform-baseline.md
 ```
