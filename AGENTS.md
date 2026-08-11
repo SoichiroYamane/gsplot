@@ -91,10 +91,12 @@ machine-specific operational details here.
   by the workflows. Revisit the allowlist whenever a workflow action changes.
 - `main` must accept changes through a pull request with the required CI and
   security checks, resolved conversations, linear history, stale-review
-  dismissal, latest-push approval, and no force-push or deletion. Require one
-  GitHub approval while the repository has one administrative collaborator;
-  the public maintenance process still requires independent Review 1 and
-  Review 2 records.
+  dismissal, latest-push approval, and no force-push or deletion. When at least
+  two maintainers are available, require at least one independent GitHub
+  approval. While the repository has one maintainer, use zero required GitHub
+  approvals rather than self-approval or an administrative bypass; the public
+  maintenance process still requires Review 1 and Review 2 records before
+  merge.
 - Automation that generates tracked files must create or update a reviewable
   pull request. Do not grant a workflow a direct-main bypass merely to preserve
   an auto-commit convenience.
