@@ -26,6 +26,13 @@ def use_backend(name: str) -> None:
     backend = ensure_nonempty_text(name, "backend", error=LayoutError)
     if "matplotlib.pyplot" in sys.modules:
         raise LayoutError("use_backend must be called before pyplot is imported")
+    pylab_helpers = sys.modules.get("matplotlib._pylab_helpers")
+    if pylab_helpers is not None:
+        managers = getattr(pylab_helpers, "Gcf", None)
+        if managers is not None and managers.get_all_fig_managers():
+            raise LayoutError(
+                "use_backend must be called before a managed Matplotlib Figure exists"
+            )
 
     try:
         import matplotlib

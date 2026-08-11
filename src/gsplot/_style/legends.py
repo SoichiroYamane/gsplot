@@ -8,7 +8,7 @@ from typing import Any, cast
 import matplotlib as mpl
 import numpy as np
 from matplotlib.axes import Axes
-from matplotlib.colors import Colormap
+from matplotlib.colors import Colormap, Normalize
 from matplotlib.figure import Figure
 from matplotlib.legend import Legend
 from matplotlib.lines import Line2D
@@ -226,7 +226,27 @@ def _colormap_values(
     positions = np.linspace(0.0, 1.0, stripes)
     if norm is not None:
         if not callable(norm):
-            raise PlotError("norm must be a callable normalizer")
+            if isinstance(norm, (str, bytes)):
+                raise PlotError(
+                    "norm must be a normalizer or a finite (vmin, vmax) pair"
+                )
+            try:
+                bounds = tuple(norm)
+            except TypeError as exc:
+                raise PlotError(
+                    "norm must be a normalizer or a finite (vmin, vmax) pair"
+                ) from exc
+            if len(bounds) != 2:
+                raise PlotError(
+                    "norm must be a normalizer or a finite (vmin, vmax) pair"
+                )
+            try:
+                vmin, vmax = (float(bounds[0]), float(bounds[1]))
+            except (TypeError, ValueError) as exc:
+                raise PlotError("norm bounds must be finite") from exc
+            if not np.isfinite(vmin) or not np.isfinite(vmax) or vmin == vmax:
+                raise PlotError("norm bounds must be finite and different")
+            norm = Normalize(vmin=vmin, vmax=vmax, clip=True)
         try:
             positions = np.asarray(norm(positions, clip=True), dtype=float)
         except (TypeError, ValueError) as exc:

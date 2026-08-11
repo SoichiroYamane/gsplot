@@ -76,4 +76,6 @@ def test_legends_are_local_and_require_explicit_replacement() -> None:
         cmap_legend(axes[0], label="range")
     cmap = cmap_legend(axes[0], label="range", replace=True, stripes=3)
     assert isinstance(cmap, Legend)
+    bounded = cmap_legend(axes[1], norm=(0, 1), stripes=3, replace=True)
+    assert isinstance(bounded, Legend)
     plt.close(figure)

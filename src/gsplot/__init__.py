@@ -146,7 +146,7 @@ __all__ = [
 
 
 def __getattr__(name: str) -> Any:
-    """Resolve a legacy root export only when user code requests it."""
+    """Resolve a canonical or legacy root export only when requested."""
 
     value = resolve_export(name)
     globals()[name] = value
