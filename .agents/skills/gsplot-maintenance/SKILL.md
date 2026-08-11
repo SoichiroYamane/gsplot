@@ -17,7 +17,7 @@ in English.
 Read, in this order, before editing:
 
 1. `AGENTS.md`
-2. `docs/project/requirements.md` and the linked GitHub Issue/Draft PR when available
+2. `docs/project/requirements.md` and the linked GitHub Issue/PR when available
 3. `pyproject.toml` and the relevant sections of `poetry.lock`
 4. `README.md` and the relevant `docs/` guide or API page
 5. the target implementation, its imports/consumers, related tests, and related demo
@@ -37,33 +37,36 @@ Record whether the change affects public API, global Matplotlib state, configura
 
 - Use a four-layer public work model:
   `docs/project/requirements.md` contains stable requirements, the GitHub Issue
-  contains the durable goal, the linked Draft PR contains active implementation
+  contains the durable goal, the linked PR contains active implementation
   progress, and an optional GitHub Project provides dashboard views only.
+  Draft status is optional and is reserved for genuinely incomplete work.
 - Keep one durable user-facing goal per public GitHub Issue. The Issue must
   state the problem, scope, non-goals, acceptance criteria, compatibility,
   security impact, decisions, and public evidence.
-- Use one linked Draft PR for active implementation. Its description must
-  state current status, changed surfaces, validation, blockers, residual risks,
-  screenshots when relevant, and the next action.
-- Use Issue comments for decisions and durable evidence. Use the Draft PR body
-  and review comments for implementation progress and code-review context.
+- Use one linked PR for active implementation. Its description must state
+  current status, changed surfaces, validation, blockers, residual risks,
+  screenshots when relevant, and the next action. A normal PR is preferred
+  when the change may use GitHub auto-merge; Draft status remains optional.
+- Use Issue comments for decisions and durable evidence. Use the PR body and
+  review comments for implementation progress and code-review context.
   Update the appropriate record before or alongside substantial work.
 - Use labels, milestones, linked Issues/PRs, and an optional Project for
   prioritization and visibility. Never duplicate the requirements database in
-  a Project or use it as a replacement for the Issue and Draft PR.
+  a Project or use it as a replacement for the Issue and PR.
 - For a related security or Dependabot batch, use a parent maintenance Issue,
   link the individual PRs, and record advisory IDs, fixed versions,
   classification, validation, and residual risk. Keep vulnerability details
   that require confidentiality in the SECURITY.md reporting channel.
-- Follow this lifecycle: Issue intake -> acceptance criteria -> linked Draft
-  PR -> Review 1 (requirements and risk) -> Review 2 (complete diff and checks)
-  -> ready for review -> merge and close.
+- Follow this lifecycle: Issue intake -> acceptance criteria -> linked PR
+  (Draft optional) -> Review 1 (requirements and risk) -> Review 2 (complete
+  diff and checks) -> required checks -> enable auto-merge or merge manually
+  -> close.
 - Do not create a chronological progress diary, private deliberation, raw
   terminal transcript, credential, or machine-specific path in the repository.
 - Redact secrets, private infrastructure, credentials, personal data, raw
   logs, and machine-specific paths from Issues, PRs, commits, and handoffs.
 
-Update the linked Issue or Draft PR before or alongside substantial work. If
+Update the linked Issue or PR before or alongside substantial work. If
 the requirements change, update `docs/project/requirements.md` and explain the
 compatibility position in the Issue/PR.
 
@@ -117,8 +120,8 @@ tracked YAML source:
    protection rule. Replace direct privileged commits with a bounded,
    loop-safe pull-request workflow. If the restricted Actions token cannot
    create a pull request, allow only a fixed topic-branch push plus a
-   public-safe manual PR handoff in the job summary; record that fallback in
-   the Issue and never add approval or direct-main bypass capability.
+   public-safe PR handoff in the job summary; record that fallback in the
+   Issue and never add approval, auto-merge bypass, or direct-main capability.
 6. Prefer a reviewable main-branch policy: required pull request, required CI
    and security checks, resolved conversations, linear history, stale-review
    dismissal, latest-push approval, and no force-push or deletion. Require at
@@ -167,7 +170,7 @@ structure merely to minimize the diff.
    packaging, CI, and migration impact.
 3. Classify each affected contract as compatible, deprecating, or breaking.
 4. Record alternatives, migration/deprecation behavior, and residual risks in
-   the Issue and Draft PR.
+   the Issue and PR.
 5. Implement the coherent change across source, tests, docs, examples, API
    lists, packaging, and workflows.
 6. Remove stale references and misleading compatibility shims when the new
@@ -230,7 +233,18 @@ Do not declare an advisory resolved solely because a version string changed.
 ## Pull-request workflow
 
 Treat PR handling as review and preparation unless the user separately
-authorizes a remote mutation:
+authorizes a remote mutation. GitHub auto-merge may be enabled only for the
+eligible low-risk classes after Review 1, Review 2, and required checks:
+
+- generated version metadata and explicitly classified routine maintenance;
+- no workflow, Actions permission, repository-setting, release, publish,
+  secret, major-update, breaking API/configuration, or judgment-heavy security
+  change; and
+- no unresolved finding, blocker, or residual risk requiring maintainer
+  judgment.
+
+Auto-merge must not approve a PR, bypass protected `main`, or expose secrets to
+untrusted code.
 
 1. Snapshot the working tree and remotes; preserve unrelated changes.
 2. Confirm the PR links to the correct durable Issue. If no Issue exists,

@@ -4,7 +4,7 @@ Describe the user-visible outcome and link the durable goal:
 
 <!-- Closes #000 -->
 
-Current status: <!-- Draft, blocked, ready for review, or awaiting decision. -->
+Current status: <!-- In progress, blocked, ready for review, auto-merge enabled, or awaiting decision. -->
 
 Keep the durable requirements and acceptance criteria in the linked Issue.
 
@@ -41,7 +41,8 @@ private paths, raw logs, or unreleased vulnerability details.
 Record reproducible blockers, residual risks, and the next decision needed for
 review. Keep chronological scratch notes outside the repository.
 
-The Draft PR is the active progress record. Update this section and the
+The linked PR is the active progress record. Draft status is optional; use it
+only while the work is genuinely incomplete. Update this section and the
 validation section as the implementation changes.
 
 ## Review checklist
@@ -50,4 +51,6 @@ validation section as the implementation changes.
 - [ ] The complete diff and generated files were manually reviewed.
 - [ ] Public imports, configuration precedence, docs, demos, and packaging are coherent.
 - [ ] No secrets or private operational details are present.
-- [ ] Remote approval, merge, release, or publish actions are not assumed.
+- [ ] Auto-merge eligibility is documented; manual-only changes are not auto-merged.
+- [ ] If auto-merge is enabled, Review 1, Review 2, and all required checks are complete.
+- [ ] Remote approval, manual merge, auto-merge, release, or publish actions are not assumed.

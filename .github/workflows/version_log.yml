@@ -58,7 +58,7 @@ jobs:
           printf "__version__ = '%s'\n" "$PACKAGE_VERSION" > gsplot/version.py
           printf "__commit__ = '%s'\n" "$COMMIT_HASH" >> gsplot/version.py
 
-      - name: Push version metadata branch for manual pull request
+      - name: Push version metadata branch for pull request handoff
         env:
           VERSION_BRANCH: automation/version-metadata
         run: |
@@ -80,16 +80,16 @@ jobs:
 
           VERSION_COMPARE_URL="https://github.com/${GITHUB_REPOSITORY}/compare/main...${VERSION_BRANCH}?expand=1"
           {
-            echo "## Version metadata is ready for manual review"
+            echo "## Version metadata is ready for pull request review"
             echo
             echo "The restricted Actions token intentionally does not create or approve pull requests."
             echo "The generated branch \`${VERSION_BRANCH}\` was pushed successfully."
             echo
-            echo "[Open a pull request from the generated branch](${VERSION_COMPARE_URL})"
+            echo "[Open a normal pull request from the generated branch](${VERSION_COMPARE_URL})"
             echo
-            echo "Review and merge it through the protected \`main\` workflow using the public Issue, Review 1, and Review 2 protocol."
+            echo "Review and merge it through the protected \`main\` workflow using the public Issue, Review 1, and Review 2 protocol. After both reviews and required checks pass, eligible generated metadata may use GitHub auto-merge."
           } >> "$GITHUB_STEP_SUMMARY"
-          echo "::notice title=Version metadata PR required::Open ${VERSION_COMPARE_URL} and review the generated metadata."
+          echo "::notice title=Version metadata PR required::Open ${VERSION_COMPARE_URL}, review the generated metadata, and use auto-merge only after the public review and required-check gate."
 
       - name: Build package
         run: poetry build

@@ -27,8 +27,9 @@ machine-specific operational details here.
   requirements and security boundaries.
 - GitHub Issues are the source of truth for durable user-facing goals,
   task-specific requirements, acceptance criteria, and security findings.
-- Draft PR descriptions are the source of truth for active implementation
-  progress, validation, blockers, screenshots, and the next decision.
+- Linked PR descriptions are the source of truth for active implementation
+  progress, validation, blockers, screenshots, and the next decision. Draft
+  status is optional and is reserved for work that is genuinely incomplete.
 - `.agents/skills/gsplot-maintenance/SKILL.md` contains the repository-specific
   maintenance procedure for Python, Matplotlib, configuration, tests, docs,
   demos, packaging, security, PRs, CI, and agent guidance.
@@ -105,15 +106,24 @@ machine-specific operational details here.
 - Automation that generates tracked files must send them through the same
   reviewable pull-request path as other changes. When the restricted Actions
   token cannot create pull requests, it may update only the fixed
-  `automation/version-metadata` topic branch and must write a public-safe manual
-  PR link to the job summary. A maintainer then opens the PR; never grant a
+  `automation/version-metadata` topic branch and must write a public-safe PR
+  link to the job summary. A maintainer then opens a normal PR; never grant a
   workflow a direct-main bypass or pull-request approval capability merely to
   preserve automation convenience.
-- A repository-settings change needs a public Issue, a linked Draft PR or
-  equivalent implementation record, explicit user authorization, and a
-  read-back verification after the API/UI mutation. Do not change secrets,
-  collaborators, organization settings, or unrelated repository features as a
-  side effect.
+- GitHub auto-merge is a controlled merge mechanism, not a review bypass. A
+  linked PR may be opened as a normal PR; Draft status is optional. Enable
+  auto-merge only after the linked Issue, Review 1, Review 2, and all required
+  checks are complete. Generated version metadata and explicitly classified
+  low-risk routine maintenance may use auto-merge. Workflow, Actions
+  permission, repository-settings, branch-protection, release, publish,
+  secret, major-update, breaking API/configuration, and judgment-heavy
+  security changes remain manual-merge only. Automation must never approve its
+  own PR, bypass `main`, or expose secrets to untrusted code.
+- A repository-settings change needs a public Issue, a linked PR (Draft
+  optional) or equivalent implementation record, explicit user authorization,
+  and a read-back verification after the API/UI mutation. Do not change
+  secrets, collaborators, organization settings, or unrelated repository
+  features as a side effect.
 
 ## CodeQL and code-scanning controls
 
@@ -146,7 +156,7 @@ For a fundamental change:
 1. Update `docs/project/requirements.md` with the intended outcome, affected
    surfaces, compatibility position, and acceptance criteria.
 2. Record the decision, alternatives, migration plan, and residual risks in
-   the linked GitHub Issue and Draft PR. Update stable repository requirements
+   the linked GitHub Issue and PR. Update stable repository requirements
    in `docs/project/requirements.md` when the contract changes.
 3. Map public imports, configuration keys, consumers, tests, demos, docs,
    packaging, CI, and migration paths before editing.
@@ -164,8 +174,8 @@ redesign.
 - Use four distinct layers instead of duplicating the same information:
   `docs/project/requirements.md` is the stable product and engineering
   contract, a GitHub Issue is the durable goal and requirement record, a
-  linked Draft PR is the active implementation record, and an optional GitHub
-  Project is only a cross-issue dashboard.
+  linked PR is the active implementation record, and an optional GitHub
+  Project is only a cross-issue dashboard. Draft status is optional.
 - Keep stable requirements, non-goals, compatibility promises, and security
   boundaries in `docs/project/requirements.md`. Do not put task status or a
   chronological work diary there.
@@ -173,37 +183,40 @@ redesign.
   The Issue is the source of truth for why the work exists and what success
   means: problem, scope, non-goals, acceptance criteria, compatibility,
   security impact, decisions, and public references.
-- Create or link one Draft PR for active implementation. The Draft PR is the
-  source of truth for how the work is being implemented and where it stands:
-  current status, changed surfaces, validation results, blockers, residual
-  risks, screenshots when useful, and the next action.
+- Create or link one PR for active implementation. A PR may be Draft while
+  work is genuinely incomplete, but eligible work should use a normal PR so
+  GitHub auto-merge can be enabled after the review and checks gate. The PR is
+  the source of truth for current status, changed surfaces, validation
+  results, blockers, residual risks, screenshots when useful, and the next
+  action.
 - Use Issue comments for durable decisions, clarifications, and evidence. Use
-  the Draft PR description and review comments for implementation progress and
+  the PR description and review comments for implementation progress and
   code-review context. Keep both concise and update them before or alongside
   substantial work.
 - Use labels, milestones, linked Issues/PRs, and an optional Project view for
   prioritization. A Project must not become a second requirements database or
-  a substitute for the linked Issue and Draft PR.
+  a substitute for the linked Issue and PR.
 - For a related batch of security or Dependabot updates, use one parent Issue
   for the maintenance goal, link each PR, and record advisory IDs, fixed
   versions, classification, validation, and residual risk. Keep private
   vulnerability details in the SECURITY.md reporting channel.
-- Use this lifecycle: Issue intake -> acceptance criteria -> linked Draft PR
-  -> Review 1 (requirements and risk) -> Review 2 (complete diff and checks)
-  -> ready for review -> merge and close. Do not claim public progress is
-  complete while the Issue or Draft PR record is missing or stale.
+- Use this lifecycle: Issue intake -> acceptance criteria -> linked PR (Draft
+  optional) -> Review 1 (requirements and risk) -> Review 2 (complete diff and
+  checks) -> required checks -> enable auto-merge or merge manually -> close.
+  Do not claim public progress is complete while the Issue or linked PR record
+  is missing or stale.
 - Do not create a chronological progress diary in the repository. Keep private
   scratch notes, credentials, local host details, and raw terminal transcripts
   outside the repository.
 
-Update the linked Issue or Draft PR before or alongside substantial work, not
+Update the linked Issue or PR before or alongside substantial work, not
 after the details have been forgotten. Keep public records concise, factual,
 reproducible, and safe to quote.
 
 ## Working procedure
 
 1. Read this file, the repository skill, `docs/project/requirements.md`, the
-   linked Issue/Draft PR when available, `pyproject.toml`, relevant lockfile
+   linked Issue/PR when available, `pyproject.toml`, relevant lockfile
    sections, and the user-facing docs before editing.
 2. Start with read-only repository triage:
 
@@ -253,7 +266,9 @@ Never declare an advisory resolved merely because a version number changed.
 
 ## Pull-request workflow
 
-Handle PRs as reviewable change sets, not as commands to merge automatically.
+Handle PRs as reviewable change sets. Use GitHub auto-merge only for the
+explicitly eligible classes after the public review and required-check gate;
+keep sensitive and judgment-heavy changes manual.
 
 1. Snapshot the working tree and remotes before fetching or editing. Preserve
    unrelated user changes.
