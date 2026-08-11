@@ -1,102 +1,89 @@
-from .color.colormap import get_cmap
-from .config.config import (
-    Config,
-    config_dict,
-    config_entry_option,
-    config_load,
-    save_metadata,
-)
-from .data.load_file import load_file, load_file_fast
-from .figure.axes import axes
-from .figure.axes_inset import axes_inset, axes_inset_padding
-from .figure.figure_tools import get_figure_size
-from .figure.show import show
-from .hello_world.hello_world import hello_world
-from .logger import logger
-from .path.path import home, pwd, pwd_main, pwd_move
-from .plot.line import line
-from .plot.line_colormap_dashed import line_colormap_dashed
-from .plot.line_colormap_solid import line_colormap_solid
-from .plot.scatter import scatter
-from .plot.scatter_colormap import scatter_colormap
-from .style.graph import (
-    graph_facecolor,
-    graph_square,
-    graph_square_axes,
-    graph_transparent,
-    graph_transparent_axes,
-    graph_white,
-    graph_white_axes,
-)
-from .style.label import label, label_add_index
-from .style.legend import (
-    legend,
-    legend_axes,
-    legend_get_handlers,
-    legend_handlers,
-    legend_reverse,
-)
-from .style.legend_colormap import legend_colormap
-from .style.ticks import ticks_off, ticks_on, ticks_on_axes
-from .style.title import title, title_axes
+"""Public package boundary for gsplot.
+
+The 0.3.x names remain available through lazy compatibility adapters while
+the canonical implementation is introduced in later reform slices. Importing
+the package itself intentionally performs no Matplotlib, configuration,
+logging, metadata-file, or backend initialization.
+"""
+
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, Any
+
+from ._compat.root import canonical_names, legacy_names, resolve_export
 from .version import __commit__, __version__
 
-# ╭──────────────────────────────────────────────────────────╮
-# │ Load the configuration file                              │
-# ╰──────────────────────────────────────────────────────────╯
-Config()
-
-# ╭──────────────────────────────────────────────────────────╮
-# │ Logging setup                                            │
-# ╰──────────────────────────────────────────────────────────╯
-logger()
-
-# ╭──────────────────────────────────────────────────────────╮
-# │ Save Metadata                                            │
-# ╰──────────────────────────────────────────────────────────╯
-save_metadata()
-
-__version__ = __version__
-__commit__ = __commit__
-
+if TYPE_CHECKING:
+    # Runtime lookup stays lazy; these declarations keep static analyzers
+    # aware of the compatibility names exported through ``__getattr__``.
+    get_cmap: Any
+    load_file: Any
+    load_file_fast: Any
+    axes: Any
+    axes_inset: Any
+    axes_inset_padding: Any
+    get_figure_size: Any
+    show: Any
+    hello_world: Any
+    config_load: Any
+    config_dict: Any
+    config_entry_option: Any
+    home: Any
+    pwd: Any
+    pwd_move: Any
+    pwd_main: Any
+    line: Any
+    line_colormap_solid: Any
+    line_colormap_dashed: Any
+    scatter: Any
+    scatter_colormap: Any
+    graph_square: Any
+    graph_square_axes: Any
+    graph_white: Any
+    graph_white_axes: Any
+    graph_transparent: Any
+    graph_transparent_axes: Any
+    graph_facecolor: Any
+    label: Any
+    label_add_index: Any
+    legend: Any
+    legend_axes: Any
+    legend_handlers: Any
+    legend_reverse: Any
+    legend_get_handlers: Any
+    legend_colormap: Any
+    ticks_off: Any
+    ticks_on: Any
+    ticks_on_axes: Any
+    title: Any
+    title_axes: Any
+    subplots: Any
+    use_backend: Any
 
 __all__ = [
-    # color/colormap.py
+    "subplots",
+    "use_backend",
     "get_cmap",
-    # data/load_file.py
     "load_file",
     "load_file_fast",
-    # figure/axes.py
     "axes",
-    # figure/axes_inset.py
     "axes_inset",
     "axes_inset_padding",
-    # figure/figure_tools.py
     "get_figure_size",
-    # figure/show.py
     "show",
-    # hello_world.py
     "hello_world",
-    # config/config.py
     "config_load",
     "config_dict",
     "config_entry_option",
-    # path/path.py
     "home",
     "pwd",
     "pwd_move",
     "pwd_main",
-    # plot/line.py
     "line",
-    # plot/line_colormap_solid.py
     "line_colormap_solid",
-    # plot/line_colormap_dashed.py
     "line_colormap_dashed",
-    # plot/scatter.py
     "scatter",
-    # plot/scatter_colormap.py
     "scatter_colormap",
-    # style/graph.py
     "graph_square",
     "graph_square_axes",
     "graph_white",
@@ -104,22 +91,36 @@ __all__ = [
     "graph_transparent",
     "graph_transparent_axes",
     "graph_facecolor",
-    # style/label.py
     "label",
     "label_add_index",
-    # style/legend.py
     "legend",
     "legend_axes",
     "legend_handlers",
     "legend_reverse",
     "legend_get_handlers",
-    # style/legend_colormap.py
     "legend_colormap",
-    # style/ticks.py
     "ticks_off",
     "ticks_on",
     "ticks_on_axes",
-    # style/title.py
     "title",
     "title_axes",
 ]
+
+
+def __getattr__(name: str) -> Any:
+    """Resolve a legacy root export only when user code requests it."""
+
+    value = resolve_export(name)
+    globals()[name] = value
+    return value
+
+
+def __dir__() -> list[str]:
+    """Include lazy compatibility names in interactive discovery."""
+
+    return sorted(
+        set(globals())
+        | set(legacy_names())
+        | set(canonical_names())
+        | {"__commit__", "__version__"}
+    )
