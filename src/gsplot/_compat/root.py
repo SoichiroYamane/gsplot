@@ -68,6 +68,11 @@ _LEGACY_EXPORTS: Final[dict[str, tuple[str, str]]] = {
     "logger": ("gsplot.logger", "logger"),
 }
 
+_CANONICAL_EXPORTS: Final[dict[str, tuple[str, str]]] = {
+    "subplots": ("gsplot._figure.layout", "subplots"),
+    "use_backend": ("gsplot._figure.backend", "use_backend"),
+}
+
 LEGACY_ALL: Final[tuple[str, ...]] = (
     "get_cmap",
     "load_file",
@@ -125,7 +130,25 @@ def resolve_legacy(name: str) -> Any:
     return getattr(module, attribute_name)
 
 
+def resolve_export(name: str) -> Any:
+    """Resolve a canonical or historical root export lazily."""
+
+    exports = _CANONICAL_EXPORTS if name in _CANONICAL_EXPORTS else _LEGACY_EXPORTS
+    try:
+        module_name, attribute_name = exports[name]
+    except KeyError as error:
+        raise AttributeError(f"module 'gsplot' has no attribute {name!r}") from error
+    module = import_module(module_name)
+    return getattr(module, attribute_name)
+
+
 def legacy_names() -> tuple[str, ...]:
     """Return the stable historical names exposed by the root package."""
 
     return LEGACY_ALL
+
+
+def canonical_names() -> tuple[str, ...]:
+    """Return canonical root names currently implemented."""
+
+    return tuple(_CANONICAL_EXPORTS)

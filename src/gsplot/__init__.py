@@ -10,7 +10,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
 
-from ._compat.root import legacy_names, resolve_legacy
+from ._compat.root import canonical_names, legacy_names, resolve_export
 from .version import __commit__, __version__
 
 if TYPE_CHECKING:
@@ -57,8 +57,12 @@ if TYPE_CHECKING:
     ticks_on_axes: Any
     title: Any
     title_axes: Any
+    subplots: Any
+    use_backend: Any
 
 __all__ = [
+    "subplots",
+    "use_backend",
     "get_cmap",
     "load_file",
     "load_file_fast",
@@ -106,7 +110,7 @@ __all__ = [
 def __getattr__(name: str) -> Any:
     """Resolve a legacy root export only when user code requests it."""
 
-    value = resolve_legacy(name)
+    value = resolve_export(name)
     globals()[name] = value
     return value
 
@@ -114,4 +118,9 @@ def __getattr__(name: str) -> Any:
 def __dir__() -> list[str]:
     """Include lazy compatibility names in interactive discovery."""
 
-    return sorted(set(globals()) | set(legacy_names()) | {"__commit__", "__version__"})
+    return sorted(
+        set(globals())
+        | set(legacy_names())
+        | set(canonical_names())
+        | {"__commit__", "__version__"}
+    )
