@@ -1,5 +1,6 @@
 import os
 import sys
+import warnings
 
 __all__: list[str] = ["home", "pwd", "pwd_move", "pwd_main"]
 
@@ -137,7 +138,12 @@ def pwd_move() -> None:
     >>> import gsplot as gs
     >>> gs.pwd_move()  # Changes directory to the current working directory
     """
-    Path().move_to_pwd()
+    warnings.warn(
+        "gsplot.pwd_move is deprecated and is now a no-op; use pathlib.Path.cwd() "
+        "and an explicit working-directory context instead",
+        DeprecationWarning,
+        stacklevel=2,
+    )
 
 
 class PathToMain:

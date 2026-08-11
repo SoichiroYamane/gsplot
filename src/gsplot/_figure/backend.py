@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import sys
 
-from .._core.errors import LayoutError
+from .._core.errors import ConfigError, LayoutError
 from .._core.validation import ensure_nonempty_text
 
 
@@ -18,12 +18,12 @@ def use_backend(name: str) -> None:
 
     Raises
     ------
-    LayoutError
+    ConfigError
         If pyplot has already been imported, the name is invalid, or Matplotlib
         rejects the backend.
     """
 
-    backend = ensure_nonempty_text(name, "backend", error=LayoutError)
+    backend = ensure_nonempty_text(name, "backend", error=ConfigError)
     if "matplotlib.pyplot" in sys.modules:
         raise LayoutError("use_backend must be called before pyplot is imported")
     pylab_helpers = sys.modules.get("matplotlib._pylab_helpers")
@@ -39,7 +39,7 @@ def use_backend(name: str) -> None:
 
         matplotlib.use(backend)
     except Exception as exc:
-        raise LayoutError(f"could not select Matplotlib backend {backend!r}") from exc
+        raise ConfigError(f"could not select Matplotlib backend {backend!r}") from exc
 
 
 __all__ = ["use_backend"]

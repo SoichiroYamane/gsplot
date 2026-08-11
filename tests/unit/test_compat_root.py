@@ -1,6 +1,7 @@
 """Tests for root-level canonical/legacy dispatch boundaries."""
 
 import inspect
+from pathlib import Path
 
 import matplotlib.pyplot as plt
 import pytest
@@ -31,3 +32,21 @@ def test_root_title_and_show_dispatch_by_explicit_target() -> None:
     assert old_title.figure is figure
     assert gs.show(figure) is None
     plt.close(figure)
+
+
+def test_nontranslating_legacy_helpers_warn_without_side_effects(capsys) -> None:
+    """Legacy helpers that have no canonical translation do not mutate state."""
+
+    original = Path.cwd()
+    with pytest.warns(DeprecationWarning, match="no-op"):
+        assert gs.pwd_move() is None
+    assert Path.cwd() == original
+
+    with pytest.warns(DeprecationWarning, match="documentation-only"):
+        assert gs.hello_world() is None
+    assert capsys.readouterr().out == ""
+
+    with pytest.warns(DeprecationWarning, match="MetadataSnapshot"), pytest.raises(
+        gs.MetadataError, match="implicit metadata"
+    ):
+        gs.save_metadata()

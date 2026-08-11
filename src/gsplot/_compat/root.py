@@ -64,7 +64,7 @@ _LEGACY_EXPORTS: Final[dict[str, tuple[str, str]]] = {
     "title": ("gsplot._compat.root_api", "title"),
     "title_axes": ("gsplot.style.title", "title_axes"),
     "Config": ("gsplot.config.config", "Config"),
-    "save_metadata": ("gsplot.config.config", "save_metadata"),
+    "save_metadata": ("gsplot._compat.root_legacy", "save_metadata"),
     "logger": ("gsplot.logger", "logger"),
 }
 

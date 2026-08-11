@@ -148,6 +148,11 @@ scatter.__signature__ = inspect.signature(_scatter)  # type: ignore[attr-defined
 legend.__signature__ = inspect.signature(_legend)  # type: ignore[attr-defined]
 title.__signature__ = inspect.signature(_title)  # type: ignore[attr-defined]
 show.__signature__ = inspect.signature(_show)  # type: ignore[attr-defined]
+line.__doc__ = _line.__doc__
+scatter.__doc__ = _scatter.__doc__
+legend.__doc__ = _legend.__doc__
+title.__doc__ = _title.__doc__
+show.__doc__ = _show.__doc__
 
 
 __all__ = ["line", "scatter", "legend", "title", "show"]

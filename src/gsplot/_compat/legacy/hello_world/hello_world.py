@@ -1,21 +1,16 @@
-from ....version import __commit__, __version__
+import warnings
 
 __all__ = ["hello_world"]
 
 
 def hello_world() -> None:
     """
-    Print the version, commit hash, and an ASCII art of the logo.
+    Warn that the old display helper is documentation-only.
     """
-    ascii_art = r"""
- ██████╗ ███████╗██████╗ ██╗      ██████╗ ████████╗
-██╔════╝ ██╔════╝██╔══██╗██║     ██╔═══██╗╚══██╔══╝
-██║  ███╗███████╗██████╔╝██║     ██║   ██║   ██║
-██║   ██║╚════██║██╔═══╝ ██║     ██║   ██║   ██║
-╚██████╔╝███████║██║     ███████╗╚██████╔╝   ██║
- ╚═════╝ ╚══════╝╚═╝     ╚══════╝ ╚═════╝    ╚═╝
-        """
 
-    print(f"Version: {__version__}")
-    print(f"Commit : {__commit__}")
-    print(ascii_art)
+    warnings.warn(
+        "gsplot.hello_world is documentation-only and no longer displays output; "
+        "use gsplot.build_info() for version information",
+        DeprecationWarning,
+        stacklevel=2,
+    )

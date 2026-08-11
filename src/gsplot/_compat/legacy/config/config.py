@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import os
 import warnings
+from copy import deepcopy
 from datetime import datetime
 from threading import Lock
 from typing import Any, cast
@@ -10,6 +11,7 @@ from typing import Any, cast
 import matplotlib as mpl
 from matplotlib import rcParams
 
+from ...._core.errors import MetadataError
 from ....version import __commit__, __version__
 from ..path.path import PathToMain
 
@@ -405,7 +407,7 @@ def config_dict() -> dict[str, Any]:
     """
     _config: Config = Config()
     config_dict: dict[str, Any] = _config.config_dict
-    return config_dict
+    return deepcopy(config_dict)
 
 
 def config_entry_option(key: str) -> dict[str, Any]:
@@ -434,7 +436,7 @@ def config_entry_option(key: str) -> dict[str, Any]:
     """
     _config: Config = Config()
     entry_option: dict[str, Any] = _config.get_config_entry_option(key)
-    return entry_option
+    return deepcopy(entry_option)
 
 
 class MetadataHistory:
@@ -594,5 +596,15 @@ class MetadataStore:
 
 
 def save_metadata() -> None:
-    _metadata = MetadataStore()
-    _metadata.create_metadata()
+    """Reject implicit metadata writes from the historical module path."""
+
+    warnings.warn(
+        "gsplot.config.config.save_metadata is deprecated; create a "
+        "MetadataSnapshot and call gsplot.write_meta explicitly",
+        DeprecationWarning,
+        stacklevel=2,
+    )
+    raise MetadataError(
+        "implicit metadata collection is removed; use "
+        "write_meta(MetadataSnapshot(...), destination)"
+    )
