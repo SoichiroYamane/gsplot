@@ -27,6 +27,10 @@ class PlotError(GsplotError):
     """Raised when a plotting operation cannot be completed safely."""
 
 
+class OptionError(PlotError, TypeError):
+    """Internal typed error for an unknown or duplicate public option."""
+
+
 class OutputError(GsplotError):
     """Raised when figure output or display cannot be completed."""
 
@@ -41,6 +45,7 @@ __all__ = [
     "DataError",
     "LayoutError",
     "PlotError",
+    "OptionError",
     "OutputError",
     "MetadataError",
 ]

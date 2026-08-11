@@ -8,11 +8,11 @@ from typing import Any, cast
 import numpy as np
 from matplotlib.axes import Axes
 from matplotlib.collections import LineCollection, PathCollection
-from matplotlib.colors import Normalize
+from matplotlib.colors import Colormap, Normalize
 from numpy.typing import ArrayLike
 
 from .._config.model import Config
-from .._core.errors import DataError, PlotError
+from .._core.errors import DataError, OptionError, PlotError
 from .._core.numerics import validate_color_values, validate_xy
 from .._core.types import NormalizeSpec
 from .basic import validate_axes, validate_props
@@ -56,14 +56,16 @@ _COLORED_SCATTER_PROPS = frozenset(
 
 
 def _validate_cmap_args(
-    cmap: str | None,
+    cmap: str | Colormap | None,
     norm: NormalizeSpec | None,
     config: Config | None,
-) -> tuple[str, NormalizeSpec | tuple[float, float] | None]:
+) -> tuple[str | Colormap, NormalizeSpec | tuple[float, float] | None]:
     """Validate explicit color configuration before an Axes is touched."""
 
-    if cmap is not None and (not isinstance(cmap, str) or not cmap.strip()):
-        raise PlotError("cmap must be a non-empty colormap name")
+    if cmap is not None and not (
+        isinstance(cmap, Colormap) or (isinstance(cmap, str) and cmap.strip())
+    ):
+        raise PlotError("cmap must be a non-empty colormap name or Colormap")
     selected_cmap = cmap_from_config(config) if cmap is None else cmap
     if norm is not None and not callable(norm):
         if isinstance(norm, (str, bytes)):
@@ -114,7 +116,7 @@ def cmap_line(
     y: ArrayLike,
     values: ArrayLike,
     *,
-    cmap: str | None = None,
+    cmap: str | Colormap | None = None,
     norm: NormalizeSpec | None = None,
     props: Mapping[str, Any] | None = None,
     config: Config | None = None,
@@ -173,8 +175,8 @@ def cmap_dash(
     y: ArrayLike,
     values: ArrayLike,
     *,
-    dash: tuple[float, float] = (5.0, 5.0),
-    cmap: str | None = None,
+    dash: tuple[float, float],
+    cmap: str | Colormap | None = None,
     norm: NormalizeSpec | None = None,
     props: Mapping[str, Any] | None = None,
     config: Config | None = None,
@@ -232,7 +234,7 @@ def cmap_dash(
     selected_cmap, selected_norm = _validate_cmap_args(cmap, norm, config)
     selected_props = _collection_props(props, "cmap_dash")
     if "linestyles" in selected_props:
-        raise PlotError("cmap_dash props cannot override the dash pattern")
+        raise OptionError("cmap_dash props cannot override the dash pattern")
     colors = map_values(segment_values, cmap=selected_cmap, norm=selected_norm)
     selected_props["linestyles"] = (0.0, (on, off))
     collection = LineCollection(
@@ -249,7 +251,7 @@ def cmap_scatter(
     y: ArrayLike,
     values: ArrayLike,
     *,
-    cmap: str | None = None,
+    cmap: str | Colormap | None = None,
     norm: NormalizeSpec | None = None,
     props: Mapping[str, Any] | None = None,
     config: Config | None = None,

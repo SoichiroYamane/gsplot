@@ -30,6 +30,8 @@ def test_default_config_is_immutable_and_has_only_target_sections() -> None:
     section = config.section("figure")
     with pytest.raises(TypeError):
         section["unit"] = "cm"  # type: ignore[index]
+    with pytest.raises(TypeError):
+        Config(1)  # type: ignore[call-arg]
 
 
 def test_mapping_values_are_validated_and_precedence_is_explicit() -> None:

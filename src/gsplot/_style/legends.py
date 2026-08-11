@@ -13,7 +13,7 @@ from matplotlib.figure import Figure
 from matplotlib.legend import Legend
 from matplotlib.lines import Line2D
 
-from .._core.errors import LayoutError, PlotError
+from .._core.errors import LayoutError, OptionError, PlotError
 from .._core.types import LegendEntries, NormalizeSpec
 from .axes import AxesTarget, axes_targets
 
@@ -58,7 +58,7 @@ def _props(props: Mapping[str, Any] | None, context: str) -> dict[str, Any]:
     unknown = sorted(set(props) - _LEGEND_PROPS)
     if unknown:
         joined = ", ".join(repr(key) for key in unknown)
-        raise PlotError(f"{context} props contains unknown key(s): {joined}")
+        raise OptionError(f"{context} props contains unknown key(s): {joined}")
     return dict(props)
 
 
@@ -344,8 +344,8 @@ def _colormap_values(
                 vmin, vmax = (float(bounds[0]), float(bounds[1]))
             except (TypeError, ValueError) as exc:
                 raise PlotError("norm bounds must be finite") from exc
-            if not np.isfinite(vmin) or not np.isfinite(vmax) or vmin == vmax:
-                raise PlotError("norm bounds must be finite and different")
+            if not np.isfinite(vmin) or not np.isfinite(vmax) or vmin >= vmax:
+                raise PlotError("norm bounds must be finite and increasing")
             norm = Normalize(vmin=vmin, vmax=vmax, clip=True)
         try:
             positions = np.asarray(norm(positions, clip=True), dtype=float)

@@ -11,7 +11,7 @@ from matplotlib.axes import Axes
 from matplotlib.figure import Figure
 from matplotlib.text import Text
 
-from .._core.errors import LayoutError, PlotError
+from .._core.errors import LayoutError, OptionError, PlotError
 from .._core.types import AxisSpec
 
 AxesTarget = Axes | Sequence[Axes] | Mapping[str, Axes]
@@ -76,7 +76,7 @@ def _validate_props(
     unknown = sorted(set(props) - allowed)
     if unknown:
         joined = ", ".join(repr(key) for key in unknown)
-        raise PlotError(f"{name} props contains unknown key(s): {joined}")
+        raise OptionError(f"{name} props contains unknown key(s): {joined}")
     return dict(props)
 
 

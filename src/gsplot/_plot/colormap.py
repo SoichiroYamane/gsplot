@@ -3,15 +3,16 @@
 from __future__ import annotations
 
 from collections.abc import Callable
+from copy import copy
 from typing import Any
 
 import matplotlib as mpl
 import numpy as np
-from matplotlib.colors import Normalize
+from matplotlib.colors import Colormap, Normalize
 from numpy.typing import ArrayLike, NDArray
 
 from .._config.model import Config
-from .._core.errors import DataError, PlotError
+from .._core.errors import DataError, OptionError, PlotError
 from .._core.numerics import validate_color_values
 from .._core.types import NormalizeSpec
 
@@ -19,7 +20,18 @@ from .._core.types import NormalizeSpec
 def _validate_norm(norm: NormalizeSpec | None) -> Any:
     """Validate and normalize the supported normalizer forms."""
 
-    if norm is None or callable(norm):
+    if norm is None:
+        return norm
+    if isinstance(norm, Normalize):
+        lower = norm.vmin
+        upper = norm.vmax
+        if (lower is None) != (upper is None):
+            raise PlotError("norm must define both vmin and vmax or neither")
+        if lower is not None and upper is not None:
+            if not np.isfinite(lower) or not np.isfinite(upper) or lower >= upper:
+                raise PlotError("norm bounds must be finite and increasing")
+        return copy(norm)
+    if callable(norm):
         return norm
     if isinstance(norm, (str, bytes)):
         raise PlotError("norm must be a normalizer or a finite (vmin, vmax) pair")
@@ -35,8 +47,8 @@ def _validate_norm(norm: NormalizeSpec | None) -> Any:
         vmin, vmax = (float(bounds[0]), float(bounds[1]))
     except (TypeError, ValueError) as exc:
         raise PlotError("norm bounds must be finite") from exc
-    if not np.isfinite(vmin) or not np.isfinite(vmax) or vmin == vmax:
-        raise PlotError("norm bounds must be finite and different")
+    if not np.isfinite(vmin) or not np.isfinite(vmax) or vmin >= vmax:
+        raise PlotError("norm bounds must be finite and increasing")
     return Normalize(vmin=vmin, vmax=vmax, clip=True)
 
 
@@ -69,7 +81,7 @@ def _normalized(values: NDArray[np.float64], norm: Any) -> NDArray[np.float64]:
 def map_values(
     values: ArrayLike,
     *,
-    cmap: str,
+    cmap: str | Colormap,
     norm: NormalizeSpec | None = None,
 ) -> NDArray[np.float64]:
     """Map finite values to RGBA rows without touching an Axes."""
@@ -85,7 +97,7 @@ def map_values(
 
 
 def sample_cmap(
-    name: str,
+    name: str | Colormap,
     *,
     count: int | None = None,
     values: ArrayLike | None = None,
@@ -103,7 +115,7 @@ def sample_cmap(
     Parameters
     ----------
     name
-        Matplotlib colormap name.
+        Matplotlib colormap name or native ``Colormap`` object.
     count
         Number of evenly spaced samples, defaulting to ten when ``values`` is
         omitted.
@@ -133,12 +145,17 @@ def sample_cmap(
     (3, 4)
     """
 
-    if not isinstance(name, str) or not name.strip():
-        raise PlotError("name must be a non-empty colormap name")
+    if isinstance(name, str):
+        if not name.strip():
+            raise PlotError("name must be a non-empty colormap name")
+    elif not isinstance(name, Colormap):
+        raise PlotError("name must be a colormap name or Colormap")
     if count is not None and values is not None:
         raise PlotError("count and values cannot be supplied together")
     if count is None and values is None:
         count = 10
+    if values is None and norm is not None:
+        raise OptionError("norm requires values when count is used")
     if not isinstance(reverse, bool):
         raise PlotError("reverse must be a boolean")
     if count is not None:
@@ -158,15 +175,14 @@ def sample_cmap(
     if values is None:
         raise PlotError("provide exactly one of count or values")
     scalar_values = validate_color_values(values, name="values")
+    try:
+        colormap = mpl.colormaps.get_cmap(name)
+    except (TypeError, ValueError) as exc:
+        raise PlotError(f"unknown Matplotlib colormap: {name!r}") from exc
     if reverse:
-        colormap_name = name + "_r"
-        try:
-            colormap = mpl.colormaps.get_cmap(colormap_name)
-        except (TypeError, ValueError) as exc:
-            raise PlotError(f"unknown Matplotlib colormap: {name!r}") from exc
-        normalized = _normalized(scalar_values, _validate_norm(norm))
-        return np.asarray(colormap(normalized), dtype=float).copy()
-    return map_values(scalar_values, cmap=name, norm=norm)
+        colormap = colormap.reversed()
+    normalized = _normalized(scalar_values, _validate_norm(norm))
+    return np.asarray(colormap(normalized), dtype=float).copy()
 
 
 def cmap_from_config(config: Config | None) -> str:

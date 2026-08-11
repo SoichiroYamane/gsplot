@@ -10,7 +10,7 @@ from typing import Any
 
 from matplotlib.figure import Figure
 
-from .._core.errors import OutputError
+from .._core.errors import OptionError, OutputError
 
 _FORMATS = frozenset({"png", "pdf", "svg"})
 _SAVEFIG_PROPS = frozenset(
@@ -101,7 +101,7 @@ def _save_props(props: Mapping[str, Any] | None) -> dict[str, Any]:
     unknown = sorted(set(props) - _SAVEFIG_PROPS)
     if unknown:
         joined = ", ".join(repr(key) for key in unknown)
-        raise OutputError(f"savefig props contains unknown key(s): {joined}")
+        raise OptionError(f"savefig props contains unknown key(s): {joined}")
     return dict(props)
 
 

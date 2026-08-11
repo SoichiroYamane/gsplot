@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pytest
 from matplotlib.collections import LineCollection, PathCollection
+from matplotlib.colors import ListedColormap, Normalize
 
 from gsplot._config import Config
 from gsplot._core import DataError, PlotError
@@ -25,6 +26,22 @@ def test_sample_cmap_is_bounded_and_deterministic() -> None:
     assert sample_cmap("viridis").shape == (10, 4)
     with pytest.raises(PlotError, match="cannot"):
         sample_cmap("viridis", count=2, values=[0, 1])
+
+
+def test_sample_cmap_accepts_native_colormaps_without_mutating_normalizers() -> None:
+    """Native colormaps and Normalize inputs retain their caller ownership."""
+
+    normalizer = Normalize()
+    colors = sample_cmap(
+        ListedColormap(["black", "white"]), values=[2, 3], norm=normalizer
+    )
+    assert colors.shape == (2, 4)
+    assert normalizer.vmin is None
+    assert normalizer.vmax is None
+    with pytest.raises(TypeError, match="norm requires"):
+        sample_cmap("viridis", count=2, norm=(0, 1))
+    with pytest.raises(PlotError, match="increasing"):
+        sample_cmap("viridis", values=[0, 1], norm=(1, 0))
 
 
 def test_basic_plotters_own_their_axes_and_validate_before_mutation() -> None:

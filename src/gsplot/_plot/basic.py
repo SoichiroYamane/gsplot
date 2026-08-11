@@ -12,7 +12,7 @@ from matplotlib.lines import Line2D
 from numpy.typing import ArrayLike
 
 from .._config.model import Config
-from .._core.errors import PlotError
+from .._core.errors import OptionError, PlotError
 from .._core.numerics import validate_xy
 
 _LINE_PROPS = frozenset(
@@ -92,7 +92,7 @@ def validate_props(
     unknown = sorted(set(props) - allowed)
     if unknown:
         joined = ", ".join(repr(key) for key in unknown)
-        raise PlotError(f"{context} props contains unknown key(s): {joined}")
+        raise OptionError(f"{context} props contains unknown key(s): {joined}")
     return dict(props)
 
 

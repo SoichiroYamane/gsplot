@@ -142,7 +142,7 @@ def _optional_finite(value: Any, name: str) -> float | None:
     return None if value is None else _finite(value, name, LayoutError)
 
 
-@dataclass(frozen=True, slots=True)
+@dataclass(frozen=True, slots=True, kw_only=True)
 class AxisSpec:
     """Immutable Cartesian labels, limits, scales, ticks, and padding.
 
@@ -216,7 +216,7 @@ class AxisSpec:
         )
 
 
-@dataclass(frozen=True, slots=True)
+@dataclass(frozen=True, slots=True, kw_only=True)
 class InsetSpec:
     """Immutable placement specification for an explicit parent Axes.
 
@@ -342,7 +342,7 @@ def _size(value: float | str | None, name: str) -> float | str:
     return result
 
 
-@dataclass(frozen=True, slots=True)
+@dataclass(frozen=True, slots=True, kw_only=True)
 class Theme:
     """Immutable explicit Figure/Axes appearance values.
 
@@ -503,7 +503,7 @@ def _readonly_labels(value: Mapping[str, str] | None) -> Mapping[str, str]:
     return MappingProxyType(labels)
 
 
-@dataclass(frozen=True, slots=True)
+@dataclass(frozen=True, slots=True, kw_only=True)
 class MetadataSnapshot:
     """Immutable, privacy-bounded metadata for one explicit output.
 
@@ -534,7 +534,7 @@ class MetadataSnapshot:
     1
     """
 
-    package_version: str
+    package_version: str = field(kw_only=False)
     schema_version: Literal[1] = 1
     commit: str | None = None
     config_digest: str | None = None
@@ -638,9 +638,8 @@ class LegendEntries:
             raise PlotError("legend labels must be strings")
         object.__setattr__(self, "handles", handles)
         object.__setattr__(self, "labels", labels)
-        object.__setattr__(
-            self, "handler_map", MappingProxyType(dict(self.handler_map))
-        )
+        handler_map = {} if self.handler_map is None else dict(self.handler_map)
+        object.__setattr__(self, "handler_map", MappingProxyType(handler_map))
 
 
 __all__ = [

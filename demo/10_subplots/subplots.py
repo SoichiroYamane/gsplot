@@ -14,7 +14,7 @@ axs[0, 0].plot(x, y)
 # gsplot can be used to plot on the subplots
 gs.line(axs[0, 1], x, y)
 gs.cmap_line(axs[1, 0], x, y, x)
-gs.cmap_dash(axs[1, 0], x, y + 1, x)
+gs.cmap_dash(axs[1, 0], x, y + 1, x, dash=(5, 5))
 gs.scatter(axs[1, 1], x, y)
 gs.cmap_scatter(axs[1, 1], x, y + 1, x)
 

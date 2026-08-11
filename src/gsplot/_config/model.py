@@ -81,7 +81,7 @@ class PlottingConfig:
             raise ConfigError("plotting.nonfinite must be 'raise'")
 
 
-@dataclass(frozen=True, slots=True)
+@dataclass(frozen=True, slots=True, kw_only=True)
 class Config:
     """Immutable schema-versioned configuration for canonical operations.
 
