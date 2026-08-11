@@ -182,9 +182,16 @@ structure merely to minimize the diff.
 
 Follow these invariants when changing code:
 
-- Keep the public wrapper in `src/gsplot/__init__.py` and the module's `__all__` synchronized with any API change.
-- Preserve the common wrapper flow: `@bind_passed_params()` captures explicit arguments, `ParamsGetter` reads them, and `CreateClassParams` merges defaults, config, and passed values.
-- Treat configuration precedence as direct arguments > the matching `gsplot.json` entry > function defaults. Check both alias names and canonical names when modifying a configurable function.
+- Keep the root facade in `src/gsplot/__init__.py`, the canonical export
+  manifest, and the module-level `__all__` synchronized with any API change.
+- The historical `@bind_passed_params()` -> `ParamsGetter` ->
+  `CreateClassParams` flow is compatibility-only under `_compat/legacy`.
+  Canonical implementations receive explicit targets and immutable values and
+  must never depend on caller-frame inspection or wrapper attributes.
+- Treat canonical configuration precedence as direct arguments > an explicit
+  immutable `Config` > validated library defaults. Legacy `gsplot.json`
+  translation is isolated at the compatibility boundary and must not become a
+  second canonical schema.
 - Keep Matplotlib `Axes` compatibility. A gsplot plot function should cooperate with regular `Axes.plot`, `Axes.scatter`, `plt.sca`, and existing figure lifecycle behavior.
 - Treat `Config`, `StoreSingleton`, `AxesRangeSingleton`, `rcParams`, current figure, and current working directory as shared state. Reset or restore state in tests and avoid leaking it between cases.
 - Prefer assertions about returned artists, labels, limits, colors, collections, and axis state. Add image comparisons only when a visual regression cannot be expressed structurally.
@@ -370,6 +377,8 @@ poetry run isort --profile black --check-only src/gsplot tests scripts tools/mai
 poetry run mypy --config-file .mypy.ini src/gsplot
 poetry run pyright src/gsplot
 python -m compileall -q src/gsplot tests scripts tools/maintenance
+PYTHONPATH=src poetry run python tools/maintenance/check_architecture.py
+PYTHONPATH=src poetry run python tools/maintenance/check_docstrings.py
 
 # Documentation and packaging, only when relevant
 MPLBACKEND=Agg poetry run sphinx-build -W -b html docs docs/_build/html

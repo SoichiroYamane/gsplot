@@ -36,25 +36,29 @@ machine-specific operational details here.
 
 ## Architecture and invariants
 
-- The supported runtime is Python 3.10 or newer. The 0.3.x compatibility
-  implementation still declares Matplotlib, NumPy, Rich, and PyYAML; the
-  reform target removes Rich/PyYAML and uses JSON-only configuration after
-  the replacement implementation is merged.
-- Most public plotting and data-loading functions use the flow
-  `@bind_passed_params()` -> `ParamsGetter` -> `CreateClassParams` -> an
-  implementation class. Preserve this flow unless the change deliberately
-  redesigns configuration handling.
-- Configuration precedence is explicit function arguments, then the matching
-  `gsplot.json` entry, then the function signature defaults. Preserve aliases
-  and unknown keyword arguments when changing a configurable API.
-- `Config`, `StoreSingleton`, `AxesRangeSingleton`, Matplotlib `rcParams`, the
-  current figure, and the current working directory are process-wide state.
-  Tests must restore or isolate them and must close figures.
+- The supported runtime is Python 3.10 or newer. Runtime dependencies are
+  Matplotlib and NumPy; Rich, PyYAML, and `types-PyYAML` are not required by
+  the canonical package or its compatibility shims.
+- Canonical plotting, styling, configuration, I/O, and layout functions use
+  explicit targets and immutable values. The historical
+  `@bind_passed_params()` -> `ParamsGetter` -> `CreateClassParams` flow exists
+  only under `_compat/legacy` and must not be reintroduced into canonical
+  implementation packages.
+- Canonical configuration precedence is explicit function arguments, then an
+  explicitly supplied immutable `Config`, then validated library defaults.
+  Legacy `gsplot.json` translation is isolated under `_compat` and emits the
+  documented warning; it is never consulted by canonical code.
+- Matplotlib `rcParams`, the current figure, and the current working
+  directory are process-wide state. Canonical operations must not own hidden
+  singleton state; tests must restore or isolate unavoidable process-global
+  state and must close figures.
 - gsplot is intended to work with ordinary Matplotlib objects. Keep returned
   artists, `Axes` compatibility, labels, limits, and figure lifecycle behavior
   stable unless a breaking change is explicitly intended.
-- Importing `gsplot` initializes configuration, logging, and optional metadata.
-  Changes to import-time behavior require checking scripts, demos, and docs.
+- Importing `gsplot` is side-effect-light: it must not configure logging,
+  select a backend, change `rcParams`, create a Figure, or write application
+  files. Changes to import-time behavior require checking scripts, demos, and
+  docs.
 
 ## Public-repository safety
 
@@ -395,6 +399,8 @@ poetry run isort --check-only src/gsplot tests scripts tools/maintenance
 poetry run mypy --config-file .mypy.ini src/gsplot
 poetry run pyright src/gsplot
 python -m compileall -q src/gsplot tests scripts tools/maintenance
+PYTHONPATH=src poetry run python tools/maintenance/check_architecture.py
+PYTHONPATH=src poetry run python tools/maintenance/check_docstrings.py
 
 # Documentation and packaging
 MPLBACKEND=Agg poetry run sphinx-build -W -b html docs docs/_build/html
