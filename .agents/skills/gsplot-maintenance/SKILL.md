@@ -264,6 +264,77 @@ untrusted code.
 8. Do not approve, merge, close, delete branches, publish, release, push, or
    modify repository settings without explicit authorization for that action.
 
+## Large and long-running implementation workflow
+
+Use this workflow for fundamental reforms, multi-PR work, public API or
+configuration changes, package or directory migrations, security or workflow
+changes, and any implementation expected to span multiple sessions or CI
+cycles. Do not develop such work directly on `main`.
+
+1. **Requirements gate:** confirm the linked Issue, stable requirements,
+   acceptance criteria, compatibility classification, migration plan, and
+   residual risks before creating implementation branches. Record planned
+   slices and merge order in the linked PR, not as a repository progress diary.
+2. **Branch plan:** start from a clean, up-to-date `main` and create a named
+   topic branch such as `reform/<issue-number>-<slice>` or
+   `security/<issue-number>-<package>`. Split the work by independently
+   reviewable acceptance boundary. Prefer one branch from the latest `main`
+   per PR; use stacked branches only when a slice cannot be reviewed or built
+   independently, and record each branch's base and merge order in the PR.
+   Never work directly on `main`, force-push a shared branch, or delete a
+   branch before its merge and required handoff are complete.
+3. **Small commits:** make each commit one coherent, logically reversible
+   change. Keep implementation, focused tests, and required documentation
+   together when they form one contract; keep unrelated formatting,
+   generated output, dependency churn, and cleanup in separate commits or
+   separate PRs. Use clear imperative commit subjects. A commit must pass the
+   checks appropriate to its slice before it is pushed, unless the PR clearly
+   records a temporary, non-mergeable checkpoint.
+4. **Frequent review:** perform a local micro-review after every logical
+   commit by inspecting the commit diff, affected public surface, tests,
+   docs, generated files, dependencies, and disclosure risk. Each substantial
+   PR still requires formal Review 1 (requirements, architecture, API,
+   compatibility, and risk) and Review 2 (complete final diff, commit history,
+   tests, docs, package contents, workflows, CI evidence, and public safety).
+   If a review finds a problem, fix it and repeat the affected review. Any
+   change after Review 2 or after approval requires a fresh review of the
+   changed range and a new CI run.
+5. **Push only reviewed work:** after local checks and the micro-review pass,
+   push the topic branch with its upstream explicitly set. Never push directly
+   to `main`, use a force push to bypass review, or push secrets, generated
+   local output, or unreviewed commits. Update the PR description with the
+   commit range, current slice, validation results, blockers, and next action.
+   Push at the slice/PR boundary rather than waiting until the entire reform
+   is complete. Several reviewed commits may form one slice, but do not mix
+   unrelated slices in one branch. Every push starts the CI wait in step 6.
+6. **Wait for remote CI:** after every push, wait for all required CI,
+   security, documentation, packaging, and status checks to finish on the
+   exact latest commit. A pending, cancelled, skipped-required, or failed
+   check is not a pass. Inspect failures, make a focused fix commit, push it,
+   and wait for the complete check set again. Do not merge based only on local
+   results or an earlier commit's green checks.
+7. **Merge only the final reviewed head:** before merge, verify that the PR
+   head is the reviewed commit, the branch is conflict-free and up to date,
+   required conversations are resolved, Review 1 and Review 2 records are
+   current, required checks are successful, the Issue and PR descriptions are
+   current, and no residual risk is unrecorded. Merge one coherent slice at a
+   time through the protected PR path. Breaking, packaging, workflow,
+   repository-settings, release, publish, secret, major-update, and
+   judgment-heavy security changes require manual merge; eligible low-risk
+   maintenance may use auto-merge only after the same gates.
+8. **Post-merge handoff:** wait for the post-merge `main` checks when they are
+   available, confirm the merge commit and linked records, then update or
+   retarget the next slice. Delete a merged topic branch only through the
+   approved repository mechanism and never delete `main`. If post-merge CI
+   fails, record the failure in the linked PR/Issue and create a focused
+   follow-up instead of silently patching `main`.
+
+Remote mutations remain subject to explicit user authorization. When the user
+authorizes the remote lifecycle for the linked implementation, pushing the
+reviewed branches, waiting for the required CI, and completing the authorized
+merge are required parts of the workflow. Without that authorization, stop
+before push or merge and report the exact handoff state.
+
 ### Plot or visual change
 
 1. Use `MPLBACKEND=Agg` for non-interactive validation and avoid forcing a backend in library code unless the feature explicitly requires it.
