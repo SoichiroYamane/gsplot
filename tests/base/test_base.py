@@ -1,128 +1,75 @@
-from unittest.mock import MagicMock, patch
+from typing import Any
 
 import pytest
 
-from gsplot.base.base import AttributeSetter
-
-# from gsplot.params.params import Params, LoadParams
-
-# class TestAttributeSetter:
-#
-#     @pytest.fixture
-#     def attribute_setter(self):
-#         return AttributeSetter()
-#
-#     def test_get_default_values(self, attribute_setter):
-#         class TestClass:
-#             def __init__(self, param1="default1", param2="default2"):
-#                 pass
-#
-#         defaults = attribute_setter.get_default_values(TestClass())
-#         assert defaults == {"param1": "default1", "param2": "default2"}
-#
-#     def test_get_params_from_config(self, attribute_setter):
-#         # This test will depend on your configuration and Params class
-#         pass
-#
-#     def test_update_current_values(self, attribute_setter):
-#         class TestClass:
-#             def __init__(self):
-#                 self.param1 = None
-#                 self.param2 = None
-#
-#         obj = TestClass()
-#         attribute_setter.update_current_values(
-#             obj, {"param1": "value1", "param2": "value2"}
-#         )
-#         assert obj.param1 == "value1"
-#         assert obj.param2 == "value2"
-#
-#     def test_get_kwargs(self, attribute_setter):
-#         kwargs = {"param1": "value1", "param2": "value2"}
-#         defaults = {"param1": "default1", "param2": "default2"}
-#         params = {"param1": "param_value1", "param3": "param_value3"}
-#         result = attribute_setter.get_kwargs(kwargs, defaults, params)
-#         assert result == {"param3": "param_value3"}
+from gsplot.base.base import (
+    CreateClassParams,
+    GetPassedParams,
+    ParamsGetter,
+    bind_passed_params,
+)
+from gsplot.config.config import Config
 
 
-class TestAttributeSetter:
+@bind_passed_params()
+def configured_function(
+    first: int = 1, second: int = 2, **kwargs: Any
+) -> dict[str, Any]:
+    passed = ParamsGetter("passed_params").get_bound_params()
+    return CreateClassParams(passed).get_class_params()
 
-    @pytest.fixture
-    def attribute_setter(self):
-        return AttributeSetter()
 
-    @pytest.fixture
-    def mock_obj(self):
-        class MockObject:
-            def __init__(self, a=1, b=2):
-                self.a = a
-                self.b = b
+def test_get_passed_params_keeps_explicit_arguments_and_kwargs() -> None:
+    def example(first: int, second: int = 2, *args: int, **kwargs: Any) -> None:
+        pass
 
-        return MockObject()
+    passed = GetPassedParams(example, 1, 3, 4, label="sample").get_passed_params()
 
-    def test_get_default_values(self, attribute_setter, mock_obj):
-        defaults = attribute_setter.get_default_values(mock_obj)
-        assert defaults == {"a": 1, "b": 2}
+    assert passed == {
+        "first": 1,
+        "second": 3,
+        "args": (4,),
+        "kwargs": {"label": "sample"},
+    }
 
-    @patch("gsplot.params.params.LoadParams")
-    @patch("gsplot.params.params.Params")
-    def test_get_params_from_config(
-        self, mock_params_class, mock_load_params, attribute_setter
-    ):
-        mock_params_instance = MagicMock()
-        mock_params_instance.get_item.return_value = {"a": 10, "b": 20}
-        mock_params_class.return_value = mock_params_instance
 
-        result = attribute_setter.get_params_from_config("test_key")
+def test_get_passed_params_does_not_treat_defaults_as_explicit() -> None:
+    def example(first: int, second: int = 2, **kwargs: Any) -> None:
+        pass
 
-        mock_load_params().load_params.assert_called_once()
-        assert result == {"a": 10, "b": 20}
+    passed = GetPassedParams(example, 1).get_passed_params()
 
-    def test_update_current_values(self, attribute_setter, mock_obj):
-        locals_dict = {"a": 5, "b": 10}
-        attribute_setter.update_current_values(mock_obj, locals_dict)
+    assert passed == {"first": 1, "args": [], "kwargs": {}}
 
-        assert mock_obj.a == 5
-        assert mock_obj.b == 10
 
-    def test_get_kwargs(self, attribute_setter):
-        kwargs = {"c": 3, "d": 4}
-        defaults = {"a": 1, "b": 2}
-        params = {"a": 10, "b": 20, "c": 30}
+def test_configuration_precedence_is_passed_then_config_then_default(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    config = Config()
+    original_config = config.config_dict
+    monkeypatch.setattr(
+        config,
+        "_config_dict",
+        {
+            "configured_function": {
+                "second": 20,
+                "from_config": "yes",
+            }
+        },
+    )
 
-        result = attribute_setter.get_kwargs(kwargs, defaults, params)
+    try:
+        result = configured_function(10, from_config="overridden")
+    finally:
+        config._config_dict = original_config
 
-        assert result == {"c": 3, "d": 4}
+    assert result["first"] == 10
+    assert result["second"] == 20
+    assert result["kwargs"] == {
+        "from_config": "overridden",
+    }
 
-    @patch("gsplot.base.base.AttributeSetter.get_default_values")
-    @patch("gsplot.base.base.AttributeSetter.get_params_from_config")
-    @patch("gsplot.base.base.AttributeSetter.update_current_values")
-    @patch("gsplot.base.base.AttributeSetter.get_kwargs")
-    def test_set_attributes(
-        self,
-        mock_get_kwargs,
-        mock_update_current_values,
-        mock_get_params_from_config,
-        mock_get_default_values,
-        attribute_setter,
-        mock_obj,
-    ):
-        mock_get_default_values.return_value = {"a": 1, "b": 2}
-        mock_get_params_from_config.return_value = {"a": 10, "b": 20}
-        mock_get_kwargs.return_value = {"c": 3, "d": 4}
 
-        locals_dict = {"kwargs": {"c": 5, "d": 6}}
-        key = "test_key"
-
-        result = attribute_setter.set_attributes(mock_obj, locals_dict, key)
-
-        mock_update_current_values.assert_called_once_with(mock_obj, locals_dict)
-        mock_get_default_values.assert_called_once_with(mock_obj)
-        mock_get_params_from_config.assert_called_once_with(key)
-        mock_get_kwargs.assert_called_once_with(
-            locals_dict["kwargs"], {"a": 1, "b": 2}, {"a": 10, "b": 20}
-        )
-
-        assert mock_obj.a == 10  # Updated from params
-        assert mock_obj.b == 20  # Updated from params
-        assert result == {"c": 5, "d": 6}
+def test_params_getter_rejects_missing_wrapper_state() -> None:
+    with pytest.raises(ValueError, match="Params is None"):
+        ParamsGetter("missing").verify(None)

@@ -13,6 +13,6 @@
 ./9_compatibility.md
 ./10_subplots.md
 ./11_directory.md
-./12_reprodusibility.md
+./12_reproducibility.md
 ./13_REPL.md
 ```

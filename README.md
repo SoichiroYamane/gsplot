@@ -1,62 +1,107 @@
 <div align="center">
-  <img src="docs/_static/logo/logo_title_gsplot.png" alt="logo_gsplot" width="300">
+  <img src="docs/_static/logo/logo_title_gsplot.png" alt="gsplot logo" width="300">
 </div>
 
-[![GitHub Page](https://github.com/SoichiroYamane/gsplot/actions/workflows/gh-pages-sphinx.yml/badge.svg)](https://github.com/SoichiroYamane/gsplot/actions/workflows/gh-pages-sphinx.yml)
-![Using Poetry](https://img.shields.io/badge/Using-Poetry-blue)
-![PyPI](https://img.shields.io/pypi/v/gsplot)
-![PyPI - Downloads](https://img.shields.io/pypi/dm/gsplot)
-[![PyPI Downloads](https://static.pepy.tech/badge/gsplot)](https://pepy.tech/projects/gsplot)
-![Python](https://img.shields.io/badge/python-3.10%2B-blue)
-![License: MIT](https://img.shields.io/badge/License-MIT-green)
+[![Documentation](https://github.com/SoichiroYamane/gsplot/actions/workflows/gh-pages-sphinx.yml/badge.svg)](https://soichiroyamane.github.io/gsplot/stable/)
+[![PyPI](https://img.shields.io/pypi/v/gsplot)](https://pypi.org/project/gsplot/)
+[![Python](https://img.shields.io/badge/python-3.10%2B-blue)](https://www.python.org/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green)](LICENSE)
 
-----------------
+# gsplot
 
-<p align="center" style="font-weight: bold; font-size: 1.2em; margin: 20px 0;">
-  <a href="https://soichiroyamane.github.io/gsplot/stable" style="text-decoration: none;">Docs</a> |
-  <a href="#authors" style="text-decoration: none;">Authors</a> |
-  <a href="#license" style="text-decoration: none;">License</a>
-</p>
+`gsplot` is a small scientific-plotting toolkit built on Matplotlib. It adds
+convenient figure layouts, consistent styling helpers, configurable defaults,
+and lightweight version/configuration metadata while keeping ordinary
+Matplotlib `Figure` and `Axes` objects in the workflow.
 
-Welcome to **gsplot** (General-Scientific Plot), a toolkit designed to elevate capabilities of data visualization based on [matplotlib](https://matplotlib.org). This package is specifically tailored for creating high-quality figures aimed at the scientific field.
+The package is still evolving. Check the [documentation](https://soichiroyamane.github.io/gsplot/stable/)
+and the [issue tracker](https://github.com/SoichiroYamane/gsplot/issues) before
+depending on behavior that is not covered by the public API.
 
-> [!WARNING]
-> This package is _beta_ quality. Expect breaking changes and many bugs 🐛. Please report any issue you encounter 🤝.
+## Install
 
-## ✨ Features
-
-- **Better Plot, Less Effort**: Effortlessly create high-quality figures ⚛️
-- **Compatibility**: Fully compatible with [matplotlib](https://matplotlib.org) 📊
-- **Customization**: Tailor configurations to suit your needs 🎨
-- **Reproducibility**: Save package states for reproducible plots 📦
-
-### 📈 Example using gsplot
-
-[See more details](https://soichiroyamane.github.io/gsplot/stable/guides/demo/4_paper_plot.html)
-
-![example](docs/_static/tutorial/SC_cal.png)
-
-### 🌃 Example with Python REPL 🐍 and neovim 🌟
-
-[See more details](https://soichiroyamane.github.io/gsplot/stable/guides/demo/13_REPL.html)
-
-![repl_tutorial](./docs/_static/tutorial/repl_tutorial_45fps.gif)
-
-## 🚀 Getting Started
-
-To use **gsplot**, ensure that you have `Python 3.10+` installed. You can install the package using `pip`:
+`gsplot` supports Python 3.10 and newer:
 
 ```bash
-pip install gsplot
+python -m pip install gsplot
 ```
 
-## 👥 Authors
+## Quick example
 
-This repository was forked from codes developed by Giordano Mattoni.
+```python
+import gsplot as gs
+
+axes = gs.axes(size=(8, 4), mosaic="AB", store=True)
+gs.line(axes[0], [0, 1, 2], [0, 1, 4], label="quadratic")
+gs.scatter(axes[1], [0, 1, 2], [0, 1, 4], label="samples")
+gs.legend_axes()
+gs.show("quickstart", show=False)
+```
+
+This creates a two-panel Matplotlib figure, saves `quickstart.png` when
+storage is enabled, and remains compatible with regular Matplotlib operations:
+
+```python
+axes[0].set_title("A regular Matplotlib Axes")
+```
+
+For a complete scientific example, see the
+[paper-plot demo](https://soichiroyamane.github.io/gsplot/stable/guides/demo/4_paper_plot.html).
+
+## Configuration
+
+Place a `gsplot.json` file in the working directory, or in
+`~/.config/gsplot/gsplot.json`, to provide defaults for supported functions.
+The first matching location is used. A path can also be loaded explicitly:
+
+```python
+import gsplot as gs
+
+gs.config_load("path/to/gsplot.json")
+```
+
+When a value is specified more than once, the precedence is:
+
+1. an argument passed directly to the function;
+2. the corresponding function entry in `gsplot.json`;
+3. the function's default value.
+
+See the [configuration guide](https://soichiroyamane.github.io/gsplot/stable/guides/demo/3_config.html)
+for the supported file layout and backend notes.
+
+## Development
+
+The repository uses Poetry and targets Python 3.10 or newer. With a compatible
+Python interpreter:
+
+```bash
+python -m pip install "poetry==2.4.1"
+poetry install
+MPLBACKEND=Agg poetry run pytest -q
+MPLBACKEND=Agg poetry run sphinx-build -W -b html docs docs/_build/html
+```
+
+The demos under `demo/` are executable documentation. Run one from its own
+directory, for example:
+
+```bash
+cd demo/1_axes
+python axes.py
+```
+
+See [the developer setup guide](docs/reference/contribution/developer_env.md)
+for formatting, type checking, packaging, and Docker instructions.
+
+For private vulnerability reports and the supported-version policy, see
+[SECURITY.md](SECURITY.md).
+
+## Authors
+
+This repository was forked from code developed by Giordano Mattoni.
 
 - Giordano Mattoni
 - Soichiro Yamane
 
-## 📜 License
+## License
 
-This project is licensed under the MIT License. See the [LICENSE](./LICENSE) file for details.
+This project is distributed under the [MIT License](LICENSE).

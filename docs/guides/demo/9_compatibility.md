@@ -1,6 +1,8 @@
 # 9. Compatibility
 
-`gsplot` is compatible with [matplotlib](https://matplotlib.org/). This means that you can use `gsplot` in combination with `matplotlib`. In the following example, we show how to use `gsplot` in combination with `matplotlib`.
+`gsplot` works with ordinary [Matplotlib](https://matplotlib.org/) figures and
+axes. The following example mixes gsplot helpers with `Axes.plot`,
+`Axes.scatter`, `plt.sca`, and `plt.plot`.
 
 ## Example
 

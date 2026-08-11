@@ -1,33 +1,33 @@
-from pathlib import Path
-from typing import Optional
-
 import numpy as np
-import pytest
 
-from gsplot.data.load import LoadFile
+from gsplot.data.load_file import LoadFile, LoadFileFast, load_file, load_file_fast
 
 
-class TestLoadFile:
-    loader: Optional[LoadFile] = None
+def test_load_file_class_reads_a_text_file(tmp_path) -> None:
+    data_file = tmp_path / "data.txt"
+    data_file.write_text("1 2 3\n4 5 6\n", encoding="utf-8")
 
-    @classmethod
-    def setup_class(cls):
-        # Create a temporary file with some data
-        with open("temp.txt", "w") as f:
-            f.write("1 2 3\n4 5 6")
+    data = LoadFile(data_file, delimiter=" ", unpack=False).load_data()
 
-        cls.loader = LoadFile("temp.txt", delimiter=" ")
+    np.testing.assert_array_equal(data, np.array([[1, 2, 3], [4, 5, 6]]))
 
-    @classmethod
-    def teardown_class(cls):
-        # Clean up the temporary file
-        Path("temp.txt").unlink()
 
-    def test_load_text(self):
-        assert self.loader is not None
+def test_load_file_wrapper_uses_current_public_api(tmp_path) -> None:
+    data_file = tmp_path / "data.csv"
+    data_file.write_text("1,2\n3,4\n", encoding="utf-8")
 
-        # Use LoadFile to load the data
-        data = self.loader.load_text()
+    data = load_file(data_file, delimiter=",", unpack=False)
 
-        # Check that the data was loaded correctly
-        assert np.array_equal(data, np.array([[1, 2, 3], [4, 5, 6]]))
+    np.testing.assert_array_equal(data, np.array([[1, 2], [3, 4]]))
+
+
+def test_load_file_fast_supports_class_and_wrapper(tmp_path) -> None:
+    data_file = tmp_path / "data.csv"
+    data_file.write_text("1,2\n3,4\n", encoding="utf-8")
+
+    class_data = LoadFileFast(data_file, delimiter=",", unpack=False).load_data()
+    wrapper_data = load_file_fast(data_file, delimiter=",", unpack=False)
+
+    expected = np.array([[1, 2], [3, 4]])
+    np.testing.assert_array_equal(class_data, expected)
+    np.testing.assert_array_equal(wrapper_data, expected)

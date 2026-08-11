@@ -1,81 +1,60 @@
-from unittest.mock import MagicMock
-
+import numpy as np
 import pytest
 from matplotlib.axes import Axes
-from numpy import ndarray
 
-from gsplot.figure.axes_base import AxesRangeSingleton, AxesSingleton
-
-
-class TestAxesSingleton:
-
-    def setup_method(self):
-        # Mocking Axes class
-        self.mock_axes1 = MagicMock(spec=Axes)
-        self.mock_axes2 = MagicMock(spec=Axes)
-
-        # Creating first instance of AxesSingleton
-        self.singleton1 = AxesSingleton()
-        self.singleton1.axes = [self.mock_axes1, self.mock_axes2]
-
-        # Creating second instance of AxesSingleton
-        self.singleton2 = AxesSingleton()
-
-    def test_singleton(self):
-        # Asserting that both instances are the same
-        assert self.singleton1 is self.singleton2
-
-        # Asserting that changes in one instance are reflected in the other
-        assert self.singleton1.axes == self.singleton2.axes
-
-    def test_get_axis(self):
-        # Asserting that get_axis method works as expected
-        assert self.singleton1.get_axis(0) is self.mock_axes1
-        assert self.singleton1.get_axis(1) is self.mock_axes2
-
-        # Asserting that get_axis raises an IndexError when the index is out of range
-        with pytest.raises(IndexError):
-            self.singleton1.get_axis(2)
+from gsplot.figure.axes_range_base import AxesRangeSingleton, AxisRangeController
 
 
-class TestAxesRangeSingleton:
-    def setup_method(self):
-        # Mocking Axes class
-        self.mock_axes1 = MagicMock(spec=Axes)
-        self.mock_axes2 = MagicMock(spec=Axes)
+def test_axes_range_singleton_stores_ranges_per_axes() -> None:
+    import matplotlib.pyplot as plt
 
-        # Mocking ndarray
-        self.mock_ndarray1 = MagicMock(spec=ndarray)
-        self.mock_ndarray2 = MagicMock(spec=ndarray)
+    fig, (ax1, ax2) = plt.subplots(1, 2)
+    ranges = AxesRangeSingleton()
+    ranges.reset()
 
-        # Creating first instance of AxesRangeSingleton
-        self.singleton1 = AxesRangeSingleton()
-        self.singleton1.axes_ranges = [[self.mock_ndarray1, self.mock_ndarray2]]
+    assert AxesRangeSingleton() is ranges
+    assert ranges.get_axes_range(ax1) == [None, None]
 
-        # Creating second instance of AxesRangeSingleton
-        self.singleton2 = AxesRangeSingleton()
+    x_range = np.array([0.0, 2.0])
+    y_range = np.array([-1.0, 3.0])
+    ranges.add_range(ax1, x_range, y_range)
 
-    def test_singleton(self):
-        # Asserting that both instances are the same
-        assert self.singleton1 is self.singleton2
+    stored_x, stored_y = ranges.get_axes_range(ax1)
+    np.testing.assert_array_equal(stored_x, x_range)
+    np.testing.assert_array_equal(stored_y, y_range)
+    assert ranges.get_axes_range(ax2) == [None, None]
 
-        # Asserting that changes in one instance are reflected in the other
-        assert self.singleton1.axes_ranges == self.singleton2.axes_ranges
+    ranges.reset()
+    assert ranges.axes_ranges_dict == {}
+    plt.close(fig)
 
-    def test_add_range(self):
-        # Mocking ndarray
-        mock_ndarray3 = MagicMock(spec=ndarray)
-        mock_ndarray4 = MagicMock(spec=ndarray)
 
-        # Adding new range
-        self.singleton1.add_range(1, mock_ndarray3, mock_ndarray4)
+def test_axes_range_singleton_calculates_finite_extrema() -> None:
+    ranges = AxesRangeSingleton()
+    np.testing.assert_equal(
+        ranges.get_max_wo_inf(np.array([1.0, np.inf, 3.0])),
+        3.0,
+    )
+    np.testing.assert_equal(
+        ranges.get_min_wo_inf(np.array([-np.inf, 1.0, 3.0])),
+        1.0,
+    )
+    np.testing.assert_array_equal(
+        ranges._get_wider_range(np.array([0.0, 2.0]), np.array([-1.0, 3.0])),
+        np.array([-1.0, 3.0]),
+    )
 
-        # Asserting that new range was added
-        assert self.singleton1.axes_ranges[1] == [mock_ndarray3, mock_ndarray4]
 
-    def test_reset(self):
-        # Resetting axes ranges
-        self.singleton1.reset([self.mock_axes1, self.mock_axes2])
+def test_axis_range_controller_wraps_matplotlib_axes() -> None:
+    import matplotlib.pyplot as plt
 
-        # Asserting that axes ranges were reset
-        assert self.singleton1.axes_ranges == [[None, None], [None, None]]
+    fig, ax = plt.subplots()
+    controller = AxisRangeController(ax)
+
+    controller.set_axis_xrange(np.array([-2.0, 4.0]))
+    controller.set_axis_yrange(np.array([1.0, 5.0]))
+
+    np.testing.assert_array_equal(controller.get_axis_xrange(), [-2.0, 4.0])
+    np.testing.assert_array_equal(controller.get_axis_yrange(), [1.0, 5.0])
+    assert isinstance(ax, Axes)
+    plt.close(fig)

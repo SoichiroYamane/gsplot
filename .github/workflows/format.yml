@@ -1,0 +1,37 @@
+name: Check formatting
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+
+jobs:
+  format:
+    name: format and syntax checks
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the pull request
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+
+      - name: Set up Python
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: "3.12"
+
+      - name: Install tooling
+        run: |
+          python -m pip install --disable-pip-version-check "poetry==2.4.1"
+          poetry install --no-interaction --no-root
+
+      - name: Check Black formatting
+        run: poetry run black --check gsplot tests scripts docs/conf.py --exclude 'gsplot/version\.py'
+
+      - name: Check import ordering
+        run: poetry run isort --profile black --check-only gsplot tests scripts docs/conf.py
+
+      - name: Check Python syntax
+        run: poetry run python -m compileall -q gsplot tests scripts

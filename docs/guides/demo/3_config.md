@@ -1,91 +1,96 @@
-# 3. Configuration of gsplot
+# 3. Configure gsplot
 
-[Configuration](#gsplot.config.config) provides a way to customize default keyword arguments of the functions defined in `gsplot`. This is very useful when you need to plot multiple plots with the same parameters.
+`gsplot` can provide defaults for supported functions through a JSON file. This
+is useful when several figures share the same size, layout, style, or display
+settings.
 
-The configuration file can be described in json format. Each keyword needs to be referred from functions defined in `gsplot`, and parameters can be passed to the function. At default, `gsplot` will search for the configuration in the following directories:
+## Configuration-file lookup
 
-1. Current working directory: `./gsplot.json`
-2. User's configuration directory: `~/.cofig/gsplot/gsplot.json`
-3. User's home directory: `~/gsplot.json`
+When no path is supplied, `gsplot` looks for `gsplot.json` in this order:
 
-You can also specify the configuration file by using the [gsplot.config_load](#gsplot.config.config.config_load) function.
+1. the current working directory: `./gsplot.json`;
+2. the user configuration directory: `~/.config/gsplot/gsplot.json`;
+3. the home directory: `~/gsplot.json`.
 
-```{note}
-Function that can be configured have a note about passed parameters in [APIs](../../api_reference/apis.rst).
-```
-
-## Priority of Parameters
-
-The priority of the parameters is as follows:
-
-1. Parameters passed to the function
-2. Parameters passed to the configuration
-3. Default parameters
-
-```{mermaid}
-%%{init: {
-    "theme": "base", 
-    "themeVariables": {
-        "primaryColor": "#ffffff", 
-        "primaryBorderColor": "#61AFC2",
-        "edgeLabelBackground": "#ffffff",
-        "tertiaryColor": "#61AFC2"
-    },
-    "themeCSS": "marker path { fill: #61AFC2 !important; }"
-}}%%
-graph TD
-    linkStyle default stroke:#61AFC2,stroke-width:1;
-
-    Start([Start]) --> A[Parameters passed to the function?]
-    A -->|Yes| F[Final Parameters]
-    A -->|No| B[Parameters passed to the configuration?]
-    B -->|Yes| F
-    B -->|No| C[Default parameters]
-    C --> F
-```
-
-## Example of Axes with Configuration
-
-As a example, we will create a configuration file that sets parameters of the [gsplot.axes](#gsplot.figure.axes.axes). Arguments of [gsplot.axes](#gsplot.figure.axes.axes) are following:
+Load a specific file with `config_load`:
 
 ```python
-gsplot.axes(store = False, size = [5, 5], unit = "in", mosaic = "A", clear = True, ion = False)
+import gsplot as gs
+
+config = gs.config_load("path/to/gsplot.json")
 ```
 
-If you set the configuration file like this:
+Calling `gs.config_load()` without a path performs the normal lookup again.
+The helper functions `gs.config_dict()` and `gs.config_entry_option(name)`
+expose the loaded configuration.
+
+## Parameter precedence
+
+For a configurable function, values are merged in this order:
+
+1. arguments passed directly to the function;
+2. values in the function's entry in `gsplot.json`;
+3. the function signature's defaults.
+
+```{mermaid}
+graph TD
+    A[Direct function argument] --> F[Final value]
+    B[Matching gsplot.json entry] --> F
+    C[Function default] --> F
+    A -. takes precedence over .-> B
+    B -. takes precedence over .-> C
+```
+
+## Example: configure `gs.axes`
+
+The following file changes the default figure size and mosaic while leaving
+other `gs.axes` arguments at their normal defaults:
 
 ```json
 {
-  "axes" : {
-    "size" : [10, 10],
-    "mosaic" : "AB"
+  "axes": {
+    "size": [10, 10],
+    "mosaic": "AB"
   }
 }
 ```
 
-And place this configuration file in the proper directory, `gsplot` will read the configuration. If you create a plot with the following code:
+With that file discovered or loaded, this call:
 
 ```python
-gsplot.axes(store= True, mosaic = "ABC")
+gs.axes(store=True, mosaic="ABC")
 ```
 
-, this code is equivalent to the following code:
+uses the configured size, the explicitly supplied mosaic, and the function
+defaults for `unit`, `clear`, and `ion`.
 
-```python
-gsplot.axes(store = True, size = [10, 10], unit = "in", mosaic = "ABC", clear = True, ion = False)
+## Matplotlib `rcParams`
+
+Use the `rcParams` object to apply Matplotlib settings at load time. The
+canonical backend key is singular:
+
+```json
+{
+  "rcParams": {
+    "figure.dpi": 120,
+    "backend": "Agg"
+  }
+}
 ```
 
-## Example
+Backend selection is process-wide and must happen before Matplotlib creates a
+figure. For interactive use, set the backend before starting Python or place
+the configuration file where it will be found before `import gsplot`.
 
-### Main Functions
+## Metadata
 
-| Function                                                | A Brief Overview                             |
-| :---:                                                   | :-------:                                    |
-| [gsplot.config_load](#gsplot.config.config.config_load) | Load configuration file with a specific path |
-| [gsplot.config_dict](#gsplot.config.config.config_dict) | Get dictionary of the configuration          |
-| [gsplot.config_entry_option](#gsplot.config.config.config_entry_option)                 | Get dictionary of configuration with a specific key                        |
+Set `metadata` to `true` when each executed script should record package and
+configuration information under `.gsplot/`. See the
+[reproducibility guide](12_reproducibility.md) for details.
 
-### Code
+## Complete demo
+
+### Python
 
 ```{literalinclude} ../../../demo/3_config/config.py
 ```
@@ -95,37 +100,11 @@ gsplot.axes(store = True, size = [10, 10], unit = "in", mosaic = "ABC", clear = 
 ```{literalinclude} ../../../demo/3_config/gsplot.json
 ```
 
-### Plot
+### Generated figure
 
 ```{image} ../../../demo/3_config/config.png
-:alt: config
+:alt: Figure generated by the configuration demo
 :class: bg-primary
 :width: 500px
 :align: center
-```
-
-### Output
-
-```python
-config_dict:
-{
-    'rich': {'traceback': {}},
-    'rcParams': {'xtick.major.pad': 6, 'ytick.major.pad': 6},
-    'axes': {'ion': True, 'size': [15.0, 5.0], 'unit': 'in', 'clear': True, 'mosaic': 'ABC'},
-    'show': {'show': True}
-}
-
-axes_config:
-{'ion': True, 'size': [15.0, 5.0], 'unit': 'in', 'clear': True, 'mosaic': 'ABC'}
-
-config_dict:
-{
-    'rich': {'traceback': {}},
-    'rcParams': {'xtick.major.pad': 6, 'ytick.major.pad': 6},
-    'axes': {'ion': False, 'size': [15.0, 5.0], 'unit': 'in', 'clear': False, 'mosaic': 'ABC'},
-    'show': {'show': True}
-}
-
-axes_config:
-{'ion': False, 'size': [15.0, 5.0], 'unit': 'in', 'clear': False, 'mosaic': 'ABC'}
 ```

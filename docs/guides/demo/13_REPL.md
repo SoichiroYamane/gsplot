@@ -1,48 +1,36 @@
-# 13. REPL
+# 13. Use gsplot in a REPL
 
-The REPL (Read-Eval-Print Loop) is a simple, interactive computer programming environment that takes single user inputs (i.e., single expressions), evaluates them, and returns the result to the user. The REPL allows you to simply plot data and visualize it in real-time. We recommend using the REPL for quick data visualization and exploration.
+The Python REPL is useful for quick data exploration and interactive figures.
+`gsplot` returns normal Matplotlib `Axes` objects, so the usual Matplotlib and
+backend controls remain available.
 
-## Pros of plotting in REPL
+## Advantages
 
-- Real-time visualization
-- Easy to explore data from python REPL
-- Quick to generate plots
-- Analyze data deeply by using backends of `matplotlib`
+- inspect data and figures one command at a time;
+- adjust labels, limits, and styles interactively;
+- use a Matplotlib backend appropriate for the current desktop or notebook.
 
-## Example of Python REPL in neovim
+## Example session
 
-```{raw} html
-<style>
-  .video-container {
-    display: flex;
-    justify-content: center; 
-    align-items: center; 
-    max-height: 100vh;
-  }
-
-  .responsive-video {
-    max-width: 80%; 
-    height: auto; 
-  }
-</style>
-
-<div class="video-container">
-  <video class="responsive-video" autoplay muted loop controls>
-    <source src="../../_static/tutorial/repl_tutorial.mp4" type="video/mp4">
-    Your browser does not support the video tag.
-  </video>
-</div>
+```pycon
+>>> import gsplot as gs
+>>> axes = gs.axes(mosaic="A", ion=True)
+>>> gs.line(axes[0], [0, 1, 2], [0, 1, 4])
+>>> gs.show(show=True)
 ```
 
-## Reccomended Configuration of gsplot for REPL
+The exact interactive behavior depends on the Matplotlib backend and the
+terminal or editor hosting the REPL.
+
+## Select a backend
+
+If a backend must be selected through `gsplot.json`, use the singular
+`backend` key:
 
 ```json
 {
-  "rich": {
-    "traceback": {}
-  },
   "rcParams": {
-    "backends": "!Your_Backend!"
+    "backend": "QtAgg"
   },
   "axes": {
     "ion": true,
@@ -50,8 +38,26 @@ The REPL (Read-Eval-Print Loop) is a simple, interactive computer programming en
   },
   "show": {
     "show": true
-  },
+  }
 }
 ```
 
-If you want to specify the backends of `matplotlib`, you can add `rcParams: {"backends": "your_backend"}` to the configuration. For Mac users, you can use `rcParams: {"backends": "MacOSX"}`.
+Place the file where `gsplot` can discover it before starting the REPL and
+before importing `gsplot`. Backend names are platform- and installation-
+dependent. On macOS, `MacOSX` may be available; on Linux, a Qt, Tk, GTK, or
+non-interactive backend may be more appropriate. You can also set
+`MPLBACKEND` in the shell before launching Python.
+
+```bash
+MPLBACKEND=QtAgg python
+```
+
+The repository includes a short editor demonstration below when the generated
+documentation is viewed in a browser:
+
+```{raw} html
+<video controls muted loop style="display:block;max-width:80%;margin:1rem auto">
+  <source src="../../_static/tutorial/repl_tutorial.mp4" type="video/mp4">
+  <p>Your browser does not support embedded video.</p>
+</video>
+```

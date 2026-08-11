@@ -1,5 +1,5 @@
 import numbers
-from typing import Any
+from typing import Any, cast
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -198,7 +198,7 @@ class Line:
             *self.args,
             **self.kwargs,
         )
-        return _plot
+        return cast(list[Line2D], _plot)
 
 
 @bind_passed_params()
