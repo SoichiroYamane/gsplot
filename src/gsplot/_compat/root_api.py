@@ -11,16 +11,20 @@ import inspect
 import warnings
 from collections.abc import Mapping, Sequence
 from os import PathLike
-from typing import Any, Callable, cast
+from typing import Any, get_type_hints
 
+import numpy as np
 from matplotlib.axes import Axes
+from matplotlib.colors import to_rgba
 from matplotlib.figure import Figure
 from numpy.typing import ArrayLike
 
 from .._core.errors import OptionError
+from .._figure.output import savefig as _savefig
 from .._figure.output import show as _show
 from .._plot.basic import line as _line
 from .._plot.basic import scatter as _scatter
+from .._style.axes import suptitle as _suptitle
 from .._style.axes import title as _title
 from .._style.legends import legend as _legend
 
@@ -161,30 +165,33 @@ def _warn(name: str) -> None:
     )
 
 
-def _legacy(function_name: str) -> Callable[..., Any]:
-    """Load one historical implementation only for a legacy call."""
+def _legacy_suptitle(text: str, props: Mapping[str, Any] | None) -> Any:
+    """Apply the historical current-Figure title through the canonical helper."""
 
-    if function_name == "line":
-        from ..plot.line import line
+    import matplotlib.pyplot as plt
 
-        return cast(Callable[..., Any], line)
-    if function_name == "scatter":
-        from ..plot.scatter import scatter
+    return _suptitle(plt.gcf(), text, props=props)
 
-        return cast(Callable[..., Any], scatter)
-    if function_name == "legend":
-        from ..style.legend import legend
 
-        return cast(Callable[..., Any], legend)
-    if function_name == "title":
-        from ..style.title import title
+def _legacy_show(options: Mapping[str, Any]) -> None:
+    """Save and optionally display the current Figure through canonical I/O."""
 
-        return cast(Callable[..., Any], title)
-    if function_name == "show":
-        from ..figure.show import show
+    import matplotlib.pyplot as plt
 
-        return cast(Callable[..., Any], show)
-    raise RuntimeError(f"unknown legacy function: {function_name}")
+    selected = dict(options)
+    fname = selected.pop("fname", "gsplot")
+    formats = selected.pop("ft_list", ("png", "pdf"))
+    dpi = selected.pop("dpi", 600)
+    display = selected.pop("show", True)
+    _savefig(
+        plt.gcf(),
+        fname,
+        formats=formats,
+        dpi=dpi,
+        show=display,
+        overwrite=True,
+        props=selected or None,
+    )
 
 
 def _provided(values: Mapping[str, Any]) -> dict[str, Any]:
@@ -202,6 +209,55 @@ def _reject_mixed(
         raise OptionError(
             f"gsplot.{name} cannot combine canonical props with legacy options"
         )
+
+
+def _translate_props(
+    name: str,
+    values: Mapping[str, Any],
+    aliases: Mapping[str, str] | None = None,
+) -> dict[str, Any]:
+    """Translate reviewed legacy property names into a closed mapping."""
+
+    aliases = {} if aliases is None else aliases
+    translated: dict[str, Any] = {}
+    for legacy_name, value in values.items():
+        if legacy_name == "alpha_mfc":
+            continue
+        canonical_name = aliases.get(legacy_name, legacy_name)
+        if canonical_name in translated:
+            raise OptionError(
+                f"gsplot.{name} received duplicate controls for {canonical_name!r}"
+            )
+        translated[canonical_name] = value
+    return translated
+
+
+def _reject_duplicate_scatter_controls(legacy: Mapping[str, Any]) -> None:
+    """Reject Matplotlib color controls that describe the same value."""
+
+    duplicate_groups = (
+        ("color", "c"),
+        ("color", "facecolors"),
+        ("c", "facecolors"),
+        ("size", "s"),
+    )
+    for first, second in duplicate_groups:
+        if first in legacy and second in legacy:
+            raise OptionError(f"gsplot.scatter cannot combine {first!r} and {second!r}")
+
+
+def _validate_alpha_mfc(value: Any) -> float:
+    """Validate the legacy marker-face alpha before creating an artist."""
+
+    if isinstance(value, bool):
+        raise OptionError("alpha_mfc must be a finite real number")
+    try:
+        result = float(value)
+    except (TypeError, ValueError) as exc:
+        raise OptionError("alpha_mfc must be a finite real number") from exc
+    if not np.isfinite(result):
+        raise OptionError("alpha_mfc must be a finite real number")
+    return result
 
 
 def line(
@@ -283,8 +339,32 @@ def line(
     _reject_mixed("line", props, legacy)
     if not legacy:
         return _line(ax, x, y, props=props, config=config)
+    alpha_mfc = legacy.get("alpha_mfc", _UNSET)
+    alpha_mfc_value = (
+        _validate_alpha_mfc(alpha_mfc) if alpha_mfc is not _UNSET else None
+    )
+    translated = _translate_props(
+        "line",
+        legacy,
+        {
+            "ms": "markersize",
+            "mew": "markeredgewidth",
+            "ls": "linestyle",
+            "lw": "linewidth",
+            "c": "color",
+            "mec": "markeredgecolor",
+            "mfc": "markerfacecolor",
+        },
+    )
     _warn("line")
-    return _legacy("line")(ax, x, y, **legacy)
+    artists = _line(ax, x, y, props=translated, config=config)
+    if alpha_mfc_value is not None:
+        alpha = float(translated.get("alpha", 1.0))
+        for artist in artists:
+            base_color = translated.get("markerfacecolor", artist.get_color())
+            red, green, blue, _ = to_rgba(base_color)
+            artist.set_markerfacecolor((red, green, blue, alpha * alpha_mfc_value))
+    return artists
 
 
 def scatter(
@@ -342,8 +422,10 @@ def scatter(
     _reject_mixed("scatter", props, legacy)
     if not legacy:
         return _scatter(ax, x, y, props=props, config=config)
+    _reject_duplicate_scatter_controls(legacy)
+    translated = _translate_props("scatter", legacy, {"size": "s"})
     _warn("scatter")
-    return _legacy("scatter")(ax, x, y, **legacy)
+    return _scatter(ax, x, y, props=translated, config=config)
 
 
 def legend(
@@ -438,15 +520,35 @@ def legend(
             replace=replace,
             props=props,
         )
-    positional: list[Any] = []
-    if "_legacy_handles" in legacy:
-        positional.append(legacy.pop("_legacy_handles"))
-    if "_legacy_labels" in legacy:
-        positional.append(legacy.pop("_legacy_labels"))
+    positional_handles = legacy.pop("_legacy_handles", _UNSET)
+    positional_labels = legacy.pop("_legacy_labels", _UNSET)
     if handlers is not _UNSET:
-        legacy["handlers"] = handlers
+        if handler_map is not None:
+            raise OptionError("legend cannot combine handlers and handler_map")
+        handler_map = handlers
+    translated = _translate_props(
+        "legend",
+        legacy,
+        {"ncol": "ncols"},
+    )
+    if positional_handles is not _UNSET:
+        if handles is not None:
+            raise OptionError("legend received handles twice")
+        handles = positional_handles
+    if positional_labels is not _UNSET:
+        if labels is not None:
+            raise OptionError("legend received labels twice")
+        labels = positional_labels
     _warn("legend")
-    return _legacy("legend")(ax, *positional, **legacy)
+    return _legend(
+        ax,
+        handles=handles,
+        labels=labels,
+        handler_map=handler_map,
+        reverse=reverse,
+        replace=replace,
+        props=translated,
+    )
 
 
 def title(
@@ -531,7 +633,7 @@ def title(
     if props is not None:
         raise OptionError("legacy title cannot use canonical props")
     _warn("title")
-    return _legacy("title")(ax, **legacy)
+    return _legacy_suptitle(ax, legacy or None)
 
 
 def show(
@@ -554,10 +656,10 @@ def show(
 ) -> Any:
     """Dispatch explicit Figure display or finite legacy save-and-display syntax."""
 
-    if isinstance(fig, Figure) and all(
-        value is _UNSET for value in (fname, ft_list, dpi, display, show)
-    ):
-        return _show(fig)
+    if isinstance(fig, Figure):
+        if all(value is _UNSET for value in (fname, ft_list, dpi, display, show)):
+            return _show(fig)
+        raise TypeError("canonical show(fig) does not accept legacy save options")
     legacy = _provided(
         {
             "bbox_extra_artists": bbox_extra_artists,
@@ -581,12 +683,15 @@ def show(
         legacy["ft_list"] = ft_list
     if dpi is not _UNSET:
         legacy["dpi"] = dpi
+    if display is not _UNSET and show is not _UNSET:
+        raise TypeError("show received display twice")
     if display is not _UNSET:
         legacy["show"] = display
     elif show is not _UNSET:
         legacy["show"] = show
     _warn("show")
-    return _legacy("show")(**legacy)
+    _legacy_show(legacy)
+    return None
 
 
 line.__signature__ = inspect.signature(_line)  # type: ignore[attr-defined]
@@ -594,6 +699,11 @@ scatter.__signature__ = inspect.signature(_scatter)  # type: ignore[attr-defined
 legend.__signature__ = inspect.signature(_legend)  # type: ignore[attr-defined]
 title.__signature__ = inspect.signature(_title)  # type: ignore[attr-defined]
 show.__signature__ = inspect.signature(_show)  # type: ignore[attr-defined]
+line.__annotations__ = get_type_hints(_line)
+scatter.__annotations__ = get_type_hints(_scatter)
+legend.__annotations__ = get_type_hints(_legend)
+title.__annotations__ = get_type_hints(_title)
+show.__annotations__ = get_type_hints(_show)
 line.__doc__ = _line.__doc__
 scatter.__doc__ = _scatter.__doc__
 legend.__doc__ = _legend.__doc__

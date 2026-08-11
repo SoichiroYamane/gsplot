@@ -1,9 +1,8 @@
-"""Public package boundary for gsplot.
+"""Lazy public package boundary for the canonical gsplot API.
 
-The 0.3.x names remain available through lazy compatibility adapters while
-the canonical implementation is introduced in later reform slices. Importing
-the package itself intentionally performs no Matplotlib, configuration,
-logging, metadata-file, or backend initialization.
+The 0.3.x names remain available through deprecated compatibility adapters.
+Importing the package itself intentionally performs no Matplotlib,
+configuration, logging, metadata-file, or backend initialization.
 """
 
 from __future__ import annotations
@@ -18,8 +17,48 @@ from ._compat.root import (
 from .version import __commit__, __version__
 
 if TYPE_CHECKING:
-    # Runtime lookup stays lazy; these declarations keep static analyzers
-    # aware of the compatibility names exported through ``__getattr__``.
+    # Runtime lookup stays lazy.  Static analyzers see the canonical source
+    # objects instead of an ``Any``-typed dynamic facade, so the shipped
+    # ``py.typed`` marker provides useful signatures to downstream callers.
+    from ._compat.config import load_config
+    from ._config.model import Config
+    from ._core.errors import (
+        ConfigError,
+        DataError,
+        GsplotError,
+        LayoutError,
+        MetadataError,
+        OutputError,
+        PlotError,
+    )
+    from ._core.types import (
+        AxisSpec,
+        BuildInfo,
+        ColorSpec,
+        InsetSpec,
+        LegendEntries,
+        MetadataSnapshot,
+        MosaicSpec,
+        NormalizeSpec,
+        Theme,
+    )
+    from ._figure.backend import use_backend
+    from ._figure.inset import inset_axes
+    from ._figure.layout import subplots
+    from ._figure.output import savefig, show
+    from ._io.arrays import read_array
+    from ._io.build import build_info
+    from ._io.metadata import write_meta
+    from ._plot.basic import line, scatter
+    from ._plot.colored import cmap_dash, cmap_line, cmap_scatter
+    from ._plot.colormap import sample_cmap
+    from ._style.axes import box_aspect, minor_ticks, style_axes, suptitle, title
+    from ._style.legends import cmap_legend, legend, legend_entries, legends
+    from ._style.panels import panel_labels
+    from ._style.themes import fig_facecolor, set_theme
+
+    # These are intentionally outside the canonical manifest but remain
+    # discoverable for the documented compatibility window.
     get_cmap: Any
     load_file: Any
     load_file_fast: Any
@@ -27,7 +66,6 @@ if TYPE_CHECKING:
     axes_inset: Any
     axes_inset_padding: Any
     get_figure_size: Any
-    show: Any
     hello_world: Any
     config_load: Any
     config_dict: Any
@@ -36,14 +74,8 @@ if TYPE_CHECKING:
     pwd: Any
     pwd_move: Any
     pwd_main: Any
-    line: Any
-    cmap_line: Any
-    cmap_dash: Any
-    cmap_scatter: Any
-    sample_cmap: Any
     line_colormap_solid: Any
     line_colormap_dashed: Any
-    scatter: Any
     scatter_colormap: Any
     graph_square: Any
     graph_square_axes: Any
@@ -54,7 +86,6 @@ if TYPE_CHECKING:
     graph_facecolor: Any
     label: Any
     label_add_index: Any
-    legend: Any
     legend_axes: Any
     legend_handlers: Any
     legend_reverse: Any
@@ -63,43 +94,7 @@ if TYPE_CHECKING:
     ticks_off: Any
     ticks_on: Any
     ticks_on_axes: Any
-    title: Any
     title_axes: Any
-    inset_axes: Any
-    savefig: Any
-    style_axes: Any
-    suptitle: Any
-    minor_ticks: Any
-    box_aspect: Any
-    panel_labels: Any
-    fig_facecolor: Any
-    legends: Any
-    legend_entries: Any
-    cmap_legend: Any
-    set_theme: Any
-    load_config: Any
-    read_array: Any
-    write_meta: Any
-    build_info: Any
-    Config: Any
-    AxisSpec: Any
-    Theme: Any
-    InsetSpec: Any
-    MetadataSnapshot: Any
-    BuildInfo: Any
-    LegendEntries: Any
-    GsplotError: Any
-    ConfigError: Any
-    DataError: Any
-    LayoutError: Any
-    PlotError: Any
-    OutputError: Any
-    MetadataError: Any
-    MosaicSpec: Any
-    NormalizeSpec: Any
-    ColorSpec: Any
-    subplots: Any
-    use_backend: Any
 
 __all__ = [
     "subplots",

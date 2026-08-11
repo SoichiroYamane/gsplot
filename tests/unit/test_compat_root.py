@@ -2,6 +2,7 @@
 
 import inspect
 from pathlib import Path
+from typing import get_type_hints
 
 import matplotlib.pyplot as plt
 import pytest
@@ -20,6 +21,15 @@ def test_root_canonical_signature_and_legacy_line_options_are_separate() -> None
         legacy = gs.line(ax, [0, 1], [2, 3], color="red", marker="o")
     assert legacy[0].axes is ax
     plt.close(figure)
+
+
+def test_root_canonical_annotations_are_runtime_resolvable() -> None:
+    """Lazy root adapters preserve evaluated canonical type annotations."""
+
+    config_hint = get_type_hints(gs.line)["config"]
+    assert config_hint.__args__[0].__name__ == "Config"
+    assert get_type_hints(gs.scatter)["return"].__name__ == "PathCollection"
+    assert get_type_hints(gs.show)["return"] is type(None)
 
 
 def test_root_title_and_show_dispatch_by_explicit_target() -> None:
@@ -50,3 +60,21 @@ def test_nontranslating_legacy_helpers_warn_without_side_effects(capsys) -> None
         gs.MetadataError, match="implicit metadata"
     ):
         gs.save_metadata()
+
+
+def test_root_load_config_translates_only_schema_less_legacy_files(tmp_path) -> None:
+    """The root boundary warns for old files while canonical files stay strict."""
+
+    legacy = tmp_path / "legacy.json"
+    legacy.write_text(
+        '{"rcParams": {"figure.figsize": [2, 3]}, "metadata": false}',
+        encoding="utf-8",
+    )
+    with pytest.warns(DeprecationWarning, match="schema-less"):
+        config = gs.load_config(legacy)
+    assert config.figure.figsize == (2.0, 3.0)
+
+    strict = tmp_path / "strict.json"
+    strict.write_text('{"figure": {"figsize": [2, 3]}}', encoding="utf-8")
+    with pytest.raises(gs.ConfigError, match="schema_version"):
+        gs.Config.from_file(strict)
