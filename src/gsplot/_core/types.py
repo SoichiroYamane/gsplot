@@ -12,8 +12,11 @@ from matplotlib.colors import is_color_like
 
 from .errors import LayoutError, MetadataError, PlotError
 
+# Public type alias: RGBColor; an RGB or RGBA tuple with channels in [0, 1].
 RGBColor: TypeAlias = tuple[float, float, float] | tuple[float, float, float, float]
+# Public type alias: ColorSpec; a Matplotlib color name or RGB/RGBA tuple.
 ColorSpec: TypeAlias = str | RGBColor
+# Public type alias: MosaicSpec; a Matplotlib mosaic string or label rows.
 MosaicSpec: TypeAlias = str | Sequence[Sequence[str | None]]
 
 
@@ -24,6 +27,7 @@ class _NormalizeProtocol(Protocol):
         """Normalize one or more scalar values."""
 
 
+# Public type alias: NormalizeSpec; finite bounds or a Matplotlib normalizer.
 NormalizeSpec: TypeAlias = tuple[float, float] | _NormalizeProtocol
 
 
@@ -140,7 +144,35 @@ def _optional_finite(value: Any, name: str) -> float | None:
 
 @dataclass(frozen=True, slots=True)
 class AxisSpec:
-    """Immutable Cartesian labels, limits, scales, ticks, and padding."""
+    """Immutable Cartesian labels, limits, scales, ticks, and padding.
+
+    Parameters
+    ----------
+    xlabel, ylabel
+        Optional axis label strings.
+    xlim, ylim
+        Optional finite, unequal two-value limits.
+    xscale, yscale
+        One of ``"linear"``, ``"log"``, ``"symlog"``, or ``"logit"``.
+    xticks, yticks
+        Optional finite tick locations.
+    xminor, yminor
+        Optional minor-tick enable flags.
+    xlabelpad, ylabelpad
+        Optional finite label padding values.
+
+    Notes
+    -----
+    Instances are frozen and normalize sequence inputs to tuples.  Invalid
+    values raise :class:`gsplot.LayoutError` before styling begins.
+
+    Examples
+    --------
+    >>> import gsplot as gs
+    >>> spec = gs.AxisSpec(xlabel="time", xscale="linear")
+    >>> spec.xlabel
+    'time'
+    """
 
     xlabel: str | None = None
     ylabel: str | None = None
@@ -186,7 +218,34 @@ class AxisSpec:
 
 @dataclass(frozen=True, slots=True)
 class InsetSpec:
-    """Immutable placement specification for an explicit parent Axes."""
+    """Immutable placement specification for an explicit parent Axes.
+
+    Parameters
+    ----------
+    bounds
+        Optional ``(left, bottom, width, height)`` parent-coordinate bounds.
+    width, height
+        Optional numeric or Matplotlib percentage sizes.  Both are required
+        when ``bounds`` is omitted.
+    loc
+        Matplotlib location name or integer code from 1 through 10.
+    bbox_to_anchor
+        Optional two- or four-value finite anchor box.
+    borderpad
+        Non-negative inset border padding.
+
+    Notes
+    -----
+    Instances are frozen and accept exactly one placement mode: ``bounds``
+    or ``width`` plus ``height``.
+
+    Examples
+    --------
+    >>> import gsplot as gs
+    >>> spec = gs.InsetSpec(bounds=(0.6, 0.6, 0.3, 0.3))
+    >>> spec.bounds
+    (0.6, 0.6, 0.3, 0.3)
+    """
 
     bounds: tuple[float, float, float, float] | None = None
     width: float | str | None = None
@@ -285,7 +344,32 @@ def _size(value: float | str | None, name: str) -> float | str:
 
 @dataclass(frozen=True, slots=True)
 class Theme:
-    """Immutable explicit Figure/Axes appearance values."""
+    """Immutable explicit Figure/Axes appearance values.
+
+    Parameters
+    ----------
+    figure_facecolor, axes_facecolor
+        Optional Figure and Axes patch colors.
+    text_color, spine_color, tick_color
+        Optional explicit artist colors.
+    grid
+        Optional grid visibility flag.
+    grid_color, grid_alpha
+        Optional grid color and alpha in the unit interval.
+
+    Notes
+    -----
+    Instances are frozen, validate all colors, and never modify global
+    Matplotlib ``rcParams``.  Use :func:`gsplot.set_theme` on an explicit
+    Figure or Axes.
+
+    Examples
+    --------
+    >>> import gsplot as gs
+    >>> theme = gs.Theme(axes_facecolor="white", grid=True)
+    >>> theme.grid
+    True
+    """
 
     figure_facecolor: ColorSpec | None = None
     axes_facecolor: ColorSpec | None = None
@@ -329,13 +413,38 @@ class Theme:
 
     @classmethod
     def default(cls) -> "Theme":
-        """Return the no-op theme."""
+        """Return the no-op theme.
+
+        Returns
+        -------
+        Theme
+            An immutable theme with no requested changes.
+
+        Examples
+        --------
+        >>> import gsplot as gs
+        >>> theme = gs.Theme.default()
+        >>> theme.grid is None
+        True
+        """
 
         return cls()
 
     @classmethod
     def white(cls) -> "Theme":
-        """Return the explicit white-text theme from the reform contract."""
+        """Return the explicit white-text theme from the reform contract.
+
+        Returns
+        -------
+        Theme
+            An immutable theme with transparent axes and white artists.
+
+        Examples
+        --------
+        >>> import gsplot as gs
+        >>> gs.Theme.white().text_color
+        'white'
+        """
 
         return cls(
             axes_facecolor=(1.0, 1.0, 1.0, 0.0),
@@ -346,7 +455,19 @@ class Theme:
 
     @classmethod
     def transparent(cls) -> "Theme":
-        """Return the explicit transparent Figure/Axes theme."""
+        """Return the explicit transparent Figure/Axes theme.
+
+        Returns
+        -------
+        Theme
+            An immutable theme with transparent Figure and Axes patches.
+
+        Examples
+        --------
+        >>> import gsplot as gs
+        >>> gs.Theme.transparent().figure_facecolor
+        (0.0, 0.0, 0.0, 0.0)
+        """
 
         return cls(
             figure_facecolor=(0.0, 0.0, 0.0, 0.0),
@@ -384,7 +505,34 @@ def _readonly_labels(value: Mapping[str, str] | None) -> Mapping[str, str]:
 
 @dataclass(frozen=True, slots=True)
 class MetadataSnapshot:
-    """Immutable, privacy-bounded metadata for one explicit output."""
+    """Immutable, privacy-bounded metadata for one explicit output.
+
+    Parameters
+    ----------
+    package_version
+        Public package version string.
+    schema_version
+        Supported metadata schema identity, currently integer ``1``.
+    commit
+        Optional bounded public commit label; no machine path is inferred.
+    config_digest
+        Optional bounded public digest supplied by the caller.
+    labels
+        Optional string-to-string public labels, copied and frozen at
+        construction.
+
+    Notes
+    -----
+    Instances contain only explicitly supplied, bounded values.  They never
+    collect environment variables, usernames, hostnames, paths, or files.
+
+    Examples
+    --------
+    >>> import gsplot as gs
+    >>> snapshot = gs.MetadataSnapshot(package_version=gs.__version__)
+    >>> snapshot.schema_version
+    1
+    """
 
     package_version: str
     schema_version: Literal[1] = 1
@@ -417,7 +565,22 @@ class MetadataSnapshot:
 
 @dataclass(frozen=True, slots=True)
 class BuildInfo:
-    """Immutable distribution metadata returned by :func:`build_info`."""
+    """Immutable distribution metadata returned by :func:`build_info`.
+
+    Parameters
+    ----------
+    version
+        Installed distribution version.
+    commit
+        Optional public commit label; normally ``None``.
+
+    Examples
+    --------
+    >>> import gsplot as gs
+    >>> info = gs.build_info()
+    >>> info.version == gs.__version__
+    True
+    """
 
     version: str
     commit: str | None = None
@@ -436,7 +599,29 @@ class BuildInfo:
 
 @dataclass(frozen=True, slots=True)
 class LegendEntries:
-    """Immutable handles, labels, and local legend handler mappings."""
+    """Immutable handles, labels, and local legend handler mappings.
+
+    Parameters
+    ----------
+    handles
+        Native Matplotlib legend handles in display order.
+    labels
+        String labels matched one-to-one with ``handles``.
+    handler_map
+        Local handler mapping copied from the caller.
+
+    Notes
+    -----
+    The mapping is frozen and is never registered in Matplotlib's global
+    default handler map.
+
+    Examples
+    --------
+    >>> import gsplot as gs
+    >>> entries = gs.LegendEntries(handles=(), labels=())
+    >>> entries.labels
+    ()
+    """
 
     handles: tuple[Any, ...]
     labels: tuple[str, ...]

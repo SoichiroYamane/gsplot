@@ -12,7 +12,33 @@ from .._core.types import InsetSpec
 
 
 def inset_axes(parent: Axes, spec: InsetSpec) -> Axes:
-    """Create one placement-only inset below an explicit parent Axes."""
+    """Create one placement-only inset below an explicit parent Axes.
+
+    Parameters
+    ----------
+    parent
+        The Matplotlib Axes that owns the child inset.
+    spec
+        Validated placement values from :class:`gsplot.InsetSpec`.
+
+    Returns
+    -------
+    matplotlib.axes.Axes
+        The newly created child Axes.
+
+    Raises
+    ------
+    LayoutError
+        If the parent, specification, or requested placement is invalid.
+
+    Examples
+    --------
+    >>> import gsplot as gs
+    >>> figure, axes = gs.subplots()
+    >>> child = gs.inset_axes(axes, gs.InsetSpec(bounds=(0.6, 0.6, 0.3, 0.3)))
+    >>> child.set_title("inset")
+    >>> figure.clear()
+    """
 
     if not isinstance(parent, Axes):
         raise LayoutError("parent must be a Matplotlib Axes")

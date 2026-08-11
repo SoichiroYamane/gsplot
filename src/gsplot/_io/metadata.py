@@ -107,7 +107,39 @@ def write_meta(
     overwrite: bool = False,
     create_parent: bool = False,
 ) -> Path:
-    """Write one stable UTF-8 metadata document to an explicit destination."""
+    """Write one stable UTF-8 metadata document to an explicit destination.
+
+    Parameters
+    ----------
+    snapshot
+        Privacy-bounded immutable metadata values.
+    destination
+        Caller-owned JSON destination.
+    overwrite
+        Atomically replace an existing destination when ``True``; otherwise
+        use exclusive creation.
+    create_parent
+        Create a missing parent directory only when explicitly enabled.
+
+    Returns
+    -------
+    pathlib.Path
+        The absolute destination path.
+
+    Raises
+    ------
+    MetadataError
+        If validation, parent creation, serialization, or atomic writing
+        fails.  No implicit metadata is collected.
+
+    Examples
+    --------
+    >>> import gsplot as gs
+    >>> snapshot = gs.MetadataSnapshot(package_version=gs.__version__)
+    >>> path = gs.write_meta(snapshot, "meta.json", overwrite=True)
+    >>> path.suffix
+    '.json'
+    """
 
     if not isinstance(snapshot, MetadataSnapshot):
         raise MetadataError("snapshot must be a gsplot MetadataSnapshot")

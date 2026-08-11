@@ -112,7 +112,45 @@ def legend(
     replace: bool = False,
     props: Mapping[str, Any] | None = None,
 ) -> Legend:
-    """Create one local Legend on an explicit Axes."""
+    """Create one local Legend on an explicit Axes.
+
+    Parameters
+    ----------
+    ax
+        Explicit target Axes.
+    handles, labels
+        Optional matched legend entries.  When omitted, Matplotlib discovery
+        is used.
+    handler_map
+        Optional local handler mapping; it never changes Matplotlib defaults.
+    reverse
+        Reverse the selected entries before construction.
+    replace
+        Remove existing legends only when explicitly set to ``True``.
+    props
+        Finite Matplotlib Legend constructor properties.
+
+    Returns
+    -------
+    matplotlib.legend.Legend
+        The native Legend attached to ``ax``.
+
+    Raises
+    ------
+    LayoutError, PlotError
+        If entries, controls, target, handlers, or properties are invalid.
+
+    Examples
+    --------
+    >>> import gsplot as gs
+    >>> figure, ax = gs.subplots()
+    >>> gs.line(ax, [0, 1], [0, 1], props={"label": "signal"})
+    [<matplotlib.lines.Line2D object ...>]
+    >>> item = gs.legend(ax)
+    >>> item.axes is ax
+    True
+    >>> figure.clear()
+    """
 
     target = axes_targets(ax)[0]
     selected_handles, selected_labels = _entries(target, handles, labels)
@@ -149,7 +187,40 @@ def legends(
     replace: bool = False,
     props: Mapping[str, Any] | None = None,
 ) -> tuple[Legend, ...]:
-    """Create legends for explicit axes with discoverable entries."""
+    """Create legends for explicit axes with discoverable entries.
+
+    Parameters
+    ----------
+    target
+        Figure, Axes sequence, or string-keyed Axes mapping to inspect.
+    replace
+        Remove existing legends only when explicitly set to ``True``.
+    props
+        Finite Matplotlib Legend constructor properties.
+
+    Returns
+    -------
+    tuple[matplotlib.legend.Legend, ...]
+        Native legends created for axes that have discoverable entries.
+
+    Raises
+    ------
+    LayoutError, PlotError
+        If the target, replacement control, or properties are invalid.
+
+    Examples
+    --------
+    >>> import gsplot as gs
+    >>> figure, axes = gs.subplots(ncols=2)
+    >>> for axis in axes:
+    ...     gs.line(axis, [0, 1], [0, 1], props={"label": "signal"})
+    [<matplotlib.lines.Line2D object ...>]
+    [<matplotlib.lines.Line2D object ...>]
+    >>> items = gs.legends(figure)
+    >>> len(items)
+    2
+    >>> figure.clear()
+    """
 
     if not isinstance(replace, bool):
         raise LayoutError("replace must be a boolean")
@@ -189,7 +260,36 @@ def legend_entries(
     *,
     handler_map: Mapping[Any, Any] | None = None,
 ) -> LegendEntries:
-    """Return discovered handles and labels without creating or printing."""
+    """Return discovered handles and labels without creating or printing.
+
+    Parameters
+    ----------
+    ax
+        Explicit target Axes.
+    handler_map
+        Optional local handler mapping to carry into a later legend call.
+
+    Returns
+    -------
+    LegendEntries
+        Immutable tuples of native handles, labels, and handler data.
+
+    Raises
+    ------
+    PlotError
+        If the target or handler mapping is invalid.
+
+    Examples
+    --------
+    >>> import gsplot as gs
+    >>> figure, ax = gs.subplots()
+    >>> gs.line(ax, [0, 1], [0, 1], props={"label": "signal"})
+    [<matplotlib.lines.Line2D object ...>]
+    >>> entries = gs.legend_entries(ax)
+    >>> entries.labels
+    ('signal',)
+    >>> figure.clear()
+    """
 
     target = axes_targets(ax)[0]
     handles, labels = target.get_legend_handles_labels()
@@ -274,7 +374,45 @@ def cmap_legend(
     replace: bool = False,
     props: Mapping[str, Any] | None = None,
 ) -> Legend:
-    """Create a local legend composed of finite colormap stripe proxies."""
+    """Create a local legend composed of finite colormap stripe proxies.
+
+    Parameters
+    ----------
+    ax
+        Explicit target Axes.
+    cmap
+        Colormap name or native Colormap object.
+    label
+        Optional label for the first stripe proxy.
+    stripes
+        Positive number of deterministic color proxies.
+    norm, reverse
+        Optional normalization and reversal controls.
+    replace
+        Remove an existing legend only when explicitly set to ``True``.
+    props
+        Finite Matplotlib Legend constructor properties.
+
+    Returns
+    -------
+    matplotlib.legend.Legend
+        The native local Legend.
+
+    Raises
+    ------
+    PlotError, LayoutError
+        If colormap, normalization, stripe count, target, or properties are
+        invalid.
+
+    Examples
+    --------
+    >>> import gsplot as gs
+    >>> figure, ax = gs.subplots()
+    >>> item = gs.cmap_legend(ax, label="intensity")
+    >>> item.axes is ax
+    True
+    >>> figure.clear()
+    """
 
     if isinstance(stripes, bool) or not isinstance(stripes, int) or stripes < 1:
         raise PlotError("stripes must be a positive integer")

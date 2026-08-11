@@ -27,6 +27,34 @@ def read_array(
     ``options`` is passed to the selected NumPy loader after the two gsplot
     controls are validated.  In particular, ``unpack`` and structured-array
     options retain NumPy's documented behavior.
+
+    Parameters
+    ----------
+    path
+        Text file to read.  The current working directory is not changed.
+    loader
+        NumPy loader name: ``"genfromtxt"`` or ``"loadtxt"``.
+    ndmin
+        Minimum number of dimensions passed to NumPy.
+    options
+        Finite mapping of options for the selected NumPy loader.
+
+    Returns
+    -------
+    numpy.ndarray
+        The loader result converted to an independent ndarray view/value.
+
+    Raises
+    ------
+    DataError
+        If the path, loader controls, options, or file contents are invalid.
+
+    Examples
+    --------
+    >>> import gsplot as gs
+    >>> array = gs.read_array("data.txt", loader="genfromtxt")
+    >>> array.ndim >= 1
+    True
     """
 
     if not isinstance(path, (str, PathLike)) or (

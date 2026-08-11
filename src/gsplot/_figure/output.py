@@ -111,6 +111,28 @@ def show(fig: Figure) -> None:
     A manager-backed non-interactive Figure is a documented no-display
     success.  A Figure without a manager raises ``OutputError`` instead of
     invoking pyplot and exposing unrelated Figures.
+
+    Parameters
+    ----------
+    fig
+        The managed Matplotlib Figure to display.
+
+    Returns
+    -------
+    None
+        The Figure is displayed through its own canvas.
+
+    Raises
+    ------
+    OutputError
+        If the value is not a Figure, has no manager, or cannot be displayed.
+
+    Examples
+    --------
+    >>> import gsplot as gs
+    >>> figure, _ = gs.subplots()
+    >>> gs.show(figure)
+    >>> figure.clear()
     """
 
     if not isinstance(fig, Figure):
@@ -135,7 +157,45 @@ def savefig(
     show: bool = True,
     props: Mapping[str, Any] | None = None,
 ) -> tuple[Path, ...]:
-    """Save an explicit Figure and optionally display it after all writes."""
+    """Save an explicit Figure and optionally display it after all writes.
+
+    Parameters
+    ----------
+    fig
+        The Figure whose native ``savefig`` method is used.
+    path
+        A suffix-bearing output path or a suffix-free path combined with
+        ``formats``.
+    formats
+        One or more supported formats: ``png``, ``pdf``, or ``svg``.
+    dpi
+        Optional positive output resolution.
+    close, create_parent, overwrite, show
+        Explicit lifecycle and filesystem controls.  ``show`` defaults to
+        ``True`` and runs only after every requested write succeeds.
+    props
+        A finite mapping of Matplotlib save properties; gsplot controls may
+        not be supplied through this mapping.
+
+    Returns
+    -------
+    tuple[pathlib.Path, ...]
+        Absolute paths written in the requested order.
+
+    Raises
+    ------
+    OutputError
+        If validation, saving, display, or optional closing fails.
+
+    Examples
+    --------
+    >>> import gsplot as gs
+    >>> figure, _ = gs.subplots()
+    >>> paths = gs.savefig(figure, "figure.png", show=False, overwrite=True)
+    >>> paths[0].suffix
+    '.png'
+    >>> figure.clear()
+    """
 
     if not isinstance(fig, Figure):
         raise OutputError("fig must be a Matplotlib Figure")

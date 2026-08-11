@@ -119,7 +119,40 @@ def cmap_line(
     props: Mapping[str, Any] | None = None,
     config: Config | None = None,
 ) -> LineCollection:
-    """Draw a finite polyline whose segments are mapped through a colormap."""
+    """Draw a finite polyline whose segments are mapped through a colormap.
+
+    Parameters
+    ----------
+    ax
+        Explicit target Axes.
+    x, y, values
+        Equal-length finite one-dimensional coordinates and scalar colors.
+    cmap, norm
+        Optional Matplotlib colormap name and normalization specification.
+    props
+        Optional finite LineCollection property mapping.
+    config
+        Optional immutable configuration for the default colormap.
+
+    Returns
+    -------
+    matplotlib.collections.LineCollection
+        One native collection containing all non-zero-length segments.
+
+    Raises
+    ------
+    DataError, PlotError
+        If data, normalization, target, or properties are invalid.
+
+    Examples
+    --------
+    >>> import gsplot as gs
+    >>> figure, ax = gs.subplots()
+    >>> collection = gs.cmap_line(ax, [0, 1], [0, 1], [0, 1])
+    >>> collection.axes is ax
+    True
+    >>> figure.clear()
+    """
 
     target = validate_axes(ax)
     segments, segment_values = _segment_data(x, y, values)
@@ -151,6 +184,33 @@ def cmap_dash(
     The returned tuple contains the one native collection owned by this
     operation.  Keeping the collection whole lets Matplotlib apply dash
     lengths in display points while preserving one scalar color per segment.
+
+    Parameters
+    ----------
+    ax, x, y, values, cmap, norm, props, config
+        The same explicit target, finite data, normalization, property, and
+        configuration controls as :func:`cmap_line`.
+    dash
+        Two positive display-point lengths for the on and off portions.
+
+    Returns
+    -------
+    tuple[matplotlib.collections.LineCollection, ...]
+        A one-item tuple containing the native dashed collection.
+
+    Raises
+    ------
+    DataError, PlotError
+        If data, dash, normalization, target, or properties are invalid.
+
+    Examples
+    --------
+    >>> import gsplot as gs
+    >>> figure, ax = gs.subplots()
+    >>> collections = gs.cmap_dash(ax, [0, 1], [0, 1], [0, 1], dash=(4, 2))
+    >>> len(collections)
+    1
+    >>> figure.clear()
     """
 
     target = validate_axes(ax)
@@ -194,7 +254,40 @@ def cmap_scatter(
     props: Mapping[str, Any] | None = None,
     config: Config | None = None,
 ) -> PathCollection:
-    """Create a scalar-colored native scatter collection."""
+    """Create a scalar-colored native scatter collection.
+
+    Parameters
+    ----------
+    ax
+        Explicit target Axes.
+    x, y, values
+        Equal-length finite coordinates and scalar color values.
+    cmap, norm
+        Optional Matplotlib colormap name and normalization specification.
+    props
+        Optional finite PathCollection property mapping.
+    config
+        Optional immutable configuration for the default colormap.
+
+    Returns
+    -------
+    matplotlib.collections.PathCollection
+        The native scalar-colored scatter collection.
+
+    Raises
+    ------
+    DataError, PlotError
+        If data, normalization, target, or properties are invalid.
+
+    Examples
+    --------
+    >>> import gsplot as gs
+    >>> figure, ax = gs.subplots()
+    >>> collection = gs.cmap_scatter(ax, [0, 1], [0, 1], [0, 1])
+    >>> collection.axes is ax
+    True
+    >>> figure.clear()
+    """
 
     target = validate_axes(ax)
     x_values, y_values = validate_xy(x, y, colored=True)

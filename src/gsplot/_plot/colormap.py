@@ -99,6 +99,38 @@ def sample_cmap(
     Count-based samples cover the inclusive interval from zero to one.
     Value-based samples use their finite data range; constant values map to
     the midpoint unless an explicit normalizer supplies bounds.
+
+    Parameters
+    ----------
+    name
+        Matplotlib colormap name.
+    count
+        Number of evenly spaced samples, defaulting to ten when ``values`` is
+        omitted.
+    values
+        Finite scalar values to normalize and sample.
+    norm
+        Optional finite ``(vmin, vmax)`` pair or Matplotlib-compatible callable.
+    reverse
+        Whether to reverse the sampled colors.
+
+    Returns
+    -------
+    numpy.ndarray
+        An independent floating-point ``(n, 4)`` RGBA array.
+
+    Raises
+    ------
+    DataError, PlotError
+        If the name, count, values, normalizer, or control combination is
+        invalid.
+
+    Examples
+    --------
+    >>> import gsplot as gs
+    >>> colors = gs.sample_cmap("viridis", count=3)
+    >>> colors.shape
+    (3, 4)
     """
 
     if not isinstance(name, str) or not name.strip():

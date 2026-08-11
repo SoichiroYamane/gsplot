@@ -8,7 +8,21 @@ from .._core.types import BuildInfo
 
 
 def build_info() -> BuildInfo:
-    """Return only the installed gsplot version and a null commit value."""
+    """Return only the installed gsplot version and a null commit value.
+
+    Returns
+    -------
+    BuildInfo
+        Immutable distribution metadata.  The commit is ``None`` unless a
+        future public build contract explicitly supplies one.
+
+    Examples
+    --------
+    >>> import gsplot as gs
+    >>> info = gs.build_info()
+    >>> isinstance(info.version, str)
+    True
+    """
 
     try:
         package_version = version("gsplot")

@@ -21,6 +21,16 @@ def use_backend(name: str) -> None:
     ConfigError
         If pyplot has already been imported, the name is invalid, or Matplotlib
         rejects the backend.
+
+    Returns
+    -------
+    None
+        The selection is applied to Matplotlib's process-wide backend state.
+
+    Examples
+    --------
+    >>> import gsplot as gs
+    >>> gs.use_backend("Agg")
     """
 
     backend = ensure_nonempty_text(name, "backend", error=ConfigError)

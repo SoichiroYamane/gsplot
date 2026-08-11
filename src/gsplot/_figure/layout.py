@@ -180,6 +180,13 @@ def subplots(
     LayoutError
         If layout arguments are invalid or the existing target is not a
         Matplotlib figure.
+
+    Examples
+    --------
+    >>> import gsplot as gs
+    >>> figure, axes = gs.subplots(nrows=1, ncols=2)
+    >>> gs.savefig(figure, "figure.png", show=False, overwrite=True)
+    >>> figure.clear()
     """
 
     (

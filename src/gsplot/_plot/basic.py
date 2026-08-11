@@ -123,6 +123,36 @@ def line(
     properties.  The function returns the native list produced by
     :meth:`matplotlib.axes.Axes.plot` and never consults a current Axes or a
     process-wide color counter.
+
+    Parameters
+    ----------
+    ax
+        Explicit Matplotlib target Axes.
+    x, y
+        Equal-length finite one-dimensional data.
+    props
+        Optional finite mapping of supported ``Line2D`` properties.
+    config
+        Optional immutable configuration for omitted gsplot defaults.
+
+    Returns
+    -------
+    list[matplotlib.lines.Line2D]
+        Native line artists returned by Matplotlib.
+
+    Raises
+    ------
+    DataError, PlotError
+        If the data, target, configuration, or property mapping is invalid.
+
+    Examples
+    --------
+    >>> import gsplot as gs
+    >>> figure, ax = gs.subplots()
+    >>> artists = gs.line(ax, [0, 1], [1, 2], props={"color": "navy"})
+    >>> artists[0].axes is ax
+    True
+    >>> figure.clear()
     """
 
     target = validate_axes(ax)
@@ -140,7 +170,38 @@ def scatter(
     props: Mapping[str, Any] | None = None,
     config: Config | None = None,
 ) -> PathCollection:
-    """Create a native ``PathCollection`` on an explicit Axes."""
+    """Create a native ``PathCollection`` on an explicit Axes.
+
+    Parameters
+    ----------
+    ax
+        Explicit Matplotlib target Axes.
+    x, y
+        Equal-length finite one-dimensional data.
+    props
+        Optional finite mapping of supported scatter properties.
+    config
+        Optional immutable configuration for omitted gsplot defaults.
+
+    Returns
+    -------
+    matplotlib.collections.PathCollection
+        The native scatter collection attached to ``ax``.
+
+    Raises
+    ------
+    DataError, PlotError
+        If the data, target, configuration, or property mapping is invalid.
+
+    Examples
+    --------
+    >>> import gsplot as gs
+    >>> figure, ax = gs.subplots()
+    >>> collection = gs.scatter(ax, [0, 1], [1, 2])
+    >>> collection.axes is ax
+    True
+    >>> figure.clear()
+    """
 
     target = validate_axes(ax)
     x_values, y_values = validate_xy(x, y)

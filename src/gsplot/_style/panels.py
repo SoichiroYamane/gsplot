@@ -69,7 +69,37 @@ def panel_labels(
     *,
     props: Mapping[str, Any] | None = None,
 ) -> tuple[Text, ...]:
-    """Add deterministic labels to an explicit ordered panel collection."""
+    """Add deterministic labels to an explicit ordered panel collection.
+
+    Parameters
+    ----------
+    target
+        Ordered Axes sequence or mapping whose values define panel order.
+    labels
+        Optional labels with exactly one string per target Axes.  Omitted
+        labels are generated as ``A`` through ``Z``, then ``AA`` onward.
+    props
+        Finite Matplotlib Text property mapping.
+
+    Returns
+    -------
+    tuple[matplotlib.text.Text, ...]
+        Native text artists added to the target Axes objects.
+
+    Raises
+    ------
+    LayoutError, PlotError
+        If the target, labels, or property mapping is invalid.
+
+    Examples
+    --------
+    >>> import gsplot as gs
+    >>> figure, axes = gs.subplots(ncols=2)
+    >>> labels = gs.panel_labels(axes, labels=("A", "B"))
+    >>> len(labels)
+    2
+    >>> figure.clear()
+    """
 
     axes = _panel_targets(target)
     if labels is None:

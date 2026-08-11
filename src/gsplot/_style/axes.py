@@ -112,7 +112,34 @@ def _validate_scale_domain(axis: Axes, spec: AxisSpec) -> None:
 
 
 def style_axes(target: AxesTarget, spec: AxisSpec) -> None:
-    """Apply one validated :class:`AxisSpec` to explicit Axes targets."""
+    """Apply one validated :class:`AxisSpec` to explicit Axes targets.
+
+    Parameters
+    ----------
+    target
+        One Axes, an ordered Axes sequence, or a string-keyed Axes mapping.
+    spec
+        Immutable labels, limits, scales, ticks, and padding.
+
+    Returns
+    -------
+    None
+        The supplied Axes objects are styled in place.
+
+    Raises
+    ------
+    LayoutError
+        If the target, specification, scale domain, or value is invalid.
+
+    Examples
+    --------
+    >>> import gsplot as gs
+    >>> figure, ax = gs.subplots()
+    >>> gs.style_axes(ax, gs.AxisSpec(xlabel="time", ylabel="value"))
+    >>> ax.get_xlabel()
+    'time'
+    >>> figure.clear()
+    """
 
     if not isinstance(spec, AxisSpec):
         raise LayoutError("spec must be a gsplot AxisSpec")
@@ -165,7 +192,36 @@ def _text(value: Any, name: str) -> str:
 
 
 def title(ax: Axes, text: str, *, props: Mapping[str, Any] | None = None) -> Text:
-    """Set an explicit Axes title and return its native Text artist."""
+    """Set an explicit Axes title and return its native Text artist.
+
+    Parameters
+    ----------
+    ax
+        Explicit target Axes.
+    text
+        Title text.
+    props
+        Finite Matplotlib Text property mapping.
+
+    Returns
+    -------
+    matplotlib.text.Text
+        Native title artist attached to ``ax``.
+
+    Raises
+    ------
+    PlotError
+        If the target, text, or property mapping is invalid.
+
+    Examples
+    --------
+    >>> import gsplot as gs
+    >>> figure, ax = gs.subplots()
+    >>> text = gs.title(ax, "Signal")
+    >>> text.axes is ax
+    True
+    >>> figure.clear()
+    """
 
     axes = axes_targets(ax)
     selected_props = _validate_props(props, _TITLE_PROPS, "title")
@@ -173,7 +229,36 @@ def title(ax: Axes, text: str, *, props: Mapping[str, Any] | None = None) -> Tex
 
 
 def suptitle(fig: Figure, text: str, *, props: Mapping[str, Any] | None = None) -> Text:
-    """Set an explicit Figure suptitle and return its native Text artist."""
+    """Set an explicit Figure suptitle and return its native Text artist.
+
+    Parameters
+    ----------
+    fig
+        Explicit target Figure.
+    text
+        Suptitle text.
+    props
+        Finite Matplotlib Text property mapping.
+
+    Returns
+    -------
+    matplotlib.text.Text
+        Native suptitle artist attached to ``fig``.
+
+    Raises
+    ------
+    PlotError
+        If the Figure, text, or property mapping is invalid.
+
+    Examples
+    --------
+    >>> import gsplot as gs
+    >>> figure, _ = gs.subplots()
+    >>> text = gs.suptitle(figure, "Experiment")
+    >>> text.figure is figure
+    True
+    >>> figure.clear()
+    """
 
     if not isinstance(fig, Figure):
         raise PlotError("fig must be a Matplotlib Figure")
@@ -187,7 +272,34 @@ def minor_ticks(
     *,
     axis: Literal["x", "y", "both"] = "both",
 ) -> None:
-    """Enable or disable minor ticks on explicit Axes targets."""
+    """Enable or disable minor ticks on explicit Axes targets.
+
+    Parameters
+    ----------
+    target
+        One Axes, an ordered Axes sequence, or an Axes mapping.
+    enabled
+        Whether minor ticks should be visible.
+    axis
+        Coordinate axis to update: ``"x"``, ``"y"``, or ``"both"``.
+
+    Returns
+    -------
+    None
+        The supplied Axes objects are updated in place.
+
+    Raises
+    ------
+    LayoutError
+        If the target, enabled flag, or axis selector is invalid.
+
+    Examples
+    --------
+    >>> import gsplot as gs
+    >>> figure, ax = gs.subplots()
+    >>> gs.minor_ticks(ax, True, axis="x")
+    >>> figure.clear()
+    """
 
     if not isinstance(enabled, bool):
         raise LayoutError("enabled must be a boolean")
@@ -202,7 +314,32 @@ def minor_ticks(
 
 
 def box_aspect(target: AxesTarget, aspect: float | None) -> None:
-    """Set or clear an explicit Axes box aspect."""
+    """Set or clear an explicit Axes box aspect.
+
+    Parameters
+    ----------
+    target
+        One Axes, an ordered Axes sequence, or an Axes mapping.
+    aspect
+        Positive aspect ratio, or ``None`` to clear the constraint.
+
+    Returns
+    -------
+    None
+        The supplied Axes objects are updated in place.
+
+    Raises
+    ------
+    LayoutError
+        If the target or aspect is invalid.
+
+    Examples
+    --------
+    >>> import gsplot as gs
+    >>> figure, ax = gs.subplots()
+    >>> gs.box_aspect(ax, 1.0)
+    >>> figure.clear()
+    """
 
     if aspect is not None:
         if isinstance(aspect, bool):

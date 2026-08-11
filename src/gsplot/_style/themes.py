@@ -21,7 +21,32 @@ def _validate_color(value: ColorSpec, name: str) -> None:
 
 
 def fig_facecolor(fig: Figure, color: ColorSpec) -> None:
-    """Set one explicit Figure patch facecolor."""
+    """Set one explicit Figure patch facecolor.
+
+    Parameters
+    ----------
+    fig
+        Explicit target Figure.
+    color
+        Matplotlib color name or RGB/RGBA value.
+
+    Returns
+    -------
+    None
+        The Figure patch is updated in place.
+
+    Raises
+    ------
+    PlotError
+        If the Figure or color is invalid.
+
+    Examples
+    --------
+    >>> import gsplot as gs
+    >>> figure, _ = gs.subplots()
+    >>> gs.fig_facecolor(figure, "white")
+    >>> figure.clear()
+    """
 
     if not isinstance(fig, Figure):
         raise PlotError("fig must be a Matplotlib Figure")
@@ -62,7 +87,33 @@ def _apply_axes_theme(axis: Axes, theme: Theme) -> None:
 
 
 def set_theme(target: Figure | Axes, theme: Theme) -> None:
-    """Apply a validated Theme only to an explicit Figure or Axes."""
+    """Apply a validated Theme only to an explicit Figure or Axes.
+
+    Parameters
+    ----------
+    target
+        Figure or Axes whose artists and patch are updated.
+    theme
+        Immutable appearance values.  No process-wide ``rcParams`` are
+        changed.
+
+    Returns
+    -------
+    None
+        The explicit target is styled in place.
+
+    Raises
+    ------
+    PlotError
+        If the target or theme combination is invalid.
+
+    Examples
+    --------
+    >>> import gsplot as gs
+    >>> figure, ax = gs.subplots()
+    >>> gs.set_theme(ax, gs.Theme(axes_facecolor="white"))
+    >>> figure.clear()
+    """
 
     if not isinstance(theme, Theme):
         raise PlotError("theme must be a gsplot Theme")
