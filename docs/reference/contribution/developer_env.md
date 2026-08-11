@@ -37,9 +37,9 @@ activate a shell:
 
 ```bash
 MPLBACKEND=Agg poetry run pytest -q
-poetry run black --check gsplot tests scripts
-poetry run isort --check-only gsplot tests scripts
-poetry run pyright gsplot
+poetry run black --check src/gsplot tests scripts tools/maintenance
+poetry run isort --check-only src/gsplot tests scripts tools/maintenance
+poetry run pyright src/gsplot
 poetry run pip-audit --local
 ```
 
@@ -110,7 +110,7 @@ poetry build
 Before submitting a change, also run:
 
 ```bash
-python -m compileall -q gsplot tests scripts
+python -m compileall -q src/gsplot tests scripts tools/maintenance
 git diff --check
 git status --short
 ```

@@ -15,7 +15,7 @@ machine-specific operational details here.
   versions, dependencies, and the build backend. `poetry.lock` records the
   resolved development environment; do not refresh it unless dependency
   resolution is part of the requested change.
-- `gsplot/__init__.py` and each module's `__all__` define the public import
+- `src/gsplot/__init__.py` and each module's `__all__` define the public import
   surface. Check both when adding, moving, or removing an API.
 - `README.md`, `docs/`, and `demo/` describe user-visible behavior. Demo
   scripts are executable documentation and are also used to create images in
@@ -36,8 +36,10 @@ machine-specific operational details here.
 
 ## Architecture and invariants
 
-- The supported runtime is Python 3.10 or newer. Runtime dependencies include
-  Matplotlib, NumPy, Rich, and PyYAML.
+- The supported runtime is Python 3.10 or newer. The 0.3.x compatibility
+  implementation still declares Matplotlib, NumPy, Rich, and PyYAML; the
+  reform target removes Rich/PyYAML and uses JSON-only configuration after
+  the replacement implementation is merged.
 - Most public plotting and data-loading functions use the flow
   `@bind_passed_params()` -> `ParamsGetter` -> `CreateClassParams` -> an
   implementation class. Preserve this flow unless the change deliberately
@@ -386,13 +388,13 @@ Run the checks relevant to the changed surface:
 MPLBACKEND=Agg poetry run pytest -q
 
 # Formatting and imports
-poetry run black --check gsplot tests scripts
-poetry run isort --check-only gsplot tests scripts
+poetry run black --check src/gsplot tests scripts tools/maintenance
+poetry run isort --check-only src/gsplot tests scripts tools/maintenance
 
 # Types and syntax
-poetry run mypy --config-file .mypy.ini gsplot
-poetry run pyright gsplot
-python -m compileall -q gsplot tests scripts
+poetry run mypy --config-file .mypy.ini src/gsplot
+poetry run pyright src/gsplot
+python -m compileall -q src/gsplot tests scripts tools/maintenance
 
 # Documentation and packaging
 MPLBACKEND=Agg poetry run sphinx-build -W -b html docs docs/_build/html
@@ -409,8 +411,10 @@ limitation. Never report a skipped check as passing.
 
 ## Safety boundaries
 
-- Do not edit `gsplot/version.py` during ordinary implementation or docs work;
-  the version workflow generates it.
+- `src/gsplot/version.py` is a small compatibility metadata shim. Do not put
+  release literals or commit hashes in it, and do not reintroduce a workflow
+  that generates or directly pushes it. Change it only as part of an explicit
+  packaging or metadata implementation.
 - Do not run `poetry publish`, create releases, push branches, approve or merge
   PRs, change required checks, rotate secrets, or broaden GitHub Actions
   permissions without explicit authorization for that exact action.

@@ -36,7 +36,7 @@ The project serves people who need to:
 ### FR-1: Public plotting API
 
 The package root must expose the documented public functions through
-`gsplot/__init__.py` and the module-level `__all__` declarations. The current
+`src/gsplot/__init__.py` and the module-level `__all__` declarations. The current
 public API is grouped as follows:
 
 | Area | Public capabilities |

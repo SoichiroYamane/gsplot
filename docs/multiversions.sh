@@ -32,11 +32,9 @@ echo "Building documentation for main (dev)"
 rm -rf "$MAIN_WORKTREE"
 rsync -a --exclude=".git" --exclude=".worktree-*" "$REPO_ROOT/" "$MAIN_WORKTREE/"
 
-sed -i "s/^__version__ = .*/__version__ = 'dev'/" \
-  "$MAIN_WORKTREE/gsplot/version.py"
 (
   cd "$MAIN_WORKTREE/docs"
-  MPLBACKEND=Agg run_sphinx . "$OUTPUT_DIR/dev"
+  GSPLOT_DOCS_VERSION=dev MPLBACKEND=Agg run_sphinx . "$OUTPUT_DIR/dev"
 )
 rm -rf "$MAIN_WORKTREE"
 
@@ -51,9 +49,10 @@ while IFS= read -r tag; do
   worktree_dir="$REPO_ROOT/.worktree-$tag"
   rm -rf "$worktree_dir"
   git worktree add --detach "$worktree_dir" "$tag"
+  docs_version="${tag#v}"
   (
     cd "$worktree_dir/docs"
-    MPLBACKEND=Agg run_sphinx . "$OUTPUT_DIR/$tag"
+    GSPLOT_DOCS_VERSION="$docs_version" MPLBACKEND=Agg run_sphinx . "$OUTPUT_DIR/$tag"
   )
   git worktree remove "$worktree_dir" --force
 done < "$SCRIPT_DIR/versions"

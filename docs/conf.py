@@ -9,15 +9,16 @@ import sys
 from pathlib import Path
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(PROJECT_ROOT))
+sys.path.insert(0, str(PROJECT_ROOT / "src"))
+sys.path.insert(1, str(PROJECT_ROOT))
 
 from gsplot.version import __version__  # noqa: E402
 
 project = "gsplot"
 copyright = "2024, Giordano Mattoni and Soichiro Yamane"
 author = "Giordano Mattoni and Soichiro Yamane"
-version = __version__
-release = __version__
+version = os.environ.get("GSPLOT_DOCS_VERSION", __version__)
+release = version
 root_doc = "index"
 master_doc = root_doc
 language = "en"
@@ -121,7 +122,7 @@ def _demo_environment() -> dict[str, str]:
 
     environment = os.environ.copy()
     environment.setdefault("MPLBACKEND", "Agg")
-    pythonpath = [str(PROJECT_ROOT)]
+    pythonpath = [str(PROJECT_ROOT / "src"), str(PROJECT_ROOT)]
     if environment.get("PYTHONPATH"):
         pythonpath.append(environment["PYTHONPATH"])
     environment["PYTHONPATH"] = os.pathsep.join(pythonpath)
