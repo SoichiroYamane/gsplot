@@ -35,3 +35,6 @@ jobs:
 
       - name: Check Python syntax
         run: poetry run python -m compileall -q src/gsplot tests scripts tools/maintenance
+
+      - name: Check package boundaries
+        run: poetry run python tools/maintenance/check_architecture.py

@@ -5,7 +5,6 @@ from __future__ import annotations
 from collections.abc import Sequence
 from typing import Any, Literal, cast
 
-import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.axes import Axes
 from matplotlib.figure import Figure
@@ -223,6 +222,8 @@ def subplots(
             raise LayoutError("a non-default unit cannot be used when reusing a Figure")
     target = fig
     if target is None:
+        import matplotlib.pyplot as plt
+
         target = plt.figure(
             figsize=size_in_inches, constrained_layout=selected_constrained
         )
