@@ -240,8 +240,11 @@ fixed versions, impact, remediation, validation evidence, and residual risk.
   still requires Review 1 and Review 2 before handoff. Restore both approval
   settings when a second maintainer becomes available.
 - Generated version metadata must enter `main` through the same reviewable
-  pull-request path as other changes. An automation workflow must not use a
-  privileged direct push to bypass branch protection.
+  pull-request path as other changes. With the restricted Actions token, the
+  workflow may update only the fixed `automation/version-metadata` topic branch
+  and must expose a public-safe manual PR link in the job summary. A maintainer
+  opens the PR and follows Review 1 / Review 2; the workflow must never use a
+  privileged direct push or pull-request approval to bypass branch protection.
 - Repository settings are external state. A settings change must be defined
   in a public Issue, implemented or recorded in its linked Draft PR, verified
   through the GitHub UI or API, and documented with public-safe evidence.
