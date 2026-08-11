@@ -197,7 +197,7 @@ class InsetSpec:
 
         has_bounds = self.bounds is not None
         has_size = self.width is not None or self.height is not None
-        if has_bounds and has_size:
+        if has_bounds and (has_size or self.bbox_to_anchor is not None):
             raise LayoutError("InsetSpec cannot combine bounds with width or height")
         if not has_bounds and not (self.width is not None and self.height is not None):
             raise LayoutError("InsetSpec requires bounds or both width and height")
