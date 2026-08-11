@@ -62,18 +62,6 @@ jobs:
           cd docs
           poetry run bash multiversions.sh
 
-      - name: Build with Jekyll
-        uses: actions/jekyll-build-pages@44a6e6beabd48582f863aeeb6cb2151cc1716697 # v1
-        with:
-          source: ./
-          destination: ./_site
-
-      - name: Clean _site directory
-        run: |
-          chmod -R u+rwX ./_site
-          find ./_site -type f -name "README.md" -delete
-
-
       - name: Copy latest version as stable
         run: |
           echo "Finding the latest version..."
@@ -85,7 +73,7 @@ jobs:
           mkdir -p ./docs/_build/html/stable
           cp -r "./docs/_build/html/$latest_version/"* ./docs/_build/html/stable/
 
-      - name: Combine Sphinx and Jekyll Outputs
+      - name: Stage Sphinx output for Pages
         run: |
           mkdir -p ./_site/docs
           cp -r ./docs/_build/html/* ./_site/docs/
