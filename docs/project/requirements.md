@@ -229,11 +229,16 @@ fixed versions, impact, remediation, validation evidence, and residual risk.
 - Workflows triggered by untrusted pull requests must not receive secrets or
   privileged write access. Fork pull request execution must require maintainer
   approval for external contributors.
-- The `main` branch must require a pull request, at least one GitHub approval,
-  the named CI and security checks, resolved conversations, linear history,
-  stale-review dismissal, and approval of the latest push. Force-pushes and
-  branch deletion must be blocked. The repository's public maintenance
-  protocol additionally requires Review 1 and Review 2 before handoff.
+- The `main` branch must require a pull request, the named CI and security
+  checks, resolved conversations, linear history, stale-review dismissal, and
+  approval of the latest push when an independent reviewer is available.
+  Force-pushes and branch deletion must be blocked. When at least two
+  maintainers are available, require at least one independent GitHub approval
+  and latest-push approval. With one maintainer, the required approval count
+  and latest-push approval may both be disabled; self-approval and
+  administrative bypass are prohibited, and the public maintenance protocol
+  still requires Review 1 and Review 2 before handoff. Restore both approval
+  settings when a second maintainer becomes available.
 - Generated version metadata must enter `main` through the same reviewable
   pull-request path as other changes. An automation workflow must not use a
   privileged direct push to bypass branch protection.
