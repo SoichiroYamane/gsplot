@@ -28,10 +28,10 @@ jobs:
           poetry install --no-interaction --no-root
 
       - name: Check Black formatting
-        run: poetry run black --check gsplot tests scripts docs/conf.py --exclude 'gsplot/version\.py'
+        run: poetry run black --check src/gsplot tests scripts docs/conf.py
 
       - name: Check import ordering
-        run: poetry run isort --profile black --check-only gsplot tests scripts docs/conf.py
+        run: poetry run isort --profile black --check-only src/gsplot tests scripts docs/conf.py
 
       - name: Check Python syntax
-        run: poetry run python -m compileall -q gsplot tests scripts
+        run: poetry run python -m compileall -q src/gsplot tests scripts

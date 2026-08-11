@@ -41,8 +41,8 @@ jobs:
 
       - name: Run type checks
         run: |
-          poetry run mypy --config-file .mypy.ini gsplot
-          poetry run pyright gsplot
+          poetry run mypy --config-file .mypy.ini src/gsplot
+          poetry run pyright src/gsplot
 
   documentation:
     name: documentation
