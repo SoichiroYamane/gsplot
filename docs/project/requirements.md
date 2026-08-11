@@ -210,6 +210,37 @@ Security findings must use the private disclosure process in `SECURITY.md`.
 Public records should contain only safe advisory identifiers, affected and
 fixed versions, impact, remediation, validation evidence, and residual risk.
 
+### NFR-4a: Dependabot and repository controls
+
+- `.github/dependabot.yml` must monitor the Poetry/pip and GitHub Actions
+  ecosystems on a weekly schedule with bounded pull-request volume and stable
+  labels.
+- Routine minor and patch version updates may be grouped per ecosystem.
+  Security updates and major updates must remain independently reviewable
+  unless a later Issue explicitly changes that policy.
+- Repository-level Dependabot alerts, automated security fixes, secret
+  scanning, push protection, generic secret-pattern scanning, and private
+  vulnerability reporting must remain enabled where GitHub makes the feature
+  available to this public repository.
+- GitHub Actions must default to read-only `GITHUB_TOKEN` permissions, must not
+  approve pull request reviews, must require full-length action SHAs, and must
+  allow only GitHub-owned actions and explicitly reviewed third-party action
+  namespaces.
+- Workflows triggered by untrusted pull requests must not receive secrets or
+  privileged write access. Fork pull request execution must require maintainer
+  approval for external contributors.
+- The `main` branch must require a pull request, at least one GitHub approval,
+  the named CI and security checks, resolved conversations, linear history,
+  stale-review dismissal, and approval of the latest push. Force-pushes and
+  branch deletion must be blocked. The repository's public maintenance
+  protocol additionally requires Review 1 and Review 2 before handoff.
+- Generated version metadata must enter `main` through the same reviewable
+  pull-request path as other changes. An automation workflow must not use a
+  privileged direct push to bypass branch protection.
+- Repository settings are external state. A settings change must be defined
+  in a public Issue, implemented or recorded in its linked Draft PR, verified
+  through the GitHub UI or API, and documented with public-safe evidence.
+
 ### NFR-5: Contributor experience
 
 - A new contributor must be able to install the locked development environment,

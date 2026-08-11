@@ -5,11 +5,16 @@ updates:
     directory: /
     schedule:
       interval: weekly
+      day: monday
+      time: "04:00"
+      timezone: Asia/Tokyo
     open-pull-requests-limit: 10
     labels:
       - dependencies
       - python
     versioning-strategy: increase-if-necessary
+    # Routine minor and patch updates may be grouped. Security updates remain
+    # independent because this group explicitly applies only to version updates.
     groups:
       routine-python-dependencies:
         applies-to: version-updates
@@ -23,10 +28,14 @@ updates:
     directory: /
     schedule:
       interval: weekly
+      day: monday
+      time: "04:30"
+      timezone: Asia/Tokyo
     open-pull-requests-limit: 10
     labels:
       - dependencies
       - github
+    # Keep major action upgrades separate for manual supply-chain review.
     groups:
       routine-github-actions:
         applies-to: version-updates

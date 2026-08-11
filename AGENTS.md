@@ -73,6 +73,37 @@ machine-specific operational details here.
   clean. Redact private operational details from progress, security, and PR
   records.
 
+## Dependabot and repository controls
+
+- `.github/dependabot.yml` is the source of truth for version-update
+  ecosystems, schedules, labels, pull-request limits, and routine grouping.
+  Keep minor and patch version updates groupable, but keep major and security
+  updates independently reviewable unless the linked Issue changes that
+  decision.
+- Dependabot alerts, automated security fixes, secret scanning, push
+  protection, generic secret-pattern scanning, and private vulnerability
+  reporting are repository settings rather than YAML-only behavior. Verify
+  their effective state through GitHub after changing them and record only
+  public-safe evidence.
+- GitHub Actions must use least privilege: read-only defaults, no pull-request
+  review approval capability, full SHA pinning, and an allowlist containing
+  only GitHub-owned actions and reviewed third-party namespaces actually used
+  by the workflows. Revisit the allowlist whenever a workflow action changes.
+- `main` must accept changes through a pull request with the required CI and
+  security checks, resolved conversations, linear history, stale-review
+  dismissal, latest-push approval, and no force-push or deletion. Require one
+  GitHub approval while the repository has one administrative collaborator;
+  the public maintenance process still requires independent Review 1 and
+  Review 2 records.
+- Automation that generates tracked files must create or update a reviewable
+  pull request. Do not grant a workflow a direct-main bypass merely to preserve
+  an auto-commit convenience.
+- A repository-settings change needs a public Issue, a linked Draft PR or
+  equivalent implementation record, explicit user authorization, and a
+  read-back verification after the API/UI mutation. Do not change secrets,
+  collaborators, organization settings, or unrelated repository features as a
+  side effect.
+
 ## Fundamental change policy
 
 Fundamental reform is explicitly allowed. Code, public APIs, configuration
