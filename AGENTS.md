@@ -67,8 +67,12 @@ machine-specific operational details here.
   secrets, production credentials, or privileged write access.
 - Keep GitHub Actions permissions minimal. Do not expose secrets to forked PRs
   or execute untrusted fork code in a privileged `pull_request_target` workflow.
-- Prefer PyPI trusted publishing through GitHub OIDC. A token-based publishing
-  workflow requires explicit secret review and must never print the token.
+- Prefer PyPI trusted publishing through GitHub OIDC. The publishing workflow
+  must use `pypa/gh-action-pypi-publish` pinned to a full commit SHA, build
+  distributions in a separate job, and grant `id-token: write` only to the
+  publish job in the dedicated `pypi` environment. A token-based publishing
+  workflow requires explicit secret review, is a temporary rollback path only,
+  and must never print the token.
 - Review the full diff manually even when a secret or dependency scanner is
   clean. Redact private operational details from progress, security, and PR
   records.

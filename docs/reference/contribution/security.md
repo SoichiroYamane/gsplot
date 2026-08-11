@@ -34,6 +34,22 @@ These controls complement one another. A passing check does not replace
 maintainer review, and a new alert is reviewed before it is resolved or
 classified.
 
+## PyPI publishing
+
+Package releases use PyPI Trusted Publishing through GitHub Actions OIDC. The
+workflow is `.github/workflows/publish_package.yml`, the GitHub environment is
+`pypi`, and the PyPI publisher is scoped to the `SoichiroYamane/gsplot`
+repository and that workflow filename. The workflow builds distributions in a
+job without OIDC access, transfers them as an artifact, and gives only the
+separate publish job `id-token: write` plus `contents: read`.
+
+The PyPI publisher must be configured before a release is published. Keep the
+legacy `PYPI_API_TOKEN` secret only as a temporary rollback path until a safe
+TestPyPI rehearsal or production upload confirms the trusted publisher. Remove
+that secret after verification; do not add it to new workflows or expose it in
+logs. See the [PyPI Trusted Publishers documentation](https://docs.pypi.org/trusted-publishers/)
+for the external configuration and security model.
+
 ## Plan and implement changes safely
 
 Security and dependency work is tracked in a public Issue before substantial
