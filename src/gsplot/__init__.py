@@ -37,6 +37,10 @@ if TYPE_CHECKING:
     pwd_move: Any
     pwd_main: Any
     line: Any
+    cmap_line: Any
+    cmap_dash: Any
+    cmap_scatter: Any
+    sample_cmap: Any
     line_colormap_solid: Any
     line_colormap_dashed: Any
     scatter: Any
