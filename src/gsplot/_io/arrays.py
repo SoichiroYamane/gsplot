@@ -221,7 +221,7 @@ def read(
     if type(ndmin) is not int or ndmin not in {0, 1, 2}:
         raise DataError("read: ndmin must be 0, 1, or 2")
     try:
-        selected_dtype = np.dtype(dtype)
+        np.dtype(dtype)
     except (TypeError, ValueError) as exc:
         raise DataError("read: dtype must be NumPy-compatible") from exc
     if selected_loader == "loadtxt" and (
@@ -234,7 +234,7 @@ def read(
         "comments": selected_comments,
         "usecols": selected_usecols,
         "unpack": unpack,
-        "dtype": selected_dtype,
+        "dtype": dtype,
     }
     options["skip_header" if selected_loader == "genfromtxt" else "skiprows"] = (
         skip_header

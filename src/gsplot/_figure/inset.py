@@ -259,7 +259,7 @@ def inset(
     spec = _placement(bounds)
     selected_label = _label_spec(label)
     selected_zoom = _zoom(zoom)
-    if style not in {"paper", None}:
+    if style is not None and (not isinstance(style, str) or style != "paper"):
         raise LayoutError("inset: style must be 'paper' or None")
     selected_zorder = ensure_finite_real(zorder, "inset: zorder", error=LayoutError)
     if zoom_zorder is not None and selected_zoom is False:

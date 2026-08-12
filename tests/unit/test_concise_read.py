@@ -69,6 +69,19 @@ def test_read_and_read_array_preserve_structured_unpacked_fields(
         assert loaded[1].tolist() == [1.5, 2.5]
 
 
+def test_read_preserves_none_dtype_inference(tmp_path: Path) -> None:
+    """Explicit ``dtype=None`` reaches genfromtxt instead of becoming float."""
+
+    source = tmp_path / "inferred.csv"
+    source.write_text("alpha,1.5\nbeta,2.5\n", encoding="utf-8")
+
+    loaded = gs.read(source, dtype=None)
+
+    assert isinstance(loaded, list)
+    assert loaded[0].dtype.kind == "U"
+    assert loaded[1].dtype == np.dtype("float64")
+
+
 @pytest.mark.parametrize(
     "options",
     (

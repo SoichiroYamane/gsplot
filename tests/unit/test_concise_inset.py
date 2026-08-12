@@ -73,7 +73,10 @@ def test_inset_supports_automatic_zoom_advanced_placement_and_explicit_layers() 
         )
         created = set(parent.get_children()) - before
         assert child.get_zorder() == 8
-        assert any(item.get_zorder() == 7 for item in created if item is not child)
+        indicators = tuple(item for item in created if item is not child)
+        assert indicators
+        assert all(item.get_zorder() == 7 for item in indicators)
+        assert all(not item.get_in_layout() for item in indicators)
     finally:
         plt.close(figure)
 
@@ -89,6 +92,7 @@ def test_inset_supports_automatic_zoom_advanced_placement_and_explicit_layers() 
         {"bounds": (0.5, 0.5, 0.4, 0.4), "zoom": ((1, 2), (4, 5))},
         {"bounds": (0.5, 0.5, 0.4, 0.4), "zoom": ((1, 2), (1, 2))},
         {"bounds": (0.5, 0.5, 0.4, 0.4), "style": "screen"},
+        {"bounds": (0.5, 0.5, 0.4, 0.4), "style": []},
         {"bounds": (0.5, 0.5, 0.4, 0.4), "zorder": np.inf},
         {"bounds": (0.5, 0.5, 0.4, 0.4), "zoom_zorder": 3},
     ),
