@@ -104,7 +104,7 @@ def test_metrics_cli_reports_failures_without_executing_source(
 
 
 def test_publication_style_fixture_is_complete_and_versioned() -> None:
-    """The first paper implementation must consume one finite golden table."""
+    """The first paper implementation must agree with one finite golden table."""
 
     profile = json.loads(STYLE_PATH.read_text(encoding="utf-8"))
 
