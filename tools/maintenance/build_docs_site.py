@@ -42,7 +42,8 @@ def main(argv: list[str] | None = None) -> int:
         f"stable={manifest.stable_tag}, "
         f"builds={len(manifest.builds)}, "
         f"files={manifest.file_count}, "
-        f"bytes={manifest.uncompressed_bytes}"
+        f"uncompressed_bytes={manifest.uncompressed_bytes}, "
+        f"compressed_bytes={manifest.compressed_bytes}"
     )
     return 0
 

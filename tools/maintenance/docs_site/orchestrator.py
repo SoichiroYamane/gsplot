@@ -8,8 +8,10 @@ of installing untrusted release code into the maintainer environment.
 
 from __future__ import annotations
 
+import gzip
 import json
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -18,8 +20,10 @@ from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
+from urllib.parse import unquote, urlparse
 
 from .catalog import ReleaseCatalog, ReleaseRecord, load_catalog
+from .site import SiteError, finalize_site
 from .switcher import (
     DEFAULT_BASE_URL,
     generate_switcher,
@@ -27,7 +31,7 @@ from .switcher import (
     write_switcher,
 )
 
-BUILD_MANIFEST_SCHEMA_VERSION = 1
+BUILD_MANIFEST_SCHEMA_VERSION = 2
 _ALLOWED_OUTPUT_DIRECTORIES = {
     "_downloads",
     "_images",
@@ -80,6 +84,65 @@ _UNTRUSTED_ENV_NAMES = {
     "UV_INDEX",
     "UV_INDEX_URL",
 }
+_CURRENT_SPHINX_EXTENSIONS = (
+    "sphinx.ext.autodoc",
+    "sphinx.ext.autosummary",
+    "sphinx.ext.intersphinx",
+    "sphinx.ext.napoleon",
+    "sphinx.ext.todo",
+    "myst_parser",
+    "sphinx_copybutton",
+    "sphinxext.opengraph",
+)
+# Published v0.1.1-v0.3.0 pages declare these extensions and the pre-cutover
+# root asset inventory includes their generated theme files.  They are kept in
+# the historical compatibility profile until the final deployment workflow can
+# retire those root assets explicitly.
+_HISTORICAL_SPHINX_EXTENSIONS = _CURRENT_SPHINX_EXTENSIONS + (
+    "sphinxcontrib.mermaid",
+    "sphinx_design",
+    "sphinx_pyscript",
+    "sphinx_tippy",
+    "sphinx_togglebutton",
+)
+_LEGACY_RUNTIME_TAG = re.compile(
+    r"\s*<script\b[^>]*(?:tippy|togglebutton|design-tabs|unpkg\.com)"
+    r"[^>]*>.*?</script>\s*",
+    re.IGNORECASE | re.DOTALL,
+)
+_LEGACY_RUNTIME_BODY_TAG = re.compile(
+    r"\s*<script\b[^>]*>(?:(?!</script>).)*"
+    r"(?:tippy|togglebutton|design-tabs|unpkg\.com|jsdelivr\.net|mermaid)"
+    r"(?:(?!</script>).)*</script>\s*",
+    re.IGNORECASE | re.DOTALL,
+)
+_LEGACY_RUNTIME_LINK = re.compile(
+    r"\s*<link\b[^>]*(?:togglebutton|sphinx-design)[^>]*/?>\s*",
+    re.IGNORECASE,
+)
+_EXTERNAL_RUNTIME_RESOURCE = re.compile(
+    r"<script\b[^>]*\bsrc\s*=\s*['\"]https?://"
+    r"|<script\b[^>]*>(?:(?!</script>).)*"
+    r"(?:unpkg\.com|jsdelivr\.net|cdnjs\.cloudflare\.com)"
+    r"(?:(?!</script>).)*</script>"
+    r"|<link\b(?=[^>]*\brel\s*=\s*['\"](?:stylesheet|preload|modulepreload))"
+    r"[^>]*\bhref\s*=\s*['\"]https?://",
+    re.IGNORECASE,
+)
+_CANONICAL_LINK = re.compile(r'<link\s+rel="canonical"\s+href="([^"]+)"', re.IGNORECASE)
+_META_VALUE = re.compile(
+    r'<meta\s+property="([^"]+)"\s+content="([^"]*)"\s*/?>',
+    re.IGNORECASE,
+)
+_META_NAME_VALUE = re.compile(
+    r'<meta\s+name="([^"]+)"\s+content="([^"]*)"\s*/?>', re.IGNORECASE
+)
+_OG_IMAGE_ALT = re.compile(
+    r'(<meta\s+property="og:image:alt"\s+content=")[^"]*("\s*/?>)',
+    re.IGNORECASE,
+)
+_TITLE = re.compile(r"<title>(.*?)</title>", re.IGNORECASE | re.DOTALL)
+_NON_INDEXABLE_PAGES = {"genindex.html", "py-modindex.html", "search.html"}
 
 
 class BuildError(RuntimeError):
@@ -141,6 +204,7 @@ class BuildManifest:
     exclusions: tuple[Mapping[str, Any], ...]
     file_count: int
     uncompressed_bytes: int
+    compressed_bytes: int
     warnings: tuple[str, ...] = ()
     schema_version: int = BUILD_MANIFEST_SCHEMA_VERSION
     status: str = "success"
@@ -154,7 +218,11 @@ class BuildManifest:
             raise BuildError("site", "manifest", "manifest", "status is not success")
         if not self.builds:
             raise BuildError("site", "manifest", "manifest", "no build records")
-        if self.file_count < 1 or self.uncompressed_bytes < 1:
+        if (
+            self.file_count < 1
+            or self.uncompressed_bytes < 1
+            or self.compressed_bytes < 1
+        ):
             raise BuildError("site", "manifest", "manifest", "empty artifact")
         stable_records = [item for item in self.builds if item.channel == "stable"]
         if len(stable_records) != 1:
@@ -176,6 +244,7 @@ class BuildManifest:
             "artifact": {
                 "file_count": self.file_count,
                 "uncompressed_bytes": self.uncompressed_bytes,
+                "compressed_bytes": self.compressed_bytes,
             },
         }
 
@@ -273,7 +342,23 @@ def build_site(
                 generate_switcher(catalog, base_url=site_base_url),
                 staging / "_meta" / "switcher.json",
             )
-            file_count, uncompressed_bytes = _artifact_stats(staging)
+            try:
+                finalize_site(staging, catalog, base_url=site_base_url)
+            except SiteError as exc:
+                raise BuildError(
+                    "site",
+                    "site",
+                    "finalize static site",
+                    str(exc),
+                ) from exc
+            except OSError as exc:
+                raise BuildError(
+                    "site",
+                    "site",
+                    "finalize static site",
+                    "site finalization could not complete",
+                ) from exc
+            file_count, uncompressed_bytes, compressed_bytes = _artifact_stats(staging)
             manifest = BuildManifest(
                 main_commit=catalog.main_commit,
                 stable_tag=catalog.stable_tag,
@@ -281,6 +366,7 @@ def build_site(
                 exclusions=tuple(item.to_mapping() for item in catalog.exclusions),
                 file_count=file_count,
                 uncompressed_bytes=uncompressed_bytes,
+                compressed_bytes=compressed_bytes,
                 warnings=(),
             )
             for _ in range(5):
@@ -288,7 +374,11 @@ def build_site(
                     staging / "_meta" / "build-manifest.json", manifest.to_mapping()
                 )
                 updated_stats = _artifact_stats(staging)
-                if updated_stats == (manifest.file_count, manifest.uncompressed_bytes):
+                if updated_stats == (
+                    manifest.file_count,
+                    manifest.uncompressed_bytes,
+                    manifest.compressed_bytes,
+                ):
                     break
                 manifest = BuildManifest(
                     main_commit=catalog.main_commit,
@@ -297,6 +387,7 @@ def build_site(
                     exclusions=tuple(item.to_mapping() for item in catalog.exclusions),
                     file_count=updated_stats[0],
                     uncompressed_bytes=updated_stats[1],
+                    compressed_bytes=updated_stats[2],
                     warnings=(),
                 )
             else:
@@ -362,6 +453,65 @@ def _build_channel(
             )
         output_dir.mkdir(parents=True, exist_ok=False)
         doctree_dir = environment_root / "doctrees"
+        mermaid_config = None
+        if release is not None:
+            mermaid_config = environment_root / "mermaid-config.json"
+            _write_json(mermaid_config, {"handDrawnSeed": 1})
+        extensions = (
+            _HISTORICAL_SPHINX_EXTENSIONS
+            if release is not None
+            else _CURRENT_SPHINX_EXTENSIONS
+        )
+        channel_name = "dev" if release is None else release.tag
+        channel_base_url = f"{site_base_url}/{channel_name}/"
+        theme_options = {
+            "announcement": (
+                "You are reading the development documentation (main)."
+                if release is None
+                else f"You are reading release {release.tag}."
+            ),
+            "check_switcher": False,
+            "logo": {
+                "text": "gsplot 📈",
+                "image_light": "_static/logo/logo_gsplot.svg",
+                "image_dark": "_static/logo/logo_gsplot.svg",
+            },
+            "pygments_light_style": "manni",
+            "pygments_dark_style": "monokai",
+            "navbar_start": ["navbar-logo"],
+            "footer_start": ["copyright"],
+            "footer_end": ["version-switcher"],
+            "use_edit_page_button": True,
+            "icon_links": [
+                {
+                    "name": "GitHub",
+                    "url": "https://github.com/SoichiroYamane/gsplot",
+                    "icon": "fa-brands fa-square-github",
+                    "type": "fontawesome",
+                }
+            ],
+            "switcher": {
+                "version_match": "dev" if release is None else release.tag,
+                "json_url": f"{site_base_url}/_meta/switcher.json",
+            },
+        }
+        html_context = {
+            "github_user": "SoichiroYamane",
+            "github_repo": "gsplot",
+            "github_version": source_ref,
+            "doc_path": "docs",
+            "default_mode": "dark",
+            "gsplot_is_development": release is None,
+        }
+        _append_config_overrides(
+            worktree / "docs" / "conf.py",
+            version=docs_version,
+            channel_base_url=channel_base_url,
+            theme_options=theme_options,
+            html_context=html_context,
+            historical=release is not None,
+            mermaid_config=mermaid_config,
+        )
         _run_process(
             [
                 str(python_executable),
@@ -369,6 +519,9 @@ def _build_channel(
                 "sphinx.cmd.build",
                 "-W",
                 "-E",
+                "-D",
+                "extensions=" + ",".join(extensions),
+                *(["-D", "mermaid_output_format=svg"] if release else []),
                 "-b",
                 "html",
                 "-d",
@@ -382,7 +535,14 @@ def _build_channel(
             ref=ref_for_error,
             command=command,
         )
-        _sanitize_and_validate_output(output_dir, docs_version, ref_for_error, command)
+        _sanitize_and_validate_output(
+            output_dir,
+            docs_version,
+            ref_for_error,
+            command,
+            base_url=site_base_url,
+            channel=channel_name,
+        )
 
     return BuildRecord(
         channel=channel,
@@ -394,6 +554,63 @@ def _build_channel(
         docs_version=docs_version,
         output_path=f"{source_ref}/" if channel == "release" else "dev/",
         checks=("index", "static-assets", "package-provenance", "output-hygiene"),
+    )
+
+
+def _append_config_overrides(
+    path: Path,
+    *,
+    version: str,
+    channel_base_url: str,
+    theme_options: Mapping[str, Any],
+    html_context: Mapping[str, Any],
+    historical: bool,
+    mermaid_config: Path | None,
+) -> None:
+    """Append deterministic channel metadata to an isolated source config.
+
+    Historical tags predate the versioned-site contract and cannot be edited
+    in place.  The append-only overlay runs only in a detached temporary
+    worktree, so it normalizes old configuration without changing release
+    source or its public provenance.
+    """
+
+    original = path.read_text(encoding="utf-8")
+    lines = [
+        "",
+        "# Generated by the gsplot documentation site orchestrator.",
+        f"version = {version!r}",
+        f"release = {version!r}",
+        f"version_match = {('dev' if version == 'dev' else f'v{version}')!r}",
+        f"html_title = {f'gsplot {version} documentation'!r}",
+        f"html_baseurl = {channel_base_url!r}",
+        f"ogp_site_url = {channel_base_url!r}",
+        f"ogp_canonical_url = {channel_base_url!r}",
+        "ogp_social_cards = {'enable': False}",
+        "ogp_image = '_static/logo/logo_title_gsplot.png'",
+        "ogp_image_alt = 'gsplot documentation page preview'",
+        # The finalizer copies only the inventoried root source entry for
+        # legacy URL compatibility, then removes channel source trees.
+        "html_copy_source = True",
+        "html_show_sourcelink = False",
+        "intersphinx_mapping = {}",
+        f"html_context = {dict(html_context)!r}",
+    ]
+    if "pydata_sphinx_theme" in original:
+        lines.append(f"html_theme_options = {dict(theme_options)!r}")
+    if historical:
+        lines.extend(
+            [
+                f"mermaid_params = ['--configFile', {str(mermaid_config)!r}]",
+                "tippy_js = []",
+                "tippy_enable_wikitips = False",
+                "tippy_enable_doitips = False",
+            ]
+        )
+    path.write_text(
+        original.rstrip() + "\n" + "\n".join(lines) + "\n",
+        encoding="utf-8",
+        errors="strict",
     )
 
 
@@ -623,10 +840,21 @@ def _run_process(
 
 
 def _sanitize_and_validate_output(
-    output: Path, version: str, ref: str, command: str
+    output: Path,
+    version: str,
+    ref: str,
+    command: str,
+    *,
+    base_url: str | None = None,
+    channel: str | None = None,
 ) -> None:
     """Remove known build caches and reject unsafe or incomplete HTML output."""
 
+    _strip_legacy_runtime_references(output)
+    _ensure_non_indexable_pages(output)
+    _ensure_social_image_alt(output)
+    if channel == "dev":
+        _ensure_development_indexing(output)
     for candidate in sorted(output.rglob("*"), reverse=True):
         if candidate.name not in _TRANSIENT_OUTPUT_NAMES:
             continue
@@ -660,13 +888,208 @@ def _sanitize_and_validate_output(
             raise BuildError(
                 version, ref, command, "transient file in generated output"
             )
+    for page in output.rglob("*.html"):
+        relative = page.relative_to(output)
+        text = page.read_text(encoding="utf-8")
+        if _EXTERNAL_RUNTIME_RESOURCE.search(text):
+            raise BuildError(
+                version,
+                ref,
+                command,
+                "external runtime resource is not allowed",
+            )
+        if relative.parts[0].startswith("_"):
+            continue
+        if (
+            base_url is not None
+            and channel is not None
+            and page.name not in _NON_INDEXABLE_PAGES
+        ):
+            _validate_page_metadata(
+                page,
+                output=output,
+                version=version,
+                channel=channel,
+                base_url=base_url,
+                text=text,
+            )
 
 
-def _artifact_stats(root: Path) -> tuple[int, int]:
-    """Return deterministic file count and uncompressed byte size."""
+def _strip_legacy_runtime_references(output: Path) -> None:
+    """Remove compatibility-only extension tags from historical HTML.
 
-    files = [path for path in root.rglob("*") if path.is_file()]
-    return len(files), sum(path.stat().st_size for path in files)
+    The historical source declares Tippy, Togglebutton, and Sphinx Design,
+    although the audited pages do not use those features. Their generated
+    assets remain available at the legacy root paths, while release pages do
+    not ship broken or floating runtime resources.
+    """
+
+    for page in output.rglob("*.html"):
+        text = page.read_text(encoding="utf-8")
+        updated = _LEGACY_RUNTIME_TAG.sub("\n", text)
+        updated = _LEGACY_RUNTIME_BODY_TAG.sub("\n", updated)
+        updated = _LEGACY_RUNTIME_LINK.sub("\n", updated)
+        if updated != text:
+            page.write_text(updated, encoding="utf-8")
+
+
+def _ensure_non_indexable_pages(output: Path) -> None:
+    """Mark Sphinx utility pages as non-indexable and omit them from SEO data."""
+
+    marker = '<meta name="robots" content="noindex, follow" />'
+    existing = re.compile(
+        r'<meta\s+name="robots"\s+content="[^"]*"\s*/?>', re.IGNORECASE
+    )
+    for page in output.rglob("*.html"):
+        if page.name not in _NON_INDEXABLE_PAGES:
+            continue
+        text = page.read_text(encoding="utf-8")
+        updated = existing.sub(marker, text, count=1)
+        if updated == text and "</head>" not in text:
+            raise BuildError(
+                "site",
+                "output",
+                "validate generated HTML",
+                f"utility page has no head element: {page.name}",
+            )
+        if updated == text:
+            updated = text.replace("</head>", f"  {marker}\n</head>", 1)
+        if updated != text:
+            page.write_text(updated, encoding="utf-8")
+
+
+def _ensure_social_image_alt(output: Path) -> None:
+    """Give every generated social card a non-empty, public-safe alt value."""
+
+    replacement = r"\1gsplot documentation page preview\2"
+    for page in output.rglob("*.html"):
+        text = page.read_text(encoding="utf-8")
+        updated = _OG_IMAGE_ALT.sub(replacement, text)
+        if updated != text:
+            page.write_text(updated, encoding="utf-8")
+
+
+def _ensure_development_indexing(output: Path) -> None:
+    """Apply the development no-index/follow policy to every HTML page."""
+
+    marker = '<meta name="robots" content="noindex, follow" />'
+    existing = re.compile(
+        r'<meta\s+name="robots"\s+content="[^"]*"\s*/?>', re.IGNORECASE
+    )
+    for page in output.rglob("*.html"):
+        text = page.read_text(encoding="utf-8")
+        updated = existing.sub(marker, text, count=1)
+        if updated == text and "</head>" in text:
+            updated = text.replace("</head>", f"  {marker}\n</head>", 1)
+        if updated != text:
+            page.write_text(updated, encoding="utf-8")
+
+
+def _validate_page_metadata(
+    page: Path,
+    *,
+    output: Path,
+    version: str,
+    channel: str,
+    base_url: str,
+    text: str,
+) -> None:
+    """Check canonical, OpenGraph, title, and development indexing metadata."""
+
+    relative = page.relative_to(output).as_posix()
+    expected_url = f"{base_url}/{channel}/{relative}"
+    canonical_match = _CANONICAL_LINK.search(text)
+    if canonical_match is None or canonical_match.group(1) != expected_url:
+        raise BuildError(
+            version,
+            channel,
+            "validate generated HTML metadata",
+            f"canonical URL mismatch for {relative}",
+        )
+    meta_values = dict(_META_VALUE.findall(text))
+    if meta_values.get("og:url") != expected_url:
+        raise BuildError(
+            version,
+            channel,
+            "validate generated HTML metadata",
+            f"OpenGraph URL mismatch for {relative}",
+        )
+    image_url = meta_values.get("og:image", "")
+    base_url_parts = urlparse(base_url)
+    image_url_parts = urlparse(image_url)
+    channel_path = f"{base_url_parts.path.rstrip('/')}/{channel}/"
+    image_relative_path = unquote(
+        image_url_parts.path[len(channel_path) :]
+        if image_url_parts.path.startswith(channel_path)
+        else ""
+    )
+    image_path = output / Path(*image_relative_path.split("/"))
+    if (
+        image_url_parts.scheme != base_url_parts.scheme
+        or image_url_parts.netloc != base_url_parts.netloc
+        or image_url_parts.query
+        or image_url_parts.fragment
+        or not image_url_parts.path.startswith(channel_path)
+        or not image_relative_path
+        or any(part in {"", ".", ".."} for part in image_relative_path.split("/"))
+        or not image_path.is_file()
+    ):
+        raise BuildError(
+            version,
+            channel,
+            "validate generated HTML metadata",
+            f"OpenGraph image is not version-aware for {relative}",
+        )
+    if not meta_values.get("og:image:alt", "").strip():
+        raise BuildError(
+            version,
+            channel,
+            "validate generated HTML metadata",
+            f"OpenGraph image alt text is missing for {relative}",
+        )
+    title_match = _TITLE.search(text)
+    if title_match is None or (
+        "dev" not in title_match.group(1).lower()
+        and version not in title_match.group(1)
+    ):
+        raise BuildError(
+            version,
+            channel,
+            "validate generated HTML metadata",
+            f"version is not visible in title for {relative}",
+        )
+    robot_values = {
+        name.lower(): content.lower()
+        for name, content in _META_NAME_VALUE.findall(text)
+    }
+    if channel == "dev" and robot_values.get("robots") != "noindex, follow":
+        raise BuildError(
+            version,
+            channel,
+            "validate generated HTML metadata",
+            f"development indexing policy is missing for {relative}",
+        )
+
+
+def _artifact_stats(root: Path) -> tuple[int, int, int]:
+    """Return file count and deterministic uncompressed/compressed sizes.
+
+    ``compressed_bytes`` is the sum of deterministic gzip sizes for individual
+    files.  It is a stable, archive-independent budget signal for the static
+    artifact and does not create another file in the published site.  The
+    self-describing build manifest is excluded so its changing size cannot
+    make the recorded artifact budget self-referential.
+    """
+
+    manifest_path = root / "_meta" / "build-manifest.json"
+    files = [
+        path for path in root.rglob("*") if path.is_file() and path != manifest_path
+    ]
+    compressed = sum(
+        len(gzip.compress(path.read_bytes(), compresslevel=9, mtime=0))
+        for path in files
+    )
+    return len(files), sum(path.stat().st_size for path in files), compressed
 
 
 def _write_json(path: Path, value: Mapping[str, Any]) -> None:
