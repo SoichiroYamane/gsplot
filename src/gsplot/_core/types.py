@@ -13,6 +13,7 @@ from matplotlib.artist import Artist
 from matplotlib.axes import Axes
 from matplotlib.colors import is_color_like
 from matplotlib.legend_handler import HandlerBase
+from matplotlib.typing import LineStyleType, MarkerType
 from numpy.typing import NDArray
 
 from .errors import LayoutError, MetadataError, PlotError
@@ -27,6 +28,10 @@ MosaicSpec: TypeAlias = str | Sequence[Sequence[str | None]]
 AxesTarget: TypeAlias = Axes | Sequence[Axes] | Mapping[object, Axes] | NDArray[Any]
 # Public type alias: PerTarget; ordered or exact-key per-target values.
 PerTarget: TypeAlias = Sequence[Any] | Mapping[object, Any]
+# Public type alias: LineStyle; a named style or finite dash-tuple form.
+LineStyle: TypeAlias = LineStyleType
+# Public type alias: Marker; an input accepted by Matplotlib MarkerStyle.
+Marker: TypeAlias = MarkerType
 # Public type alias: Unit; supported physical figure-size units.
 Unit: TypeAlias = Literal["in", "cm", "mm", "pt"]
 # Public type alias: SizePreset; automatic publication canvas choices.
@@ -683,6 +688,8 @@ __all__ = [
     "MosaicSpec",
     "AxesTarget",
     "PerTarget",
+    "LineStyle",
+    "Marker",
     "Unit",
     "SizePreset",
     "SizeSpec",
