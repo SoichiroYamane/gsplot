@@ -57,4 +57,5 @@ api_reference/index.md
 project/requirements.md
 project/api-migration.md
 project/reform-baseline.md
+project/website-compatibility.md
 ```
