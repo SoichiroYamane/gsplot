@@ -77,7 +77,7 @@ The concise defaults and ownership rules are:
 - `read()` exposes a finite common NumPy text-loading surface without changing
   the working directory. It defaults to comma-delimited input and unpacked
   columns. Whitespace input remains explicit with `delimiter=None`, and native
-  structured-unpack field arrays retain their names and individual dtypes.
+  structured-unpack field arrays retain their order and individual dtypes.
   Advanced `read_array()` remains available and preserves the selected NumPy
   loader's ndarray-or-list return.
 - Canonical precedence is an explicit argument, then an explicitly supplied

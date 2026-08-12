@@ -61,7 +61,7 @@ if TYPE_CHECKING:
     from ._figure.inset import inset, inset_axes
     from ._figure.layout import subplots
     from ._figure.output import savefig, show
-    from ._io.arrays import read_array
+    from ._io.arrays import read, read_array
     from ._io.build import build_info
     from ._io.metadata import write_meta
     from ._plot.basic import line, scatter
@@ -149,6 +149,7 @@ __all__ = [
     "savefig",
     "show",
     "load_config",
+    "read",
     "read_array",
     "write_meta",
     "build_info",

@@ -93,6 +93,7 @@ _CANONICAL_EXPORTS: Final[dict[str, tuple[str, str]]] = {
     "set_theme": ("gsplot._style.themes", "set_theme"),
     "paper": ("gsplot._style.paper", "paper"),
     "load_config": ("gsplot._compat.config", "load_config"),
+    "read": ("gsplot._io.arrays", "read"),
     "read_array": ("gsplot._io.arrays", "read_array"),
     "write_meta": ("gsplot._io.metadata", "write_meta"),
     "build_info": ("gsplot._io.build", "build_info"),

@@ -182,15 +182,18 @@ def _read_legacy_array(
     *,
     loader: Literal["genfromtxt", "loadtxt"],
     options: Mapping[str, Any],
-) -> NDArray[Any]:
+) -> NDArray[Any] | list[NDArray[Any]]:
     """Read a path through the canonical adapter or an iterable via NumPy."""
 
     if isinstance(source, (str, PathLike)):
         return read_array(source, loader=loader, options=options)
     loader_function = np.genfromtxt if loader == "genfromtxt" else np.loadtxt
     try:
-        return np.asarray(loader_function(source, **dict(options)))
-    except (OSError, TypeError, ValueError) as exc:
+        return cast(
+            NDArray[Any] | list[NDArray[Any]],
+            loader_function(source, **dict(options)),
+        )
+    except (OSError, TypeError, ValueError, UnicodeError) as exc:
         raise ValueError("legacy array source could not be read") from exc
 
 
@@ -201,7 +204,7 @@ def load_file(
     skip_footer: int = 0,
     unpack: bool = True,
     **options: Any,
-) -> NDArray[Any]:
+) -> NDArray[Any] | list[NDArray[Any]]:
     """Adapt legacy ``genfromtxt`` loading to :func:`gsplot.read_array`."""
 
     _warn("load_file", "read_array")
@@ -221,7 +224,7 @@ def load_file_fast(
     skiprows: int = 0,
     unpack: bool = True,
     **options: Any,
-) -> NDArray[Any]:
+) -> NDArray[Any] | list[NDArray[Any]]:
     """Adapt legacy ``loadtxt`` loading to :func:`gsplot.read_array`."""
 
     _warn("load_file_fast", "read_array")
