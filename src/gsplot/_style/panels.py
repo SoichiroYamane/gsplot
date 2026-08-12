@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import inspect
 from collections.abc import Mapping, Sequence
-from typing import Any, Literal, Protocol, cast, overload
+from typing import Any, Literal, Protocol, cast, get_type_hints, overload
 
 import numpy as np
 from matplotlib.axes import Axes
@@ -17,6 +17,7 @@ from .._core.options import MISSING
 from .._core.plans import TargetPlan
 from .._core.targets import normalize_axes, resolve_target_mapping
 from .._core.types import AxesTarget
+from .._core.validation import ensure_positive
 from .axes import _validate_props
 
 _PANEL_PROPS = frozenset(
@@ -124,6 +125,12 @@ def _prepare_index(
         selected_props["fontsize"] = size
     elif "fontsize" not in selected_props and "size" not in selected_props:
         selected_props["fontsize"] = "large"
+    size_key = "size" if "size" in selected_props else "fontsize"
+    selected_size = selected_props[size_key]
+    if not isinstance(selected_size, str):
+        selected_props[size_key] = ensure_positive(
+            selected_size, f"index: {size_key}", error=LayoutError
+        )
     selected_props.setdefault("ha", "center")
     selected_props.setdefault("va", "center")
     position = (0.02, 0.98 if loc == "in" else 1.02)
@@ -254,6 +261,7 @@ def _index_signature(
 
 
 index.__signature__ = inspect.signature(_index_signature)  # type: ignore[attr-defined]
+index.__annotations__ = get_type_hints(_index_signature)
 
 
 def panel_labels(

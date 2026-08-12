@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import inspect
 from collections.abc import Mapping, Sequence
-from typing import Any, cast, overload
+from typing import Any, cast, get_type_hints, overload
 
 import matplotlib as mpl
 import numpy as np
@@ -401,6 +401,7 @@ def _legend_signature(
 
 
 legend.__signature__ = inspect.signature(_legend_signature)  # type: ignore[attr-defined]
+legend.__annotations__ = get_type_hints(_legend_signature)
 
 
 def legends(

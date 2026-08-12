@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import inspect
 from collections.abc import Mapping, Sequence
-from typing import Any, Literal, overload
+from typing import Any, Literal, get_type_hints, overload
 
 import matplotlib.ticker as ticker
 import numpy as np
@@ -110,6 +110,10 @@ def _validate_scale_domain(axis: Axes, spec: AxisSpec) -> None:
             domain_values = tuple(float(item) for item in bounds)
         else:
             domain_values = ()
+        if any(not np.isfinite(value) for value in domain_values):
+            raise LayoutError(
+                f"{coordinate}scale={scale!r} requires finite domain data"
+            )
         if scale == "log" and any(value <= 0 for value in domain_values):
             raise LayoutError(f"{coordinate}scale='log' requires positive data")
         if scale == "logit" and any(
@@ -747,6 +751,7 @@ def _label_signature(
 
 
 label.__signature__ = inspect.signature(_label_signature)  # type: ignore[attr-defined]
+label.__annotations__ = get_type_hints(_label_signature)
 
 
 __all__ = [

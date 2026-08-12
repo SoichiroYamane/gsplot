@@ -138,6 +138,9 @@ def test_square_and_index_validate_all_inputs_before_mutation() -> None:
             index(axes, "ab")
         with pytest.raises(LayoutError, match="conflicts"):
             index(axes, size=12, props={"fontsize": 10})
+        for invalid_size in (True, 0, -1, float("nan"), float("inf"), None):
+            with pytest.raises(LayoutError, match="size|fontsize"):
+                index(axes, size=invalid_size)  # type: ignore[arg-type]
         assert all(not axis.texts for axis in axes)
 
         texts = index(axes, labels=("left", "right"), props={"fontsize": 9})

@@ -114,6 +114,9 @@ def test_root_canonical_annotations_are_runtime_resolvable() -> None:
         for value in get_args(get_type_hints(gs.scatter)["return"])
     )
     assert get_type_hints(gs.show)["return"] is type(None)
+    assert get_type_hints(gs.label)["xlabel"] != object
+    assert "LabelRecords" in str(inspect.signature(gs.label))
+    assert get_type_hints(gs.legend)["loc"] == str | int
 
 
 def test_root_label_dispatches_without_current_figure_guessing() -> None:
@@ -136,6 +139,11 @@ def test_root_label_dispatches_without_current_figure_guessing() -> None:
         assert axis.get_ylabel() == "legacy y"
         assert axis.xaxis.labelpad == 7
         assert axis.yaxis.labelpad == 8
+
+        with pytest.warns(DeprecationWarning, match="gsplot.label"):
+            gs.label(lab_lims=[["keyword x", "keyword y"]], tight_layout=False)
+        assert axis.get_xlabel() == "keyword x"
+        assert axis.get_ylabel() == "keyword y"
     finally:
         plt.close(figure)
 

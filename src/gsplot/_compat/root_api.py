@@ -410,7 +410,7 @@ def _legacy_label_records(value: Any) -> tuple[Any, ...] | None:
 
 
 def label(
-    target: Any,
+    target: Any = _UNSET,
     xlabel: Any = _UNSET,
     ylabel: Any = _UNSET,
     xlim: Any = _UNSET,
@@ -430,6 +430,7 @@ def label(
     ypad: Any = _UNSET,
     square: Any = _UNSET,
     index: Any = _UNSET,
+    lab_lims: Any = _UNSET,
     xpad_label: Any = _UNSET,
     ypad_label: Any = _UNSET,
     minor_ticks_axes: Any = _UNSET,
@@ -464,6 +465,12 @@ def label(
 ) -> Any:
     """Dispatch explicit concise labels or historical current-Figure records."""
 
+    if lab_lims is not _UNSET:
+        if target is not _UNSET:
+            raise OptionError("historical gsplot.label received label records twice")
+        target = lab_lims
+    if target is _UNSET:
+        raise TypeError("gsplot.label requires an AxesTarget or historical records")
     try:
         normalize_axes(target, operation="label")
     except PlotError:
@@ -613,11 +620,19 @@ def label(
     )
     from .legacy_api import label as legacy_label
 
-    return legacy_label(
-        records,
-        **_provided(legacy_values),
-        **text_options,
-    )
+    with warnings.catch_warnings():
+        warnings.filterwarnings(
+            "ignore",
+            message=r"gsplot\.label is deprecated;.*",
+            category=DeprecationWarning,
+        )
+        legacy_label(
+            records,
+            **_provided(legacy_values),
+            **text_options,
+        )
+    _warn("label")
+    return None
 
 
 def legend(
