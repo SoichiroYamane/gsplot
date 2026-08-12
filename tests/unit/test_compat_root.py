@@ -159,6 +159,19 @@ def test_root_show_dispatches_axes_targets_without_legacy_state(
     assert calls == [axes]
 
 
+def test_root_show_rejects_every_legacy_save_option_for_canonical_targets() -> None:
+    """Canonical Figure and Axes display cannot silently ignore save options."""
+
+    figure, axis = plt.subplots()
+    try:
+        with pytest.raises(TypeError, match="does not accept legacy save options"):
+            gs.show(figure, bbox_inches="tight")
+        with pytest.raises(TypeError, match="does not accept legacy save options"):
+            gs.show(axis, transparent=True)
+    finally:
+        plt.close(figure)
+
+
 def test_root_label_dispatches_without_current_figure_guessing() -> None:
     """Explicit targets stay concise while non-empty old records remain usable."""
 

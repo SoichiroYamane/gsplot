@@ -872,10 +872,26 @@ def show(
 ) -> Any:
     """Dispatch explicit Figure display or finite legacy save-and-display syntax."""
 
+    legacy_values = (
+        fname,
+        ft_list,
+        dpi,
+        display,
+        show,
+        bbox_extra_artists,
+        bbox_inches,
+        edgecolor,
+        facecolor,
+        orientation,
+        papertype,
+        pad_inches,
+        pil_kwargs,
+        transparent,
+    )
     if isinstance(fig, Figure) or (
         fig is not None and not isinstance(fig, (str, PathLike))
     ):
-        if all(value is _UNSET for value in (fname, ft_list, dpi, display, show)):
+        if all(value is _UNSET for value in legacy_values):
             return _show(fig)
         raise TypeError("canonical show(target) does not accept legacy save options")
     legacy = _provided(
