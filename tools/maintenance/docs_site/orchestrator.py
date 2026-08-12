@@ -722,14 +722,6 @@ def _git_environment() -> dict[str, str]:
         "SSH_AUTH_SOCK",
     ):
         environment.pop(name, None)
-    for name in (
-        "NETRC",
-        "PIP_EXTRA_INDEX_URL",
-        "PIP_INDEX_URL",
-        "PIP_TRUSTED_HOST",
-        "SSH_AUTH_SOCK",
-    ):
-        environment.pop(name, None)
     environment["GIT_TERMINAL_PROMPT"] = "0"
     return environment
 
