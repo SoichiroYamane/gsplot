@@ -3,13 +3,16 @@
 from __future__ import annotations
 
 import math
+import os
 import stat
+import tempfile
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from os import PathLike
 from pathlib import Path
 from typing import Any, cast
 
+from matplotlib import rc_context
 from matplotlib.figure import Figure
 
 from .._core.errors import OptionError, OutputError, PlotError
@@ -260,6 +263,212 @@ def _save_plan(
     )
 
 
+def _prepare_output_parent(plan: _SavePlan) -> None:
+    """Create an authorized parent and recheck every final destination."""
+
+    parent = plan.destinations[0].parent
+    if plan.create_parent:
+        try:
+            parent.mkdir(parents=True, exist_ok=True)
+        except OSError as exc:
+            raise OutputError("save: output parent could not be created") from exc
+    if not parent.is_dir():
+        raise OutputError("save: output parent must be a directory")
+    for destination in plan.destinations:
+        _existing_destination(destination, overwrite=plan.overwrite)
+
+
+def _temporary_sibling(destination: Path) -> Path:
+    """Create one unique regular temporary file beside a final destination."""
+
+    name: str | None = None
+    try:
+        descriptor, name = tempfile.mkstemp(
+            prefix=f".{destination.stem}-",
+            suffix=f".tmp{destination.suffix}",
+            dir=destination.parent,
+        )
+        os.close(descriptor)
+    except OSError as exc:
+        if name is not None:
+            try:
+                Path(name).unlink(missing_ok=True)
+            except OSError:
+                pass
+        raise OutputError("save: a temporary output could not be created") from exc
+    if name is None:  # pragma: no cover - mkstemp either returns or raises
+        raise OutputError("save: a temporary output could not be created")
+    return Path(name)
+
+
+def _cleanup_temporaries(paths: Sequence[Path]) -> None:
+    """Best-effort removal for private temporary outputs."""
+
+    for path in paths:
+        try:
+            path.unlink(missing_ok=True)
+        except OSError:
+            pass
+
+
+def _render_outputs(plan: _SavePlan) -> tuple[Path, ...]:
+    """Render every format to temporary siblings before any final replacement."""
+
+    rendered: list[Path] = []
+    save_options: dict[str, Any] = {
+        "dpi": plan.dpi,
+        "transparent": plan.transparent,
+    }
+    if plan.crop:
+        save_options.update(bbox_inches="tight", pad_inches=plan.pad)
+    if plan.metadata is not None:
+        save_options["metadata"] = dict(plan.metadata)
+    type42 = any(item in {"pdf", "ps"} for item in plan.formats)
+    context = {"pdf.fonttype": 42, "ps.fonttype": 42} if type42 else {}
+    try:
+        with rc_context(context):
+            for destination, selected_format in zip(plan.destinations, plan.formats):
+                temporary = _temporary_sibling(destination)
+                rendered.append(temporary)
+                plan.figure.savefig(
+                    temporary,
+                    format=selected_format,
+                    **save_options,
+                )
+    except Exception as exc:
+        _cleanup_temporaries(rendered)
+        if isinstance(exc, OutputError):
+            raise
+        raise OutputError("save: one or more outputs could not be rendered") from exc
+    return tuple(rendered)
+
+
+def _commit_outputs(plan: _SavePlan, rendered: Sequence[Path]) -> tuple[Path, ...]:
+    """Replace final paths in format order and report any partial commit."""
+
+    committed: list[Path] = []
+    try:
+        for temporary, destination in zip(rendered, plan.destinations):
+            _existing_destination(destination, overwrite=plan.overwrite)
+            os.replace(temporary, destination)
+            committed.append(destination)
+    except Exception as exc:
+        _cleanup_temporaries(rendered)
+        raise OutputError(
+            "save: rendered outputs could not all be committed",
+            committed_paths=committed,
+        ) from exc
+    return tuple(committed)
+
+
+def save(
+    target: Figure | AxesTarget,
+    path: str | PathLike[str],
+    *,
+    formats: str | Sequence[str] | None = None,
+    dpi: float = 600,
+    crop: bool = True,
+    pad: float | None = None,
+    show: bool = True,
+    close: bool = False,
+    create_parent: bool = False,
+    overwrite: bool = True,
+    transparent: bool = False,
+    metadata: Mapping[str, object] | None = None,
+) -> tuple[Path, ...]:
+    """Save one explicit Figure through a concise transactional workflow.
+
+    Parameters
+    ----------
+    target
+        A Figure or finite Axes target resolving to exactly one root Figure.
+    path
+        A supported suffix-bearing path or a suffix-free output base.
+    formats
+        Ordered output formats. A suffix-free path defaults to PNG and PDF.
+    dpi
+        Positive output resolution, defaulting to 600 dots per inch.
+    crop, pad
+        Whether to use a tight crop and its non-negative padding in inches.
+        ``pad=None`` resolves to 0.1 inch when cropping.
+    show, close
+        Display after successful commits or close exactly the saved Figure.
+        Both controls cannot be true together.
+    create_parent
+        Create a missing parent directory when true.
+    overwrite
+        Replace existing regular files when true. Symlinks are always rejected.
+    transparent
+        Forward transparent output to Matplotlib.
+    metadata
+        Optional string-keyed metadata forwarded to each selected format.
+
+    Returns
+    -------
+    tuple[pathlib.Path, ...]
+        Absolute final paths in requested format order.
+
+    Raises
+    ------
+    OutputError
+        If target, controls, rendering, commit, display, or closing fails.
+
+    Notes
+    -----
+    Every format is rendered to a unique sibling first. Final paths are
+    replaced only after all renders succeed. PDF and PostScript rendering uses
+    Type 42 fonts in a bounded Matplotlib configuration context. Tight crop
+    changes the exported media box; pass ``crop=False`` to preserve the exact
+    Figure design canvas.
+
+    Examples
+    --------
+    >>> import gsplot as gs
+    >>> figure, axis = gs.subplots()
+    >>> paths = gs.save(figure, "figure", show=False)
+    >>> tuple(path.suffix for path in paths)
+    ('.png', '.pdf')
+    >>> figure.clear()
+    """
+
+    plan = _save_plan(
+        target,
+        path,
+        formats=formats,
+        dpi=dpi,
+        crop=crop,
+        pad=pad,
+        show=show,
+        close=close,
+        create_parent=create_parent,
+        overwrite=overwrite,
+        transparent=transparent,
+        metadata=metadata,
+    )
+    _prepare_output_parent(plan)
+    committed = _commit_outputs(plan, _render_outputs(plan))
+    if plan.show:
+        try:
+            display = globals()["show"]
+            display(plan.figure)
+        except Exception as exc:
+            raise OutputError(
+                "save: outputs were committed but the Figure could not be displayed",
+                committed_paths=committed,
+            ) from exc
+    if plan.close:
+        try:
+            from matplotlib import pyplot as plt
+
+            plt.close(plan.figure)
+        except Exception as exc:
+            raise OutputError(
+                "save: outputs were committed but the Figure could not be closed",
+                committed_paths=committed,
+            ) from exc
+    return committed
+
+
 def _validate_bool(value: Any, name: str) -> bool:
     """Validate a strict boolean control."""
 
@@ -499,4 +708,4 @@ def savefig(
     return result
 
 
-__all__ = ["savefig", "show"]
+__all__ = ["save", "savefig", "show"]

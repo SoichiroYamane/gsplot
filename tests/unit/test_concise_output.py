@@ -2,6 +2,7 @@
 
 from pathlib import Path
 
+import matplotlib as mpl
 import matplotlib.pyplot as plt
 import pytest
 from matplotlib.figure import Figure
@@ -162,3 +163,161 @@ def test_save_plan_allows_opt_in_parent_creation_without_creating_it(
     assert plan.destinations == ((parent / "plot.pdf").resolve(),)
     assert plan.pad is None
     assert not parent.exists()
+
+
+def test_save_renders_every_format_before_ordered_commit(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Successful concise output uses tight defaults, Type 42, then display."""
+
+    figure = Figure()
+    png = tmp_path / "plot.png"
+    pdf = tmp_path / "plot.pdf"
+    png.write_bytes(b"old-png")
+    pdf.write_bytes(b"old-pdf")
+    calls: list[tuple[Path, str, dict[str, object], int, int]] = []
+    displays: list[Figure] = []
+    original_pdf_fonttype = mpl.rcParams["pdf.fonttype"]
+    original_ps_fonttype = mpl.rcParams["ps.fonttype"]
+
+    def render(path: Path, *, format: str, **kwargs: object) -> None:
+        calls.append(
+            (
+                path,
+                format,
+                kwargs,
+                mpl.rcParams["pdf.fonttype"],
+                mpl.rcParams["ps.fonttype"],
+            )
+        )
+        assert png.read_bytes() == b"old-png"
+        assert pdf.read_bytes() == b"old-pdf"
+        path.write_bytes(format.encode("ascii"))
+
+    monkeypatch.setattr(figure, "savefig", render)
+    monkeypatch.setattr(output, "show", displays.append)
+
+    paths = output.save(
+        figure,
+        tmp_path / "plot",
+        show=True,
+        metadata={"Title": "sample"},
+    )
+
+    assert paths == (png.resolve(), pdf.resolve())
+    assert png.read_bytes() == b"png"
+    assert pdf.read_bytes() == b"pdf"
+    assert tuple(item[1] for item in calls) == ("png", "pdf")
+    assert all(item[0].parent == tmp_path for item in calls)
+    assert all(item[0] not in paths for item in calls)
+    assert all(item[2]["dpi"] == 600.0 for item in calls)
+    assert all(item[2]["bbox_inches"] == "tight" for item in calls)
+    assert all(item[2]["pad_inches"] == 0.1 for item in calls)
+    assert all(item[2]["metadata"] == {"Title": "sample"} for item in calls)
+    assert all(item[3:] == (42, 42) for item in calls)
+    assert mpl.rcParams["pdf.fonttype"] == original_pdf_fonttype
+    assert mpl.rcParams["ps.fonttype"] == original_ps_fonttype
+    assert displays == [figure]
+    assert {path.name for path in tmp_path.iterdir()} == {"plot.png", "plot.pdf"}
+
+
+def test_save_render_failure_preserves_every_existing_output(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """A later render failure removes temporaries without replacing finals."""
+
+    figure = Figure()
+    png = tmp_path / "plot.png"
+    pdf = tmp_path / "plot.pdf"
+    png.write_bytes(b"old-png")
+    pdf.write_bytes(b"old-pdf")
+    calls = 0
+
+    def render(path: Path, *, format: str, **kwargs: object) -> None:
+        nonlocal calls
+        calls += 1
+        if calls == 2:
+            raise RuntimeError("render failed")
+        path.write_bytes(format.encode("ascii"))
+
+    monkeypatch.setattr(figure, "savefig", render)
+
+    with pytest.raises(gs.OutputError, match="could not be rendered") as caught:
+        output.save(figure, tmp_path / "plot", show=False)
+
+    assert caught.value.committed_paths == ()
+    assert png.read_bytes() == b"old-png"
+    assert pdf.read_bytes() == b"old-pdf"
+    assert {path.name for path in tmp_path.iterdir()} == {"plot.png", "plot.pdf"}
+
+
+def test_save_partial_commit_reports_exact_paths_and_cleans_temporaries(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """A replacement failure exposes only finals already replaced in order."""
+
+    figure = Figure()
+    png = tmp_path / "plot.png"
+    pdf = tmp_path / "plot.pdf"
+    png.write_bytes(b"old-png")
+    pdf.write_bytes(b"old-pdf")
+
+    def render(path: Path, *, format: str, **kwargs: object) -> None:
+        path.write_bytes(format.encode("ascii"))
+
+    replacements = 0
+    original_replace = output.os.replace
+
+    def replace(source: Path, destination: Path) -> None:
+        nonlocal replacements
+        replacements += 1
+        if replacements == 2:
+            raise OSError("replace failed")
+        original_replace(source, destination)
+
+    monkeypatch.setattr(figure, "savefig", render)
+    monkeypatch.setattr(output.os, "replace", replace)
+
+    with pytest.raises(gs.OutputError, match="could not all be committed") as caught:
+        output.save(figure, tmp_path / "plot", show=False)
+
+    assert caught.value.committed_paths == (png.resolve(),)
+    assert str(tmp_path) not in str(caught.value)
+    assert png.read_bytes() == b"png"
+    assert pdf.read_bytes() == b"old-pdf"
+    assert {path.name for path in tmp_path.iterdir()} == {"plot.png", "plot.pdf"}
+
+
+def test_save_exact_canvas_parent_creation_and_post_commit_failure(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Exact-canvas output creates parents and retains commit evidence."""
+
+    figure = Figure()
+    parent = tmp_path / "nested"
+    calls: list[dict[str, object]] = []
+
+    def render(path: Path, *, format: str, **kwargs: object) -> None:
+        calls.append(kwargs)
+        path.write_bytes(b"png")
+
+    def fail_display(target: Figure) -> None:
+        raise gs.OutputError("display failure")
+
+    monkeypatch.setattr(figure, "savefig", render)
+    monkeypatch.setattr(output, "show", fail_display)
+
+    with pytest.raises(gs.OutputError, match="outputs were committed") as caught:
+        output.save(
+            figure,
+            parent / "plot.png",
+            crop=False,
+            show=True,
+            create_parent=True,
+        )
+
+    destination = (parent / "plot.png").resolve()
+    assert destination.read_bytes() == b"png"
+    assert caught.value.committed_paths == (destination,)
+    assert "bbox_inches" not in calls[0]
+    assert "pad_inches" not in calls[0]
