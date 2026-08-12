@@ -55,6 +55,15 @@ def test_root_exposes_only_the_canonical_manifest_and_native_objects(tmp_path) -
         "MosaicSpec",
         "NormalizeSpec",
         "ColorSpec",
+        "AxesTarget",
+        "PerTarget",
+        "LineStyle",
+        "Marker",
+        "Unit",
+        "SizePreset",
+        "SizeSpec",
+        "LayoutMode",
+        "StyleMode",
     }
     assert set(gs.__all__) == expected
 

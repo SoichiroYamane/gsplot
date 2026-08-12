@@ -130,6 +130,14 @@ def test_publication_style_fixture_is_complete_and_versioned() -> None:
         "typography",
     }
     assert profile["schema_version"] == 1
+    assert profile["legend"] == {
+        "edgecolor": "inherit",
+        "fancybox": False,
+        "framealpha": None,
+        "frameon": False,
+        "labelspacing": 0.3,
+        "loc": "best",
+    }
     assert len(profile["paper_cycle_rgba"]) == 5
     assert len(profile["series"]["colors_rgba"]) == 10
     assert len(profile["series"]["line_styles"]) == 10

@@ -47,7 +47,7 @@ Matplotlib default. The owned paper profile is:
 | Minor ticks | inward on all four sides, 2 pt long, 0.6 pt wide |
 | Typography | 10 pt DejaVu Sans baseline, 6 pt axis-label padding |
 | Property cycle | five frozen viridis-derived RGBA values in the fixture |
-| Legend operation | lower left, frameless, non-fancy, inherited edge, automatic frame alpha, label spacing 0.3 |
+| Legend operation | best placement, frameless, non-fancy, inherited edge, automatic frame alpha, label spacing 0.3 |
 | Series identity | ten frozen colors, ten line styles, and ten markers |
 
 `paper()` owns the Axes fields and native property cycle only. Matching legend

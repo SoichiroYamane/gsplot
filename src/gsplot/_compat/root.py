@@ -108,6 +108,15 @@ _CANONICAL_EXPORTS: Final[dict[str, tuple[str, str]]] = {
     "MosaicSpec": ("gsplot._core.types", "MosaicSpec"),
     "NormalizeSpec": ("gsplot._core.types", "NormalizeSpec"),
     "ColorSpec": ("gsplot._core.types", "ColorSpec"),
+    "AxesTarget": ("gsplot._core.types", "AxesTarget"),
+    "PerTarget": ("gsplot._core.types", "PerTarget"),
+    "LineStyle": ("gsplot._core.types", "LineStyle"),
+    "Marker": ("gsplot._core.types", "Marker"),
+    "Unit": ("gsplot._core.types", "Unit"),
+    "SizePreset": ("gsplot._core.types", "SizePreset"),
+    "SizeSpec": ("gsplot._core.types", "SizeSpec"),
+    "LayoutMode": ("gsplot._core.types", "LayoutMode"),
+    "StyleMode": ("gsplot._core.types", "StyleMode"),
 }
 
 LEGACY_ALL: Final[tuple[str, ...]] = (

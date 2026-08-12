@@ -42,17 +42,21 @@ window.
 | Option-free color | historical shared viridis sequence | compatibility-dependent root sequence | target Axes cycle; pure `series=n` when requested |
 | Labels | minor ticks, 5 pt pad, incidental relayout | explicit target via `AxisSpec` | minor ticks and 5 pt pad, no Figure relayout |
 | Panel indexes | lowercase labels positioned from rendered bounds | `panel_labels`, uppercase generated labels | `index`, lowercase bijective labels at frozen Axes transforms |
-| Legend | lower left, frameless, non-fancy, spacing 0.3 | explicit options, conservative replacement | historical defaults restored by explicit target-local `legend` |
+| Legend | lower left, frameless, non-fancy, spacing 0.3 | explicit options, conservative replacement | `best` placement with frameless, non-fancy styling and spacing 0.3 |
 | Save | PNG+PDF, 600 DPI, tight crop, show, overwrite | conservative `savefig`; suffix-free defaults to PNG | `save` restores historical flow transactionally; `savefig` unchanged |
 | Display | coupled to historical save/store flow | `show(Figure)` is display-only | explicit Figure/same-Figure Axes, no-op on non-interactive backend |
 | Config | implicit legacy JSON/singleton | explicit immutable schema 1 | explicit immutable schema 2; schema 1 translates through 1.x |
 | Import | changed `rcParams` and initialized legacy services | side-effect-light | side-effect-light |
 
-The compatibility color sequence and store flag are implemented only at the
-root adapter boundary. Canonical implementation modules do not depend on the
-historical singleton state. Removing import-time Matplotlib `rcParams` mutation
-is also intentional; ambient Matplotlib defaults now apply unless an
-application configures them explicitly.
+The historical shared color counter has been removed from ordinary root and
+canonical `line` and `scatter` calls; they use the corresponding property
+cycle of each target Axes unless an explicit color, Config color, or
+deterministic `series=0..9` identity is supplied. Axes returned by the
+deprecated `gs.axes()` adapter alone retain the shared five-color sequence in
+weak compatibility state. The compatibility store flag remains isolated at
+the root adapter boundary. Removing import-time Matplotlib `rcParams` mutation
+is also intentional; ambient Matplotlib defaults apply unless an application
+configures them explicitly.
 
 ## Current-to-concise root migration
 
@@ -83,11 +87,38 @@ legend  paper  save  show  read
 | `write_meta`, `build_info`, `use_backend` | unchanged advanced APIs | retained through 1.x |
 | `cmap_line`, `cmap_dash`, `cmap_scatter` | unchanged advanced APIs | retained through 1.x |
 
+### Line and scatter advanced option table
+
+The primary introspection and API reference show only the concise parameters.
+The following finite long spellings remain directly accepted through 1.x; the
+same fields may be supplied through `props`, but one field cannot be supplied
+both directly and through `props`. The short/long pairs `c`/`color`,
+`ms`/`markersize`, `mew`/`markeredgewidth`, `mec`/`markeredgecolor`,
+`mfc`/`markerfacecolor`, `ls`/`linestyle`, `lw`/`linewidth`, and `s`/`size`
+are aliases and cannot be combined in one call.
+
+| Operation | Retained finite direct options beyond the concise view |
+| --- | --- |
+| `line` | `color`, `markersize`, `markeredgewidth`, `markeredgecolor`, `markerfacecolor`, `linestyle`, `linewidth`, `antialiased`, `dash_capstyle`, `dash_joinstyle`, `drawstyle`, `fillstyle`, `gapcolor`, `markevery`, `markerfacecoloralt`, `picker`, `pickradius`, `solid_capstyle`, `solid_joinstyle`, `visible`, `zorder` |
+| `scatter` | `color`, `size`, `cmap`, `norm`, `vmin`, `vmax`, `edgecolors`, `facecolors`, `linewidths`, `antialiaseds`, `plotnonfinite`, `rasterized`, `picker`, `visible`, `zorder` |
+
+For `line`, alpha is materialized independently into the line and marker-edge
+RGBA colors. Marker-face RGBA uses `alpha * alpha_mfc`; the Artist-level
+`Line2D.alpha` remains unset so Matplotlib cannot override that independent
+face transparency during rendering. This matches the 0.3 visual contract.
+
+For multiple targets, one x/y pair broadcasts. Per-target x/y always uses an
+exact-key mapping. Numeric and text style sequences may follow target order;
+colors and other sequence-valued scalar styles use exact-key mappings to avoid
+shape guessing. A retained Matplotlib scatter `c` value array remains a single
+dataset-level advanced value rather than a per-target style sequence.
+
 The public values `Config`, `AxisSpec`, `Theme`, `InsetSpec`,
 `MetadataSnapshot`, `BuildInfo`, `LegendEntries`, `MosaicSpec`,
 `NormalizeSpec`, and `ColorSpec`; all typed public exceptions; `__version__`;
 and `__commit__` remain governed by the compatibility policy. New shared type
-aliases required by concise signatures are additive and must remain valid on
+aliases `AxesTarget`, `PerTarget`, `LineStyle`, `Marker`, `Unit`, `SizePreset`,
+`SizeSpec`, `LayoutMode`, and `StyleMode` are additive and remain valid on
 Python 3.10.
 
 ## Configuration schema migration

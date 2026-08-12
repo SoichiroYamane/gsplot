@@ -271,7 +271,7 @@ def axes(
     _validate_mosaic(mosaic)
     StoreSingleton().store = store
     NumLines.reset()
-    from .root_api import _reset_legacy_plot_counts
+    from .root_api import _register_legacy_plot_axes, _reset_legacy_plot_counts
 
     _reset_legacy_plot_counts()
     figure = _current_figure()
@@ -293,7 +293,9 @@ def axes(
     # ``store`` is retained only as a source-compatible flag.  New code owns
     # the returned Figure/Axes explicitly and no singleton is populated.
     del store
-    return _flatten_axes(created)
+    flattened = _flatten_axes(created)
+    _register_legacy_plot_axes(flattened)
+    return flattened
 
 
 def _legacy_limits(

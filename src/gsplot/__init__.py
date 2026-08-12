@@ -32,15 +32,24 @@ if TYPE_CHECKING:
         PlotError,
     )
     from ._core.types import (
+        AxesTarget,
         AxisSpec,
         BuildInfo,
         ColorSpec,
         InsetSpec,
+        LayoutMode,
         LegendEntries,
+        LineStyle,
+        Marker,
         MetadataSnapshot,
         MosaicSpec,
         NormalizeSpec,
+        PerTarget,
+        SizePreset,
+        SizeSpec,
+        StyleMode,
         Theme,
+        Unit,
     )
     from ._figure.backend import use_backend
     from ._figure.inset import inset_axes
@@ -143,6 +152,15 @@ __all__ = [
     "MosaicSpec",
     "NormalizeSpec",
     "ColorSpec",
+    "AxesTarget",
+    "PerTarget",
+    "LineStyle",
+    "Marker",
+    "Unit",
+    "SizePreset",
+    "SizeSpec",
+    "LayoutMode",
+    "StyleMode",
 ]
 
 
