@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 import pytest
 from matplotlib.figure import Figure
 
-from gsplot._core import MetadataError, MetadataSnapshot, OutputError
+from gsplot._core import DataError, MetadataError, MetadataSnapshot, OutputError
 from gsplot._figure import output
 from gsplot._io.arrays import read_array
 from gsplot._io.build import build_info
@@ -67,9 +67,9 @@ def test_read_array_has_one_loader_boundary_and_preserves_cwd(tmp_path) -> None:
     loaded = read_array(source, loader="loadtxt")
     assert loaded.shape == (2, 2)
     assert Path.cwd() == cwd
-    with pytest.raises(TypeError, match="reserved"):
+    with pytest.raises(DataError, match="reserved"):
         read_array(source, options={"ndmin": 2})
-    with pytest.raises(TypeError, match="reserved"):
+    with pytest.raises(DataError, match="reserved"):
         read_array(source, options={"loader": "genfromtxt"})
 
 

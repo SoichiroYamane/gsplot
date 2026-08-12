@@ -83,6 +83,8 @@ def test_value_types_reject_invalid_colors_layouts_and_metadata() -> None:
         gs.InsetSpec(width="20%", height="20%", loc="invalid")
     with pytest.raises(LayoutError):
         gs.InsetSpec(width=1, height=1, bbox_to_anchor=(1,))
+    with pytest.raises(LayoutError, match="bbox_to_anchor"):
+        gs.InsetSpec(width=1, height=1, bbox_to_anchor=1)  # type: ignore[arg-type]
     with pytest.raises(LayoutError):
         gs.InsetSpec(width=1, height=1, borderpad=-1)
 

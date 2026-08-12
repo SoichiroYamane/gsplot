@@ -304,7 +304,12 @@ class InsetSpec:
                 raise LayoutError(
                     "bbox_to_anchor must contain two or four finite values"
                 )
-            values = tuple(self.bbox_to_anchor)
+            try:
+                values = tuple(self.bbox_to_anchor)
+            except TypeError as exc:
+                raise LayoutError(
+                    "bbox_to_anchor must contain two or four finite values"
+                ) from exc
             if len(values) not in (2, 4):
                 raise LayoutError(
                     "bbox_to_anchor must contain two or four finite values"
