@@ -1,0 +1,11 @@
+{
+  "name": "gsplot-docs-mermaid-toolchain",
+  "version": "1.0.0",
+  "private": true,
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "@mermaid-js/mermaid-cli": "11.12.0"
+  }
+}
