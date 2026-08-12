@@ -43,6 +43,7 @@ Functions
    gsplot.legend_entries
    gsplot.cmap_legend
    gsplot.set_theme
+   gsplot.save
    gsplot.savefig
    gsplot.show
    gsplot.load_config

@@ -35,15 +35,18 @@ fig, axes = gs.subplots(figsize=(8, 4), mosaic="AB")
 gs.line(axes["A"], [0, 1, 2], [0, 1, 4], props={"label": "quadratic"})
 gs.scatter(axes["B"], [0, 1, 2], [0, 1, 4], props={"label": "samples"})
 gs.legends(fig)
-gs.savefig(fig, "quickstart", show=False)
+gs.save(fig, "quickstart", show=False)
 ```
 
-This creates a two-panel Matplotlib figure, saves `quickstart.png` when
-requested, and remains compatible with regular Matplotlib operations:
+This creates a two-panel Matplotlib figure, saves `quickstart.png` and
+`quickstart.pdf`, and remains compatible with regular Matplotlib operations:
 
 The canonical helpers always receive their Figure or Axes target explicitly.
-`savefig` displays the Figure after successful writes by default; pass
-`show=False` for batch or headless output.
+`save` writes PNG and PDF transactionally at 600 DPI with a tight crop and
+displays the Figure after successful writes by default; pass `show=False` for
+batch or headless output. Use `crop=False` when output dimensions must match
+the Figure design canvas exactly. The advanced `savefig` helper retains its
+conservative output controls.
 
 For a complete scientific example, see the
 [paper-plot demo](https://soichiroyamane.github.io/gsplot/stable/guides/demo/4_paper_plot.html).

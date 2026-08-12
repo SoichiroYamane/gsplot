@@ -36,6 +36,7 @@ def test_root_exposes_only_the_canonical_manifest_and_native_objects(tmp_path) -
         "cmap_legend",
         "set_theme",
         "paper",
+        "save",
         "savefig",
         "show",
         "load_config",
@@ -90,6 +91,8 @@ def test_root_exposes_only_the_canonical_manifest_and_native_objects(tmp_path) -
     assert gs.build_info().commit is None
     assert gs.sample_cmap("viridis").shape == (10, 4)
     assert np.all(np.isfinite(gs.sample_cmap("viridis", count=2)))
-    output = gs.savefig(figure, tmp_path / "figure", show=False)
-    assert output[0].is_absolute()
+    concise_output = gs.save(figure, tmp_path / "concise", show=False)
+    advanced_output = gs.savefig(figure, tmp_path / "advanced", show=False)
+    assert tuple(path.suffix for path in concise_output) == (".png", ".pdf")
+    assert advanced_output[0].is_absolute()
     plt.close(figure)

@@ -66,6 +66,7 @@ _CANONICAL_EXPORTS: Final[dict[str, tuple[str, str]]] = {
     "subplots": ("gsplot._figure.layout", "subplots"),
     "inset": ("gsplot._figure.inset", "inset"),
     "inset_axes": ("gsplot._figure.inset", "inset_axes"),
+    "save": ("gsplot._figure.output", "save"),
     "savefig": ("gsplot._figure.output", "savefig"),
     "show": ("gsplot._compat.root_api", "show"),
     "use_backend": ("gsplot._figure.backend", "use_backend"),

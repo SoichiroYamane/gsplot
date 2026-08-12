@@ -174,7 +174,7 @@ The classification uses these terms:
 | `axes_inset` | `inset` | adapter + explicit ownership | The parent `Axes` is explicit; tuple bounds, labels, zoom corner pairs, paper style, and layering use the concise operation. |
 | `axes_inset_padding` | `inset` / `inset_axes` | adapter | Advanced width/height placement uses `InsetSpec`; no current-object lookup. |
 | `get_figure_size` | `Figure.get_size_inches()` | adapter | New code uses the Matplotlib figure directly; a compatibility helper may preserve the old convenience call. |
-| `show` | `savefig` and `show` | adapter + breaking behavior | `savefig(fig, ..., show=True)` saves before displaying. Canonical `show(fig)` displays only and never saves or closes. |
+| `show` | `save` and `show` | adapter + breaking behavior | `save(target, ..., show=True)` transactionally saves before display. Canonical `show(target)` displays one explicit Figure or same-Figure Axes target and never saves or closes. |
 | `get_cmap` | `colors` / `sample_cmap` | adapter + breaking signature | Count sampling uses concise `colors`; value normalization remains in the advanced sampler. |
 | `line` | `line` | canonical rename retained | The target takes an explicit `Axes`, returns `list[Line2D]`, and uses a closed property schema rather than an open keyword bag. |
 | `line_colormap_solid` | `cmap_line` | adapter + breaking name | The target owns colored-segment validation and returns a `LineCollection`. |
@@ -236,7 +236,7 @@ read as evidence that an unmerged target already exists.
 subplots  inset  inset_axes  line  scatter  cmap_line  cmap_dash  cmap_scatter
 colors  sample_cmap  label  square  index  style_axes  title  suptitle  minor_ticks
 box_aspect  panel_labels  fig_facecolor  legend  legends  legend_entries
-cmap_legend  set_theme  savefig  show  load_config  read  read_array  write_meta
+cmap_legend  set_theme  save  savefig  show  load_config  read  read_array  write_meta
 build_info  use_backend
 ```
 
@@ -271,7 +271,7 @@ at the adapter boundary; new implementation code must not import them.
 | `gsplot.plot.scatter` | `gsplot.scatter` |
 | `gsplot.plot.scatter_colormap` | `gsplot.cmap_scatter` |
 | `gsplot.config.config` | `gsplot.Config`, `gsplot.load_config` |
-| `gsplot.figure.show` | `gsplot.savefig`, `gsplot.show` |
+| `gsplot.figure.show` | `gsplot.save`, advanced `gsplot.savefig`, or `gsplot.show` |
 | `gsplot.figure.figure_tools` | `gsplot.build_info`, `gsplot.use_backend` |
 | `gsplot.figure.axes` | `gsplot.subplots` |
 | `gsplot.figure.axes_inset` | `gsplot.inset` or advanced `gsplot.inset_axes` |

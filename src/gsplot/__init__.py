@@ -60,7 +60,7 @@ if TYPE_CHECKING:
     from ._figure.backend import use_backend
     from ._figure.inset import inset, inset_axes
     from ._figure.layout import subplots
-    from ._figure.output import savefig, show
+    from ._figure.output import save, savefig, show
     from ._io.arrays import read, read_array
     from ._io.build import build_info
     from ._io.metadata import write_meta
@@ -146,6 +146,7 @@ __all__ = [
     "cmap_legend",
     "set_theme",
     "paper",
+    "save",
     "savefig",
     "show",
     "load_config",
