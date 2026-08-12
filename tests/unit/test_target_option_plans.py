@@ -17,9 +17,15 @@ from gsplot._core.options import (
     MISSING,
     OptionSpec,
     bind_options,
+    resolve_option,
     supplied_options,
 )
-from gsplot._core.plans import OperationPlan, TargetPlan
+from gsplot._core.plans import (
+    OperationPlan,
+    OptionEntry,
+    OptionPlan,
+    TargetPlan,
+)
 from gsplot._core.targets import normalize_axes, resolve_target_mapping
 from gsplot._core.validation import MISSING as VALIDATION_MISSING
 
@@ -255,3 +261,88 @@ def test_option_inputs_are_detached_and_operation_plan_is_consistent() -> None:
     assert operation.target is target
     with pytest.raises(ValueError, match="different operation"):
         OperationPlan(operation="line", target=target, options=options)
+
+
+def test_plan_constructors_reject_every_malformed_invariant() -> None:
+    """Direct private construction cannot bypass target or option invariants."""
+
+    figure, axes = _figure_axes(2)
+    axis = axes[0]
+    valid_target = normalize_axes(axis, operation="paper")
+    valid_options = bind_options("paper", (OptionSpec("cycle", True),))
+
+    with pytest.raises(ValueError, match="identifier"):
+        normalize_axes(axis, operation="paper style")
+    with pytest.raises(PlotError, match="root Figure"):
+        TargetPlan("paper", object(), (axis,), (axis,), "single")  # type: ignore[arg-type]
+    with pytest.raises(PlotError, match="empty or incomplete"):
+        TargetPlan("paper", figure, (), (), "sequence")
+    with pytest.raises(PlotError, match="empty or incomplete"):
+        TargetPlan("paper", figure, (axis,), (), "sequence")
+    with pytest.raises(PlotError, match="kind"):
+        TargetPlan("paper", figure, (axis,), (axis,), "other")  # type: ignore[arg-type]
+    with pytest.raises(PlotError, match="non-Axes"):
+        TargetPlan("paper", figure, (object(),), (axis,), "sequence")  # type: ignore[arg-type]
+    with pytest.raises(PlotError, match="duplicate"):
+        TargetPlan("paper", figure, (axis, axis), (axis, axis), "sequence")
+
+    with pytest.raises(ValueError, match="option name"):
+        OptionEntry("", 1, "default")
+    with pytest.raises(ValueError, match="source"):
+        OptionEntry("cycle", True, "ambient")  # type: ignore[arg-type]
+    with pytest.raises(ValueError, match="supplied option"):
+        OptionEntry("cycle", True, "explicit", 1)  # type: ignore[arg-type]
+    duplicate = OptionEntry("cycle", True, "default")
+    with pytest.raises(ValueError, match="duplicate names"):
+        OptionPlan("paper", (duplicate, duplicate))
+    with pytest.raises(KeyError):
+        valid_options.entry("missing")
+    assert len(valid_options) == 1
+
+    with pytest.raises(ValueError, match="TargetPlan"):
+        OperationPlan("paper", object(), valid_options)  # type: ignore[arg-type]
+    with pytest.raises(ValueError, match="OptionPlan"):
+        OperationPlan("paper", valid_target, object())  # type: ignore[arg-type]
+    line_options = bind_options("line", (OptionSpec("cycle", True),))
+    with pytest.raises(ValueError, match="different operation"):
+        OperationPlan("paper", valid_target, line_options)
+
+
+def test_option_specification_guardrails_are_closed_and_immutable() -> None:
+    """Malformed internal specs and non-mapping user inputs fail deterministically."""
+
+    assert repr(MISSING) == "<omitted>"
+    assert resolve_option("explicit", "config", "default") == "explicit"
+    assert resolve_option(MISSING, "config", "default") == "config"
+    assert resolve_option(MISSING, MISSING, "default") == "default"
+    assert OptionSpec("levels", {1, 2}).default == frozenset({1, 2})
+
+    with pytest.raises(ValueError, match="option name"):
+        OptionSpec("", 1)
+    with pytest.raises(ValueError, match="aliases"):
+        OptionSpec("linewidth", 1, aliases=("",))
+    with pytest.raises(ValueError, match="unique"):
+        OptionSpec("linewidth", 1, aliases=("lw", "lw"))
+    with pytest.raises(ValueError, match="callable"):
+        OptionSpec("linewidth", 1, validator=1)  # type: ignore[arg-type]
+    with pytest.raises(TypeError, match="string-keyed"):
+        supplied_options({1: "bad"})  # type: ignore[dict-item]
+    with pytest.raises(TypeError, match="OptionSpec"):
+        bind_options("line", (object(),))  # type: ignore[arg-type]
+    with pytest.raises(OptionError, match="mapping"):
+        bind_options(
+            "line", (OptionSpec("linewidth", 1),), explicit=[]  # type: ignore[arg-type]
+        )
+
+
+def test_exact_target_mapping_wraps_hostile_membership_errors() -> None:
+    """A malformed Mapping cannot leak its key lookup exception."""
+
+    class BrokenMapping(dict):
+        def __contains__(self, key):
+            raise ValueError("untrusted key lookup")
+
+    _, axes = _figure_axes(1)
+    target = normalize_axes(axes[0], operation="line")
+    with pytest.raises(PlotError, match="normalized target keys"):
+        resolve_target_mapping(target, BrokenMapping({axes[0]: 1}), name="series")
