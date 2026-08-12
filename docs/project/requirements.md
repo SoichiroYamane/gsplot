@@ -176,7 +176,10 @@ repository behavior:
   inventory and explicit mappings for root, stable, dev, version, `.html`, and
   asset URLs.
 - Historical documentation must import its own release source/package in an
-  isolated environment. Build manifests record source SHAs and package
+  isolated environment. Builds remain warnings-as-errors; the temporary
+  historical compatibility overlay may suppress only the documented legacy
+  `docutils` warning category, while current and development builds keep the
+  unsuppressed strict policy. Build manifests record source SHAs and package
   provenance, and failed versions must not produce deployable partial output.
 - Existing version paths, resolving `.html` pages, and pre-cutover root or
   `/stable/` URLs require a tested compatibility mapping before removal or

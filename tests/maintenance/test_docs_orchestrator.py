@@ -16,6 +16,7 @@ from tools.maintenance.docs_site.catalog import (
 )
 from tools.maintenance.docs_site.orchestrator import (
     BuildError,
+    _append_config_overrides,
     _isolated_environment,
     _sanitize_and_validate_output,
     _strip_legacy_runtime_references,
@@ -341,3 +342,38 @@ def test_isolated_environment_removes_credentials_and_private_indexes(
     assert "PIP_CONFIG_FILE" not in environment
     assert environment["PYTHONPATH"] == str(package_path)
     assert environment["GSPLOT_DOCS_BASE_URL"] == "https://docs.example.test/gsplot"
+
+
+def test_historical_config_isolates_legacy_docutils_warning_policy(
+    tmp_path: Path,
+) -> None:
+    config = tmp_path / "conf.py"
+    config.write_text("project = 'fixture'\n", encoding="utf-8")
+
+    _append_config_overrides(
+        config,
+        version="0.1.2",
+        channel_base_url="https://docs.example.test/gsplot/v0.1.2/",
+        theme_options={},
+        html_context={},
+        historical=True,
+        mermaid_config=tmp_path / "mermaid.json",
+        mermaid_puppeteer_config=tmp_path / "puppeteer.json",
+    )
+
+    text = config.read_text(encoding="utf-8")
+    assert "suppress_warnings = ['docutils']" in text
+
+    config.write_text("project = 'fixture'\n", encoding="utf-8")
+    _append_config_overrides(
+        config,
+        version="dev",
+        channel_base_url="https://docs.example.test/gsplot/dev/",
+        theme_options={},
+        html_context={},
+        historical=False,
+        mermaid_config=None,
+        mermaid_puppeteer_config=None,
+    )
+
+    assert "suppress_warnings" not in config.read_text(encoding="utf-8")

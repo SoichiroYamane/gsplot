@@ -110,6 +110,10 @@ _HISTORICAL_SPHINX_EXTENSIONS = _CURRENT_SPHINX_EXTENSIONS + (
     "sphinx_tippy",
     "sphinx_togglebutton",
 )
+# A published pre-cutover release contains one docutils-invalid legacy
+# docstring.  Suppression is applied only in the temporary historical overlay;
+# current and development documentation remain warnings-as-errors without it.
+_HISTORICAL_SPHINX_WARNING_SUPPRESSIONS = ("docutils",)
 _LEGACY_RUNTIME_TAG = re.compile(
     r"\s*<script\b[^>]*(?:tippy|togglebutton|design-tabs|unpkg\.com)"
     r"[^>]*>.*?</script>\s*",
@@ -614,6 +618,10 @@ def _append_config_overrides(
     if historical:
         lines.extend(
             [
+                (
+                    "suppress_warnings = "
+                    f"{list(_HISTORICAL_SPHINX_WARNING_SUPPRESSIONS)!r}"
+                ),
                 f"mermaid_params = ['--configFile', {str(mermaid_config)!r}]",
                 "mermaid_params += ["
                 f"'--puppeteerConfigFile', {str(mermaid_puppeteer_config)!r}]",
