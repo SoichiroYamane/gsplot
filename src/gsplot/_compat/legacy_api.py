@@ -26,7 +26,8 @@ from numpy.typing import ArrayLike, NDArray
 
 from .._core.errors import DataError, LayoutError, OptionError
 from .._core.numerics import validate_color_values, validate_xy
-from .._core.types import AxisSpec, InsetSpec, Theme
+from .._core.types import AxisSpec, InsetSpec, Theme, ZoomCorners
+from .._figure.inset import _manual_zoom_indicator
 from .._figure.inset import inset_axes as _inset_axes
 from .._figure.layout import _validate_mosaic
 from .._figure.layout import subplots as _subplots
@@ -395,27 +396,44 @@ def _apply_legacy_inset_options(
         _apply_legacy_labels(child, lab_lims, minor=False)
     _minor_ticks(child, minor, axis="both")
     if zoom:
-        parent.indicate_inset_zoom(child, edgecolor=zoom_color, alpha=zoom_alpha)
+        selected_zorder = float(child.get_zorder()) - 0.01
+        if zoom is True:
+            parent.indicate_inset_zoom(
+                child,
+                edgecolor=zoom_color,
+                alpha=zoom_alpha,
+                zorder=selected_zorder,
+            )
+        else:
+            _manual_zoom_indicator(
+                parent,
+                child,
+                cast(ZoomCorners, zoom),
+                color=zoom_color,
+                alpha=zoom_alpha,
+                zorder=selected_zorder,
+            )
 
 
-def _validate_legacy_zoom(zoom: bool | tuple[Any, ...]) -> None:
+def _validate_legacy_zoom(zoom: bool | tuple[Any, ...]) -> bool | ZoomCorners:
     """Validate zoom corners before a compatibility inset is created."""
 
     if not isinstance(zoom, (bool, tuple)):
         raise LayoutError("zoom must be false, true, or a pair of corner pairs")
     if not isinstance(zoom, tuple):
-        return
+        return zoom
     if len(zoom) != 2:
         raise LayoutError("legacy zoom must contain two corner pairs")
+    pairs: list[tuple[int, int]] = []
     for corner in zoom:
         if not isinstance(corner, (tuple, list)) or len(corner) != 2:
             raise LayoutError("legacy zoom must contain two corner pairs")
-        try:
-            values = tuple(float(value) for value in corner)
-        except (TypeError, ValueError) as exc:
-            raise LayoutError("legacy zoom corners must be finite") from exc
-        if not np.all(np.isfinite(values)):
-            raise LayoutError("legacy zoom corners must be finite")
+        if any(type(value) is not int or value not in {1, 2, 3, 4} for value in corner):
+            raise LayoutError("legacy zoom corners must be integers from 1 through 4")
+        pairs.append((corner[0], corner[1]))
+    if pairs[0] == pairs[1]:
+        raise LayoutError("legacy zoom corner pairs must be distinct")
+    return cast(ZoomCorners, tuple(pairs))
 
 
 def _validate_legacy_label_record(values: Sequence[Any]) -> None:
@@ -450,7 +468,7 @@ def axes_inset(
         raise LayoutError("minor_ticks must be a boolean")
     if not isinstance(polar, bool):
         raise LayoutError("polar must be a boolean")
-    _validate_legacy_zoom(zoom)
+    selected_zoom = _validate_legacy_zoom(zoom)
     if not isinstance(zoom_alpha, (int, float)) or not np.isfinite(zoom_alpha):
         raise LayoutError("zoom_alpha must be finite")
     if zoom_alpha < 0 or zoom_alpha > 1:
@@ -471,7 +489,13 @@ def axes_inset(
         except (TypeError, ValueError) as exc:
             raise LayoutError("could not create the legacy inset Axes") from exc
     _apply_legacy_inset_options(
-        ax, child, lab_lims, minor_ticks, zoom, zoom_color, float(zoom_alpha)
+        ax,
+        child,
+        lab_lims,
+        minor_ticks,
+        selected_zoom,
+        zoom_color,
+        float(zoom_alpha),
     )
     return cast(Axes, child)
 
@@ -503,7 +527,7 @@ def axes_inset_padding(
         raise LayoutError("axes_kwargs must be a mapping")
     if not isinstance(minor_ticks, bool):
         raise LayoutError("minor_ticks must be a boolean")
-    _validate_legacy_zoom(zoom)
+    selected_zoom = _validate_legacy_zoom(zoom)
     if not isinstance(zoom_alpha, (int, float)) or not np.isfinite(zoom_alpha):
         raise LayoutError("zoom_alpha must be finite")
     if zoom_alpha < 0 or zoom_alpha > 1:
@@ -543,7 +567,13 @@ def axes_inset_padding(
     except (TypeError, ValueError) as exc:
         raise LayoutError("could not create the legacy inset Axes") from exc
     _apply_legacy_inset_options(
-        ax, child, lab_lims, minor_ticks, zoom, zoom_color, float(zoom_alpha)
+        ax,
+        child,
+        lab_lims,
+        minor_ticks,
+        selected_zoom,
+        zoom_color,
+        float(zoom_alpha),
     )
     return cast(Axes, child)
 

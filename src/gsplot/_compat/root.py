@@ -64,6 +64,7 @@ _LEGACY_EXPORTS: Final[dict[str, tuple[str, str]]] = {
 
 _CANONICAL_EXPORTS: Final[dict[str, tuple[str, str]]] = {
     "subplots": ("gsplot._figure.layout", "subplots"),
+    "inset": ("gsplot._figure.inset", "inset"),
     "inset_axes": ("gsplot._figure.inset", "inset_axes"),
     "savefig": ("gsplot._figure.output", "savefig"),
     "show": ("gsplot._compat.root_api", "show"),
@@ -120,6 +121,7 @@ _CANONICAL_EXPORTS: Final[dict[str, tuple[str, str]]] = {
     "SizeSpec": ("gsplot._core.types", "SizeSpec"),
     "LayoutMode": ("gsplot._core.types", "LayoutMode"),
     "StyleMode": ("gsplot._core.types", "StyleMode"),
+    "ZoomCorners": ("gsplot._core.types", "ZoomCorners"),
     "Limit": ("gsplot._core.types", "Limit"),
     "Scale": ("gsplot._core.types", "Scale"),
     "TickSpec": ("gsplot._core.types", "TickSpec"),

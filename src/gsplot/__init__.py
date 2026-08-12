@@ -55,9 +55,10 @@ if TYPE_CHECKING:
         Theme,
         TickSpec,
         Unit,
+        ZoomCorners,
     )
     from ._figure.backend import use_backend
-    from ._figure.inset import inset_axes
+    from ._figure.inset import inset, inset_axes
     from ._figure.layout import subplots
     from ._figure.output import savefig, show
     from ._io.arrays import read_array
@@ -120,6 +121,7 @@ if TYPE_CHECKING:
 
 __all__ = [
     "subplots",
+    "inset",
     "inset_axes",
     "line",
     "scatter",
@@ -176,6 +178,7 @@ __all__ = [
     "SizeSpec",
     "LayoutMode",
     "StyleMode",
+    "ZoomCorners",
     "Limit",
     "Scale",
     "TickSpec",

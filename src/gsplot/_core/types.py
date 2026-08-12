@@ -42,6 +42,8 @@ SizeSpec: TypeAlias = SizePreset | tuple[float, float] | None
 LayoutMode: TypeAlias = Literal["auto", "constrained", "tight", "none"]
 # Public type alias: StyleMode; concise target-local style choices.
 StyleMode: TypeAlias = Literal["auto", "paper"] | None
+# Public type alias: ZoomCorners; two explicit parent/inset connector pairs.
+ZoomCorners: TypeAlias = tuple[tuple[int, int], tuple[int, int]]
 # Public type alias: Limit; finite two-value axis limits after validation.
 Limit: TypeAlias = tuple[float, float]
 # Public type alias: Scale; supported Cartesian scale names.
@@ -709,6 +711,7 @@ __all__ = [
     "SizeSpec",
     "LayoutMode",
     "StyleMode",
+    "ZoomCorners",
     "Limit",
     "Scale",
     "TickSpec",

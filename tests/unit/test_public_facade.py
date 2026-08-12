@@ -11,6 +11,7 @@ def test_root_exposes_only_the_canonical_manifest_and_native_objects(tmp_path) -
 
     expected = {
         "subplots",
+        "inset",
         "inset_axes",
         "line",
         "scatter",
@@ -67,6 +68,7 @@ def test_root_exposes_only_the_canonical_manifest_and_native_objects(tmp_path) -
         "SizeSpec",
         "LayoutMode",
         "StyleMode",
+        "ZoomCorners",
         "Limit",
         "Scale",
         "TickSpec",
