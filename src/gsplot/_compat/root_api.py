@@ -18,11 +18,13 @@ from matplotlib.axes import Axes
 from matplotlib.figure import Figure
 from numpy.typing import ArrayLike
 
-from .._core.errors import OptionError
+from .._core.errors import OptionError, PlotError
+from .._core.targets import normalize_axes
 from .._figure.output import savefig as _savefig
 from .._figure.output import show as _show
 from .._plot.basic import line as _line
 from .._plot.basic import scatter as _scatter
+from .._style.axes import label as _label
 from .._style.axes import suptitle as _suptitle
 from .._style.axes import title as _title
 from .._style.legends import legend as _legend
@@ -382,16 +384,252 @@ def scatter(
     return result
 
 
+def _legacy_label_records(value: Any) -> tuple[Any, ...] | None:
+    """Recognize non-empty historical records without reading pyplot state."""
+
+    if isinstance(value, (str, bytes, Mapping, Axes)):
+        return None
+    try:
+        records = tuple(value)
+    except TypeError:
+        return None
+    if not records:
+        raise TypeError(
+            "gsplot.label requires a non-empty AxesTarget or historical label records"
+        )
+    for record in records:
+        if isinstance(record, (str, bytes)):
+            return None
+        try:
+            fields = tuple(record)
+        except TypeError:
+            return None
+        if len(fields) < 2 or not all(isinstance(field, str) for field in fields[:2]):
+            return None
+    return records
+
+
+def label(
+    target: Any,
+    xlabel: Any = _UNSET,
+    ylabel: Any = _UNSET,
+    xlim: Any = _UNSET,
+    ylim: Any = _UNSET,
+    legacy_xpad_layout: Any = _UNSET,
+    legacy_ypad_layout: Any = _UNSET,
+    *,
+    xscale: Any = _UNSET,
+    yscale: Any = _UNSET,
+    xticks: Any = _UNSET,
+    yticks: Any = _UNSET,
+    minor: Any = _UNSET,
+    xminor: Any = _UNSET,
+    yminor: Any = _UNSET,
+    pad: Any = _UNSET,
+    xpad: Any = _UNSET,
+    ypad: Any = _UNSET,
+    square: Any = _UNSET,
+    index: Any = _UNSET,
+    xpad_label: Any = _UNSET,
+    ypad_label: Any = _UNSET,
+    minor_ticks_axes: Any = _UNSET,
+    tight_layout: Any = _UNSET,
+    xpad_layout: Any = _UNSET,
+    ypad_layout: Any = _UNSET,
+    alpha: Any = _UNSET,
+    color: Any = _UNSET,
+    fontfamily: Any = _UNSET,
+    fontproperties: Any = _UNSET,
+    fontsize: Any = _UNSET,
+    fontstretch: Any = _UNSET,
+    fontstyle: Any = _UNSET,
+    fontvariant: Any = _UNSET,
+    fontweight: Any = _UNSET,
+    ha: Any = _UNSET,
+    horizontalalignment: Any = _UNSET,
+    label: Any = _UNSET,
+    linespacing: Any = _UNSET,
+    math_fontfamily: Any = _UNSET,
+    multialignment: Any = _UNSET,
+    parse_math: Any = _UNSET,
+    rotation: Any = _UNSET,
+    rotation_mode: Any = _UNSET,
+    va: Any = _UNSET,
+    verticalalignment: Any = _UNSET,
+    visible: Any = _UNSET,
+    zorder: Any = _UNSET,
+    fontdict: Any = _UNSET,
+    labelpad: Any = _UNSET,
+    loc: Any = _UNSET,
+) -> Any:
+    """Dispatch explicit concise labels or historical current-Figure records."""
+
+    try:
+        normalize_axes(target, operation="label")
+    except PlotError:
+        records = _legacy_label_records(target)
+    else:
+        records = None
+        legacy_controls = _provided(
+            {
+                "legacy_xpad_layout": legacy_xpad_layout,
+                "legacy_ypad_layout": legacy_ypad_layout,
+                "xpad_label": xpad_label,
+                "ypad_label": ypad_label,
+                "minor_ticks_axes": minor_ticks_axes,
+                "tight_layout": tight_layout,
+                "xpad_layout": xpad_layout,
+                "ypad_layout": ypad_layout,
+                "alpha": alpha,
+                "color": color,
+                "fontfamily": fontfamily,
+                "fontproperties": fontproperties,
+                "fontsize": fontsize,
+                "fontstretch": fontstretch,
+                "fontstyle": fontstyle,
+                "fontvariant": fontvariant,
+                "fontweight": fontweight,
+                "ha": ha,
+                "horizontalalignment": horizontalalignment,
+                "label": label,
+                "linespacing": linespacing,
+                "math_fontfamily": math_fontfamily,
+                "multialignment": multialignment,
+                "parse_math": parse_math,
+                "rotation": rotation,
+                "rotation_mode": rotation_mode,
+                "va": va,
+                "verticalalignment": verticalalignment,
+                "visible": visible,
+                "zorder": zorder,
+                "fontdict": fontdict,
+                "labelpad": labelpad,
+                "loc": loc,
+            }
+        )
+        if legacy_controls:
+            raise OptionError(
+                "concise gsplot.label cannot use historical current-Figure options"
+            )
+        canonical = _provided(
+            {
+                "xlabel": xlabel,
+                "ylabel": ylabel,
+                "xlim": xlim,
+                "ylim": ylim,
+                "xscale": xscale,
+                "yscale": yscale,
+                "xticks": xticks,
+                "yticks": yticks,
+                "minor": minor,
+                "xminor": xminor,
+                "yminor": yminor,
+                "pad": pad,
+                "xpad": xpad,
+                "ypad": ypad,
+                "square": square,
+                "index": index,
+            }
+        )
+        return _label(target, **canonical)
+
+    if records is None:
+        raise TypeError(
+            "gsplot.label first argument must be an AxesTarget for concise labels "
+            "or non-empty historical label records"
+        )
+    concise_only = _provided(
+        {
+            "xscale": xscale,
+            "yscale": yscale,
+            "xticks": xticks,
+            "yticks": yticks,
+            "minor": minor,
+            "xminor": xminor,
+            "yminor": yminor,
+            "pad": pad,
+            "xpad": xpad,
+            "ypad": ypad,
+            "square": square,
+            "index": index,
+        }
+    )
+    if concise_only:
+        raise OptionError(
+            "historical gsplot.label records cannot use concise target options"
+        )
+
+    positional = (xlabel, ylabel, xlim, ylim, legacy_xpad_layout, legacy_ypad_layout)
+    legacy_names = (
+        "xpad_label",
+        "ypad_label",
+        "minor_ticks_axes",
+        "tight_layout",
+        "xpad_layout",
+        "ypad_layout",
+    )
+    legacy_values = {
+        "xpad_label": xpad_label,
+        "ypad_label": ypad_label,
+        "minor_ticks_axes": minor_ticks_axes,
+        "tight_layout": tight_layout,
+        "xpad_layout": xpad_layout,
+        "ypad_layout": ypad_layout,
+    }
+    for name, value in zip(legacy_names, positional):
+        if value is _UNSET:
+            continue
+        if legacy_values[name] is not _UNSET:
+            raise OptionError(f"historical gsplot.label received {name} twice")
+        legacy_values[name] = value
+    text_options = _provided(
+        {
+            "alpha": alpha,
+            "color": color,
+            "fontfamily": fontfamily,
+            "fontproperties": fontproperties,
+            "fontsize": fontsize,
+            "fontstretch": fontstretch,
+            "fontstyle": fontstyle,
+            "fontvariant": fontvariant,
+            "fontweight": fontweight,
+            "ha": ha,
+            "horizontalalignment": horizontalalignment,
+            "label": label,
+            "linespacing": linespacing,
+            "math_fontfamily": math_fontfamily,
+            "multialignment": multialignment,
+            "parse_math": parse_math,
+            "rotation": rotation,
+            "rotation_mode": rotation_mode,
+            "va": va,
+            "verticalalignment": verticalalignment,
+            "visible": visible,
+            "zorder": zorder,
+            "fontdict": fontdict,
+            "labelpad": labelpad,
+            "loc": loc,
+        }
+    )
+    from .legacy_api import label as legacy_label
+
+    return legacy_label(
+        records,
+        **_provided(legacy_values),
+        **text_options,
+    )
+
+
 def legend(
-    ax: Axes,
+    target: Any,
     legacy_handles: Any = _UNSET,
     legacy_labels: Any = _UNSET,
     *,
-    handles: Sequence[Any] | None = None,
-    labels: Sequence[str] | None = None,
+    handles: Any = None,
+    labels: Any = None,
     handler_map: Mapping[Any, Any] | None = None,
-    reverse: bool = False,
-    replace: bool = False,
+    reverse: Any = False,
+    replace: Any = False,
     props: Mapping[str, Any] | None = None,
     handlers: Any = _UNSET,
     loc: Any = _UNSET,
@@ -425,22 +663,17 @@ def legend(
     legacy = _provided(
         {
             "handlers": handlers,
-            "loc": loc,
             "ncols": ncols,
             "ncol": ncol,
             "fontsize": fontsize,
             "title": title,
             "title_fontsize": title_fontsize,
             "title_fontproperties": title_fontproperties,
-            "frameon": frameon,
             "framealpha": framealpha,
             "facecolor": facecolor,
             "edgecolor": edgecolor,
-            "fancybox": fancybox,
             "shadow": shadow,
             "borderpad": borderpad,
-            "labelspacing": labelspacing,
-            "handlelength": handlelength,
             "handleheight": handleheight,
             "handletextpad": handletextpad,
             "borderaxespad": borderaxespad,
@@ -464,15 +697,25 @@ def legend(
         raise OptionError(
             "gsplot.legend cannot combine canonical props with legacy options"
         )
+    direct = _provided(
+        {
+            "loc": loc,
+            "frameon": frameon,
+            "fancybox": fancybox,
+            "labelspacing": labelspacing,
+            "handlelength": handlelength,
+        }
+    )
     if not legacy:
         return _legend(
-            ax,
+            target,
             handles=handles,
             labels=labels,
             handler_map=handler_map,
             reverse=reverse,
             replace=replace,
             props=props,
+            **direct,
         )
     positional_handles = legacy.pop("_legacy_handles", _UNSET)
     positional_labels = legacy.pop("_legacy_labels", _UNSET)
@@ -480,6 +723,7 @@ def legend(
         if handler_map is not None:
             raise OptionError("legend cannot combine handlers and handler_map")
         handler_map = handlers
+        legacy.pop("handlers", None)
     translated = _translate_props(
         "legend",
         legacy,
@@ -495,13 +739,14 @@ def legend(
         labels = positional_labels
     _warn("legend")
     return _legend(
-        ax,
+        target,
         handles=handles,
         labels=labels,
         handler_map=handler_map,
         reverse=reverse,
         replace=replace,
         props=translated,
+        **direct,
     )
 
 
@@ -651,18 +896,21 @@ def show(
 line.__signature__ = inspect.signature(_line)  # type: ignore[attr-defined]
 scatter.__signature__ = inspect.signature(_scatter)  # type: ignore[attr-defined]
 legend.__signature__ = inspect.signature(_legend)  # type: ignore[attr-defined]
+label.__signature__ = inspect.signature(_label)  # type: ignore[attr-defined]
 title.__signature__ = inspect.signature(_title)  # type: ignore[attr-defined]
 show.__signature__ = inspect.signature(_show)  # type: ignore[attr-defined]
 line.__annotations__ = get_type_hints(_line)
 scatter.__annotations__ = get_type_hints(_scatter)
 legend.__annotations__ = get_type_hints(_legend)
+label.__annotations__ = get_type_hints(_label)
 title.__annotations__ = get_type_hints(_title)
 show.__annotations__ = get_type_hints(_show)
 line.__doc__ = _line.__doc__
 scatter.__doc__ = _scatter.__doc__
 legend.__doc__ = _legend.__doc__
+label.__doc__ = _label.__doc__
 title.__doc__ = _title.__doc__
 show.__doc__ = _show.__doc__
 
 
-__all__ = ["line", "scatter", "legend", "title", "show"]
+__all__ = ["line", "scatter", "label", "legend", "title", "show"]
