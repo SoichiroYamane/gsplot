@@ -7,10 +7,41 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pytest
 from matplotlib.colors import to_rgba
+from matplotlib.lines import Line2D
 from matplotlib.markers import MarkerStyle
 
 import gsplot as gs
 from gsplot._plot.series import SERIES_COLORS, SERIES_LINESTYLES, SERIES_MARKERS
+
+
+def _render_marker_center(
+    *, alpha: float = 1, alpha_mfc: float = 0.2
+) -> tuple[Line2D, np.ndarray]:
+    """Return one line and the rendered center pixel of its marker."""
+
+    figure = plt.figure(figsize=(1, 1), dpi=200, facecolor="white")
+    axis = figure.add_axes((0, 0, 1, 1))
+    axis.set(xlim=(0, 1), ylim=(0, 1), facecolor="white")
+    axis.set_axis_off()
+    artist = gs.line(
+        axis,
+        [0.5],
+        [0.5],
+        c="blue",
+        ms=20,
+        mew=0,
+        ls="none",
+        alpha=alpha,
+        alpha_mfc=alpha_mfc,
+    )[0]
+    figure.canvas.draw()
+    pixels = np.asarray(figure.canvas.buffer_rgba())
+    display_x, display_y = axis.transData.transform((0.5, 0.5))
+    row = pixels.shape[0] - 1 - round(display_y)
+    column = round(display_x)
+    center = pixels[row, column].copy()
+    plt.close(figure)
+    return artist, center
 
 
 def test_public_signatures_show_concise_defaults_without_private_sentinels() -> None:
@@ -59,15 +90,15 @@ def test_historical_defaults_use_each_target_axes_cycle() -> None:
         first = gs.line(axis, [0, 1], [0, 1])[0]
         second = gs.line(axis, [0, 1], [1, 2])[0]
         points = gs.scatter(axis, [0, 1], [0, 1])
-        assert first.get_color() == "red"
-        assert second.get_color() == "blue"
+        assert np.allclose(to_rgba(first.get_color()), to_rgba("red"))
+        assert np.allclose(to_rgba(second.get_color()), to_rgba("blue"))
         assert first.get_marker() == "o"
         assert first.get_markersize() == 7
         assert first.get_markeredgewidth() == 1.5
         assert first.get_linestyle() == "--"
         assert first.get_linewidth() == 1
-        assert first.get_alpha() == 1
-        assert first.get_markeredgecolor() == "red"
+        assert first.get_alpha() is None
+        assert np.allclose(to_rgba(first.get_markeredgecolor()), to_rgba("red"))
         assert to_rgba(first.get_markerfacecolor())[3] == pytest.approx(0.2)
         assert np.allclose(points.get_facecolors()[0], to_rgba("red"))
         assert points.get_sizes().tolist() == [1]
@@ -96,13 +127,16 @@ def test_series_is_deterministic_and_does_not_advance_axes_cycles() -> None:
             )
             assert np.allclose(points.get_paths()[0].vertices, expected_path.vertices)
 
-        assert gs.line(axes[0], [0, 1], [0, 1])[0].get_color() == "magenta"
+        assert np.allclose(
+            to_rgba(gs.line(axes[0], [0, 1], [0, 1])[0].get_color()),
+            to_rgba("magenta"),
+        )
         assert np.allclose(
             gs.scatter(axes[1], [0], [0]).get_facecolors()[0],
             to_rgba("magenta"),
         )
         overridden = gs.line(axes[0], [0, 1], [0, 1], series=4, c="black", ls=":")[0]
-        assert overridden.get_color() == "black"
+        assert np.allclose(to_rgba(overridden.get_color()), to_rgba("black"))
         assert overridden.get_linestyle() == ":"
         marked = gs.scatter(axes[1], [0], [0], series=4, marker="s")
         expected_marker = MarkerStyle("s")
@@ -135,7 +169,10 @@ def test_multi_target_broadcast_and_exact_mappings_preserve_target_order() -> No
         assert isinstance(lines, tuple)
         assert [item[0].axes for item in lines] == list(targets.values())
         assert [item[0].get_label() for item in lines] == ["L", "R"]
-        assert [item[0].get_color() for item in lines] == ["red", "blue"]
+        assert all(
+            np.allclose(to_rgba(item[0].get_color()), to_rgba(expected))
+            for item, expected in zip(lines, ("red", "blue"))
+        )
         assert [item[0].get_linewidth() for item in lines] == [1, 2]
         assert np.array_equal(lines[1][0].get_xdata(), [10, 20])
 
@@ -163,14 +200,21 @@ def test_omission_and_explicit_default_values_control_config_precedence() -> Non
     figure, axis = gs.subplots(style=None)
     axis.set_prop_cycle(color=["blue"])
     try:
-        assert gs.line(axis, [0, 1], [0, 1], config=config)[0].get_color() == "red"
-        assert (
-            gs.line(axis, [0, 1], [0, 1], c=None, config=config)[0].get_color()
-            == "blue"
+        assert np.allclose(
+            to_rgba(gs.line(axis, [0, 1], [0, 1], config=config)[0].get_color()),
+            to_rgba("red"),
         )
-        assert (
-            gs.line(axis, [0, 1], [0, 1], c="red", config=config)[0].get_color()
-            == "red"
+        assert np.allclose(
+            to_rgba(
+                gs.line(axis, [0, 1], [0, 1], c=None, config=config)[0].get_color()
+            ),
+            to_rgba("blue"),
+        )
+        assert np.allclose(
+            to_rgba(
+                gs.line(axis, [0, 1], [0, 1], c="red", config=config)[0].get_color()
+            ),
+            to_rgba("red"),
         )
     finally:
         plt.close(figure)
@@ -192,6 +236,9 @@ def test_marker_face_alpha_and_retained_advanced_options_are_explicit() -> None:
             markersize=3,
             antialiased=False,
         )[0]
+        assert line.get_alpha() is None
+        assert np.allclose(to_rgba(line.get_color()), (0, 0, 1, 0.5))
+        assert np.allclose(to_rgba(line.get_markeredgecolor()), (0, 0, 1, 0.5))
         assert np.allclose(to_rgba(line.get_markerfacecolor()), (1, 0, 0, 0.2))
         assert line.get_markersize() == 3
         assert not line.get_antialiased()
@@ -203,6 +250,23 @@ def test_marker_face_alpha_and_retained_advanced_options_are_explicit() -> None:
         assert np.array_equal(points.get_array(), [0.0, 1.0])
     finally:
         plt.close(figure)
+
+
+@pytest.mark.parametrize(
+    ("alpha", "face_alpha", "expected_pixel"),
+    ((1.0, 0.2, (204, 204, 255, 255)), (0.5, 0.1, (230, 230, 255, 255))),
+)
+def test_marker_face_alpha_is_preserved_in_rendered_pixels(
+    alpha: float, face_alpha: float, expected_pixel: tuple[int, int, int, int]
+) -> None:
+    """Agg rendering retains the independent 0.3 marker-face transparency."""
+
+    artist, center = _render_marker_center(alpha=alpha)
+    assert artist.get_alpha() is None
+    assert to_rgba(artist.get_color())[3] == pytest.approx(alpha)
+    assert to_rgba(artist.get_markeredgecolor())[3] == pytest.approx(alpha)
+    assert to_rgba(artist.get_markerfacecolor())[3] == pytest.approx(face_alpha)
+    assert np.allclose(center, expected_pixel, atol=1)
 
 
 def test_concise_scatter_color_avoids_matplotlib_c_ambiguity() -> None:

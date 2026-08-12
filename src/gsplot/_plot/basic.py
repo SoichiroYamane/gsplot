@@ -457,6 +457,15 @@ def _has_value(values: Mapping[str, Any], names: set[str]) -> bool:
     return any(name in values and values[name] is not MISSING for name in names)
 
 
+def _color_with_alpha(value: Any, alpha: float) -> Any:
+    """Return a color with materialized alpha while preserving literal none."""
+
+    if isinstance(value, str) and value.lower() == "none":
+        return "none"
+    red, green, blue, _ = to_rgba(cast(ColorSpec, value))
+    return red, green, blue, alpha
+
+
 def _line_plans(
     target: TargetPlan,
     direct: tuple[dict[str, Any], ...],
@@ -534,24 +543,31 @@ def _line_kwargs(options: OptionPlan) -> tuple[dict[str, Any], bool, bool]:
     values = {
         name: value
         for name, value in options.items()
-        if value is not MISSING and name != "alpha_mfc"
+        if value is not MISSING and name not in {"alpha", "alpha_mfc"}
     }
+    alpha = options["alpha"]
+    for name in ("color", "gapcolor", "markerfacecoloralt"):
+        if name in values and values[name] is not None:
+            values[name] = _color_with_alpha(values[name], alpha)
     edge = values.get("markeredgecolor", MISSING)
     default_edge = edge is MISSING or edge is None
     if default_edge:
         values.pop("markeredgecolor", None)
+    else:
+        values["markeredgecolor"] = _color_with_alpha(edge, alpha)
     face = values.get("markerfacecolor", MISSING)
     default_face = face is MISSING or face is None
     if default_face:
         values.pop("markerfacecolor", None)
-    elif not (isinstance(face, str) and face.lower() == "none"):
-        red, green, blue, _ = to_rgba(cast(ColorSpec, face))
-        values["markerfacecolor"] = (
-            red,
-            green,
-            blue,
-            options["alpha"] * options["alpha_mfc"],
+    else:
+        values["markerfacecolor"] = _color_with_alpha(
+            face,
+            alpha * options["alpha_mfc"],
         )
+    # Matplotlib's Line2D renderer lets this Artist-level value override every
+    # component RGBA. Keeping it unset preserves the historical independent
+    # marker-face alpha and prevents an Axes property cycle from supplying it.
+    values["alpha"] = None
     return values, default_edge, default_face
 
 
@@ -737,7 +753,9 @@ def line(
     Notes
     -----
     The target Axes cycle supplies color when both ``series`` and ``c`` are
-    omitted. Long Matplotlib spellings and the names in
+    omitted. Line and edge alpha are materialized in their RGBA colors; marker
+    faces use ``alpha * alpha_mfc`` independently, matching the 0.3 rendering
+    contract. Long Matplotlib spellings and the names in
     ``LINE_ADVANCED_OPTIONS`` remain accepted through 1.x.
 
     Examples
@@ -825,12 +843,17 @@ def line(
             values, default_edge, default_face = item
             artists = list(axis.plot(x_values, y_values, **values))
             for artist in artists:
+                artist.set_alpha(None)
+                artist.set_color(_color_with_alpha(artist.get_color(), plan["alpha"]))
                 if default_edge:
-                    artist.set_markeredgecolor(artist.get_color())
+                    artist.set_markeredgecolor(
+                        _color_with_alpha(artist.get_color(), plan["alpha"])
+                    )
                 if default_face:
-                    red, green, blue, _ = to_rgba(artist.get_color())
                     artist.set_markerfacecolor(
-                        (red, green, blue, plan["alpha"] * plan["alpha_mfc"])
+                        _color_with_alpha(
+                            artist.get_color(), plan["alpha"] * plan["alpha_mfc"]
+                        )
                     )
             results.append(artists)
             created.extend(artists)

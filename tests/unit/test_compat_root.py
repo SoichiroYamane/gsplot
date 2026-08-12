@@ -24,7 +24,7 @@ def test_root_canonical_signature_and_finite_line_options_are_available() -> Non
     advanced = gs.line(ax, [0, 1], [2, 3], color="red", marker="o")
     positional = gs.line(ax, [0, 1], [3, 4], "blue", "s")
     assert advanced[0].axes is ax
-    assert positional[0].get_color() == "blue"
+    assert np.allclose(to_rgba(positional[0].get_color()), to_rgba("blue"))
     plt.close(figure)
 
 

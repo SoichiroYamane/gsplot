@@ -100,6 +100,11 @@ are aliases and cannot be combined in one call.
 | `line` | `color`, `markersize`, `markeredgewidth`, `markeredgecolor`, `markerfacecolor`, `linestyle`, `linewidth`, `antialiased`, `dash_capstyle`, `dash_joinstyle`, `drawstyle`, `fillstyle`, `gapcolor`, `markevery`, `markerfacecoloralt`, `picker`, `pickradius`, `solid_capstyle`, `solid_joinstyle`, `visible`, `zorder` |
 | `scatter` | `color`, `size`, `cmap`, `norm`, `vmin`, `vmax`, `edgecolors`, `facecolors`, `linewidths`, `antialiaseds`, `plotnonfinite`, `rasterized`, `picker`, `visible`, `zorder` |
 
+For `line`, alpha is materialized independently into the line and marker-edge
+RGBA colors. Marker-face RGBA uses `alpha * alpha_mfc`; the Artist-level
+`Line2D.alpha` remains unset so Matplotlib cannot override that independent
+face transparency during rendering. This matches the 0.3 visual contract.
+
 For multiple targets, one x/y pair broadcasts. Per-target x/y always uses an
 exact-key mapping. Numeric and text style sequences may follow target order;
 colors and other sequence-valued scalar styles use exact-key mappings to avoid
