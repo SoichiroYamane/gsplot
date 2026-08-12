@@ -2,7 +2,7 @@
 
 import inspect
 from pathlib import Path
-from typing import get_type_hints
+from typing import get_args, get_type_hints
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -14,21 +14,22 @@ from gsplot._compat.legacy.figure.store import StoreSingleton
 from gsplot._compat.legacy.plot.line_base import NumLines
 
 
-def test_root_canonical_signature_and_legacy_line_options_are_separate() -> None:
-    """Canonical calls stay strict while named legacy styles remain available."""
+def test_root_canonical_signature_and_finite_line_options_are_available() -> None:
+    """The concise view and retained long or positional styles share one binder."""
 
     figure, ax = gs.subplots()
     assert "props" in str(inspect.signature(gs.line))
     canonical = gs.line(ax, [0, 1], [1, 2], props={"label": "canonical"})
     assert canonical[0].axes is ax
-    with pytest.warns(DeprecationWarning, match="legacy"):
-        legacy = gs.line(ax, [0, 1], [2, 3], color="red", marker="o")
-    assert legacy[0].axes is ax
+    advanced = gs.line(ax, [0, 1], [2, 3], color="red", marker="o")
+    positional = gs.line(ax, [0, 1], [3, 4], "blue", "s")
+    assert advanced[0].axes is ax
+    assert positional[0].get_color() == "blue"
     plt.close(figure)
 
 
-def test_root_default_colors_preserve_the_legacy_viridis_sequence() -> None:
-    """Root calls without explicit style options retain historical colors."""
+def test_root_default_colors_use_each_native_axes_cycle_without_hidden_state() -> None:
+    """Line and scatter use their target cycles rather than a shared counter."""
 
     NumLines.reset()
     figure, ax = gs.subplots()
@@ -43,7 +44,7 @@ def test_root_default_colors_preserve_the_legacy_viridis_sequence() -> None:
         assert line.get_linestyle() == "--"
         assert line.get_linewidth() == 1.0
         assert to_rgba(line.get_markerfacecolor())[3] == pytest.approx(0.2)
-        assert np.allclose(scatter.get_facecolors()[0], expected[1])
+        assert np.allclose(scatter.get_facecolors()[0], expected[0])
         assert scatter.get_sizes().tolist() == [1.0]
         assert scatter.get_alpha() == 1.0
     finally:
@@ -88,7 +89,10 @@ def test_root_canonical_annotations_are_runtime_resolvable() -> None:
 
     config_hint = get_type_hints(gs.line)["config"]
     assert config_hint.__args__[0].__name__ == "Config"
-    assert get_type_hints(gs.scatter)["return"].__name__ == "PathCollection"
+    assert any(
+        value.__name__ == "PathCollection"
+        for value in get_args(get_type_hints(gs.scatter)["return"])
+    )
     assert get_type_hints(gs.show)["return"] is type(None)
 
 

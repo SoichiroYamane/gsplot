@@ -12,11 +12,8 @@ import warnings
 from collections.abc import Mapping, Sequence
 from os import PathLike
 from typing import Any, get_type_hints
-from weakref import WeakKeyDictionary
 
-import numpy as np
 from matplotlib.axes import Axes
-from matplotlib.colors import to_rgba
 from matplotlib.figure import Figure
 from numpy.typing import ArrayLike
 
@@ -25,68 +22,12 @@ from .._figure.output import savefig as _savefig
 from .._figure.output import show as _show
 from .._plot.basic import line as _line
 from .._plot.basic import scatter as _scatter
-from .._plot.colormap import sample_cmap as _sample_cmap
 from .._style.axes import suptitle as _suptitle
 from .._style.axes import title as _title
 from .._style.legends import legend as _legend
 
 _UNSET = object()
-_LEGACY_PLOT_COUNTS: WeakKeyDictionary[Axes, int] = WeakKeyDictionary()
 
-_LEGACY_LINE_KEYS = {
-    "color",
-    "marker",
-    "markersize",
-    "markeredgewidth",
-    "markeredgecolor",
-    "markerfacecolor",
-    "linestyle",
-    "linewidth",
-    "alpha",
-    "alpha_mfc",
-    "label",
-    "ms",
-    "mew",
-    "ls",
-    "lw",
-    "c",
-    "mec",
-    "mfc",
-    "antialiased",
-    "dash_capstyle",
-    "dash_joinstyle",
-    "drawstyle",
-    "fillstyle",
-    "gapcolor",
-    "markevery",
-    "picker",
-    "pickradius",
-    "solid_capstyle",
-    "solid_joinstyle",
-    "visible",
-    "zorder",
-}
-_LEGACY_SCATTER_KEYS = {
-    "color",
-    "size",
-    "alpha",
-    "s",
-    "c",
-    "cmap",
-    "norm",
-    "vmin",
-    "vmax",
-    "marker",
-    "edgecolors",
-    "facecolors",
-    "linewidths",
-    "antialiaseds",
-    "plotnonfinite",
-    "rasterized",
-    "picker",
-    "visible",
-    "zorder",
-}
 _LEGACY_LEGEND_KEYS = {
     "handlers",
     "loc",
@@ -176,29 +117,8 @@ def _legacy_suptitle(text: str, props: Mapping[str, Any] | None) -> Any:
     return _suptitle(plt.gcf(), text, props=props)
 
 
-def _legacy_auto_color(ax: Axes) -> tuple[float, float, float, float]:
-    """Resolve the historical viridis color for one compatibility plot."""
-
-    count = _LEGACY_PLOT_COUNTS.get(ax, 0)
-    color = np.asarray(_sample_cmap("viridis", count=5)[count % 5])
-    return (
-        float(color[0]),
-        float(color[1]),
-        float(color[2]),
-        float(color[3]),
-    )
-
-
-def _record_legacy_plot(ax: Axes) -> None:
-    """Advance the historical compatibility color sequence after a plot."""
-
-    _LEGACY_PLOT_COUNTS[ax] = _LEGACY_PLOT_COUNTS.get(ax, 0) + 1
-
-
 def _reset_legacy_plot_counts() -> None:
-    """Reset compatibility color history without retaining any Axes objects."""
-
-    _LEGACY_PLOT_COUNTS.clear()
+    """Retain the private compatibility hook after removing hidden counters."""
 
 
 def _legacy_show(options: Mapping[str, Any]) -> None:
@@ -233,17 +153,6 @@ def _provided(values: Mapping[str, Any]) -> dict[str, Any]:
     return {key: value for key, value in values.items() if value is not _UNSET}
 
 
-def _reject_mixed(
-    name: str, props: Mapping[str, Any] | None, legacy: Mapping[str, Any]
-) -> None:
-    """Reject canonical and legacy style controls supplied together."""
-
-    if props is not None and legacy:
-        raise OptionError(
-            f"gsplot.{name} cannot combine canonical props with legacy options"
-        )
-
-
 def _translate_props(
     name: str,
     values: Mapping[str, Any],
@@ -265,34 +174,6 @@ def _translate_props(
     return translated
 
 
-def _reject_duplicate_scatter_controls(legacy: Mapping[str, Any]) -> None:
-    """Reject Matplotlib color controls that describe the same value."""
-
-    duplicate_groups = (
-        ("color", "c"),
-        ("color", "facecolors"),
-        ("c", "facecolors"),
-        ("size", "s"),
-    )
-    for first, second in duplicate_groups:
-        if first in legacy and second in legacy:
-            raise OptionError(f"gsplot.scatter cannot combine {first!r} and {second!r}")
-
-
-def _validate_alpha_mfc(value: Any) -> float:
-    """Validate the legacy marker-face alpha before creating an artist."""
-
-    if isinstance(value, bool):
-        raise OptionError("alpha_mfc must be a finite real number")
-    try:
-        result = float(value)
-    except (TypeError, ValueError) as exc:
-        raise OptionError("alpha_mfc must be a finite real number") from exc
-    if not np.isfinite(result):
-        raise OptionError("alpha_mfc must be a finite real number")
-    return result
-
-
 def line(
     ax: Axes,
     x: ArrayLike,
@@ -309,6 +190,7 @@ def line(
     alpha_mfc: Any = _UNSET,
     label: Any = _UNSET,
     *,
+    series: Any = _UNSET,
     props: Mapping[str, Any] | None = None,
     config: Any = None,
     ms: Any = _UNSET,
@@ -325,6 +207,7 @@ def line(
     fillstyle: Any = _UNSET,
     gapcolor: Any = _UNSET,
     markevery: Any = _UNSET,
+    markerfacecoloralt: Any = _UNSET,
     picker: Any = _UNSET,
     pickradius: Any = _UNSET,
     solid_capstyle: Any = _UNSET,
@@ -332,10 +215,11 @@ def line(
     visible: Any = _UNSET,
     zorder: Any = _UNSET,
 ) -> Any:
-    """Dispatch canonical ``line`` or finite legacy style options."""
+    """Retain positional 0.x styles while delegating to canonical ``line``."""
 
-    legacy = _provided(
+    options = _provided(
         {
+            "series": series,
             "color": color,
             "marker": marker,
             "markersize": markersize,
@@ -361,6 +245,7 @@ def line(
             "fillstyle": fillstyle,
             "gapcolor": gapcolor,
             "markevery": markevery,
+            "markerfacecoloralt": markerfacecoloralt,
             "picker": picker,
             "pickradius": pickradius,
             "solid_capstyle": solid_capstyle,
@@ -369,42 +254,7 @@ def line(
             "zorder": zorder,
         }
     )
-    _reject_mixed("line", props, legacy)
-    if not legacy:
-        if props is None and config is None:
-            artists = _line(ax, x, y, props={"color": _legacy_auto_color(ax)})
-            _record_legacy_plot(ax)
-            return artists
-        return _line(ax, x, y, props=props, config=config)
-    alpha_mfc = legacy.get("alpha_mfc", _UNSET)
-    alpha_mfc_value = (
-        _validate_alpha_mfc(alpha_mfc) if alpha_mfc is not _UNSET else None
-    )
-    translated = _translate_props(
-        "line",
-        legacy,
-        {
-            "ms": "markersize",
-            "mew": "markeredgewidth",
-            "ls": "linestyle",
-            "lw": "linewidth",
-            "c": "color",
-            "mec": "markeredgecolor",
-            "mfc": "markerfacecolor",
-        },
-    )
-    if config is None and translated.get("color") is None:
-        translated["color"] = _legacy_auto_color(ax)
-    _warn("line")
-    artists = _line(ax, x, y, props=translated, config=config)
-    _record_legacy_plot(ax)
-    if alpha_mfc_value is not None:
-        alpha = float(translated.get("alpha", 1.0))
-        for artist in artists:
-            base_color = translated.get("markerfacecolor", artist.get_color())
-            red, green, blue, _ = to_rgba(base_color)
-            artist.set_markerfacecolor((red, green, blue, alpha * alpha_mfc_value))
-    return artists
+    return _line(ax, x, y, props=props, config=config, **options)
 
 
 def scatter(
@@ -415,6 +265,8 @@ def scatter(
     size: Any = _UNSET,
     alpha: Any = _UNSET,
     *,
+    series: Any = _UNSET,
+    label: Any = _UNSET,
     props: Mapping[str, Any] | None = None,
     config: Any = None,
     s: Any = _UNSET,
@@ -434,10 +286,12 @@ def scatter(
     visible: Any = _UNSET,
     zorder: Any = _UNSET,
 ) -> Any:
-    """Dispatch canonical ``scatter`` or finite legacy style options."""
+    """Retain positional 0.x styles while delegating to canonical ``scatter``."""
 
-    legacy = _provided(
+    options = _provided(
         {
+            "series": series,
+            "label": label,
             "color": color,
             "size": size,
             "alpha": alpha,
@@ -459,24 +313,7 @@ def scatter(
             "zorder": zorder,
         }
     )
-    _reject_mixed("scatter", props, legacy)
-    if not legacy:
-        if props is None and config is None:
-            collection = _scatter(ax, x, y, props={"color": _legacy_auto_color(ax)})
-            _record_legacy_plot(ax)
-            return collection
-        return _scatter(ax, x, y, props=props, config=config)
-    _reject_duplicate_scatter_controls(legacy)
-    translated = _translate_props("scatter", legacy, {"size": "s"})
-    if config is None and not any(
-        name in translated and translated[name] is not None
-        for name in ("color", "c", "facecolors")
-    ):
-        translated["color"] = _legacy_auto_color(ax)
-    _warn("scatter")
-    collection = _scatter(ax, x, y, props=translated, config=config)
-    _record_legacy_plot(ax)
-    return collection
+    return _scatter(ax, x, y, props=props, config=config, **options)
 
 
 def legend(
