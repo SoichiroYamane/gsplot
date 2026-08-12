@@ -52,6 +52,8 @@ _COLORED_SCATTER_PROPS = frozenset(
         "zorder",
     }
 )
+_COLORED_LINE_DEFAULTS: dict[str, Any] = {"linewidths": 1.0}
+_COLORED_SCATTER_DEFAULTS: dict[str, Any] = {"s": 1.0, "alpha": 1.0}
 
 
 def _validate_cmap_args(
@@ -131,7 +133,8 @@ def cmap_line(
     cmap, norm
         Optional Matplotlib colormap name and normalization specification.
     props
-        Optional finite LineCollection property mapping.
+        Optional finite LineCollection property mapping.  linewidths defaults
+        to 1.0 when omitted.
     config
         Optional immutable configuration for the default colormap.
 
@@ -159,6 +162,8 @@ def cmap_line(
     segments, segment_values = _segment_data(x, y, values)
     selected_cmap, selected_norm = _validate_cmap_args(cmap, norm, config)
     selected_props = _collection_props(props, "cmap_line")
+    for name, default in _COLORED_LINE_DEFAULTS.items():
+        selected_props.setdefault(name, default)
     colors = map_values(segment_values, cmap=selected_cmap, norm=selected_norm)
     collection = LineCollection(
         cast(Any, segments.tolist()), colors=colors, **selected_props
@@ -174,7 +179,7 @@ def cmap_dash(
     y: ArrayLike,
     values: ArrayLike,
     *,
-    dash: tuple[float, float],
+    dash: tuple[float, float] = (10.0, 10.0),
     cmap: str | Colormap | None = None,
     norm: NormalizeSpec | None = None,
     props: Mapping[str, Any] | None = None,
@@ -192,7 +197,8 @@ def cmap_dash(
         The same explicit target, finite data, normalization, property, and
         configuration controls as :func:`cmap_line`.
     dash
-        Two positive display-point lengths for the on and off portions.
+        Two positive display-point lengths for the on and off portions,
+        defaulting to (10.0, 10.0).
 
     Returns
     -------
@@ -232,6 +238,8 @@ def cmap_dash(
     segments, segment_values = _segment_data(x, y, values)
     selected_cmap, selected_norm = _validate_cmap_args(cmap, norm, config)
     selected_props = _collection_props(props, "cmap_dash")
+    for name, default in _COLORED_LINE_DEFAULTS.items():
+        selected_props.setdefault(name, default)
     if "linestyles" in selected_props:
         raise OptionError("cmap_dash props cannot override the dash pattern")
     colors = map_values(segment_values, cmap=selected_cmap, norm=selected_norm)
@@ -266,7 +274,8 @@ def cmap_scatter(
     cmap, norm
         Optional Matplotlib colormap name and normalization specification.
     props
-        Optional finite PathCollection property mapping.
+        Optional finite PathCollection property mapping.  s and alpha default
+        to 1.0 when omitted.
     config
         Optional immutable configuration for the default colormap.
 
@@ -297,6 +306,8 @@ def cmap_scatter(
         raise DataError("values must have the same one-dimensional shape as x and y")
     selected_cmap, selected_norm = _validate_cmap_args(cmap, norm, config)
     selected_props = validate_props(props, _COLORED_SCATTER_PROPS, "cmap_scatter")
+    for name, default in _COLORED_SCATTER_DEFAULTS.items():
+        selected_props.setdefault(name, default)
     colors = map_values(color_values, cmap=selected_cmap, norm=selected_norm)
     return target.scatter(x_values, y_values, color=colors, **selected_props)
 

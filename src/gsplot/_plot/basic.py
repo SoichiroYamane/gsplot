@@ -136,7 +136,9 @@ def line(
     ``props`` is a closed mapping of supported Matplotlib ``Line2D``
     properties.  The function returns the native list produced by
     :meth:`matplotlib.axes.Axes.plot` and never consults a current Axes or a
-    process-wide color counter.
+    process-wide color counter.  The root compatibility facade may add the
+    historical automatic color only when a caller omits both props and
+    config; direct canonical implementation calls do not.
 
     Parameters
     ----------
@@ -148,6 +150,13 @@ def line(
         Optional finite mapping of supported ``Line2D`` properties.
     config
         Optional immutable configuration for omitted gsplot defaults.
+
+    Notes
+    -----
+    The direct canonical implementation uses the target Axes property cycle
+    when no color is supplied.  The public root adapter preserves the
+    historical viridis sequence for an otherwise option-free compatibility
+    call.
 
     Returns
     -------
@@ -204,6 +213,13 @@ def scatter(
         Optional finite mapping of supported scatter properties.
     config
         Optional immutable configuration for omitted gsplot defaults.
+
+    Notes
+    -----
+    The direct canonical implementation uses the target Axes property cycle
+    when no color is supplied.  The public root adapter preserves the
+    historical viridis sequence for an otherwise option-free compatibility
+    call.
 
     Returns
     -------

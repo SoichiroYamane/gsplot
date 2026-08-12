@@ -17,7 +17,32 @@ starting point for downstream migration work.
 - The old `gsplot.base.*` implementation namespace is not a supported public
   compatibility surface unless it was part of the pre-cutover API reference.
 - A compatibility adapter may normalize old arguments, but canonical modules
-  must never import the compatibility layer or contain duplicate algorithms.
+ must never import the compatibility layer or contain duplicate algorithms.
+
+## Effective default-value matrix
+
+Signature compatibility alone is not sufficient for plotting APIs. The
+following matrix records the effective defaults during the compatibility
+window.
+
+| Surface | Effective default | Classification |
+| --- | --- | --- |
+| `gs.subplots()` | One ordinary subplot, Matplotlib figure size, `squeeze=True`, `clear=False`, no layout engine | Canonical breaking replacement for `axes()` |
+| `gs.axes()` | `size=(5, 5)`, `unit="in"`, `mosaic="A"`, `clear=True`, tight layout enabled | Compatible legacy adapter |
+| Root `gs.line()` and `gs.scatter()` without `props` or `config` | Five-color viridis automatic sequence, matching the 0.3.x compatibility behavior | Compatible root default |
+| Canonical line/scatter implementation with explicit `props` or `Config` | Ordinary Matplotlib Axes property cycle unless an explicit color is supplied | Canonical explicit behavior |
+| `gs.cmap_line()` | `cmap="viridis"`, `linewidths=1.0` | Canonical explicit default |
+| `gs.cmap_dash()` | `cmap="viridis"`, `dash=(10.0, 10.0)`, `linewidths=1.0` | Canonical explicit default |
+| `gs.cmap_scatter()` | `cmap="viridis"`, `s=1.0`, `alpha=1.0` | Canonical explicit default |
+| Legacy `gs.show()` | `fname="gsplot"`, `ft_list=("png", "pdf")`, `dpi=600`; files are written only when legacy `store=True` | Compatible adapter |
+| `gs.savefig(fig, ...)` | `show=True`; a supplied suffix selects the format, while a suffix-free path defaults to PNG when `formats` is omitted | Canonical explicit lifecycle |
+| `gs.show(fig)` | Display only; never saves or closes | Canonical breaking split from legacy `show()` |
+
+The compatibility color sequence and store flag are implemented only at the
+root adapter boundary. Canonical implementation modules do not depend on the
+historical singleton state. Removing import-time Matplotlib `rcParams` mutation
+is also intentional; ambient Matplotlib defaults now apply unless an
+application configures them explicitly.
 
 ## Root export migration
 

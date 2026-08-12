@@ -203,6 +203,30 @@ non-empty data and its segment/color requirements. Styling functions use
 typed `AxisSpec`, `Theme`, and related values and never rely on a global
 `rcParams` mutation for ordinary operation.
 
+The default-value contract is explicit:
+
+- `subplots()` defaults to one ordinary Matplotlib subplot, the Matplotlib
+  default figure size, `squeeze=True`, `clear=False`, and no layout engine
+  unless a direct argument or `Config` enables one.
+- Canonical colored helpers use `cmap_line(..., linewidths=1.0)`,
+  `cmap_dash(..., dash=(10.0, 10.0), linewidths=1.0)`, and
+  `cmap_scatter(..., s=1.0, alpha=1.0)`.
+- The root compatibility facade preserves the historical viridis automatic
+  color sequence for otherwise option-free `line` and `scatter` calls.
+  Supplying `props` or an explicit `Config` selects the canonical explicit
+  behavior.
+- The legacy `axes()` adapter retains its 5-by-5 inch, `mosaic="A"`,
+  `clear=True`, and tight-layout behavior. Its `store` flag controls whether
+  legacy `show()` writes files; this state is isolated to the compatibility
+  boundary.
+
+Removing import-time `rcParams` mutation is intentional. Consequently,
+canonical imports use Matplotlib's ambient defaults rather than the historical
+0.x values for margins, tick direction, tick placement, legend framing, and
+related global settings. Applications that need those global values must use
+Matplotlib's explicit `rc_context` or set the corresponding Figure/Axes
+properties.
+
 ### Configuration and dependencies
 
 - `Config` is an immutable value with schema version 1 and only `figure` and
