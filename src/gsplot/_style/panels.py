@@ -135,7 +135,7 @@ def _prepare_index(
             selected_size, f"index: {size_key}", error=LayoutError
         )
     if "ha" not in selected_props and "horizontalalignment" not in selected_props:
-        selected_props["ha"] = "left"
+        selected_props["ha"] = "left" if loc == "in" else "center"
     if "va" not in selected_props and "verticalalignment" not in selected_props:
         selected_props["va"] = "top" if loc == "in" else "bottom"
     offset_points = (
@@ -225,7 +225,8 @@ def index(
     loc
         Place text from the upper-left Axes corner with four points of
         resolution-independent clearance. ``"in"`` moves right and down;
-        ``"out"`` moves right and up.
+        ``"out"`` moves right and up with the historical centered horizontal
+        text origin.
     size
         Matplotlib font size. The default is the historical ``"large"``.
     props
