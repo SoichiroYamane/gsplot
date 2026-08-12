@@ -189,11 +189,18 @@ repository behavior:
 - Catalog, build, deployment, and post-deployment smoke checks use separate
   least-privilege workflow boundaries. Release source code and demos never
   receive GitHub, Pages, PyPI, OIDC, or repository-write credentials.
+- The catalog job compares the current immutable release set with the last
+  public build manifest; removing a deployed release requires a reviewed
+  policy entry. Pull requests use a local fixture, and workflow dispatch can
+  run a non-deploying exact-tag release-candidate build.
 - Strict Sphinx, demo, metadata, link, artifact, dependency, workflow, and
   accessibility checks are required; skipped checks are reported as skipped.
 - Historical Mermaid diagrams are rendered to self-contained SVG assets during
   the build; published documentation must not load Mermaid, tooltip, or other
   documentation runtimes from floating external URLs.
+- The first clean site artifact records file count and deterministic compressed
+  and uncompressed sizes. Later builds fail on unexplained growth greater than
+  20% against the tracked baseline.
 
 ## Structural reform target contract
 

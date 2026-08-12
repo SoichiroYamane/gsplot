@@ -2568,22 +2568,6 @@ theme-rtd = ["sphinx-rtd-theme (>=2.0,<3.0)"]
 theme-sbt = ["sphinx-book-theme (>=1.1,<2.0)"]
 
 [[package]]
-name = "sphinx-multiversion"
-version = "0.2.4"
-description = "Add support for multiple versions to sphinx"
-optional = false
-python-versions = "*"
-groups = ["dev"]
-files = [
-    {file = "sphinx-multiversion-0.2.4.tar.gz", hash = "sha256:5cd1ca9ecb5eed63cb8d6ce5e9c438ca13af4fa98e7eb6f376be541dd4990bcb"},
-    {file = "sphinx_multiversion-0.2.4-py2.py3-none-any.whl", hash = "sha256:5c38d5ce785a335d8c8d768b46509bd66bfb9c6252b93b700ca8c05317f207d6"},
-    {file = "sphinx_multiversion-0.2.4-py3-none-any.whl", hash = "sha256:dec29f2a5890ad68157a790112edc0eb63140e70f9df0a363743c6258fbeb478"},
-]
-
-[package.dependencies]
-sphinx = ">=2.1"
-
-[[package]]
 name = "sphinx-pyscript"
 version = "0.1.0"
 description = "A sphinx extension for adding pyscript to a page"
@@ -3153,4 +3137,4 @@ packaging = ">=24.0"
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.10"
-content-hash = "47988a1c385f914dd1e6577b66dd1de9ccb0d05a4b3c0821c57434a0c25f26b8"
+content-hash = "c5000cdcbf173189c8e91b7fc6f85c9efc52176f891d3ec8e63b3d4006fa4b36"
