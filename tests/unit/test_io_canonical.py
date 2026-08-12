@@ -42,11 +42,10 @@ def test_savefig_validates_paths_and_displays_only_after_success(
     plt.close("all")
 
 
-def test_show_requires_a_managed_figure_and_close_is_explicit(tmp_path) -> None:
-    """Standalone display does not save, and close occurs after successful writes."""
+def test_show_is_noninteractive_noop_and_close_is_explicit(tmp_path) -> None:
+    """Headless display does not save, and close follows successful writes."""
 
-    with pytest.raises(OutputError, match="managed"):
-        output.show(Figure())
+    output.show(Figure())
     figure, _ = plt.subplots()
     destination = output.savefig(
         figure,
