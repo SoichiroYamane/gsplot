@@ -7,6 +7,7 @@ import json
 import os
 import sys
 from collections.abc import Iterable, Mapping
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
@@ -14,6 +15,7 @@ from tools.maintenance.docs_site.catalog import (
     CatalogError,
     build_catalog,
     fetch_github_releases,
+    fetch_public_manifest_release_tags,
     load_policy,
     parse_release_tag,
     resolve_git_ref,
@@ -69,6 +71,20 @@ def _parser() -> argparse.ArgumentParser:
         help="Public site base URL used by switcher entries.",
     )
     parser.add_argument(
+        "--previous-manifest-url",
+        help=(
+            "Public manifest URL used to prevent silent immutable-release "
+            "removal. A 404 is treated as a first deployment."
+        ),
+    )
+    parser.add_argument(
+        "--candidate-tag",
+        help=(
+            "Explicit unpublished tag to validate as a release candidate. "
+            "The candidate is never deployed by the Pages workflow."
+        ),
+    )
+    parser.add_argument(
         "--output",
         type=Path,
         required=True,
@@ -112,11 +128,47 @@ def main(argv: list[str] | None = None) -> int:
         policy = load_policy(policy_path)
         releases: Iterable[Mapping[str, Any]]
         if args.fixture is not None:
+            if args.candidate_tag:
+                raise CatalogError("--candidate-tag cannot be combined with --fixture")
             releases = _load_fixture(args.fixture)
         else:
-            releases = fetch_github_releases(
-                args.repository,
-                token=os.environ.get(args.token_env),
+            fetched_releases = list(
+                fetch_github_releases(
+                    args.repository,
+                    token=os.environ.get(args.token_env),
+                )
+            )
+            if args.candidate_tag:
+                parse_release_tag(args.candidate_tag)
+                if any(
+                    item.get("tag_name") == args.candidate_tag
+                    for item in fetched_releases
+                    if isinstance(item, Mapping)
+                ):
+                    raise CatalogError(
+                        "--candidate-tag is already a published release; "
+                        "omit it for a normal catalog build"
+                    )
+                fetched_releases.append(
+                    {
+                        "tag_name": args.candidate_tag,
+                        "draft": False,
+                        "prerelease": False,
+                        "published_at": datetime.now(timezone.utc)
+                        .replace(microsecond=0)
+                        .isoformat()
+                        .replace("+00:00", "Z"),
+                        "html_url": (
+                            f"https://github.com/{args.repository}/releases/tag/"
+                            f"{args.candidate_tag}"
+                        ),
+                    }
+                )
+            releases = fetched_releases
+        previous_release_tags = None
+        if args.previous_manifest_url and not args.candidate_tag:
+            previous_release_tags = fetch_public_manifest_release_tags(
+                args.previous_manifest_url
             )
         catalog = build_catalog(
             releases,
@@ -125,6 +177,7 @@ def main(argv: list[str] | None = None) -> int:
             has_docs=lambda commit: source_has_docs(repo_root, commit),
             documentation_floor=floor,
             policy_exclusions=policy,
+            previous_release_tags=previous_release_tags,
         )
         write_catalog(catalog, args.output)
         write_switcher(

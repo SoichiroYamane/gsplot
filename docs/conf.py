@@ -312,24 +312,9 @@ def generate_images() -> None:
         _check_demo_outputs(before, _DEMO_OUTPUTS[demo_name], demo_name)
 
 
-# Sphinx Multiversion configuration
-smv_tag_whitelist = r"^v\d+\.\d+\.\d+$"
-smv_branch_whitelist = r"^main$"
-smv_remote_whitelist = r"^origin$"
-smv_released_pattern = r"^refs/tags/v.*$"
-smv_outputdir_format = "{ref.name}"
-
-
 def setup(app):
-    """Register repository-specific Sphinx hooks and multiversion settings."""
+    """Register repository-specific Sphinx hooks."""
 
-    app.add_config_value("smv_metadata_path", None, "env")
-    app.add_config_value("smv_current_version", None, "env")
-    app.add_config_value("smv_tag_whitelist", smv_tag_whitelist, "env")
-    app.add_config_value("smv_branch_whitelist", smv_branch_whitelist, "env")
-    app.add_config_value("smv_remote_whitelist", smv_remote_whitelist, "env")
-    app.add_config_value("smv_released_pattern", smv_released_pattern, "env")
-    app.add_config_value("smv_outputdir_format", smv_outputdir_format, "env")
     generate_images()
     app.connect("autodoc-skip-member", skip_members)
 

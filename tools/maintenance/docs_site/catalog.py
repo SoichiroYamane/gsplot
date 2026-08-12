@@ -236,6 +236,7 @@ def build_catalog(
     has_docs: Callable[[str], bool],
     documentation_floor: tuple[int, int, int] = DEFAULT_DOCUMENTATION_FLOOR,
     policy_exclusions: Mapping[str, ExclusionPolicy] | None = None,
+    previous_release_tags: Iterable[str] | None = None,
 ) -> ReleaseCatalog:
     """Build a catalog from GitHub-like release payloads.
 
@@ -243,6 +244,9 @@ def build_catalog(
     explicit policy exclusions are recorded as public-safe exclusions. A valid
     release at or above the floor with a missing ref or documentation tree
     fails closed because silently selecting an older stable release is unsafe.
+    When a previous public manifest is supplied, every previously included
+    immutable release must remain included or have an explicit retirement
+    policy.
     """
 
     _validate_sha(main_commit, "main_commit")
@@ -254,6 +258,13 @@ def build_catalog(
         )
     policy = dict(policy_exclusions or {})
     _validate_policy_mapping(policy, documentation_floor)
+    previous_tags = set(previous_release_tags or ())
+    for tag in previous_tags:
+        version_tuple = parse_release_tag(tag)
+        if version_tuple < documentation_floor:
+            raise CatalogError(
+                f"previous manifest release is below the documentation floor: {tag}"
+            )
     exclusions: list[ExcludedRelease] = []
     included: list[ReleaseRecord] = []
     seen_input_tags: set[str] = set()
@@ -334,11 +345,34 @@ def build_catalog(
             )
         )
 
+    included_tags = {item.tag for item in included}
+    missing_previous_tags = previous_tags - included_tags
+    unreviewed_previous_tags = missing_previous_tags - set(policy)
+    if unreviewed_previous_tags:
+        raise CatalogError(
+            "previous immutable release is missing without retirement policy: "
+            + ", ".join(sorted(unreviewed_previous_tags, key=parse_release_tag))
+        )
+
     unused_policy_tags = set(policy) - applied_policy_tags
-    if unused_policy_tags:
+    retired_policy_tags = unused_policy_tags & previous_tags
+    for tag in sorted(retired_policy_tags, key=parse_release_tag, reverse=True):
+        exclusion = policy[tag]
+        exclusions.append(
+            ExcludedRelease(
+                tag=tag,
+                reason=exclusion.reason,
+                approved_at=exclusion.approved_at,
+                issue_url=exclusion.issue_url,
+                pull_request_url=exclusion.pull_request_url,
+                replacement_url=exclusion.replacement_url,
+            )
+        )
+    unresolved_policy_tags = unused_policy_tags - retired_policy_tags
+    if unresolved_policy_tags:
         raise CatalogError(
             "release exclusion policy refers to unpublished or ineligible tags: "
-            + ", ".join(sorted(unused_policy_tags))
+            + ", ".join(sorted(unresolved_policy_tags))
         )
 
     included.sort(key=lambda item: parse_release_tag(item.tag), reverse=True)
@@ -456,6 +490,66 @@ def fetch_github_releases(
         if len(value) < 100:
             return releases
     raise CatalogError("GitHub Releases API pagination exceeded the safe limit")
+
+
+def fetch_public_manifest_release_tags(
+    manifest_url: str,
+    *,
+    opener: Callable[..., Any] = urlopen,
+) -> frozenset[str] | None:
+    """Fetch immutable release tags from the previously published manifest.
+
+    A missing manifest is expected on the first deployment. Any other network,
+    HTTP, schema, or tag-validation failure is fatal so a catalog job cannot
+    silently deploy a version that was removed from the public site.
+    """
+
+    _validate_url(manifest_url, "previous manifest URL")
+    request = Request(
+        manifest_url,
+        headers={
+            "Accept": "application/json",
+            "User-Agent": "gsplot-docs-catalog",
+        },
+        method="GET",
+    )
+    try:
+        with opener(request, timeout=30, context=_ssl_context()) as response:
+            status = getattr(response, "status", 200)
+            if status in {404, 410}:
+                return None
+            if status != 200:
+                raise CatalogError(
+                    f"previous documentation manifest returned HTTP {status}"
+                )
+            raw = response.read()
+    except HTTPError as exc:
+        if exc.code in {404, 410}:
+            return None
+        raise CatalogError("previous documentation manifest request failed") from exc
+    except (URLError, OSError) as exc:
+        raise CatalogError("previous documentation manifest request failed") from exc
+    try:
+        value = json.loads(raw)
+    except (TypeError, json.JSONDecodeError) as exc:
+        raise CatalogError("previous documentation manifest is invalid JSON") from exc
+    if not isinstance(value, Mapping):
+        raise CatalogError("previous documentation manifest must be an object")
+    builds = value.get("builds")
+    if not isinstance(builds, list):
+        raise CatalogError("previous documentation manifest has no build list")
+    release_tags: set[str] = set()
+    for item in builds:
+        if not isinstance(item, Mapping) or item.get("channel") != "release":
+            continue
+        tag = item.get("source_ref")
+        if not isinstance(tag, str):
+            raise CatalogError("previous documentation manifest has an invalid release")
+        parse_release_tag(tag)
+        release_tags.add(tag)
+    if not release_tags:
+        raise CatalogError("previous documentation manifest has no immutable releases")
+    return frozenset(release_tags)
 
 
 def _ssl_context() -> ssl.SSLContext:

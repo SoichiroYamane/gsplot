@@ -5,10 +5,11 @@
 # from the environment for the first two.
 SPHINXOPTS    ?=
 SPHINXBUILD   ?= sphinx-build
-SPHINXMULTI   ?= sphinx-multiversion
 PYTHON        ?= python
 SOURCEDIR     = .
 BUILDDIR      = _build
+CATALOG       ?=
+SITE_OUTPUT   ?=
 
 # Put it first so that "make" without argument is like "make help".
 help:
@@ -35,9 +36,11 @@ autobuild:
 build-images:
 	MPLBACKEND=Agg $(PYTHON) ../scripts/docs/build_demo_images.py
 
-# Multiversion target: build documentation for multiple versions
+# Multiversion target: thin compatibility wrapper around the repository tool.
 multiversion:
-	$(SPHINXMULTI) "$(SOURCEDIR)" "$(BUILDDIR)/html"
+	@test -n "$(CATALOG)" || (echo "Set CATALOG to a validated catalog JSON path." >&2; exit 2)
+	@test -n "$(SITE_OUTPUT)" || (echo "Set SITE_OUTPUT outside the checkout." >&2; exit 2)
+	PYTHONPATH=.. $(PYTHON) -m tools.maintenance.build_docs_site --repo-root .. --catalog "$(CATALOG)" --output "$(SITE_OUTPUT)"
 
 html-dev-deploy:
 	@echo "Building HTML documentation..."

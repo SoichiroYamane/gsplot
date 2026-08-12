@@ -98,3 +98,7 @@ Before cutover, the website checks must:
 The compatibility inventory is updated in the same pull request as any
 intentional route removal, with a public Issue or PR reference explaining the
 decision.
+
+The catalog/build/deploy workflow is the only deployment path. It does not read
+the historical `docs/versions` file; the old shell and Make entrypoints accept
+an explicit validated catalog and output directory only.

@@ -83,6 +83,11 @@ _UNTRUSTED_ENV_NAMES = {
     "UV_EXTRA_INDEX_URL",
     "UV_INDEX",
     "UV_INDEX_URL",
+    "NODE_OPTIONS",
+    "NODE_PATH",
+    "NPM_CONFIG_GLOBALCONFIG",
+    "NPM_CONFIG_USERCONFIG",
+    "NPM_CONFIG_REGISTRY",
 }
 _CURRENT_SPHINX_EXTENSIONS = (
     "sphinx.ext.autodoc",
@@ -454,9 +459,15 @@ def _build_channel(
         output_dir.mkdir(parents=True, exist_ok=False)
         doctree_dir = environment_root / "doctrees"
         mermaid_config = None
+        mermaid_puppeteer_config = None
         if release is not None:
             mermaid_config = environment_root / "mermaid-config.json"
             _write_json(mermaid_config, {"handDrawnSeed": 1})
+            mermaid_puppeteer_config = environment_root / "puppeteer-config.json"
+            _write_puppeteer_config(
+                mermaid_puppeteer_config,
+                environment.get("GSPLOT_MERMAID_CHROME_PATH"),
+            )
         extensions = (
             _HISTORICAL_SPHINX_EXTENSIONS
             if release is not None
@@ -511,6 +522,7 @@ def _build_channel(
             html_context=html_context,
             historical=release is not None,
             mermaid_config=mermaid_config,
+            mermaid_puppeteer_config=mermaid_puppeteer_config,
         )
         _run_process(
             [
@@ -566,6 +578,7 @@ def _append_config_overrides(
     html_context: Mapping[str, Any],
     historical: bool,
     mermaid_config: Path | None,
+    mermaid_puppeteer_config: Path | None,
 ) -> None:
     """Append deterministic channel metadata to an isolated source config.
 
@@ -602,6 +615,8 @@ def _append_config_overrides(
         lines.extend(
             [
                 f"mermaid_params = ['--configFile', {str(mermaid_config)!r}]",
+                "mermaid_params += ["
+                f"'--puppeteerConfigFile', {str(mermaid_puppeteer_config)!r}]",
                 "tippy_js = []",
                 "tippy_enable_wikitips = False",
                 "tippy_enable_doitips = False",
@@ -611,6 +626,20 @@ def _append_config_overrides(
         original.rstrip() + "\n" + "\n".join(lines) + "\n",
         encoding="utf-8",
         errors="strict",
+    )
+
+
+def _write_puppeteer_config(path: Path, chrome_path: str | None) -> None:
+    """Write a temporary Puppeteer policy for the build-only Mermaid CLI."""
+
+    configuration: dict[str, Any] = {
+        "args": ["--no-sandbox", "--disable-setuid-sandbox"],
+    }
+    if chrome_path:
+        configuration["executablePath"] = chrome_path
+    path.write_text(
+        json.dumps(configuration, sort_keys=True) + "\n",
+        encoding="utf-8",
     )
 
 

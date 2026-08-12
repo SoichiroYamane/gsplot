@@ -178,6 +178,9 @@ cython_debug/
 .worktree-main
 .worktree-*
 
+# Locked build-only Mermaid CLI installation
+tools/maintenance/docs_site/node_modules/
+
 # ignore .gsplot
 .gsplot
 

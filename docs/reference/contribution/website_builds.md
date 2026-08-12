@@ -64,3 +64,32 @@ demo, or Sphinx processes. Historical Mermaid directives are rendered to SVG
 at build time with the pinned `mmdc` CLI; the published HTML does not load a
 Mermaid or other documentation runtime from a CDN. A full local catalog build
 therefore requires a compatible `mmdc` executable on `PATH`.
+
+## Workflow boundaries
+
+`.github/workflows/gh-pages-sphinx.yml` has four independently permissioned
+jobs:
+
+1. `catalog` reads the public GitHub Releases API and uploads only the typed
+   catalog and switcher. Pull requests use the tracked fixture and do not need
+   GitHub API access. A workflow-dispatch `candidate_tag` may add an existing
+   unpublished tag for a build-only release-candidate check.
+2. `build` downloads the catalog artifact, checks out `main` and all tags,
+   installs the locked Poetry and npm toolchains, and builds outside the
+   checkout. It receives no GitHub, Pages, PyPI, or OIDC credential.
+3. `deploy` receives only Pages write and OIDC identity permissions and runs
+   only for a published catalog, never for a pull request or candidate build.
+4. `smoke` downloads the public-safe catalog and manifest and performs bounded
+   read-only HTTP checks for the deployed root, aliases, immutable pages,
+   metadata, representative assets, crawler files, and custom 404 response.
+
+The catalog job also compares the candidate release set with the previously
+published `_meta/build-manifest.json`. An immutable release cannot disappear
+without a reviewed entry in `website-release-policy.json`. The artifact
+baseline records the first clean build's file count and deterministic
+compressed/uncompressed sizes; a later build fails when any metric grows by
+more than 20% without a baseline update and linked review.
+
+The old `docs/multiversions.sh` and Make target are thin wrappers around the
+same orchestrator and require an explicit catalog and output path. They do not
+read the historical `docs/versions` list and are not used by CI or deployment.
