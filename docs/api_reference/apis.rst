@@ -31,6 +31,7 @@ Functions
    gsplot.minor_ticks
    gsplot.box_aspect
    gsplot.panel_labels
+   gsplot.paper
    gsplot.fig_facecolor
    gsplot.legend
    gsplot.legends
