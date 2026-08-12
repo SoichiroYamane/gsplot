@@ -321,3 +321,65 @@ def test_save_exact_canvas_parent_creation_and_post_commit_failure(
     assert caught.value.committed_paths == (destination,)
     assert "bbox_inches" not in calls[0]
     assert "pad_inches" not in calls[0]
+
+
+def test_show_is_a_noninteractive_no_op_for_figure_and_axes_targets(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """A non-GUI canvas emits no warning and never calls Figure.show."""
+
+    figure, axes = plt.subplots(1, 2)
+    calls: list[bool] = []
+    monkeypatch.setattr(figure, "show", lambda *, warn: calls.append(warn))
+    try:
+        output.show(figure)
+        output.show(axes)
+    finally:
+        plt.close(figure)
+
+    assert calls == []
+
+
+def test_show_requires_a_manager_only_for_interactive_canvas(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Interactive display invokes the resolved Figure exactly once."""
+
+    figure, axis = plt.subplots()
+    calls: list[bool] = []
+    monkeypatch.setattr(
+        type(figure.canvas), "required_interactive_framework", "test", raising=False
+    )
+    monkeypatch.setattr(figure.canvas, "manager", None)
+    try:
+        with pytest.raises(gs.OutputError, match="requires a managed Figure"):
+            output.show(axis)
+
+        monkeypatch.setattr(figure.canvas, "manager", object())
+        monkeypatch.setattr(figure, "show", lambda *, warn: calls.append(warn))
+        output.show(axis)
+    finally:
+        plt.close(figure)
+
+    assert calls == [False]
+
+
+def test_save_close_affects_only_the_resolved_figure(tmp_path: Path) -> None:
+    """Successful close never depends on or closes another current Figure."""
+
+    saved, saved_axis = plt.subplots()
+    unrelated, _ = plt.subplots()
+    try:
+        plt.figure(unrelated.number)
+        paths = output.save(
+            saved_axis,
+            tmp_path / "closed.png",
+            show=False,
+            close=True,
+        )
+
+        assert paths == ((tmp_path / "closed.png").resolve(),)
+        assert not plt.fignum_exists(saved.number)
+        assert plt.fignum_exists(unrelated.number)
+    finally:
+        plt.close("all")

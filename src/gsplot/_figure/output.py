@@ -13,6 +13,7 @@ from pathlib import Path
 from typing import Any, cast
 
 from matplotlib import rc_context
+from matplotlib.backend_bases import FigureManagerBase
 from matplotlib.figure import Figure
 
 from .._core.errors import OptionError, OutputError, PlotError
@@ -543,44 +544,55 @@ def _save_props(props: Mapping[str, Any] | None) -> dict[str, Any]:
     return dict(props)
 
 
-def show(fig: Figure) -> None:
-    """Display only an explicitly supplied managed Figure.
+def _is_interactive_figure(figure: Figure) -> bool:
+    """Return whether a canvas has a GUI/web manager implementation."""
 
-    A manager-backed non-interactive Figure is a documented no-display
-    success.  A Figure without a manager raises ``OutputError`` instead of
-    invoking pyplot and exposing unrelated Figures.
+    canvas = figure.canvas
+    framework = getattr(canvas, "required_interactive_framework", None)
+    manager_class = getattr(canvas, "manager_class", FigureManagerBase)
+    return framework is not None or manager_class is not FigureManagerBase
+
+
+def show(target: Figure | AxesTarget) -> None:
+    """Display only the unique Figure owned by an explicit target.
+
+    A non-interactive canvas is a documented no-op. An interactive canvas is
+    displayed once through its Figure manager without invoking global pyplot
+    display or starting a process-global event loop.
 
     Parameters
     ----------
-    fig
-        The managed Matplotlib Figure to display.
+    target
+        A Figure or finite Axes target resolving to exactly one root Figure.
 
     Returns
     -------
     None
-        The Figure is displayed through its own canvas.
+        The Figure is displayed through its own manager when interactive.
 
     Raises
     ------
     OutputError
-        If the value is not a Figure, has no manager, or cannot be displayed.
+        If the target is ambiguous, an interactive Figure has no usable
+        manager, or display fails.
 
     Examples
     --------
     >>> import gsplot as gs
     >>> figure, _ = gs.subplots()
-    >>> gs.show(figure)
+    >>> gs.show(figure)  # no-op on non-interactive backends
     >>> figure.clear()
     """
 
-    if not isinstance(fig, Figure):
-        raise OutputError("fig must be a Matplotlib Figure")
-    if getattr(fig.canvas, "manager", None) is None:
-        raise OutputError("display requires a managed Figure; use show=False")
+    figure = _target_figure(target, "show")
+    if not _is_interactive_figure(figure):
+        return None
+    if getattr(figure.canvas, "manager", None) is None:
+        raise OutputError("show: interactive display requires a managed Figure")
     try:
-        fig.show(warn=False)
+        figure.show(warn=False)
     except Exception as exc:
-        raise OutputError("could not display the supplied Figure") from exc
+        raise OutputError("show: the supplied Figure could not be displayed") from exc
 
 
 def savefig(
