@@ -9,6 +9,13 @@ explicit canonical API.
 axes. The following example mixes gsplot helpers with `Axes.plot`,
 `Axes.scatter`, `plt.sca`, and `plt.plot`.
 
+During the compatibility window, `gs.axes()` keeps its historical 5-by-5 inch
+single-panel default, tight layout, and `store` flag. Option-free root
+`gs.line()` and `gs.scatter()` calls keep the historical viridis automatic
+color sequence. Legacy `gs.show()` writes its default PNG and PDF only when
+the legacy store flag is enabled. New code should use `gs.subplots()`,
+explicit `props` or `Config` values, and `gs.savefig(fig, ...)` instead.
+
 ## Example
 
 ### Code
