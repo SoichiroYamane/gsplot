@@ -75,7 +75,7 @@ def read_array(
         reserved = sorted(set(options) & {"loader", "ndmin", "fname"})
         if reserved:
             joined = ", ".join(repr(key) for key in reserved)
-            raise TypeError(f"options cannot contain reserved key(s): {joined}")
+            raise DataError(f"options cannot contain reserved key(s): {joined}")
         selected_options = dict(options)
     try:
         loader_function: Any = np.genfromtxt if loader == "genfromtxt" else np.loadtxt

@@ -34,7 +34,7 @@ def test_array_and_metadata_io_are_explicit_and_atomic(tmp_path: Path) -> None:
     ):
         with pytest.raises(DataError):
             read_array(**kwargs)  # type: ignore[arg-type]
-    with pytest.raises(TypeError):
+    with pytest.raises(DataError):
         read_array(source, options={"fname": "other"})
     with pytest.raises(DataError):
         read_array(tmp_path / "missing.txt")
