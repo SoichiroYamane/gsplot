@@ -27,6 +27,16 @@ MosaicSpec: TypeAlias = str | Sequence[Sequence[str | None]]
 AxesTarget: TypeAlias = Axes | Sequence[Axes] | Mapping[object, Axes] | NDArray[Any]
 # Public type alias: PerTarget; ordered or exact-key per-target values.
 PerTarget: TypeAlias = Sequence[Any] | Mapping[object, Any]
+# Public type alias: Unit; supported physical figure-size units.
+Unit: TypeAlias = Literal["in", "cm", "mm", "pt"]
+# Public type alias: SizePreset; automatic publication canvas choices.
+SizePreset: TypeAlias = Literal["auto", "single", "double"]
+# Public type alias: SizeSpec; a preset, explicit dimensions, or ambient size.
+SizeSpec: TypeAlias = SizePreset | tuple[float, float] | None
+# Public type alias: LayoutMode; supported Figure layout-engine choices.
+LayoutMode: TypeAlias = Literal["auto", "constrained", "tight", "none"]
+# Public type alias: StyleMode; concise target-local style choices.
+StyleMode: TypeAlias = Literal["auto", "paper"] | None
 
 
 class _NormalizeProtocol(Protocol):
@@ -673,6 +683,11 @@ __all__ = [
     "MosaicSpec",
     "AxesTarget",
     "PerTarget",
+    "Unit",
+    "SizePreset",
+    "SizeSpec",
+    "LayoutMode",
+    "StyleMode",
     "NormalizeSpec",
     "AxisSpec",
     "InsetSpec",

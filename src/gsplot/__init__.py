@@ -55,6 +55,7 @@ if TYPE_CHECKING:
     from ._style.axes import box_aspect, minor_ticks, style_axes, suptitle, title
     from ._style.legends import cmap_legend, legend, legend_entries, legends
     from ._style.panels import panel_labels
+    from ._style.paper import paper
     from ._style.themes import fig_facecolor, set_theme
 
     # These are intentionally outside the canonical manifest but remain
@@ -117,6 +118,7 @@ __all__ = [
     "legend_entries",
     "cmap_legend",
     "set_theme",
+    "paper",
     "savefig",
     "show",
     "load_config",

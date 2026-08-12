@@ -54,7 +54,7 @@ def test_basic_plotters_own_their_axes_and_validate_before_mutation() -> None:
         [0, 1],
         [1, 2],
         config=Config.from_mapping(
-            {"schema_version": 1, "plotting": {"default_color": "red"}}
+            {"schema_version": 2, "plotting": {"default_color": "red"}}
         ),
     )
     assert len(artists) == 1

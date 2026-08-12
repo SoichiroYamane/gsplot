@@ -1,4 +1,4 @@
-"""Strict JSON parsing and scalar validation for schema version 1."""
+"""Strict JSON parsing and scalar validation for configuration schemas."""
 
 from __future__ import annotations
 
@@ -10,7 +10,7 @@ from pathlib import Path
 from typing import Any, Literal, cast
 
 from .._core.errors import ConfigError
-from .._core.types import ColorSpec
+from .._core.types import ColorSpec, LayoutMode, SizeSpec, Unit
 from .._core.validation import (
     ensure_bool,
     ensure_finite_real,
@@ -20,13 +20,22 @@ from .._core.validation import (
     reject_unknown_keys,
 )
 
-SCHEMA_VERSION: Literal[1] = 1
+SCHEMA_VERSION: Literal[2] = 2
 MAX_CONFIG_BYTES = 1_048_576
 DEFAULT_CONFIG_NAME = "gsplot.json"
-FIGURE_KEYS = {"figsize", "unit", "squeeze", "tight_layout", "constrained_layout"}
+FIGURE_KEYS = {"size", "unit", "squeeze", "layout"}
+LEGACY_FIGURE_KEYS = {
+    "figsize",
+    "unit",
+    "squeeze",
+    "tight_layout",
+    "constrained_layout",
+}
 PLOTTING_KEYS = {"default_color", "default_cmap", "nonfinite"}
 ROOT_KEYS = {"schema_version", "figure", "plotting"}
 UNITS = {"mm", "cm", "in", "pt"}
+SIZE_PRESETS = {"auto", "single", "double"}
+LAYOUT_MODES = {"auto", "constrained", "tight", "none"}
 
 
 def _reject_duplicate_pairs(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
@@ -97,27 +106,27 @@ def read_json_file(path: str | PathLike[str]) -> dict[str, Any]:
     return parse_json_text(text)
 
 
-def parse_schema_version(value: Any) -> Literal[1]:
-    """Validate the supported schema version."""
+def parse_schema_version(value: Any) -> Literal[1, 2]:
+    """Validate a supported canonical or migration schema version."""
 
     if isinstance(value, bool) or not isinstance(value, int):
-        raise ConfigError("schema_version must be the integer 1")
-    if value != SCHEMA_VERSION:
+        raise ConfigError("schema_version must be the integer 1 or 2")
+    if value not in {1, SCHEMA_VERSION}:
         raise ConfigError(f"unsupported schema_version: {value}")
-    return cast(Literal[1], value)
+    return cast(Literal[1, 2], value)
 
 
-def parse_unit(value: Any) -> Literal["mm", "cm", "in", "pt"]:
+def parse_unit(value: Any) -> Unit:
     """Validate a figure size unit."""
 
     if not isinstance(value, str) or value not in UNITS:
         allowed = ", ".join(sorted(UNITS))
         raise ConfigError(f"figure.unit must be one of: {allowed}")
-    return cast(Literal["mm", "cm", "in", "pt"], value)
+    return cast(Unit, value)
 
 
 def parse_figsize(value: Any) -> tuple[float, float] | None:
-    """Validate a positive two-dimensional figure size."""
+    """Validate a legacy positive two-dimensional figure size."""
 
     if value is None:
         return None
@@ -129,6 +138,37 @@ def parse_figsize(value: Any) -> tuple[float, float] | None:
         ensure_positive(value[0], "figure.figsize[0]", error=ConfigError),
         ensure_positive(value[1], "figure.figsize[1]", error=ConfigError),
     )
+
+
+def parse_size(value: Any) -> SizeSpec:
+    """Validate one schema-2 figure size value."""
+
+    if value is None:
+        return None
+    if isinstance(value, str):
+        if value not in SIZE_PRESETS:
+            allowed = ", ".join(sorted(SIZE_PRESETS))
+            raise ConfigError(f"figure.size must be one of: {allowed}")
+        return cast(SizeSpec, value)
+    if isinstance(value, (str, bytes)) or not isinstance(value, Sequence):
+        raise ConfigError(
+            "figure.size must be null, a named preset, or a two-item array"
+        )
+    if len(value) != 2:
+        raise ConfigError("figure.size must contain exactly two values")
+    return (
+        ensure_positive(value[0], "figure.size[0]", error=ConfigError),
+        ensure_positive(value[1], "figure.size[1]", error=ConfigError),
+    )
+
+
+def parse_layout(value: Any) -> LayoutMode:
+    """Validate one schema-2 Figure layout mode."""
+
+    if not isinstance(value, str) or value not in LAYOUT_MODES:
+        allowed = ", ".join(sorted(LAYOUT_MODES))
+        raise ConfigError(f"figure.layout must be one of: {allowed}")
+    return cast(LayoutMode, value)
 
 
 def parse_color(value: Any, name: str) -> ColorSpec:
@@ -174,6 +214,7 @@ __all__ = [
     "MAX_CONFIG_BYTES",
     "DEFAULT_CONFIG_NAME",
     "FIGURE_KEYS",
+    "LEGACY_FIGURE_KEYS",
     "PLOTTING_KEYS",
     "ROOT_KEYS",
     "read_json_file",
@@ -181,6 +222,8 @@ __all__ = [
     "parse_schema_version",
     "parse_unit",
     "parse_figsize",
+    "parse_size",
+    "parse_layout",
     "parse_color",
     "parse_default_color",
     "validate_section",

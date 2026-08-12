@@ -86,6 +86,7 @@ _CANONICAL_EXPORTS: Final[dict[str, tuple[str, str]]] = {
     "legend_entries": ("gsplot._style.legends", "legend_entries"),
     "cmap_legend": ("gsplot._style.legends", "cmap_legend"),
     "set_theme": ("gsplot._style.themes", "set_theme"),
+    "paper": ("gsplot._style.paper", "paper"),
     "load_config": ("gsplot._compat.config", "load_config"),
     "read_array": ("gsplot._io.arrays", "read_array"),
     "write_meta": ("gsplot._io.metadata", "write_meta"),

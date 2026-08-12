@@ -1,10 +1,9 @@
-"""Explicit configuration discovery and precedence helpers."""
+"""Explicit canonical configuration loading and precedence helpers."""
 
 from __future__ import annotations
 
 from collections.abc import Mapping
 from os import PathLike
-from pathlib import Path
 from typing import Any, Literal, TypeVar
 
 from .._core.errors import ConfigError
@@ -15,43 +14,20 @@ from .schema import DEFAULT_CONFIG_NAME
 T = TypeVar("T")
 
 
-def discover_config_path(
-    *,
-    cwd: str | Path | None = None,
-    home: str | Path | None = None,
-) -> Path | None:
-    """Find ``gsplot.json`` in cwd, user config, then home order."""
-
-    current = Path.cwd() if cwd is None else Path(cwd).expanduser()
-    home_path = Path.home() if home is None else Path(home).expanduser()
-    candidates = (
-        current / DEFAULT_CONFIG_NAME,
-        home_path / ".config" / "gsplot" / DEFAULT_CONFIG_NAME,
-        home_path / DEFAULT_CONFIG_NAME,
-    )
-    return next((candidate for candidate in candidates if candidate.is_file()), None)
-
-
 def load_config(
-    path: str | PathLike[str] | None = None,
-    *,
-    cwd: str | Path | None = None,
-    home: str | Path | None = None,
+    path: str | PathLike[str],
 ) -> Config:
-    """Explicitly load one file or discover a JSON file without import effects.
+    """Explicitly load one canonical JSON file without discovery.
 
     Parameters
     ----------
     path
-        Explicit JSON configuration file, or ``None`` to discover one.
-    cwd, home
-        Optional discovery roots useful for tests and isolated applications.
+        Explicit JSON configuration file.
 
     Returns
     -------
     Config
-        A fresh immutable configuration value.  No file is selected when no
-        candidate exists, so the library defaults are returned.
+        A fresh immutable configuration value.
 
     Raises
     ------
@@ -62,15 +38,12 @@ def load_config(
     Examples
     --------
     >>> import gsplot as gs
-    >>> config = gs.load_config(path=None, cwd="/tmp", home="/tmp")
+    >>> config = gs.load_config("gsplot.json")  # doctest: +SKIP
     >>> config.schema_version
-    1
+    2  # doctest: +SKIP
     """
 
-    if path is not None:
-        return Config.from_file(str(path))
-    discovered = discover_config_path(cwd=cwd, home=home)
-    return Config() if discovered is None else Config.from_file(str(discovered))
+    return Config.from_file(str(path))
 
 
 def resolve_config_value(
@@ -92,7 +65,6 @@ def resolve_config_value(
 
 __all__ = [
     "DEFAULT_CONFIG_NAME",
-    "discover_config_path",
     "load_config",
     "resolve_config_value",
 ]

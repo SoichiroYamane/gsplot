@@ -2,13 +2,14 @@
 
 from __future__ import annotations
 
+import warnings
 from dataclasses import dataclass, field
 from os import PathLike
 from types import MappingProxyType
 from typing import Any, Literal, Mapping, TypeAlias, overload
 
 from .._core.errors import ConfigError
-from .._core.types import ColorSpec
+from .._core.types import ColorSpec, LayoutMode, SizeSpec, Unit
 from .._core.validation import (
     MISSING,
     ensure_bool,
@@ -18,12 +19,15 @@ from .._core.validation import (
 )
 from .schema import (
     FIGURE_KEYS,
+    LEGACY_FIGURE_KEYS,
     PLOTTING_KEYS,
     ROOT_KEYS,
     SCHEMA_VERSION,
     parse_default_color,
     parse_figsize,
+    parse_layout,
     parse_schema_version,
+    parse_size,
     parse_unit,
     read_json_file,
     validate_section,
@@ -33,38 +37,57 @@ from .schema import (
 ConfigValue: TypeAlias = tuple[float, float] | ColorSpec | bool | str | None
 
 
+def _warn_legacy_view(name: str, replacement: str, *, stacklevel: int = 3) -> None:
+    """Warn for one lossless or documented-lossy schema-1 read view."""
+
+    warnings.warn(
+        f"Config.figure.{name} is deprecated; use Config.figure.{replacement}",
+        DeprecationWarning,
+        stacklevel=stacklevel,
+    )
+
+
 @dataclass(frozen=True, slots=True)
 class FigureConfig:
-    """Validated, immutable figure defaults."""
+    """Validated, immutable schema-2 figure defaults."""
 
-    figsize: tuple[float, float] | None = None
-    unit: Literal["mm", "cm", "in", "pt"] = "in"
+    size: SizeSpec = "auto"
+    unit: Unit = "in"
     squeeze: bool = True
-    tight_layout: bool = False
-    constrained_layout: bool = False
+    layout: LayoutMode = "auto"
 
     def __post_init__(self) -> None:
         """Validate direct constructor values as well as parsed mappings."""
 
-        object.__setattr__(self, "figsize", parse_figsize(self.figsize))
+        object.__setattr__(self, "size", parse_size(self.size))
         object.__setattr__(self, "unit", parse_unit(self.unit))
         object.__setattr__(self, "squeeze", ensure_bool(self.squeeze, "figure.squeeze"))
-        object.__setattr__(
-            self,
-            "tight_layout",
-            ensure_bool(self.tight_layout, "figure.tight_layout"),
-        )
-        object.__setattr__(
-            self,
-            "constrained_layout",
-            ensure_bool(self.constrained_layout, "figure.constrained_layout"),
-        )
-        if self.tight_layout and self.constrained_layout:
+        object.__setattr__(self, "layout", parse_layout(self.layout))
+        if not isinstance(self.size, tuple) and self.unit != "in":
             raise ConfigError(
-                "figure.tight_layout and figure.constrained_layout cannot both be true"
+                "figure.unit must be 'in' unless figure.size is an explicit tuple"
             )
-        if self.figsize is None and self.unit != "in":
-            raise ConfigError("figure.unit must be 'in' when figure.figsize is null")
+
+    @property
+    def figsize(self) -> tuple[float, float] | None:
+        """Return the deprecated lossy schema-1 figure-size view."""
+
+        _warn_legacy_view("figsize", "size")
+        return self.size if isinstance(self.size, tuple) else None
+
+    @property
+    def tight_layout(self) -> bool:
+        """Return whether the schema-2 layout is explicitly ``"tight"``."""
+
+        _warn_legacy_view("tight_layout", "layout")
+        return self.layout == "tight"
+
+    @property
+    def constrained_layout(self) -> bool:
+        """Return whether the schema-2 layout is explicitly ``"constrained"``."""
+
+        _warn_legacy_view("constrained_layout", "layout")
+        return self.layout == "constrained"
 
 
 @dataclass(frozen=True, slots=True)
@@ -97,7 +120,7 @@ class Config:
     Parameters
     ----------
     schema_version
-        Supported configuration schema identity, currently integer ``1``.
+        Canonical configuration schema identity, integer ``2``.
     figure
         Immutable figure defaults such as size, units, and layout flags.
     plotting
@@ -118,16 +141,17 @@ class Config:
     'viridis'
     """
 
-    schema_version: Literal[1] = SCHEMA_VERSION
+    schema_version: Literal[2] = SCHEMA_VERSION
     figure: FigureConfig = field(default_factory=FigureConfig)
     plotting: PlottingConfig = field(default_factory=PlottingConfig)
 
     def __post_init__(self) -> None:
         """Validate schema identity and nested value types."""
 
-        object.__setattr__(
-            self, "schema_version", parse_schema_version(self.schema_version)
-        )
+        if self.schema_version != SCHEMA_VERSION or isinstance(
+            self.schema_version, bool
+        ):
+            raise ConfigError("schema_version must be the integer 2")
         if not isinstance(self.figure, FigureConfig):
             raise ConfigError("figure must be a FigureConfig")
         if not isinstance(self.plotting, PlottingConfig):
@@ -141,7 +165,8 @@ class Config:
         ----------
         mapping
             Versioned mapping containing only ``figure`` and ``plotting``
-            sections and their reviewed keys.
+            sections and their reviewed keys. Schema 1 is translated with one
+            migration warning.
 
         Returns
         -------
@@ -158,11 +183,19 @@ class Config:
         --------
         >>> import gsplot as gs
         >>> config = gs.Config.from_mapping(
-        ...     {"schema_version": 1, "plotting": {"default_cmap": "plasma"}}
+        ...     {"schema_version": 2, "plotting": {"default_cmap": "plasma"}}
         ... )
         >>> config.plotting.default_cmap
         'plasma'
         """
+
+        return cls._from_mapping(mapping, warning_stacklevel=3)
+
+    @classmethod
+    def _from_mapping(
+        cls, mapping: Mapping[str, Any], *, warning_stacklevel: int
+    ) -> "Config":
+        """Parse one mapping with caller-controlled warning attribution."""
 
         mapping = ensure_mapping(mapping, "configuration")
         reject_unknown_keys(mapping, ROOT_KEYS, "configuration")
@@ -170,25 +203,46 @@ class Config:
             raise ConfigError("configuration requires schema_version")
         schema_version = parse_schema_version(mapping["schema_version"])
 
+        figure_keys = LEGACY_FIGURE_KEYS if schema_version == 1 else FIGURE_KEYS
         figure_mapping = validate_section(
-            mapping.get("figure", {}), "figure", FIGURE_KEYS
+            mapping.get("figure", {}), "figure", figure_keys
         )
         plotting_mapping = validate_section(
             mapping.get("plotting", {}), "plotting", PLOTTING_KEYS
         )
 
-        figure = FigureConfig(
-            figsize=parse_figsize(figure_mapping.get("figsize")),
-            unit=parse_unit(figure_mapping.get("unit", "in")),
-            squeeze=ensure_bool(figure_mapping.get("squeeze", True), "figure.squeeze"),
-            tight_layout=ensure_bool(
+        if schema_version == 1:
+            tight = ensure_bool(
                 figure_mapping.get("tight_layout", False), "figure.tight_layout"
-            ),
-            constrained_layout=ensure_bool(
+            )
+            constrained = ensure_bool(
                 figure_mapping.get("constrained_layout", False),
                 "figure.constrained_layout",
-            ),
-        )
+            )
+            if tight and constrained:
+                raise ConfigError(
+                    "figure.tight_layout and figure.constrained_layout cannot both be true"
+                )
+            layout: LayoutMode = (
+                "tight" if tight else "constrained" if constrained else "none"
+            )
+            figure = FigureConfig(
+                size=parse_figsize(figure_mapping.get("figsize")),
+                unit=parse_unit(figure_mapping.get("unit", "in")),
+                squeeze=ensure_bool(
+                    figure_mapping.get("squeeze", True), "figure.squeeze"
+                ),
+                layout=layout,
+            )
+        else:
+            figure = FigureConfig(
+                size=parse_size(figure_mapping.get("size", "auto")),
+                unit=parse_unit(figure_mapping.get("unit", "in")),
+                squeeze=ensure_bool(
+                    figure_mapping.get("squeeze", True), "figure.squeeze"
+                ),
+                layout=parse_layout(figure_mapping.get("layout", "auto")),
+            )
         plotting = PlottingConfig(
             default_color=parse_default_color(
                 plotting_mapping.get("default_color", "axes")
@@ -199,7 +253,13 @@ class Config:
             ),
             nonfinite=plotting_mapping.get("nonfinite", "raise"),
         )
-        return cls(schema_version=schema_version, figure=figure, plotting=plotting)
+        if schema_version == 1:
+            warnings.warn(
+                "configuration schema 1 is deprecated; migrate to schema_version 2",
+                DeprecationWarning,
+                stacklevel=warning_stacklevel,
+            )
+        return cls(schema_version=SCHEMA_VERSION, figure=figure, plotting=plotting)
 
     @classmethod
     def from_file(cls, path: str | PathLike[str]) -> "Config":
@@ -225,13 +285,13 @@ class Config:
         >>> import gsplot as gs
         >>> config = gs.Config.from_file("gsplot.json")
         >>> config.schema_version
-        1
+        2
         """
 
         mapping = read_json_file(path)
         if "schema_version" not in mapping:
             raise ConfigError("configuration requires schema_version")
-        return cls.from_mapping(mapping)
+        return cls._from_mapping(mapping, warning_stacklevel=3)
 
     def section(self, name: Literal["figure", "plotting"]) -> Mapping[str, ConfigValue]:
         """Return an immutable top-level section mapping.
@@ -261,11 +321,10 @@ class Config:
 
         if name == "figure":
             values: dict[str, Any] = {
-                "figsize": self.figure.figsize,
+                "size": self.figure.size,
                 "unit": self.figure.unit,
                 "squeeze": self.figure.squeeze,
-                "tight_layout": self.figure.tight_layout,
-                "constrained_layout": self.figure.constrained_layout,
+                "layout": self.figure.layout,
             }
         elif name == "plotting":
             values = {
@@ -278,9 +337,7 @@ class Config:
         return MappingProxyType(values)
 
     @overload
-    def get(
-        self, section: Literal["figure"], option: Literal["figsize"]
-    ) -> tuple[float, float] | None: ...
+    def get(self, section: Literal["figure"], option: Literal["size"]) -> SizeSpec: ...
 
     @overload
     def get(
@@ -291,7 +348,24 @@ class Config:
     def get(
         self,
         section: Literal["figure"],
-        option: Literal["squeeze", "tight_layout", "constrained_layout"],
+        option: Literal["squeeze"],
+    ) -> bool: ...
+
+    @overload
+    def get(
+        self, section: Literal["figure"], option: Literal["layout"]
+    ) -> LayoutMode: ...
+
+    @overload
+    def get(
+        self, section: Literal["figure"], option: Literal["figsize"]
+    ) -> tuple[float, float] | None: ...
+
+    @overload
+    def get(
+        self,
+        section: Literal["figure"],
+        option: Literal["tight_layout", "constrained_layout"],
     ) -> bool: ...
 
     @overload
@@ -351,6 +425,19 @@ class Config:
         'viridis'
         """
 
+        if section == "figure" and option in {
+            "figsize",
+            "tight_layout",
+            "constrained_layout",
+        }:
+            replacement = "size" if option == "figsize" else "layout"
+            _warn_legacy_view(option, replacement, stacklevel=3)
+            if option == "figsize":
+                size = self.figure.size
+                return size if isinstance(size, tuple) else None
+            if option == "tight_layout":
+                return self.figure.layout == "tight"
+            return self.figure.layout == "constrained"
         values = self.section(section)
         if option not in values:
             if default is not MISSING:
@@ -371,7 +458,7 @@ class Config:
         >>> import gsplot as gs
         >>> mapping = gs.Config().as_mapping()
         >>> mapping["schema_version"]
-        1
+        2
         """
 
         return MappingProxyType(

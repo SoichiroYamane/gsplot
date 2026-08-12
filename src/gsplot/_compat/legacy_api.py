@@ -24,7 +24,6 @@ from matplotlib.figure import Figure
 from mpl_toolkits.axes_grid1.inset_locator import inset_axes as _mpl_inset_axes
 from numpy.typing import ArrayLike, NDArray
 
-from .._config.loader import discover_config_path
 from .._core.errors import DataError, LayoutError, OptionError
 from .._core.numerics import validate_color_values, validate_xy
 from .._core.types import AxisSpec, InsetSpec, Theme
@@ -48,6 +47,7 @@ from .._style.legends import legends as _legends
 from .._style.panels import panel_labels as _panel_labels
 from .._style.themes import fig_facecolor as _fig_facecolor
 from .._style.themes import set_theme as _set_theme
+from .config import discover_config_path
 from .legacy.figure.store import StoreSingleton
 from .legacy.plot.line_base import NumLines
 
