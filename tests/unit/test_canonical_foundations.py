@@ -173,6 +173,7 @@ def test_strict_config_schema_helpers_cover_all_scalar_forms() -> None:
     """Schema helpers accept documented forms and reject unsafe values."""
 
     assert parse_schema_version(1) == 1
+    assert parse_schema_version(2) == 2
     assert parse_unit("cm") == "cm"
     assert parse_figsize([1, 2]) == (1.0, 2.0)
     assert parse_figsize(None) is None
@@ -181,7 +182,7 @@ def test_strict_config_schema_helpers_cover_all_scalar_forms() -> None:
     assert parse_default_color("axes") == "axes"
     assert validate_section({}, "figure", set()) == {}
 
-    for value in (True, 2, "1"):
+    for value in (True, 3, "1"):
         with pytest.raises(ConfigError):
             parse_schema_version(value)
     with pytest.raises(ConfigError):

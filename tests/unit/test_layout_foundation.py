@@ -27,8 +27,8 @@ def test_subplots_applies_config_and_converts_units() -> None:
 
     config = Config.from_mapping(
         {
-            "schema_version": 1,
-            "figure": {"figsize": [2.54, 5.08], "unit": "cm", "squeeze": False},
+            "schema_version": 2,
+            "figure": {"size": [2.54, 5.08], "unit": "cm", "squeeze": False},
         }
     )
     figure, axes = subplots(config=config)

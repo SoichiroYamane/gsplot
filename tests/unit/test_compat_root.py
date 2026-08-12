@@ -132,7 +132,9 @@ def test_root_load_config_translates_only_schema_less_legacy_files(tmp_path) -> 
     )
     with pytest.warns(DeprecationWarning, match="schema-less"):
         config = gs.load_config(legacy)
-    assert config.figure.figsize == (2.0, 3.0)
+    with pytest.warns(DeprecationWarning, match="figsize"):
+        assert config.figure.figsize == (2.0, 3.0)
+    assert config.schema_version == 2
 
     strict = tmp_path / "strict.json"
     strict.write_text('{"figure": {"figsize": [2, 3]}}', encoding="utf-8")

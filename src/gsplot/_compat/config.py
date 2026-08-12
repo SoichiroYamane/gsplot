@@ -14,9 +14,25 @@ from os import PathLike
 from pathlib import Path
 from typing import Any
 
-from .._config.loader import discover_config_path
 from .._config.model import Config
-from .._config.schema import read_json_file
+from .._config.schema import DEFAULT_CONFIG_NAME, read_json_file
+
+
+def discover_config_path(
+    *,
+    cwd: str | Path | None = None,
+    home: str | Path | None = None,
+) -> Path | None:
+    """Find a legacy ``gsplot.json`` using the documented compatibility order."""
+
+    current = Path.cwd() if cwd is None else Path(cwd).expanduser()
+    home_path = Path.home() if home is None else Path(home).expanduser()
+    candidates = (
+        current / DEFAULT_CONFIG_NAME,
+        home_path / ".config" / "gsplot" / DEFAULT_CONFIG_NAME,
+        home_path / DEFAULT_CONFIG_NAME,
+    )
+    return next((candidate for candidate in candidates if candidate.is_file()), None)
 
 
 def _legacy_mapping(raw: Mapping[str, Any]) -> dict[str, Any]:
@@ -52,9 +68,29 @@ def _legacy_mapping(raw: Mapping[str, Any]) -> dict[str, Any]:
     # dropping that isolated legacy value is safer than manufacturing a size.
     if figure.get("figsize") is None and figure.get("unit") not in {None, "in"}:
         figure.pop("unit", None)
-    translated: dict[str, Any] = {"schema_version": 1}
-    if figure:
-        translated["figure"] = figure
+    canonical_figure: dict[str, Any] = {}
+    if "figsize" in figure:
+        canonical_figure["size"] = figure["figsize"]
+    if "unit" in figure:
+        canonical_figure["unit"] = figure["unit"]
+    if "squeeze" in figure:
+        canonical_figure["squeeze"] = figure["squeeze"]
+    tight = figure.get("tight_layout", False)
+    constrained = figure.get("constrained_layout", False)
+    if not isinstance(tight, bool) or not isinstance(constrained, bool):
+        canonical_figure["layout"] = "invalid"
+    elif tight and constrained:
+        canonical_figure["layout"] = "invalid"
+    elif tight:
+        canonical_figure["layout"] = "tight"
+    elif constrained:
+        canonical_figure["layout"] = "constrained"
+    else:
+        canonical_figure["layout"] = "none"
+
+    translated: dict[str, Any] = {"schema_version": 2}
+    if canonical_figure:
+        translated["figure"] = canonical_figure
     if plotting:
         translated["plotting"] = plotting
     return translated
@@ -102,7 +138,7 @@ def _warn_legacy_sections(raw: Mapping[str, Any]) -> None:
         warnings.warn(
             "legacy configuration section(s) are ignored: "
             + ", ".join(unknown)
-            + "; migrate to the schema_version 1 figure/plotting sections",
+            + "; migrate to the schema_version 2 figure/plotting sections",
             DeprecationWarning,
             stacklevel=3,
         )
@@ -159,9 +195,9 @@ def load_config(
     >>> import gsplot as gs
     >>> config = gs.load_config(path=None)
     >>> config.schema_version
-    1
+    2
 
-    The canonical file format requires integer ``schema_version`` ``1``.  A
+    The canonical file format requires integer ``schema_version`` ``2``.  A
     schema-less file is accepted only through this root compatibility boundary,
     translated to the reviewed subset, and accompanied by a deprecation
     warning.  No legacy ``rcParams`` or function-entry state is applied.
@@ -178,7 +214,7 @@ def load_config(
     if "schema_version" in raw:
         return Config.from_mapping(raw)
     warnings.warn(
-        "schema-less gsplot configuration is deprecated; migrate to schema_version 1",
+        "schema-less gsplot configuration is deprecated; migrate to schema_version 2",
         DeprecationWarning,
         stacklevel=2,
     )
@@ -186,4 +222,4 @@ def load_config(
     return Config.from_mapping(_legacy_mapping(raw))
 
 
-__all__ = ["load_config"]
+__all__ = ["discover_config_path", "load_config"]

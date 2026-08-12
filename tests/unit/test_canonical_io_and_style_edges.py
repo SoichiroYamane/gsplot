@@ -162,7 +162,7 @@ def test_colormap_and_colored_plot_controls_are_local() -> None:
 
     assert cmap_from_config(None) == "viridis"
     config = gs.Config.from_mapping(
-        {"schema_version": 1, "plotting": {"default_cmap": "plasma"}}
+        {"schema_version": 2, "plotting": {"default_cmap": "plasma"}}
     )
     assert cmap_from_config(config) == "plasma"
     with pytest.raises(PlotError):
