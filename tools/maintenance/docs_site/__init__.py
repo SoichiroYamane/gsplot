@@ -14,6 +14,13 @@ from .catalog import (
     resolve_git_tag,
     source_has_docs,
 )
+from .orchestrator import (
+    BUILD_MANIFEST_SCHEMA_VERSION,
+    BuildError,
+    BuildManifest,
+    BuildRecord,
+    build_site,
+)
 from .switcher import (
     DEFAULT_BASE_URL,
     generate_switcher,
@@ -42,4 +49,9 @@ __all__ = [
     "normalize_base_url",
     "validate_switcher",
     "write_switcher",
+    "BUILD_MANIFEST_SCHEMA_VERSION",
+    "BuildError",
+    "BuildManifest",
+    "BuildRecord",
+    "build_site",
 ]
