@@ -346,10 +346,11 @@ The default-value contract is explicit:
 - Canonical colored helpers use `cmap_line(..., linewidths=1.0)`,
   `cmap_dash(..., dash=(10.0, 10.0), linewidths=1.0)`, and
   `cmap_scatter(..., s=1.0, alpha=1.0)`.
-- The root compatibility facade preserves the historical viridis automatic
-  color sequence for otherwise option-free `line` and `scatter` calls.
-  Supplying `props` or an explicit `Config` selects the canonical explicit
-  behavior.
+- Option-free root `line` and `scatter` calls on ordinary Matplotlib Axes use
+  that Axes' property cycle. Axes returned by the deprecated `gs.axes()`
+  adapter alone retain the historical shared five-color sequence through
+  weak compatibility state. Supplying `props` or an explicit `Config` selects
+  canonical explicit behavior.
 - The legacy `axes()` adapter retains its 5-by-5 inch, `mosaic="A"`,
   `clear=True`, and tight-layout behavior. Its `store` flag controls whether
   legacy `show()` writes files; this state is isolated to the compatibility

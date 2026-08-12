@@ -12,6 +12,7 @@ import warnings
 from collections.abc import Mapping, Sequence
 from os import PathLike
 from typing import Any, get_type_hints
+from weakref import WeakKeyDictionary
 
 from matplotlib.axes import Axes
 from matplotlib.figure import Figure
@@ -25,8 +26,10 @@ from .._plot.basic import scatter as _scatter
 from .._style.axes import suptitle as _suptitle
 from .._style.axes import title as _title
 from .._style.legends import legend as _legend
+from .._style.paper import PAPER_CYCLE_RGBA as _LEGACY_COLORS
 
 _UNSET = object()
+_LEGACY_PLOT_COUNTS: WeakKeyDictionary[Axes, int] = WeakKeyDictionary()
 
 _LEGACY_LEGEND_KEYS = {
     "handlers",
@@ -118,7 +121,50 @@ def _legacy_suptitle(text: str, props: Mapping[str, Any] | None) -> Any:
 
 
 def _reset_legacy_plot_counts() -> None:
-    """Retain the private compatibility hook after removing hidden counters."""
+    """Forget all deprecated ``gs.axes`` plotting histories."""
+
+    _LEGACY_PLOT_COUNTS.clear()
+
+
+def _register_legacy_plot_axes(axes: Sequence[Axes]) -> None:
+    """Register only Axes returned by the deprecated ``gs.axes`` adapter."""
+
+    for axis in axes:
+        _LEGACY_PLOT_COUNTS[axis] = 0
+
+
+def _legacy_auto_color(ax: Any) -> tuple[float, float, float, float] | None:
+    """Return the next compatibility color only for a registered legacy Axes."""
+
+    if not isinstance(ax, Axes) or ax not in _LEGACY_PLOT_COUNTS:
+        return None
+    count = _LEGACY_PLOT_COUNTS[ax]
+    return _LEGACY_COLORS[count % len(_LEGACY_COLORS)]
+
+
+def _record_legacy_plot(ax: Any) -> None:
+    """Advance one registered legacy Axes after a successful root plot call."""
+
+    if isinstance(ax, Axes) and ax in _LEGACY_PLOT_COUNTS:
+        _LEGACY_PLOT_COUNTS[ax] += 1
+
+
+def _needs_legacy_color(
+    options: Mapping[str, Any],
+    *,
+    controls: set[str],
+    props: Mapping[str, Any] | None,
+    config: Any,
+) -> bool:
+    """Return whether an otherwise color-free call needs legacy translation."""
+
+    selected_series = options.get("series", _UNSET)
+    return (
+        props is None
+        and config is None
+        and (selected_series is _UNSET or selected_series is None)
+        and not controls.intersection(options)
+    )
 
 
 def _legacy_show(options: Mapping[str, Any]) -> None:
@@ -254,7 +300,17 @@ def line(
             "zorder": zorder,
         }
     )
-    return _line(ax, x, y, props=props, config=config, **options)
+    legacy_color = _legacy_auto_color(ax)
+    if legacy_color is not None and _needs_legacy_color(
+        options,
+        controls={"c", "color"},
+        props=props,
+        config=config,
+    ):
+        options["c"] = legacy_color
+    result = _line(ax, x, y, props=props, config=config, **options)
+    _record_legacy_plot(ax)
+    return result
 
 
 def scatter(
@@ -313,7 +369,17 @@ def scatter(
             "zorder": zorder,
         }
     )
-    return _scatter(ax, x, y, props=props, config=config, **options)
+    legacy_color = _legacy_auto_color(ax)
+    if legacy_color is not None and _needs_legacy_color(
+        options,
+        controls={"c", "color", "facecolors"},
+        props=props,
+        config=config,
+    ):
+        options["c"] = legacy_color
+    result = _scatter(ax, x, y, props=props, config=config, **options)
+    _record_legacy_plot(ax)
+    return result
 
 
 def legend(

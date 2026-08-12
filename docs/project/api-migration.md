@@ -48,13 +48,15 @@ window.
 | Config | implicit legacy JSON/singleton | explicit immutable schema 1 | explicit immutable schema 2; schema 1 translates through 1.x |
 | Import | changed `rcParams` and initialized legacy services | side-effect-light | side-effect-light |
 
-The historical shared compatibility color counter has been removed. Root and
-canonical `line` and `scatter` calls now use the corresponding property cycle
-of each target Axes unless an explicit color, Config color, or deterministic
-`series=0..9` identity is supplied. The compatibility store flag remains
-isolated at the root adapter boundary. Removing import-time Matplotlib
-`rcParams` mutation is also intentional; ambient Matplotlib defaults apply
-unless an application configures them explicitly.
+The historical shared color counter has been removed from ordinary root and
+canonical `line` and `scatter` calls; they use the corresponding property
+cycle of each target Axes unless an explicit color, Config color, or
+deterministic `series=0..9` identity is supplied. Axes returned by the
+deprecated `gs.axes()` adapter alone retain the shared five-color sequence in
+weak compatibility state. The compatibility store flag remains isolated at
+the root adapter boundary. Removing import-time Matplotlib `rcParams` mutation
+is also intentional; ambient Matplotlib defaults apply unless an application
+configures them explicitly.
 
 ## Current-to-concise root migration
 
