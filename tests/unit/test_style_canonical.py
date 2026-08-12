@@ -11,6 +11,7 @@ from gsplot._plot.basic import line
 from gsplot._style.axes import box_aspect, minor_ticks, style_axes, suptitle, title
 from gsplot._style.legends import cmap_legend, legend, legend_entries, legends
 from gsplot._style.panels import panel_labels
+from gsplot._style.paper import PAPER_CYCLE_RGBA, paper
 from gsplot._style.themes import fig_facecolor, set_theme
 
 
@@ -99,4 +100,57 @@ def test_legends_are_local_and_require_explicit_replacement() -> None:
     assert isinstance(cmap, Legend)
     bounded = cmap_legend(axes[1], norm=(0, 1), stripes=3, replace=True)
     assert isinstance(bounded, Legend)
+    plt.close(figure)
+
+
+def test_paper_applies_the_frozen_profile_without_global_state() -> None:
+    """Paper styling matches the golden target and leaves rcParams untouched."""
+
+    before = mpl.rcParams.copy()
+    figure, axis = plt.subplots()
+    original_figure_face = figure.get_facecolor()
+    paper(axis)
+
+    assert figure.get_facecolor() == original_figure_face
+    assert axis.get_facecolor() == (1.0, 1.0, 1.0, 1.0)
+    assert axis.margins() == (0.0, 0.0)
+    assert axis.xaxis.labelpad == 6
+    assert axis.yaxis.labelpad == 6
+    assert all(spine.get_visible() for spine in axis.spines.values())
+    assert all(
+        spine.get_edgecolor() == (0.0, 0.0, 0.0, 1.0) for spine in axis.spines.values()
+    )
+    assert all(spine.get_linewidth() == 0.8 for spine in axis.spines.values())
+    assert axis.xaxis._major_tick_kw["tickdir"] == "in"
+    assert axis.xaxis._major_tick_kw["size"] == 3.5
+    assert axis.xaxis._major_tick_kw["width"] == 0.8
+    assert axis.xaxis._major_tick_kw["pad"] == 6
+    assert axis.xaxis._minor_tick_kw["size"] == 2
+    assert axis.xaxis._minor_tick_kw["width"] == 0.6
+    assert axis.xaxis.label.get_fontfamily() == ["DejaVu Sans"]
+    assert axis.xaxis.label.get_fontsize() == 10
+
+    lines = [
+        axis.plot([0.23, 0.77], [index + 1.2, index + 1.7])[0] for index in range(5)
+    ]
+    assert tuple(line.get_color() for line in lines) == PAPER_CYCLE_RGBA
+    assert axis.get_xlim() == (0.2, 0.8)
+    assert dict(mpl.rcParams) == dict(before)
+    plt.close(figure)
+
+
+def test_paper_validates_every_axis_before_mutating_any_axis() -> None:
+    """Cycle conflicts and invalid targets fail atomically."""
+
+    figure, (first, second) = plt.subplots(1, 2)
+    second.plot([0, 1], [0, 1])
+    first.set_facecolor("red")
+    with pytest.raises(PlotError, match="cycle=True"):
+        paper((first, second))
+    assert first.get_facecolor() == (1.0, 0.0, 0.0, 1.0)
+
+    paper((first, second), cycle=False)
+    assert first.get_facecolor() == (1.0, 1.0, 1.0, 1.0)
+    with pytest.raises(PlotError, match="cycle"):
+        paper(first, cycle=1)  # type: ignore[arg-type]
     plt.close(figure)

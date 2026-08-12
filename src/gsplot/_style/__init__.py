@@ -18,6 +18,7 @@ __all__ = [
     "legend_entries",
     "cmap_legend",
     "set_theme",
+    "paper",
 ]
 
 if TYPE_CHECKING:
@@ -33,6 +34,7 @@ if TYPE_CHECKING:
     legend_entries: Any
     cmap_legend: Any
     set_theme: Any
+    paper: Any
 
 
 _MODULES = {
@@ -48,6 +50,7 @@ _MODULES = {
     "legend_entries": ("gsplot._style.legends", "legend_entries"),
     "cmap_legend": ("gsplot._style.legends", "cmap_legend"),
     "set_theme": ("gsplot._style.themes", "set_theme"),
+    "paper": ("gsplot._style.paper", "paper"),
 }
 
 

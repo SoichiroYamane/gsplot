@@ -30,6 +30,7 @@ def test_root_exposes_only_the_canonical_manifest_and_native_objects(tmp_path) -
         "legend_entries",
         "cmap_legend",
         "set_theme",
+        "paper",
         "savefig",
         "show",
         "load_config",
