@@ -135,7 +135,7 @@ warning is expected under the Agg backend.
 
 ## Reform validation snapshot
 
-The canonical implementation now reports 86.30 percent coverage across the
+The canonical implementation now reports 86.41 percent coverage across the
 `_core`, `_config`, `_figure`, `_plot`, `_style`, and `_io` modules, while the
 pure `_core` modules report 98.68 percent. These are enforced as CI minimums
 of 85 percent and 95 percent respectively; historical compatibility modules
