@@ -1,0 +1,46 @@
+{
+  "baselines": {
+    "historical_v0_3": {
+      "comment_free_chars": 2487,
+      "comment_free_lines": 74,
+      "executable_chars": 2487,
+      "executable_lines": 74,
+      "gsplot_calls": 19,
+      "lexical_chars": 2099,
+      "physical_lines": 98,
+      "source": "v0.3.0:demo/4_paper_plot/paper_plot.py"
+    },
+    "issue_181_repair": {
+      "comment_free_chars": 7182,
+      "comment_free_lines": 230,
+      "executable_chars": 6714,
+      "executable_lines": 223,
+      "gsplot_calls": 19,
+      "lexical_chars": 4628,
+      "physical_lines": 265,
+      "source": "main commit 782117f:demo/4_paper_plot/paper_plot.py"
+    },
+    "selected_tuple_prototype": {
+      "comment_free_chars": 2323,
+      "comment_free_lines": 71,
+      "executable_chars": 2135,
+      "executable_lines": 68,
+      "gsplot_calls": 12,
+      "lexical_chars": 1649,
+      "path": "tools/maintenance/fixtures/publication_tuple_prototype.py",
+      "physical_lines": 81
+    }
+  },
+  "budgets": {
+    "comment_free_chars": 2400,
+    "comment_free_lines": 74,
+    "executable_chars": 2200,
+    "executable_lines": 70,
+    "gsplot_calls": 15,
+    "lexical_chars": 1700,
+    "minimum_issue_181_reduction_percent": 60.0,
+    "physical_lines": 98
+  },
+  "final_target": "demo/4_paper_plot/paper_plot.py",
+  "schema_version": 1
+}
