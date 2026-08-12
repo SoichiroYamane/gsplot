@@ -48,7 +48,8 @@ _PANEL_PROPS = frozenset(
     }
 )
 
-_INDEX_CLEARANCE_POINTS = 4.0
+_INDEX_INSIDE_GAP_POINTS = 4.0
+_INDEX_OUTSIDE_GAP_POINTS = 6.0
 
 
 class _RendererCanvas(Protocol):
@@ -99,11 +100,12 @@ def _prepare_index(
     loc: Any,
     size: Any = MISSING,
     props: Mapping[str, object] | None = None,
-) -> tuple[tuple[str, ...], dict[str, Any], tuple[float, float]]:
+) -> tuple[tuple[str, ...], dict[str, Any], Literal["in", "out"]]:
     """Validate every concise panel-index input without adding Text artists."""
 
     if not isinstance(loc, str) or loc not in {"in", "out"}:
         raise LayoutError("index: loc must be 'in' or 'out'")
+    selected_loc = cast(Literal["in", "out"], loc)
     if labels is None:
         selected_labels = tuple(
             _concise_label_for_index(position) for position in range(len(target.axes))
@@ -135,46 +137,51 @@ def _prepare_index(
             selected_size, f"index: {size_key}", error=LayoutError
         )
     if "ha" not in selected_props and "horizontalalignment" not in selected_props:
-        selected_props["ha"] = "left" if loc == "in" else "center"
+        selected_props["ha"] = "left"
     if "va" not in selected_props and "verticalalignment" not in selected_props:
-        selected_props["va"] = "top" if loc == "in" else "bottom"
-    offset_points = (
-        _INDEX_CLEARANCE_POINTS,
-        -_INDEX_CLEARANCE_POINTS if loc == "in" else _INDEX_CLEARANCE_POINTS,
-    )
+        selected_props["va"] = "top" if selected_loc == "in" else "bottom"
     try:
         for text in selected_labels:
             Text(0, 1, text, **selected_props)
     except (TypeError, ValueError) as exc:
         raise PlotError("index: invalid text options") from exc
-    return selected_labels, selected_props, offset_points
+    return selected_labels, selected_props, selected_loc
 
 
 def _apply_index(
     target: TargetPlan,
     labels: tuple[str, ...],
     props: Mapping[str, Any],
-    offset_points: tuple[float, float],
+    loc: Literal["in", "out"],
 ) -> Text | tuple[Text, ...]:
     """Attach one completely preflighted panel index per target Axes."""
 
     created: list[Text] = []
     try:
         for axis, text in zip(target.axes, labels):
-            transform = axis.transAxes + ScaledTranslation(
-                offset_points[0] / 72,
-                offset_points[1] / 72,
-                target.figure.dpi_scale_trans,
-            )
-            created.append(
-                axis.text(
+            if loc == "in":
+                transform = axis.transAxes + ScaledTranslation(
+                    _INDEX_INSIDE_GAP_POINTS / 72,
+                    -_INDEX_INSIDE_GAP_POINTS / 72,
+                    target.figure.dpi_scale_trans,
+                )
+                artist = axis.text(
                     0,
                     1,
                     text,
                     transform=transform,
                     **props,
                 )
-            )
+            else:
+                artist = axis.annotate(
+                    text,
+                    xy=(0, 1),
+                    xycoords=(axis.yaxis.label, axis.transAxes),
+                    xytext=(0, _INDEX_OUTSIDE_GAP_POINTS),
+                    textcoords="offset points",
+                    **props,
+                )
+            created.append(artist)
     except Exception:
         for item in reversed(created):
             item.remove()
@@ -223,10 +230,9 @@ def index(
         Optional ordered labels or an exact-key mapping. Omitted values are
         generated as ``(a)`` through ``(z)``, then ``(aa)`` onward.
     loc
-        Place text from the upper-left Axes corner with four points of
-        resolution-independent clearance. ``"in"`` moves right and down;
-        ``"out"`` moves right and up with the historical centered horizontal
-        text origin.
+        ``"in"`` places text four points right/down from the upper-left Axes
+        corner. ``"out"`` aligns the text's left edge with the rendered left
+        edge of the y-axis label and places it six points above the Axes.
     size
         Matplotlib font size. The default is the historical ``"large"``.
     props

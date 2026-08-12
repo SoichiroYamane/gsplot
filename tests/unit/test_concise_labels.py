@@ -159,8 +159,8 @@ def test_square_and_index_validate_all_inputs_before_mutation() -> None:
         texts = index(axes, labels=("left", "right"), props={"fontsize": 9})
         assert tuple(text.get_text() for text in texts) == ("left", "right")
         assert all(text.get_fontsize() == 9 for text in texts)
-        assert all(text.get_position() == (0, 1) for text in texts)
-        assert all(text.get_ha() == "center" for text in texts)
+        assert all(text.get_position() == (0, 6) for text in texts)
+        assert all(text.get_ha() == "left" for text in texts)
         assert all(text.get_va() == "bottom" for text in texts)
 
         custom = index(
@@ -176,26 +176,36 @@ def test_square_and_index_validate_all_inputs_before_mutation() -> None:
 
 @pytest.mark.parametrize("dpi", (72, 144))
 def test_index_default_origins_and_clearance_are_dpi_aware(dpi: int) -> None:
-    """Inside uses a left origin while outside restores the centered origin."""
+    """Outside follows the y-label left edge with a six-point top gap."""
 
     figure, (inside_axis, outside_axis) = plt.subplots(1, 2, dpi=dpi)
     try:
+        outside_axis.set_ylabel("Signal (a.u.)")
         inside = index(inside_axis, loc="in")
         outside = index(outside_axis, loc="out")
         figure.canvas.draw()
         renderer = figure.canvas.get_renderer()
-        expected_gap = 4 * dpi / 72
+        inside_gap = 4 * dpi / 72
+        outside_gap = 6 * dpi / 72
 
         inside_box = inside.get_window_extent(renderer)
         inside_axes_box = inside_axis.get_window_extent(renderer)
-        assert inside_box.x0 - inside_axes_box.x0 == pytest.approx(expected_gap)
-        assert inside_axes_box.y1 - inside_box.y1 == pytest.approx(expected_gap)
+        assert inside_box.x0 - inside_axes_box.x0 == pytest.approx(inside_gap)
+        assert inside_axes_box.y1 - inside_box.y1 == pytest.approx(inside_gap)
 
         outside_box = outside.get_window_extent(renderer)
         outside_axes_box = outside_axis.get_window_extent(renderer)
-        outside_center = (outside_box.x0 + outside_box.x1) / 2
-        assert outside_center - outside_axes_box.x0 == pytest.approx(expected_gap)
-        assert outside_box.y0 - outside_axes_box.y1 == pytest.approx(expected_gap)
+        ylabel_box = outside_axis.yaxis.label.get_window_extent(renderer)
+        assert outside_box.x0 == pytest.approx(ylabel_box.x0)
+        assert outside_box.y0 - outside_axes_box.y1 == pytest.approx(outside_gap)
+
+        previous_x = outside_box.x0
+        outside_axis.yaxis.labelpad += 10
+        figure.canvas.draw()
+        moved_box = outside.get_window_extent(renderer)
+        moved_ylabel_box = outside_axis.yaxis.label.get_window_extent(renderer)
+        assert moved_box.x0 == pytest.approx(moved_ylabel_box.x0)
+        assert moved_box.x0 < previous_x
     finally:
         plt.close(figure)
 
