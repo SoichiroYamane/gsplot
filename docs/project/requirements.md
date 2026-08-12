@@ -333,7 +333,8 @@ The canonical root functions are:
 ```text
 subplots, inset, inset_axes, line, scatter, colors, cmap_line, cmap_dash,
 cmap_scatter, sample_cmap, label, square, index, style_axes, title, suptitle,
-minor_ticks, box_aspect, panel_labels, fig_facecolor, legend, legends, legend_entries,
+minor_ticks, box_aspect, panel_labels, fig_facecolor, legend, legends,
+legend_entries,
 cmap_legend, set_theme, savefig, show, load_config, read, read_array, write_meta,
 build_info, use_backend
 ```

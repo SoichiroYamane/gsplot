@@ -18,12 +18,14 @@ Functions
    :toctree: ./apis
 
    gsplot.subplots
+   gsplot.inset
    gsplot.inset_axes
    gsplot.line
    gsplot.scatter
    gsplot.cmap_line
    gsplot.cmap_dash
    gsplot.cmap_scatter
+   gsplot.colors
    gsplot.sample_cmap
    gsplot.label
    gsplot.square
@@ -44,6 +46,7 @@ Functions
    gsplot.savefig
    gsplot.show
    gsplot.load_config
+   gsplot.read
    gsplot.read_array
    gsplot.write_meta
    gsplot.build_info
@@ -88,6 +91,7 @@ Type aliases
    gsplot.SizeSpec
    gsplot.LayoutMode
    gsplot.StyleMode
+   gsplot.ZoomCorners
    gsplot.Limit
    gsplot.Scale
    gsplot.TickSpec

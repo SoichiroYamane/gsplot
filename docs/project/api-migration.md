@@ -171,11 +171,11 @@ The classification uses these terms:
 | 0.3.x root name | Reform target | Classification | Migration contract |
 | --- | --- | --- | --- |
 | `axes` | `subplots` | adapter + breaking return contract | New code receives `(Figure, axes)` and owns the returned objects explicitly. The old flat-list behavior is isolated in `_compat`. |
-| `axes_inset` | `inset_axes` | adapter + breaking signature | The parent `Axes` and typed `InsetSpec` are explicit. |
-| `axes_inset_padding` | `inset_axes` | adapter | Padding is represented by `InsetSpec`; no current-object lookup. |
+| `axes_inset` | `inset` | adapter + explicit ownership | The parent `Axes` is explicit; tuple bounds, labels, zoom corner pairs, paper style, and layering use the concise operation. |
+| `axes_inset_padding` | `inset` / `inset_axes` | adapter | Advanced width/height placement uses `InsetSpec`; no current-object lookup. |
 | `get_figure_size` | `Figure.get_size_inches()` | adapter | New code uses the Matplotlib figure directly; a compatibility helper may preserve the old convenience call. |
 | `show` | `savefig` and `show` | adapter + breaking behavior | `savefig(fig, ..., show=True)` saves before displaying. Canonical `show(fig)` displays only and never saves or closes. |
-| `get_cmap` | `sample_cmap` | adapter + breaking signature | Sampling returns a typed `N x 4` array and validates count, values, and normalization explicitly. |
+| `get_cmap` | `colors` / `sample_cmap` | adapter + breaking signature | Count sampling uses concise `colors`; value normalization remains in the advanced sampler. |
 | `line` | `line` | canonical rename retained | The target takes an explicit `Axes`, returns `list[Line2D]`, and uses a closed property schema rather than an open keyword bag. |
 | `line_colormap_solid` | `cmap_line` | adapter + breaking name | The target owns colored-segment validation and returns a `LineCollection`. |
 | `line_colormap_dashed` | `cmap_dash` | adapter + breaking name | The target returns a tuple of `LineCollection` objects and validates positive dash lengths. |
@@ -201,8 +201,8 @@ The classification uses these terms:
 | `ticks_off` | `minor_ticks` | adapter + breaking name | The target has one explicit `enabled` operation. |
 | `ticks_on` | `minor_ticks` | adapter + breaking name | The target has one explicit `enabled` operation. |
 | `ticks_on_axes` | `minor_ticks` | adapter | The target accepts explicit axes and an axis selector. |
-| `load_file` | `read_array` | adapter + breaking name | The target has explicit loader, `ndmin`, and option validation and never changes the working directory. |
-| `load_file_fast` | `read_array` | adapter | The loader choice is explicit rather than encoded in a second public function. |
+| `load_file` | `read` / `read_array` | adapter + breaking name | Concise CSV loading has finite direct options; advanced options remain explicit and neither path changes the working directory. |
+| `load_file_fast` | `read(loader="loadtxt")` | adapter | The loader choice is explicit rather than encoded in a second public function. |
 | `config_load` | `load_config` | adapter + breaking name | Loading is explicit and returns an immutable `Config`. Importing the package does not load files. |
 | `config_dict` | `Config` | adapter + breaking ownership | Configuration is a typed immutable value, not a mutable process-wide dictionary. |
 | `config_entry_option` | `Config.get` / `Config.section` | adapter | Accessors validate the schema and do not expose mutable global state. |
@@ -233,10 +233,10 @@ listed above are added by their linked Issue #183 slices; this list must not be
 read as evidence that an unmerged target already exists.
 
 ```text
-subplots  inset_axes  line  scatter  cmap_line  cmap_dash  cmap_scatter
-sample_cmap  label  square  index  style_axes  title  suptitle  minor_ticks
+subplots  inset  inset_axes  line  scatter  cmap_line  cmap_dash  cmap_scatter
+colors  sample_cmap  label  square  index  style_axes  title  suptitle  minor_ticks
 box_aspect  panel_labels  fig_facecolor  legend  legends  legend_entries
-cmap_legend  set_theme  savefig  show  load_config  read_array  write_meta
+cmap_legend  set_theme  savefig  show  load_config  read  read_array  write_meta
 build_info  use_backend
 ```
 
@@ -250,9 +250,10 @@ OutputError  MetadataError
 
 The stable aliases and protocols are `MosaicSpec`, `NormalizeSpec`,
 `ColorSpec`, `AxesTarget`, `PerTarget`, `LineStyle`, `Marker`, `Unit`,
-`SizePreset`, `SizeSpec`, `LayoutMode`, `StyleMode`, `Limit`, `Scale`,
-`TickSpec`, `LabelRecord`, and `LabelRecords`. The canonical package advertises
-`py.typed` and uses NumPy-style docstrings for every public function and class.
+`SizePreset`, `SizeSpec`, `LayoutMode`, `StyleMode`, `ZoomCorners`, `Limit`,
+`Scale`, `TickSpec`, `LabelRecord`, and `LabelRecords`. The canonical package
+advertises `py.typed` and uses NumPy-style docstrings for every public function
+and class.
 
 ## Historical module migration
 
@@ -273,8 +274,8 @@ at the adapter boundary; new implementation code must not import them.
 | `gsplot.figure.show` | `gsplot.savefig`, `gsplot.show` |
 | `gsplot.figure.figure_tools` | `gsplot.build_info`, `gsplot.use_backend` |
 | `gsplot.figure.axes` | `gsplot.subplots` |
-| `gsplot.figure.axes_inset` | `gsplot.inset_axes` |
-| `gsplot.color.colormap` | `gsplot.sample_cmap` |
+| `gsplot.figure.axes_inset` | `gsplot.inset` or advanced `gsplot.inset_axes` |
+| `gsplot.color.colormap` | `gsplot.colors` or advanced `gsplot.sample_cmap` |
 | `gsplot.path.path` | path compatibility helpers only |
 | `gsplot.style.ticks` | `gsplot.minor_ticks` |
 | `gsplot.style.graph` | `gsplot.box_aspect`, `gsplot.set_theme`, `gsplot.fig_facecolor` |
@@ -282,7 +283,7 @@ at the adapter boundary; new implementation code must not import them.
 | `gsplot.style.legend_colormap` | `gsplot.cmap_legend` |
 | `gsplot.style.label` | `gsplot.label`, `gsplot.index`, advanced `gsplot.style_axes` and `gsplot.panel_labels` |
 | `gsplot.style.title` | `gsplot.title`, `gsplot.suptitle` |
-| `gsplot.data.load_file` | `gsplot.read_array` |
+| `gsplot.data.load_file` | `gsplot.read` or advanced `gsplot.read_array` |
 
 The complete current inventory can be regenerated with:
 
