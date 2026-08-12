@@ -266,3 +266,8 @@ def test_fetch_github_releases_paginates_without_exposing_authentication() -> No
     assert len(releases) == 1
     assert requests[0][0].endswith("per_page=100&page=1")
     assert "Authorization" in requests[0][1]
+
+
+def test_fetch_github_releases_rejects_unsafe_repository_path() -> None:
+    with pytest.raises(CatalogError, match="OWNER/NAME"):
+        fetch_github_releases("SoichiroYamane/gsplot/extra")

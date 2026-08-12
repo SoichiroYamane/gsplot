@@ -414,14 +414,9 @@ def fetch_github_releases(
 ) -> list[Mapping[str, Any]]:
     """Fetch all public GitHub Releases with bounded, paginated requests."""
 
-    owner, separator, name = repository.partition("/")
-    if (
-        separator != "/"
-        or not owner
-        or not name
-        or any(character in repository for character in " \t\r\n?#")
-    ):
+    if re.fullmatch(r"[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+", repository) is None:
         raise CatalogError("repository must use the OWNER/NAME form")
+    owner, name = repository.split("/", maxsplit=1)
     releases: list[Mapping[str, Any]] = []
     for page in range(1, 1001):
         url = (
