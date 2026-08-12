@@ -5,9 +5,13 @@ from pathlib import Path
 from typing import get_type_hints
 
 import matplotlib.pyplot as plt
+import numpy as np
 import pytest
+from matplotlib.colors import to_rgba
 
 import gsplot as gs
+from gsplot._compat.legacy.figure.store import StoreSingleton
+from gsplot._compat.legacy.plot.line_base import NumLines
 
 
 def test_root_canonical_signature_and_legacy_line_options_are_separate() -> None:
@@ -21,6 +25,62 @@ def test_root_canonical_signature_and_legacy_line_options_are_separate() -> None
         legacy = gs.line(ax, [0, 1], [2, 3], color="red", marker="o")
     assert legacy[0].axes is ax
     plt.close(figure)
+
+
+def test_root_default_colors_preserve_the_legacy_viridis_sequence() -> None:
+    """Root calls without explicit style options retain historical colors."""
+
+    NumLines.reset()
+    figure, ax = gs.subplots()
+    try:
+        line = gs.line(ax, [0, 1], [1, 2])[0]
+        scatter = gs.scatter(ax, [0, 1], [2, 3])
+        expected = gs.sample_cmap("viridis", count=5)
+        assert np.allclose(to_rgba(line.get_color()), expected[0])
+        assert line.get_marker() == "o"
+        assert line.get_markersize() == 7.0
+        assert line.get_markeredgewidth() == 1.5
+        assert line.get_linestyle() == "--"
+        assert line.get_linewidth() == 1.0
+        assert to_rgba(line.get_markerfacecolor())[3] == pytest.approx(0.2)
+        assert np.allclose(scatter.get_facecolors()[0], expected[1])
+        assert scatter.get_sizes().tolist() == [1.0]
+        assert scatter.get_alpha() == 1.0
+    finally:
+        NumLines.reset()
+        plt.close(figure)
+
+
+def test_legacy_axes_and_show_preserve_layout_and_store_defaults(
+    tmp_path, monkeypatch
+) -> None:
+    """The current-object adapter keeps its old layout and save gate."""
+
+    monkeypatch.chdir(tmp_path)
+    StoreSingleton().store = False
+    try:
+        with pytest.warns(DeprecationWarning, match="gsplot.axes"):
+            axes = gs.axes()
+        figure = axes[0].figure
+        assert tuple(figure.get_size_inches()) == (5.0, 5.0)
+        assert figure.get_layout_engine() is not None
+
+        with pytest.warns(DeprecationWarning, match="legacy gsplot.show"):
+            gs.show(show=False)
+        assert not tuple(tmp_path.iterdir())
+
+        with pytest.warns(DeprecationWarning, match="gsplot.axes"):
+            gs.axes(store=True)
+        with pytest.warns(DeprecationWarning, match="legacy gsplot.show"):
+            gs.show(show=False)
+        assert {path.name for path in tmp_path.iterdir()} == {
+            "gsplot.png",
+            "gsplot.pdf",
+        }
+    finally:
+        StoreSingleton().store = False
+        NumLines.reset()
+        plt.close("all")
 
 
 def test_root_canonical_annotations_are_runtime_resolvable() -> None:

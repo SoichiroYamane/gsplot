@@ -12,6 +12,7 @@ import warnings
 from collections.abc import Mapping, Sequence
 from os import PathLike
 from typing import Any, get_type_hints
+from weakref import WeakKeyDictionary
 
 import numpy as np
 from matplotlib.axes import Axes
@@ -24,11 +25,13 @@ from .._figure.output import savefig as _savefig
 from .._figure.output import show as _show
 from .._plot.basic import line as _line
 from .._plot.basic import scatter as _scatter
+from .._plot.colormap import sample_cmap as _sample_cmap
 from .._style.axes import suptitle as _suptitle
 from .._style.axes import title as _title
 from .._style.legends import legend as _legend
 
 _UNSET = object()
+_LEGACY_PLOT_COUNTS: WeakKeyDictionary[Axes, int] = WeakKeyDictionary()
 
 _LEGACY_LINE_KEYS = {
     "color",
@@ -173,25 +176,55 @@ def _legacy_suptitle(text: str, props: Mapping[str, Any] | None) -> Any:
     return _suptitle(plt.gcf(), text, props=props)
 
 
+def _legacy_auto_color(ax: Axes) -> tuple[float, float, float, float]:
+    """Resolve the historical viridis color for one compatibility plot."""
+
+    count = _LEGACY_PLOT_COUNTS.get(ax, 0)
+    color = np.asarray(_sample_cmap("viridis", count=5)[count % 5])
+    return (
+        float(color[0]),
+        float(color[1]),
+        float(color[2]),
+        float(color[3]),
+    )
+
+
+def _record_legacy_plot(ax: Axes) -> None:
+    """Advance the historical compatibility color sequence after a plot."""
+
+    _LEGACY_PLOT_COUNTS[ax] = _LEGACY_PLOT_COUNTS.get(ax, 0) + 1
+
+
+def _reset_legacy_plot_counts() -> None:
+    """Reset compatibility color history without retaining any Axes objects."""
+
+    _LEGACY_PLOT_COUNTS.clear()
+
+
 def _legacy_show(options: Mapping[str, Any]) -> None:
-    """Save and optionally display the current Figure through canonical I/O."""
+    """Preserve the historical store-gated save and current-Figure display."""
 
     import matplotlib.pyplot as plt
+
+    from .legacy.figure.store import StoreSingleton
 
     selected = dict(options)
     fname = selected.pop("fname", "gsplot")
     formats = selected.pop("ft_list", ("png", "pdf"))
     dpi = selected.pop("dpi", 600)
     display = selected.pop("show", True)
-    _savefig(
-        plt.gcf(),
-        fname,
-        formats=formats,
-        dpi=dpi,
-        show=display,
-        overwrite=True,
-        props=selected or None,
-    )
+    if StoreSingleton().store:
+        _savefig(
+            plt.gcf(),
+            fname,
+            formats=formats,
+            dpi=dpi,
+            show=False,
+            overwrite=True,
+            props=selected or None,
+        )
+    if display:
+        plt.show()
 
 
 def _provided(values: Mapping[str, Any]) -> dict[str, Any]:
@@ -338,6 +371,10 @@ def line(
     )
     _reject_mixed("line", props, legacy)
     if not legacy:
+        if props is None and config is None:
+            artists = _line(ax, x, y, props={"color": _legacy_auto_color(ax)})
+            _record_legacy_plot(ax)
+            return artists
         return _line(ax, x, y, props=props, config=config)
     alpha_mfc = legacy.get("alpha_mfc", _UNSET)
     alpha_mfc_value = (
@@ -356,8 +393,11 @@ def line(
             "mfc": "markerfacecolor",
         },
     )
+    if config is None and translated.get("color") is None:
+        translated["color"] = _legacy_auto_color(ax)
     _warn("line")
     artists = _line(ax, x, y, props=translated, config=config)
+    _record_legacy_plot(ax)
     if alpha_mfc_value is not None:
         alpha = float(translated.get("alpha", 1.0))
         for artist in artists:
@@ -421,11 +461,22 @@ def scatter(
     )
     _reject_mixed("scatter", props, legacy)
     if not legacy:
+        if props is None and config is None:
+            collection = _scatter(ax, x, y, props={"color": _legacy_auto_color(ax)})
+            _record_legacy_plot(ax)
+            return collection
         return _scatter(ax, x, y, props=props, config=config)
     _reject_duplicate_scatter_controls(legacy)
     translated = _translate_props("scatter", legacy, {"size": "s"})
+    if config is None and not any(
+        name in translated and translated[name] is not None
+        for name in ("color", "c", "facecolors")
+    ):
+        translated["color"] = _legacy_auto_color(ax)
     _warn("scatter")
-    return _scatter(ax, x, y, props=translated, config=config)
+    collection = _scatter(ax, x, y, props=translated, config=config)
+    _record_legacy_plot(ax)
+    return collection
 
 
 def legend(

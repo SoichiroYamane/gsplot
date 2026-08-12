@@ -48,6 +48,8 @@ from .._style.legends import legends as _legends
 from .._style.panels import panel_labels as _panel_labels
 from .._style.themes import fig_facecolor as _fig_facecolor
 from .._style.themes import set_theme as _set_theme
+from .legacy.figure.store import StoreSingleton
+from .legacy.plot.line_base import NumLines
 
 
 def _warn(name: str, replacement: str) -> None:
@@ -267,6 +269,11 @@ def axes(
     if not np.isfinite(width) or not np.isfinite(height) or width <= 0 or height <= 0:
         raise LayoutError("size must contain two finite positive values")
     _validate_mosaic(mosaic)
+    StoreSingleton().store = store
+    NumLines.reset()
+    from .root_api import _reset_legacy_plot_counts
+
+    _reset_legacy_plot_counts()
     figure = _current_figure()
     # The old helper operated on the current Figure.  Reuse that object only
     # at this compatibility boundary; canonical ``subplots`` never does so
@@ -278,6 +285,7 @@ def axes(
     else:
         figure, created = _subplots(fig=figure, clear=clear, unit="in", mosaic=mosaic)
     figure.set_size_inches(width, height)
+    figure.tight_layout()
     if ion:
         import matplotlib.pyplot as plt
 

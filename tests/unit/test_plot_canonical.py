@@ -102,3 +102,20 @@ def test_colored_plotters_skip_repeated_points_and_return_native_collections() -
     with pytest.raises(DataError, match="non-zero"):
         cmap_line(ax, [0, 0], [0, 0], [0, 1])
     plt.close(figure)
+
+
+def test_colored_plotters_have_explicit_compatible_defaults() -> None:
+    """Canonical colored helpers do not inherit surprising Matplotlib defaults."""
+
+    figure, ax = plt.subplots()
+    try:
+        solid = cmap_line(ax, [0, 1], [0, 1], [0, 1])
+        dashed = cmap_dash(ax, [0, 1], [1, 0], [0, 1])
+        points = cmap_scatter(ax, [0, 1], [1, 2], [0, 1])
+        assert solid.get_linewidths().tolist() == [1.0]
+        assert dashed[0].get_linewidths().tolist() == [1.0]
+        assert np.allclose(dashed[0].get_linestyles()[0][1], (10.0, 10.0))
+        assert points.get_sizes().tolist() == [1.0]
+        assert points.get_alpha() == 1.0
+    finally:
+        plt.close(figure)
