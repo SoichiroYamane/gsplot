@@ -4,11 +4,18 @@ from __future__ import annotations
 
 import logging
 import os
+import re
 import subprocess
 import sys
+from dataclasses import dataclass
 from pathlib import Path
+from urllib.parse import urlparse
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
+DEFAULT_SITE_BASE_URL = "https://soichiroyamane.github.io/gsplot"
+_DOCS_VERSION_PATTERN = re.compile(
+    r"^v?(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$"
+)
 
 try:
     import gsplot
@@ -28,12 +35,78 @@ if package_file.parent == PROJECT_ROOT / "gsplot":
 project = "gsplot"
 copyright = "2024, Giordano Mattoni and Soichiro Yamane"
 author = "Giordano Mattoni and Soichiro Yamane"
-default_docs_version = "dev" if __version__ == "0+unknown" else __version__
-version = os.environ.get("GSPLOT_DOCS_VERSION", default_docs_version)
-release = version
 root_doc = "index"
 master_doc = root_doc
 language = "en"
+
+
+@dataclass(frozen=True)
+class DocsMetadata:
+    """Normalized metadata shared by Sphinx, templates, and the switcher."""
+
+    display_version: str
+    version_match: str
+    channel: str
+    source_ref: str
+    is_development: bool
+    site_url: str
+
+
+def _normalize_site_base_url(value: str) -> str:
+    """Validate the public site URL used to construct canonical links."""
+
+    normalized = value.strip().rstrip("/")
+    parsed = urlparse(normalized)
+    if (
+        parsed.scheme not in {"http", "https"}
+        or not parsed.netloc
+        or parsed.username is not None
+        or parsed.password is not None
+        or parsed.query
+        or parsed.fragment
+    ):
+        raise RuntimeError("GSPLOT_DOCS_BASE_URL must be an absolute HTTP(S) URL")
+    return normalized
+
+
+def _resolve_docs_metadata(raw_version: str, base_url: str) -> DocsMetadata:
+    """Resolve one explicit development or immutable release channel."""
+
+    version = raw_version.strip()
+    if version == "dev":
+        return DocsMetadata(
+            display_version="dev",
+            version_match="dev",
+            channel="dev",
+            source_ref="main",
+            is_development=True,
+            site_url=f"{base_url}/dev",
+        )
+    match = _DOCS_VERSION_PATTERN.fullmatch(version)
+    if match is None:
+        raise RuntimeError(
+            "GSPLOT_DOCS_VERSION must be `dev` or a strict X.Y.Z release"
+        )
+    display_version = ".".join(match.groups())
+    tag = f"v{display_version}"
+    return DocsMetadata(
+        display_version=display_version,
+        version_match=tag,
+        channel=tag,
+        source_ref=tag,
+        is_development=False,
+        site_url=f"{base_url}/{tag}",
+    )
+
+
+site_base_url = _normalize_site_base_url(
+    os.environ.get("GSPLOT_DOCS_BASE_URL", DEFAULT_SITE_BASE_URL)
+)
+docs_metadata = _resolve_docs_metadata(
+    os.environ.get("GSPLOT_DOCS_VERSION", "dev"), site_base_url
+)
+version = docs_metadata.display_version
+release = docs_metadata.display_version
 
 extensions = [
     "sphinx.ext.autodoc",
@@ -267,19 +340,27 @@ def setup(app):
     app.connect("autodoc-skip-member", skip_members)
 
 
-json_url = "https://soichiroyamane.github.io/gsplot/_static/switcher.json"
-version_match = "dev" if default_docs_version == "dev" else f"v{default_docs_version}"
+json_url = f"{site_base_url}/_meta/switcher.json"
+version_match = docs_metadata.version_match
+channel_label = (
+    "the development documentation (main)"
+    if docs_metadata.is_development
+    else f"release {docs_metadata.version_match}"
+)
 
 html_show_sphinx = False
 html_theme = "pydata_sphinx_theme"
 html_context = {
     "github_user": "SoichiroYamane",
     "github_repo": "gsplot",
-    "github_version": "main",
+    "github_version": docs_metadata.source_ref,
     "doc_path": "docs",
     "default_mode": "dark",
+    "gsplot_is_development": docs_metadata.is_development,
 }
 html_theme_options = {
+    "announcement": f"You are reading {channel_label}.",
+    "check_switcher": False,
     "logo": {
         "text": "gsplot 📈",
         "image_light": "_static/logo/logo_gsplot.svg",
@@ -304,5 +385,9 @@ html_theme_options = {
         "json_url": json_url,
     },
 }
+templates_path = ["_templates"]
+html_baseurl = f"{docs_metadata.site_url}/"
+ogp_site_url = html_baseurl
+ogp_canonical_url = html_baseurl
 html_static_path = ["_static"]
 pygments_style = "monokai"
