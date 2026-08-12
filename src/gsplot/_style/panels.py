@@ -2,8 +2,9 @@
 
 from __future__ import annotations
 
+import inspect
 from collections.abc import Mapping, Sequence
-from typing import Any, Protocol, cast
+from typing import Any, Literal, Protocol, cast, overload
 
 import numpy as np
 from matplotlib.axes import Axes
@@ -12,6 +13,10 @@ from matplotlib.figure import Figure
 from matplotlib.text import Text
 
 from .._core.errors import LayoutError, PlotError
+from .._core.options import MISSING
+from .._core.plans import TargetPlan
+from .._core.targets import normalize_axes, resolve_target_mapping
+from .._core.types import AxesTarget
 from .axes import _validate_props
 
 _PANEL_PROPS = frozenset(
@@ -21,6 +26,7 @@ _PANEL_PROPS = frozenset(
         "fontfamily",
         "fontproperties",
         "fontsize",
+        "size",
         "fontstretch",
         "fontstyle",
         "fontvariant",
@@ -74,6 +80,180 @@ def _label_for_index(index: int) -> str:
         value, remainder = divmod(value - 1, 26)
         result = chr(ord("A") + remainder) + result
     return result
+
+
+def _concise_label_for_index(index: int) -> str:
+    """Return ``(a)`` through ``(z)``, then bijective lowercase labels."""
+
+    return f"({_label_for_index(index).lower()})"
+
+
+def _prepare_index(
+    target: TargetPlan,
+    labels: Sequence[str] | Mapping[object, str] | None,
+    *,
+    loc: Any,
+    size: Any = MISSING,
+    props: Mapping[str, object] | None = None,
+) -> tuple[tuple[str, ...], dict[str, Any], tuple[float, float]]:
+    """Validate every concise panel-index input without adding Text artists."""
+
+    if not isinstance(loc, str) or loc not in {"in", "out"}:
+        raise LayoutError("index: loc must be 'in' or 'out'")
+    if labels is None:
+        selected_labels = tuple(
+            _concise_label_for_index(position) for position in range(len(target.axes))
+        )
+    elif isinstance(labels, Mapping):
+        selected_labels = resolve_target_mapping(target, labels, name="labels")
+    elif isinstance(labels, Sequence) and not isinstance(labels, (str, bytes)):
+        selected_labels = tuple(labels)
+        if len(selected_labels) != len(target.axes):
+            raise LayoutError("index: labels must match the target length")
+    else:
+        raise LayoutError("index: labels must be an ordered sequence or mapping")
+    if any(not isinstance(label, str) for label in selected_labels):
+        raise LayoutError("index: labels must be strings")
+
+    selected_props = _validate_props(props, _PANEL_PROPS, "index")
+    if "fontsize" in selected_props and "size" in selected_props:
+        raise LayoutError("index: props cannot contain both 'fontsize' and 'size'")
+    if size is not MISSING:
+        if "fontsize" in selected_props or "size" in selected_props:
+            raise LayoutError("index: size conflicts with a props font-size field")
+        selected_props["fontsize"] = size
+    elif "fontsize" not in selected_props and "size" not in selected_props:
+        selected_props["fontsize"] = "large"
+    selected_props.setdefault("ha", "center")
+    selected_props.setdefault("va", "center")
+    position = (0.02, 0.98 if loc == "in" else 1.02)
+    try:
+        for text in selected_labels:
+            Text(position[0], position[1], text, **selected_props)
+    except (TypeError, ValueError) as exc:
+        raise PlotError("index: invalid text options") from exc
+    return selected_labels, selected_props, position
+
+
+def _apply_index(
+    target: TargetPlan,
+    labels: tuple[str, ...],
+    props: Mapping[str, Any],
+    position: tuple[float, float],
+) -> Text | tuple[Text, ...]:
+    """Attach one completely preflighted panel index per target Axes."""
+
+    created: list[Text] = []
+    try:
+        for axis, text in zip(target.axes, labels):
+            created.append(
+                axis.text(
+                    position[0],
+                    position[1],
+                    text,
+                    transform=axis.transAxes,
+                    **props,
+                )
+            )
+    except Exception:
+        for item in reversed(created):
+            item.remove()
+        raise
+    result = tuple(created)
+    return result[0] if target.single else result
+
+
+@overload
+def index(
+    target: Axes,
+    labels: Sequence[str] | Mapping[object, str] | None = None,
+    *,
+    loc: Literal["in", "out"] = "out",
+    size: float | str = "large",
+    props: Mapping[str, object] | None = None,
+) -> Text: ...
+
+
+@overload
+def index(
+    target: AxesTarget,
+    labels: Sequence[str] | Mapping[object, str] | None = None,
+    *,
+    loc: Literal["in", "out"] = "out",
+    size: float | str = "large",
+    props: Mapping[str, object] | None = None,
+) -> Text | tuple[Text, ...]: ...
+
+
+def index(
+    target: AxesTarget,
+    labels: Sequence[str] | Mapping[object, str] | None = None,
+    *,
+    loc: Any = "out",
+    size: Any = MISSING,
+    props: Mapping[str, object] | None = None,
+) -> Text | tuple[Text, ...]:
+    """Add deterministic lowercase panel indexes to explicit Axes.
+
+    Parameters
+    ----------
+    target
+        One Axes or a deterministic same-Figure collection of Axes.
+    labels
+        Optional ordered labels or an exact-key mapping. Omitted values are
+        generated as ``(a)`` through ``(z)``, then ``(aa)`` onward.
+    loc
+        ``"in"`` uses Axes coordinates ``(0.02, 0.98)``; ``"out"`` uses
+        ``(0.02, 1.02)``.
+    size
+        Matplotlib font size. The default is the historical ``"large"``.
+    props
+        Optional closed Text property mapping. A font-size field conflicts
+        with a separately supplied ``size``.
+
+    Returns
+    -------
+    matplotlib.text.Text or tuple of Text
+        Native Text artists in normalized target order.
+
+    Raises
+    ------
+    LayoutError, PlotError
+        If targets, labels, placement, size, or text properties are invalid.
+
+    Examples
+    --------
+    >>> import gsplot as gs
+    >>> figure, axes = gs.subplots(1, 2)
+    >>> labels = gs.index(axes, loc="in")
+    >>> tuple(item.get_text() for item in labels)
+    ('(a)', '(b)')
+    >>> figure.clear()
+    """
+
+    target_plan = normalize_axes(target, operation="index")
+    prepared = _prepare_index(
+        target_plan,
+        labels,
+        loc=loc,
+        size=size,
+        props=props,
+    )
+    return _apply_index(target_plan, *prepared)
+
+
+def _index_signature(
+    target: AxesTarget,
+    labels: Sequence[str] | Mapping[object, str] | None = None,
+    *,
+    loc: Literal["in", "out"] = "out",
+    size: float | str = "large",
+    props: Mapping[str, object] | None = None,
+) -> Text | tuple[Text, ...]:
+    raise AssertionError("signature-only function")
+
+
+index.__signature__ = inspect.signature(_index_signature)  # type: ignore[attr-defined]
 
 
 def panel_labels(
@@ -180,4 +360,4 @@ def panel_labels(
     return tuple(texts)
 
 
-__all__ = ["panel_labels"]
+__all__ = ["panel_labels", "index"]

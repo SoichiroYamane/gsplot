@@ -106,7 +106,11 @@ def _text(value: Any, name: str, error: type[Exception]) -> str:
 def _optional_text(value: Any, name: str, error: type[Exception]) -> str | None:
     """Validate an optional text field."""
 
-    return None if value is None else _text(value, name, error)
+    if value is None:
+        return None
+    if not isinstance(value, str):
+        raise error(f"{name} must be a string or None")
+    return value
 
 
 def _color(value: Any, name: str) -> ColorSpec:
