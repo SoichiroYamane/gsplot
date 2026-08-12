@@ -184,12 +184,16 @@ repository behavior:
 - The Pages artifact contains only deployable files plus public-safe
   `/_meta/catalog.json` and `/_meta/build-manifest.json`. It excludes caches,
   build scripts, private paths, credentials, raw workflow data, and unneeded
-  generated sources.
+  generated sources. The inventoried root `/_sources/index.md.txt` entry is a
+  documented compatibility exception; channel source trees remain excluded.
 - Catalog, build, deployment, and post-deployment smoke checks use separate
   least-privilege workflow boundaries. Release source code and demos never
   receive GitHub, Pages, PyPI, OIDC, or repository-write credentials.
 - Strict Sphinx, demo, metadata, link, artifact, dependency, workflow, and
   accessibility checks are required; skipped checks are reported as skipped.
+- Historical Mermaid diagrams are rendered to self-contained SVG assets during
+  the build; published documentation must not load Mermaid, tooltip, or other
+  documentation runtimes from floating external URLs.
 
 ## Structural reform target contract
 

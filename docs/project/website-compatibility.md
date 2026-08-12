@@ -22,6 +22,15 @@ and be covered by the route smoke test. A compatibility page may use a
 canonical link and a visible link in addition to its meta refresh, but it must
 not depend on client-side JavaScript.
 
+The root compatibility asset tree is copied from the selected immutable stable
+release before generated-output cleanup. This keeps direct requests for the
+inventoried CSS, JavaScript, images, search data, and source-text entry from
+being replaced by HTML redirects. Version directories intentionally do not
+retain generated source trees, tutorial media, Tippy cache data, or other
+build-only extension output. The observed legacy Tippy entry is copied to its
+historical filename after its selector JSON is sorted, so the compatibility
+file remains both reachable and reproducible.
+
 ## Observed pre-cutover root routes
 
 The following routes returned HTTP 200 from the published root during the
