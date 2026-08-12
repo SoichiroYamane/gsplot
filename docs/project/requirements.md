@@ -169,6 +169,12 @@ repository behavior:
 - Version catalogs and switcher data are generated from one typed,
   schema-validated catalog. Drafts, prereleases, malformed tags, duplicate
   versions, stale fallback, and missing release refs fail visibly.
+- `docs/project/website-release-policy.json` is the reviewed source for any
+  historical exclusion, and each exclusion records its public reason, approval
+  date, Issue or PR, and replacement link when available.
+- `docs/project/website-compatibility.md` records the pre-cutover route
+  inventory and explicit mappings for root, stable, dev, version, `.html`, and
+  asset URLs.
 - Historical documentation must import its own release source/package in an
   isolated environment. Build manifests record source SHAs and package
   provenance, and failed versions must not produce deployable partial output.
