@@ -2,6 +2,9 @@
 
 from __future__ import annotations
 
+from pathlib import Path
+from typing import Iterable
+
 
 class GsplotError(Exception):
     """Base class for errors that are part of the canonical API contract."""
@@ -32,7 +35,32 @@ class OptionError(PlotError, TypeError):
 
 
 class OutputError(GsplotError):
-    """Raised when figure output or display cannot be completed."""
+    """Raised when figure output or display cannot be completed.
+
+    Parameters
+    ----------
+    message
+        Public-safe explanation of the failed output operation.
+    committed_paths
+        Absolute final paths already replaced before the failure. The value
+        defaults to an empty immutable tuple.
+
+    Attributes
+    ----------
+    committed_paths
+        Immutable tuple of final paths already committed by the operation.
+    """
+
+    def __init__(
+        self,
+        message: str,
+        *,
+        committed_paths: Iterable[Path] = (),
+    ) -> None:
+        """Initialize one public-safe output failure."""
+
+        super().__init__(message)
+        self.committed_paths = tuple(committed_paths)
 
 
 class MetadataError(GsplotError):
