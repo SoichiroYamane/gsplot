@@ -1,9 +1,12 @@
 # API migration matrix
 
-This page is the reviewed migration matrix for the structural reform tracked
-in [Issue #165](https://github.com/SoichiroYamane/gsplot/issues/165). It maps
-the canonical implementation to the 0.3.x compatibility baseline and is the
-starting point for downstream migration work.
+This page is the cumulative migration matrix for the structural reform tracked
+in [Issue #165](https://github.com/SoichiroYamane/gsplot/issues/165) and the
+concise publication API tracked in
+[Issue #183](https://github.com/SoichiroYamane/gsplot/issues/183). It maps the
+historical 0.3 API, current 0.4 implementation, and approved 1.x concise target.
+An entry describes target behavior only after its linked implementation slice
+has merged; until then the current 0.4 column is runtime truth.
 
 ## Compatibility policy
 
@@ -14,6 +17,9 @@ starting point for downstream migration work.
 - Candidate removal of legacy adapters is a separate decision for a future
   major release, no earlier than 2.0, after downstream usage has been
   audited.
+- The primary concise surface is additive during 1.x. Existing advanced
+  canonical functions, types, exceptions, legacy root forms, and documented
+  compatibility modules remain importable through that line.
 - The old `gsplot.base.*` implementation namespace is not a supported public
   compatibility surface unless it was part of the pre-cutover API reference.
 - A compatibility adapter may normalize old arguments, but canonical modules
@@ -25,24 +31,97 @@ Signature compatibility alone is not sufficient for plotting APIs. The
 following matrix records the effective defaults during the compatibility
 window.
 
-| Surface | Effective default | Classification |
-| --- | --- | --- |
-| `gs.subplots()` | One ordinary subplot, Matplotlib figure size, `squeeze=True`, `clear=False`, no layout engine | Canonical breaking replacement for `axes()` |
-| `gs.axes()` | `size=(5, 5)`, `unit="in"`, `mosaic="A"`, `clear=True`, tight layout enabled | Compatible legacy adapter |
-| Root `gs.line()` and `gs.scatter()` without `props` or `config` | Five-color viridis automatic sequence, matching the 0.3.x compatibility behavior | Compatible root default |
-| Canonical line/scatter implementation with explicit `props` or `Config` | Ordinary Matplotlib Axes property cycle unless an explicit color is supplied | Canonical explicit behavior |
-| `gs.cmap_line()` | `cmap="viridis"`, `linewidths=1.0` | Canonical explicit default |
-| `gs.cmap_dash()` | `cmap="viridis"`, `dash=(10.0, 10.0)`, `linewidths=1.0` | Canonical explicit default |
-| `gs.cmap_scatter()` | `cmap="viridis"`, `s=1.0`, `alpha=1.0` | Canonical explicit default |
-| Legacy `gs.show()` | `fname="gsplot"`, `ft_list=("png", "pdf")`, `dpi=600`; files are written only when legacy `store=True` | Compatible adapter |
-| `gs.savefig(fig, ...)` | `show=True`; a supplied suffix selects the format, while a suffix-free path defaults to PNG when `formats` is omitted | Canonical explicit lifecycle |
-| `gs.show(fig)` | Display only; never saves or closes | Canonical breaking split from legacy `show()` |
+| Surface | Historical 0.3 | Current 0.4 | Concise 1.x target |
+| --- | --- | --- | --- |
+| Figure size | 5 x 5 in | Matplotlib default unless explicit | `auto`: 85 mm for one column, 170 mm for multiple columns; tuple/preset override |
+| Layout | tight | none unless explicit | constrained for a new Figure; preserve a reused Figure |
+| Reused-Figure clearing | true | false | false |
+| Style ownership | process-global import/config effects | ambient or explicit target helpers | target-local `paper` on newly created Axes |
+| Line defaults | marker `o`, size 7, edge width 1.5, `--`, width 1, alpha 1, face alpha 0.2 | preserved by the root helper | preserved by concise `line` |
+| Scatter defaults | marker `o`, size 1, alpha 1 | preserved by the root helper | preserved by concise `scatter` |
+| Option-free color | historical shared viridis sequence | compatibility-dependent root sequence | target Axes cycle; pure `series=n` when requested |
+| Labels | minor ticks, 5 pt pad, incidental relayout | explicit target via `AxisSpec` | minor ticks and 5 pt pad, no Figure relayout |
+| Panel indexes | lowercase labels positioned from rendered bounds | `panel_labels`, uppercase generated labels | `index`, lowercase bijective labels at frozen Axes transforms |
+| Legend | lower left, frameless, non-fancy, spacing 0.3 | explicit options, conservative replacement | historical defaults restored by explicit target-local `legend` |
+| Save | PNG+PDF, 600 DPI, tight crop, show, overwrite | conservative `savefig`; suffix-free defaults to PNG | `save` restores historical flow transactionally; `savefig` unchanged |
+| Display | coupled to historical save/store flow | `show(Figure)` is display-only | explicit Figure/same-Figure Axes, no-op on non-interactive backend |
+| Config | implicit legacy JSON/singleton | explicit immutable schema 1 | explicit immutable schema 2; schema 1 translates through 1.x |
+| Import | changed `rcParams` and initialized legacy services | side-effect-light | side-effect-light |
 
 The compatibility color sequence and store flag are implemented only at the
 root adapter boundary. Canonical implementation modules do not depend on the
 historical singleton state. Removing import-time Matplotlib `rcParams` mutation
 is also intentional; ambient Matplotlib defaults now apply unless an
 application configures them explicitly.
+
+## Current-to-concise root migration
+
+The primary concise target is:
+
+```text
+subplots  inset  line  scatter  colors  label  index  square
+legend  paper  save  show  read
+```
+
+| Current 0.4 surface | Concise target | 1.x classification and contract |
+| --- | --- | --- |
+| `subplots` | `subplots` | additive shape, auto-size, layout, style, and schema-2 support; native return retained |
+| `inset_axes` | `inset` | new concise tuple-bounds adapter; advanced function retained |
+| `line`, `scatter` | same names | additive direct finite options, multi-target preflight, and deterministic `series` |
+| `sample_cmap` | `colors` | new concise sampler; advanced normalization API retained |
+| `style_axes` | `label` | new concise records/shared-value operation; typed advanced API retained |
+| `box_aspect` | `square` | concise finite-aspect spelling; advanced helper retained |
+| `panel_labels` | `index` | concise lowercase labels and frozen transforms; advanced helper retained |
+| `legend` | `legend` | additive direct finite paper defaults and multi-target semantics |
+| `legends`, `legend_entries`, `cmap_legend` | unchanged advanced APIs | retained through 1.x |
+| `set_theme`, `fig_facecolor` | `paper` plus unchanged advanced APIs | `paper` owns the publication baseline; other themes remain explicit |
+| `title`, `suptitle`, `minor_ticks` | unchanged advanced APIs | retained; concise `label` covers common axis styling only |
+| `savefig` | `save` | concise transactional historical workflow added; conservative advanced API retained |
+| `show` | `show` | display-only ownership retained and generalized to same-Figure Axes targets |
+| `read_array` | `read` | finite common NumPy options added; options-mapping API retained |
+| `load_config` | `load_config` | explicit loading retained; schema 2 becomes canonical |
+| `write_meta`, `build_info`, `use_backend` | unchanged advanced APIs | retained through 1.x |
+| `cmap_line`, `cmap_dash`, `cmap_scatter` | unchanged advanced APIs | retained through 1.x |
+
+The public values `Config`, `AxisSpec`, `Theme`, `InsetSpec`,
+`MetadataSnapshot`, `BuildInfo`, `LegendEntries`, `MosaicSpec`,
+`NormalizeSpec`, and `ColorSpec`; all typed public exceptions; `__version__`;
+and `__commit__` remain governed by the compatibility policy. New shared type
+aliases required by concise signatures are additive and must remain valid on
+Python 3.10.
+
+## Configuration schema migration
+
+Canonical JSON loading remains explicit. Schema 1 is translated into a fresh
+immutable schema-2 value and emits one caller-facing migration warning; input
+files are never rewritten.
+
+| Schema-1 field | Schema-2 field/value | Translation and compatibility |
+| --- | --- | --- |
+| `schema_version: 1` | `schema_version: 2` | accepted through 1.x with one migration warning |
+| `figure.figsize: [w, h]` | `figure.size: [w, h]` | exact finite positive tuple in `figure.unit` |
+| `figure.figsize: null` | `figure.size: null` | preserves the ambient Matplotlib size contract |
+| `figure.unit` | `figure.unit` | unchanged; schema 2 permits non-inch units only for tuple size |
+| `figure.squeeze` | `figure.squeeze` | unchanged boolean |
+| `tight_layout: true`, constrained false | `figure.layout: "tight"` | deterministic translation |
+| constrained true, `tight_layout: false` | `figure.layout: "constrained"` | deterministic translation |
+| both layout flags false or omitted | `figure.layout: "none"` | deterministic translation |
+| both layout flags true | no value | remains `ConfigError` before Config creation |
+| `plotting.default_color` | same field | unchanged; `"axes"` remains the cycle sentinel |
+| `plotting.default_cmap` | same field | unchanged non-empty colormap name |
+| `plotting.nonfinite` | same field | unchanged reviewed policy |
+
+`Config()` changes from schema-1 Figure defaults (`figsize=None`, inch unit,
+no layout) to schema-2 concise defaults (`size="auto"`, inch unit,
+`squeeze=True`, `layout="auto"`). Deprecated `Config.figure.figsize`,
+`tight_layout`, and `constrained_layout`, plus equivalent `Config.get()`
+lookups, remain through 1.x. The `figsize` view returns a tuple only for tuple
+size and returns `None` for named presets or null; layout views report equality
+with their named mode. Each deprecated read warns and never mutates Config.
+
+Schema 2 adds no keys for paper style, line/scatter options, output paths,
+overwrite, display/close policy, series identity, arbitrary labels, metadata,
+backend selection, logging, or open Matplotlib property dictionaries.
 
 ## Root export migration
 
@@ -103,9 +182,22 @@ The classification uses these terms:
 | `__version__` | `__version__` | canonical compatibility attribute | The value comes from installed distribution metadata with a safe source-tree fallback. |
 | `__commit__` | `build_info().commit` | deprecating adapter | The canonical build value is typed metadata; `commit` is `None` after cutover unless explicitly supplied by a build system. |
 
-## Canonical root manifest
+### Lazy-only compatibility entries
 
-The reformed root exports the following functions:
+The lazy manifest also contains entries that are not part of root `__all__`
+or normal interactive discovery:
+
+| Name | Classification | Contract |
+| --- | --- | --- |
+| `Config` | shadowed legacy fallback | Canonical resolution wins; the legacy target remains inventoried so a boundary rewrite cannot silently change precedence. |
+| `save_metadata` | rejecting deprecation adapter | Warns and directs callers to explicit `write_meta`; it never performs implicit metadata collection. |
+| `logger` | compatibility-only module value | Retained for safe historical import lookup only; new code uses standard-library logging and gsplot does not configure logging on import. |
+
+## Current canonical root manifest
+
+The implemented 0.4 root exports the following functions. The concise names
+listed above are added by their linked Issue #183 slices; this list must not be
+read as evidence that an unmerged target already exists.
 
 ```text
 subplots  inset_axes  line  scatter  cmap_line  cmap_dash  cmap_scatter
@@ -157,11 +249,15 @@ at the adapter boundary; new implementation code must not import them.
 | `gsplot.style.title` | `gsplot.title`, `gsplot.suptitle` |
 | `gsplot.data.load_file` | `gsplot.read_array` |
 
-The exact 0.3.x root export names and signatures can be regenerated with:
+The complete current inventory can be regenerated with:
 
 ```bash
 poetry run python tools/maintenance/collect_public_api.py
 ```
 
 That command is intentionally read-only and prints JSON to standard output;
-it does not create an inventory file or alter the working tree.
+it does not create an inventory file or alter the working tree. Its output
+separates root `__all__`, lazy canonical targets, lazy legacy targets,
+discoverable legacy names, direct metadata attributes, and compatibility paths
+parsed from this page. This makes hidden lazy names such as `save_metadata` and
+`logger` reviewable without promoting them into the concise API.

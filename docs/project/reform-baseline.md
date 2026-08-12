@@ -8,11 +8,17 @@ output.
 ## Snapshot
 
 The baseline was measured from the clean `main` revision used to start the
-Issue #165 reform branch. The current package is the flat-layout 0.3.x
+Issue #165 reform branch. At that revision the package was the flat-layout 0.3.x
 implementation with `gsplot/` at the repository root, `setup.py`, and a
 generated-version workflow. The exact public root names and signatures are
 available from `collect_public_api.py`; the reviewed mapping is in the
 [API migration matrix](api-migration.md).
+
+That historical snapshot remains useful evidence. The current concise
+publication reform starts from the accepted Issue #181 parity baseline at
+`main` commit `782117f` and is specified by
+[Issue #183](https://github.com/SoichiroYamane/gsplot/issues/183). The newer
+baseline below is normative for that reform.
 
 The repository contained:
 
@@ -24,6 +30,58 @@ The repository contained:
 These counts are orientation data, not acceptance thresholds. The reform
 must measure behavior and public contracts rather than optimize for file
 counts.
+
+## Concise publication baselines
+
+The versioned machine-readable style and series baseline is
+`tests/fixtures/reform/publication-style-v1.json`. It freezes only fields that
+gsplot deliberately owns; every unlisted Matplotlib field remains the ambient
+Matplotlib default. The owned paper profile is:
+
+| Area | Frozen contract |
+| --- | --- |
+| Figure | white face only when `subplots(style="paper")` creates it |
+| Axes | white face, round-number autolimits, zero margins, no grid |
+| Spines | visible black, 0.8 pt |
+| Major ticks | inward on all four sides, 3.5 pt long, 0.8 pt wide, 6 pt pad |
+| Minor ticks | inward on all four sides, 2 pt long, 0.6 pt wide |
+| Typography | 10 pt DejaVu Sans baseline, 6 pt axis-label padding |
+| Property cycle | five frozen viridis-derived RGBA values in the fixture |
+| Legend operation | lower left, frameless, non-fancy, inherited edge, automatic frame alpha, label spacing 0.3 |
+| Series identity | ten frozen colors, ten line styles, and ten markers |
+
+`paper()` owns the Axes fields and native property cycle only. Matching legend
+defaults belong to the explicit `legend()` operation. Type 42 PDF/PS fonts
+belong to the bounded `save()` operation. Neither setting is a process-global
+side effect of `paper()` or package import.
+
+The publication-example source metrics are measured by
+`tools/maintenance/check_example_metrics.py`. Comments are removed with
+Python's tokenizer, so `#` inside strings remains source. Empty lines and
+trailing whitespace are excluded from comment-free counts. Module, class, and
+function docstrings identified by the AST are excluded from executable counts.
+Lexical characters exclude comments, indentation, dedentation, newlines, and
+encoding/end markers but include every other token spelling. API-call counts
+include calls made through an imported `gsplot` module alias or a direct
+`from gsplot import ...` binding; explicit Matplotlib cleanup such as
+`plt.close(fig)` is required but is not counted as a plotting/output API call.
+
+The frozen source baselines and final budgets are:
+
+| Measure | 0.3 reference | Selected native-tuple prototype | Issue #181 repair | Final maximum |
+| --- | ---: | ---: | ---: | ---: |
+| Physical lines | 98 | 81 | 265 | 98 |
+| Comment-free lines | 74 | 71 | 230 | 74 |
+| Comment-free characters | 2487 | 2323 | 7182 | 2400 |
+| Executable lines | 74 | 68 | 223 | 70 |
+| Executable characters | 2487 | 2135 | 6714 | 2200 |
+| Lexical characters | 2099 | 1649 | 4628 | 1700 |
+| gsplot API calls | 19 | 12 | 19 | 15 |
+
+The final example must also reduce executable lines and executable characters
+by at least 60 percent from the Issue #181 repair while preserving its
+scientific content and accepted visual meaning. The accepted prototype is a
+design fixture, not an executable claim that unmerged APIs already exist.
 
 ## Validation baseline
 
@@ -77,9 +135,9 @@ warning is expected under the Agg backend.
 
 ## Reform validation snapshot
 
-The canonical implementation now reports 85.99 percent coverage across the
+The canonical implementation now reports 86.30 percent coverage across the
 `_core`, `_config`, `_figure`, `_plot`, `_style`, and `_io` modules, while the
-pure `_core` modules report 98.67 percent. These are enforced as CI minimums
+pure `_core` modules report 98.68 percent. These are enforced as CI minimums
 of 85 percent and 95 percent respectively; historical compatibility modules
 remain covered by their characterization tests but are not part of the
 canonical implementation threshold.
@@ -94,8 +152,8 @@ machine-specific performance promises.
 
 ## Import and state characterization
 
-An isolated-process probe observed the following behavior when importing the
-current package:
+The pre-cutover Phase 0 isolated-process probe observed the following behavior
+when importing the historical package:
 
 - `matplotlib.pyplot` is imported eagerly;
 - several Matplotlib `rcParams`, including the x and y margins, are modified
@@ -105,14 +163,14 @@ current package:
   font caches in the user cache/config locations; and
 - no figure existed immediately after the import probe.
 
-The reform target removes application file writes, eager pyplot import,
+The completed structural reform removed application file writes, eager pyplot import,
 implicit configuration loading, root-logger setup, backend selection, and
 `rcParams` mutation from ordinary package import. These are explicit
 acceptance items, not assumptions about the current implementation.
 
 ## Performance reference points
 
-The same isolated probes produced these reference points:
+The same pre-cutover isolated probes produced these reference points:
 
 - fresh-process `import gsplot`: median approximately 546 ms across 30
   samples;

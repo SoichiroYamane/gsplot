@@ -17,6 +17,79 @@ keeping ordinary Matplotlib objects in the workflow.
 engine and its `Figure`, `Axes`, artist, backend, and lifecycle behavior are
 part of the integration contract.
 
+The primary product goal is to create publication-quality scientific figures
+with materially less user code than ordinary Matplotlib while returning native
+Matplotlib objects. The approved concise contract is tracked by
+[Issue #183](https://github.com/SoichiroYamane/gsplot/issues/183) and
+supersedes earlier target defaults where this document identifies a conflict.
+It does not claim that one generic style certifies compliance with every
+journal.
+
+## Concise publication contract
+
+The stable target model is `import gsplot as gs` with native
+`(Figure, AxesContainer)` returns. Canonical operations receive explicit Axes
+or Figure targets; no wrapper, session object, current-Figure lookup, caller
+inspection, or canonical singleton owns plotting state.
+
+The primary concise root functions are:
+
+```text
+subplots, inset, line, scatter, colors, label, index, square,
+legend, paper, save, show, read
+```
+
+The existing advanced root functions, public values, exceptions, historical
+root names, and documented submodule imports remain available through the 1.x
+compatibility window. Compatibility code may delegate to canonical engines,
+but canonical packages must not import `_compat`. Candidate compatibility
+removal is no earlier than 2.0 and requires a separate breaking-change
+decision, usage evidence, warnings, and migration guidance.
+
+The concise defaults and ownership rules are:
+
+- `subplots()` creates a one-panel native Figure/Axes pair. New Figures use an
+  automatic 85 mm single-column or 170 mm multi-column design canvas,
+  constrained layout, and target-local paper styling. Explicit size tuples
+  support inches, centimetres, millimetres, and points. Reused Figures retain
+  their size and existing style/layout unless an explicit compatible value is
+  supplied; `clear=False` remains the default.
+- `paper()` styles only explicit Axes. It installs a frozen native property
+  cycle but never changes global `rcParams`, registers future callbacks,
+  creates a Legend, or retains target ownership.
+- `line()` preserves the historical marker `o`, marker size 7, marker-edge
+  width 1.5, dashed line, line width 1, alpha 1, and marker-face alpha 0.2.
+  `scatter()` preserves marker `o`, size 1, and alpha 1. An explicit
+  `series=0..9` provides a pure color/style identity independent of call order;
+  otherwise the target Axes cycle supplies color.
+- `label()`, `square()`, `index()`, `inset()`, and `legend()` validate every
+  target and per-target value before mutating the first Axes. Label styling
+  never triggers a Figure relayout. Index labels use deterministic lowercase
+  bijective Latin lettering.
+- `save()` writes PNG and PDF for a suffix-free path by default, uses 600 DPI
+  for raster output, tight cropping, Type 42 PDF/PS fonts, `show=True`, and
+  ordered transactional replacement. It receives an explicit Figure or a
+  same-Figure Axes target. `show()` is display-only and never saves or closes.
+- `read()` exposes a finite common NumPy text-loading surface without changing
+  the working directory. Advanced `read_array()` remains available.
+- Canonical precedence is an explicit argument, then an explicitly supplied
+  immutable `Config`, then a validated default. Omitted values are represented
+  internally without exposing a sentinel in signatures or public exports.
+
+Configuration schema 2 replaces the Figure vocabulary with `size`, `unit`,
+`squeeze`, and `layout`. Explicit schema-1 configuration remains accepted and
+translated with one migration warning through 1.x. Its `figsize`,
+`tight_layout`, and `constrained_layout` read views remain deprecated and may
+be lossy for named presets. Canonical code never discovers `gsplot.json`
+implicitly; historical discovery remains compatibility-only.
+
+The frozen defaults, source-size budgets, complete compatibility inventory,
+and migration classifications are recorded in
+[`reform-baseline.md`](reform-baseline.md) and
+[`api-migration.md`](api-migration.md). Each behavioral slice must update
+runtime signatures, types, docstrings, tests, demos, API references, and those
+matrices coherently.
+
 ## Users and primary use cases
 
 The project serves people who need to:
@@ -108,8 +181,6 @@ The following compatibility behaviors are required:
 
 Configuration is optional. When used, gsplot must:
 
-- discover `gsplot.json` in the documented order: the current working
-  directory, the user configuration directory, then the home directory;
 - allow an explicit path through `load_config`;
 - expose the loaded immutable value through `Config` accessors;
 - resolve values with this precedence:
@@ -118,8 +189,10 @@ Configuration is optional. When used, gsplot must:
   2. the supplied immutable `Config` value;
   3. the function signature defaults;
 
-- translate legacy function-entry configuration only inside the compatibility
-  facade during the documented migration window;
+- translate schema-1 and legacy function-entry configuration only at their
+  documented compatibility boundaries during the 1.x migration window;
+- keep historical implicit `gsplot.json` discovery isolated under `_compat`;
+  canonical code must never consult it;
 - avoid mutating caller-owned configuration dictionaries or unrelated
   Matplotlib `rcParams`; and
 - apply `rcParams` and backend settings with the documented process-wide
@@ -216,9 +289,11 @@ repository behavior:
 
 The following target contract is approved by
 [Issue #165](https://github.com/SoichiroYamane/gsplot/issues/165). It becomes
-the implementation contract for the 0.4.x compatibility line and the 1.x
-stabilization line. The current 0.3.x behavior remains the baseline until the
-corresponding implementation slices are merged.
+the implemented 0.4.x compatibility baseline. The concise publication
+contract above is the approved target for the 1.x stabilization line and
+supersedes this section's API names, Figure defaults, and configuration
+vocabulary where they differ. Existing 0.4.x behavior remains the current
+runtime baseline until each linked Issue #183 slice is merged.
 
 ### Ownership and package boundary
 
@@ -370,7 +445,17 @@ Relevant changes must pass focused tests and then the applicable broad checks:
 - local dependency auditing and available secret/workflow scanners; and
 - coverage reporting with at least 85 percent across canonical implementation
   modules and at least 95 percent across the pure `_core` modules; and
+- publication-example metrics from the tracked token/AST checker, with no
+  budget violation or source-hiding workaround; and
 - `git diff --check` plus a complete manual diff review.
+
+Performance comparisons for the concise reform use 20 fresh subprocesses for
+import time, 10 warmed repetitions for representative plotting, and three
+clean documentation/demo builds, comparing medians in the same isolated
+environment. A regression requires investigation when it exceeds both 15
+percent and 10 ms for import, both 15 percent and 5 ms for plotting, or both
+15 percent and one second for documentation/demo generation. Public evidence
+records toolchain and platform versions without private machine details.
 
 Skipped or unavailable checks must be reported as blocked or skipped, never as
 passing.
