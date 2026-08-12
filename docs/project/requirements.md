@@ -148,6 +148,13 @@ function signature is unchanged.
   documented working directories.
 - Sphinx builds must execute representative demos in a failure-visible,
   headless environment.
+- The Sphinx demo-output inventory must declare the exact files each demo is
+  expected to generate and must fail when a required artifact is missing or
+  unchanged from before the current run. Ignored stale PNG/PDF files must not
+  make a documentation build pass.
+- The publication demo must explicitly generate its PNG and PDF outputs from
+  one Figure with its reviewed publication export settings; generated outputs
+  remain build products and are not committed.
 - Examples must use public APIs and must not rely on private paths, local
   machine state, or hidden generated files.
 - Renamed or removed documentation pages must update all toctrees, links, and

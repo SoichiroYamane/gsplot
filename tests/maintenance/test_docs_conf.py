@@ -91,3 +91,42 @@ def test_conf_rejects_unsafe_site_base_url(
 ) -> None:
     with pytest.raises(RuntimeError, match="GSPLOT_DOCS_BASE_URL"):
         _load_conf(monkeypatch, base_url=base_url)
+
+
+def test_demo_output_validation_requires_fresh_declared_outputs(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Missing and unchanged allowlisted artifacts fail the docs gate."""
+
+    values = _load_conf(monkeypatch)
+    validate = values["_validate_demo_output_state"]
+    before = {"demo/example/figure.png": (100, 10)}
+
+    with pytest.raises(RuntimeError, match="left required output"):
+        validate(
+            before,
+            before.copy(),
+            {"demo/example/figure.png"},
+            "demo/example",
+        )
+
+    with pytest.raises(RuntimeError, match="did not produce required output"):
+        validate({}, {}, {"demo/example/figure.png"}, "demo/example")
+
+    with pytest.raises(RuntimeError, match="outside its output allowlist"):
+        validate(
+            {},
+            {
+                "demo/example/figure.png": (120, 12),
+                "demo/example/unexpected.txt": (1, 1),
+            },
+            {"demo/example/figure.png"},
+            "demo/example",
+        )
+
+    validate(
+        before,
+        {"demo/example/figure.png": (120, 12)},
+        {"demo/example/figure.png"},
+        "demo/example",
+    )
