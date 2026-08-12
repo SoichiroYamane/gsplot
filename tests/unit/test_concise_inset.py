@@ -110,8 +110,8 @@ def test_inset_rejects_invalid_plans_before_creating_a_child(options: dict) -> N
         plt.close(figure)
 
 
-def test_legacy_root_inset_honors_explicit_zoom_corner_pairs() -> None:
-    """The root compatibility adapter no longer drops requested connectors."""
+def test_legacy_root_insets_honor_explicit_zoom_corner_pairs() -> None:
+    """Root compatibility adapters retain requested connector pairs and layers."""
 
     figure, parent = plt.subplots()
     try:
@@ -125,5 +125,17 @@ def test_legacy_root_inset_honors_explicit_zoom_corner_pairs() -> None:
         assert child.figure is figure
         assert isinstance(indicator[0], BboxPatch)
         assert all(isinstance(item, BboxConnector) for item in indicator[1:])
+        assert all(item.get_zorder() == 1 for item in indicator)
+
+        with pytest.deprecated_call():
+            anchored = gs.axes_inset_padding(
+                parent,
+                "25%",
+                "25%",
+                zoom=((1, 2), (4, 3)),
+            )
+        anchored_indicator = parent.patches[-3:]
+        assert anchored.figure is figure
+        assert all(item.get_zorder() == 1 for item in anchored_indicator)
     finally:
         plt.close(figure)

@@ -399,13 +399,11 @@ def _apply_legacy_inset_options(
         _apply_legacy_labels(child, lab_lims, minor=False)
     _minor_ticks(child, minor, axis="both")
     if zoom:
-        selected_zorder = float(child.get_zorder()) - 0.01
         if zoom is True:
             parent.indicate_inset_zoom(
                 child,
                 edgecolor=zoom_color,
                 alpha=zoom_alpha,
-                zorder=selected_zorder,
             )
         else:
             _manual_zoom_indicator(
@@ -414,7 +412,7 @@ def _apply_legacy_inset_options(
                 cast(ZoomCorners, zoom),
                 color=zoom_color,
                 alpha=zoom_alpha,
-                zorder=selected_zorder,
+                zorder=1,
             )
 
 
