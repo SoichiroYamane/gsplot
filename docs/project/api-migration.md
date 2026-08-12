@@ -43,6 +43,8 @@ window.
 | Labels | minor ticks, 5 pt pad, incidental relayout | concise `label` plus advanced `AxisSpec` | minor ticks and 5 pt pad, no Figure relayout |
 | Panel indexes | lowercase labels positioned from rendered bounds | concise `index` plus advanced `panel_labels` | lowercase bijective labels; outside aligns to the y-label left edge with a 6-point top gap |
 | Legend | lower left, frameless, non-fancy, spacing 0.3 | `best`, frameless, non-fancy, spacing 0.3; conservative replacement | implemented concise contract |
+| Inset zoom | two explicit connector corner pairs | advanced placement; root adapter ignores explicit pairs | automatic or exact two-pair connectors; indicator defaults 0.01 below child z-order 5 |
+| Text read | whitespace, unpacked columns | explicit options mapping; structured unpack is coerced | comma delimiter and unpack true; native structured field arrays preserved |
 | Save | PNG+PDF, 600 DPI, tight crop, show, overwrite | conservative `savefig`; suffix-free defaults to PNG | `save` restores historical flow transactionally; `savefig` unchanged |
 | Display | coupled to historical save/store flow | `show(Figure)` is display-only | explicit Figure/same-Figure Axes, no-op on non-interactive backend |
 | Config | implicit legacy JSON/singleton | explicit immutable schema 1 | explicit immutable schema 2; schema 1 translates through 1.x |
@@ -70,9 +72,9 @@ legend  paper  save  show  read
 | Current 0.4 surface | Concise target | 1.x classification and contract |
 | --- | --- | --- |
 | `subplots` | `subplots` | additive shape, auto-size, layout, style, and schema-2 support; native return retained |
-| `inset_axes` | `inset` | new concise tuple-bounds adapter; advanced function retained |
+| `inset_axes` | `inset` | concise tuple/`InsetSpec` placement, paper style, optional label, automatic or exact-pair zoom, and explicit layering; placement-only advanced function retained |
 | `line`, `scatter` | same names | additive direct finite options, multi-target preflight, and deterministic `series` |
-| `sample_cmap` | `colors` | new concise sampler; advanced normalization API retained |
+| `sample_cmap` | `colors` | concise inclusive sampler with midpoint for one color; advanced value normalization API retained |
 | `style_axes` | `label` | new concise records/shared-value operation; typed advanced API retained |
 | `box_aspect` | `square` | concise finite-aspect spelling; advanced helper retained |
 | `panel_labels` | `index` | concise lowercase labels with DPI-aware inside clearance and y-label-aligned outside placement; advanced helper retained |
@@ -82,7 +84,7 @@ legend  paper  save  show  read
 | `title`, `suptitle`, `minor_ticks` | unchanged advanced APIs | retained; concise `label` covers common axis styling only |
 | `savefig` | `save` | concise transactional historical workflow added; conservative advanced API retained |
 | `show` | `show` | display-only ownership retained and generalized to same-Figure Axes targets |
-| `read_array` | `read` | finite common NumPy options added; options-mapping API retained |
+| `read_array` | `read` | CSV and unpack defaults plus finite common NumPy options; native ndarray-or-field-list result and options-mapping API retained |
 | `load_config` | `load_config` | explicit loading retained; schema 2 becomes canonical |
 | `write_meta`, `build_info`, `use_backend` | unchanged advanced APIs | retained through 1.x |
 | `cmap_line`, `cmap_dash`, `cmap_scatter` | unchanged advanced APIs | retained through 1.x |
@@ -118,8 +120,8 @@ The public values `Config`, `AxisSpec`, `Theme`, `InsetSpec`,
 `NormalizeSpec`, and `ColorSpec`; all typed public exceptions; `__version__`;
 and `__commit__` remain governed by the compatibility policy. New shared type
 aliases `AxesTarget`, `PerTarget`, `LineStyle`, `Marker`, `Unit`, `SizePreset`,
-`SizeSpec`, `LayoutMode`, and `StyleMode` are additive and remain valid on
-Python 3.10.
+`SizeSpec`, `LayoutMode`, `StyleMode`, and `ZoomCorners` are additive and remain
+valid on Python 3.10.
 
 ## Configuration schema migration
 
