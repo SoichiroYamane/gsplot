@@ -1,8 +1,8 @@
 # 2. Lines, labels, and legends
 
-`gsplot.line` draws a line on an explicit target Axes. `gsplot.style_axes`
-applies an immutable `AxisSpec` to one or more explicit axes, and
-`gsplot.legends` creates local legends for a Figure.
+`gsplot.line` draws on explicit Axes. One `gsplot.label` call applies shared
+labels, limits, square panels, and deterministic lowercase indexes, while
+`gsplot.legend` creates publication-style local legends in target order.
 
 ```{literalinclude} ../../../demo/2_line_and_label/line_and_label.py
 ```

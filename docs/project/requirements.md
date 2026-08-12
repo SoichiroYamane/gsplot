@@ -319,10 +319,10 @@ The canonical root functions are:
 
 ```text
 subplots, inset_axes, line, scatter, cmap_line, cmap_dash, cmap_scatter,
-sample_cmap, style_axes, title, suptitle, minor_ticks, box_aspect,
-panel_labels, fig_facecolor, legend, legends, legend_entries, cmap_legend,
-set_theme, savefig, show, load_config, read_array, write_meta, build_info,
-use_backend
+sample_cmap, label, square, index, style_axes, title, suptitle, minor_ticks,
+box_aspect, panel_labels, fig_facecolor, legend, legends, legend_entries,
+cmap_legend, set_theme, savefig, show, load_config, read_array, write_meta,
+build_info, use_backend
 ```
 
 `savefig(fig, ..., show=True)` saves all requested formats before displaying
