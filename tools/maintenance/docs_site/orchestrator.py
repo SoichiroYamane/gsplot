@@ -20,6 +20,12 @@ from pathlib import Path
 from typing import Any
 
 from .catalog import ReleaseCatalog, ReleaseRecord, load_catalog
+from .switcher import (
+    DEFAULT_BASE_URL,
+    generate_switcher,
+    normalize_base_url,
+    write_switcher,
+)
 
 BUILD_MANIFEST_SCHEMA_VERSION = 1
 _ALLOWED_OUTPUT_DIRECTORIES = {
@@ -58,6 +64,22 @@ _SENSITIVE_ENV_MARKERS = (
     "AZURE_",
     "GOOGLE_APPLICATION_CREDENTIALS",
 )
+_UNTRUSTED_ENV_NAMES = {
+    "GIT_CONFIG_GLOBAL",
+    "GIT_CONFIG_SYSTEM",
+    "NETRC",
+    "PIP_CERT",
+    "PIP_CLIENT_CERT",
+    "PIP_CONFIG_FILE",
+    "PIP_EXTRA_INDEX_URL",
+    "PIP_INDEX_URL",
+    "PIP_PROXY",
+    "PIP_TRUSTED_HOST",
+    "SSH_AUTH_SOCK",
+    "UV_EXTRA_INDEX_URL",
+    "UV_INDEX",
+    "UV_INDEX_URL",
+}
 
 
 class BuildError(RuntimeError):
@@ -164,6 +186,7 @@ def build_site(
     *,
     repo_root: Path = Path("."),
     python_executable: str | Path = sys.executable,
+    base_url: str = DEFAULT_BASE_URL,
 ) -> BuildManifest:
     """Build ``dev``, every immutable release, and the stable alias.
 
@@ -177,6 +200,7 @@ def build_site(
     output = output_dir.resolve()
     _validate_output_target(repo, output)
     catalog = load_catalog(catalog_path.resolve())
+    site_base_url = normalize_base_url(base_url)
     output.parent.mkdir(parents=True, exist_ok=True)
     _remove_output(output)
 
@@ -199,6 +223,7 @@ def build_site(
                 repo_root=repo,
                 temporary_root=temporary,
                 python_executable=python_executable,
+                site_base_url=site_base_url,
             )
             records.append(dev_record)
             release_records: dict[str, BuildRecord] = {}
@@ -214,6 +239,7 @@ def build_site(
                     temporary_root=temporary,
                     python_executable=python_executable,
                     release=release,
+                    site_base_url=site_base_url,
                 )
                 records.append(record)
                 release_records[release.tag] = record
@@ -243,6 +269,10 @@ def build_site(
             )
 
             _write_json(staging / "_meta" / "catalog.json", catalog.to_mapping())
+            write_switcher(
+                generate_switcher(catalog, base_url=site_base_url),
+                staging / "_meta" / "switcher.json",
+            )
             file_count, uncompressed_bytes = _artifact_stats(staging)
             manifest = BuildManifest(
                 main_commit=catalog.main_commit,
@@ -295,6 +325,7 @@ def _build_channel(
     repo_root: Path,
     temporary_root: Path,
     python_executable: str | Path,
+    site_base_url: str,
     release: ReleaseRecord | None = None,
 ) -> BuildRecord:
     """Build and validate one source commit in a temporary worktree."""
@@ -313,6 +344,7 @@ def _build_channel(
             environment_root=environment_root,
             docs_version=docs_version,
             source_commit=source_commit,
+            site_base_url=site_base_url,
         )
         package_version = _probe_package(
             python_executable,
@@ -440,12 +472,16 @@ def _isolated_environment(
     environment_root: Path,
     docs_version: str,
     source_commit: str,
+    site_base_url: str,
 ) -> dict[str, str]:
     """Build a clean subprocess environment with only the source package path."""
 
     environment = dict(os.environ)
     for name in list(environment):
-        if any(marker in name.upper() for marker in _SENSITIVE_ENV_MARKERS):
+        uppercase_name = name.upper()
+        if uppercase_name in _UNTRUSTED_ENV_NAMES or any(
+            marker in uppercase_name for marker in _SENSITIVE_ENV_MARKERS
+        ):
             environment.pop(name, None)
     environment.pop("PYTHONPATH", None)
     home = environment_root / "home"
@@ -457,6 +493,7 @@ def _isolated_environment(
             "PYTHONNOUSERSITE": "1",
             "PYTHONPATH": str(package_path),
             "GSPLOT_BUILD_SOURCE_COMMIT": source_commit,
+            "GSPLOT_DOCS_BASE_URL": site_base_url,
             "GSPLOT_DOCS_VERSION": docs_version,
             "XDG_CACHE_HOME": str(environment_root / "cache"),
             "XDG_CONFIG_HOME": str(environment_root / "config"),
@@ -712,17 +749,14 @@ def _git_environment() -> dict[str, str]:
 
     environment = dict(os.environ)
     for name in list(environment):
-        if any(marker in name.upper() for marker in _SENSITIVE_ENV_MARKERS):
+        uppercase_name = name.upper()
+        if uppercase_name in _UNTRUSTED_ENV_NAMES or any(
+            marker in uppercase_name for marker in _SENSITIVE_ENV_MARKERS
+        ):
             environment.pop(name, None)
-    for name in (
-        "NETRC",
-        "PIP_EXTRA_INDEX_URL",
-        "PIP_INDEX_URL",
-        "PIP_TRUSTED_HOST",
-        "SSH_AUTH_SOCK",
-    ):
-        environment.pop(name, None)
     environment["GIT_TERMINAL_PROMPT"] = "0"
+    environment["GIT_CONFIG_GLOBAL"] = os.devnull
+    environment["GIT_CONFIG_NOSYSTEM"] = "1"
     return environment
 
 

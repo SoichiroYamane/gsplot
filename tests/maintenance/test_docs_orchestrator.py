@@ -11,13 +11,16 @@ import pytest
 from tools.maintenance.docs_site.catalog import (
     ReleaseCatalog,
     ReleaseRecord,
+    load_catalog,
     write_catalog,
 )
 from tools.maintenance.docs_site.orchestrator import (
     BuildError,
+    _isolated_environment,
     _sanitize_and_validate_output,
     build_site,
 )
+from tools.maintenance.docs_site.switcher import load_switcher, validate_switcher
 
 
 def _git(repo: Path, *args: str) -> str:
@@ -99,6 +102,7 @@ def test_build_site_records_provenance_and_stable_alias(tmp_path: Path) -> None:
     assert (output / "v0.3.0/index.html").is_file()
     assert (output / "stable/index.html").is_file()
     assert (output / "_meta/catalog.json").is_file()
+    assert (output / "_meta/switcher.json").is_file()
     assert (output / "_meta/build-manifest.json").is_file()
     assert not list(output.rglob("*.buildinfo"))
     assert not list(output.rglob("create_switcher.py"))
@@ -119,6 +123,13 @@ def test_build_site_records_provenance_and_stable_alias(tmp_path: Path) -> None:
         (output / "_meta/build-manifest.json").read_text(encoding="utf-8")
     )
     assert public_manifest["stable_tag"] == "v0.3.0"
+    switcher = load_switcher(output / "_meta/switcher.json")
+    validate_switcher(
+        switcher,
+        load_catalog(catalog_path),
+    )
+    assert isinstance(switcher[1]["url"], str)
+    assert switcher[1]["url"].endswith("/stable/")
     assert all(
         not Path(value).is_absolute()
         for record in public_manifest["builds"]
@@ -178,3 +189,32 @@ def test_output_validation_rejects_missing_static_assets(tmp_path: Path) -> None
             "v0.3.0",
             "python -m sphinx -W -b html docs <output>",
         )
+
+
+def test_isolated_environment_removes_credentials_and_private_indexes(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    worktree = tmp_path / "worktree"
+    worktree.mkdir()
+    package_path = worktree / "src"
+    package_path.mkdir()
+    environment_root = tmp_path / "environment"
+    monkeypatch.setenv("GITHUB_TOKEN", "must-not-pass")
+    monkeypatch.setenv("PIP_INDEX_URL", "https://private.example.test/simple")
+    monkeypatch.setenv("PIP_CONFIG_FILE", "/private/pip.conf")
+    monkeypatch.setenv("PYTHONPATH", "/private/pythonpath")
+
+    environment = _isolated_environment(
+        worktree=worktree,
+        package_path=package_path,
+        environment_root=environment_root,
+        docs_version="dev",
+        source_commit="a" * 40,
+        site_base_url="https://docs.example.test/gsplot",
+    )
+
+    assert "GITHUB_TOKEN" not in environment
+    assert "PIP_INDEX_URL" not in environment
+    assert "PIP_CONFIG_FILE" not in environment
+    assert environment["PYTHONPATH"] == str(package_path)
+    assert environment["GSPLOT_DOCS_BASE_URL"] == "https://docs.example.test/gsplot"

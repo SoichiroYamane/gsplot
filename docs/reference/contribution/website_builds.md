@@ -34,15 +34,17 @@ explicit directory:
 poetry run python -m tools.maintenance.build_docs_site \
   --repo-root . \
   --catalog /tmp/gsplot-catalog.json \
-  --output /tmp/gsplot-site
+  --output /tmp/gsplot-site \
+  --base-url https://example.test/gsplot
 ```
 
 The result contains `dev/`, one immutable directory per included release,
-`stable/`, and public-safe `_meta/catalog.json` and
-`_meta/build-manifest.json` files. The manifest records source commits,
-package provenance, generated paths, output checks, exclusions, and artifact
-size. A failed version removes the temporary worktree and does not publish a
-partial output tree.
+`stable/`, and public-safe `_meta/catalog.json`, `_meta/switcher.json`, and
+`_meta/build-manifest.json` files. The switcher is generated and validated
+from the same catalog as the build matrix. The manifest records source
+commits, package provenance, generated paths, output checks, exclusions, and
+artifact size. A failed version removes the temporary worktree and does not
+publish a partial output tree.
 
 The builder uses the pinned Poetry documentation environment and an explicit
 source-path compatibility strategy for historical packages. It never passes
