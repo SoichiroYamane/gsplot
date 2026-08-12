@@ -103,10 +103,10 @@ def test_output_controls_save_all_formats_before_optional_display(
 def test_layout_styling_panels_and_themes_cover_explicit_targets() -> None:
     """All renderer-neutral styling helpers operate on supplied objects."""
 
-    figure, axes = gs.subplots(ncols=2, tight_layout=True)
+    figure, axes = gs.subplots(ncols=2, layout="tight")
     try:
         assert figure.get_layout_engine() is not None
-        figure2, axis2 = gs.subplots(constrained_layout=True)
+        figure2, axis2 = gs.subplots(layout="constrained")
         assert figure2.get_layout_engine() is not None
         plt.close(figure2)
 
