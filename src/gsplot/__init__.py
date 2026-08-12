@@ -37,18 +37,23 @@ if TYPE_CHECKING:
         BuildInfo,
         ColorSpec,
         InsetSpec,
+        LabelRecord,
+        LabelRecords,
         LayoutMode,
         LegendEntries,
+        Limit,
         LineStyle,
         Marker,
         MetadataSnapshot,
         MosaicSpec,
         NormalizeSpec,
         PerTarget,
+        Scale,
         SizePreset,
         SizeSpec,
         StyleMode,
         Theme,
+        TickSpec,
         Unit,
     )
     from ._figure.backend import use_backend
@@ -161,6 +166,11 @@ __all__ = [
     "SizeSpec",
     "LayoutMode",
     "StyleMode",
+    "Limit",
+    "Scale",
+    "TickSpec",
+    "LabelRecord",
+    "LabelRecords",
 ]
 
 

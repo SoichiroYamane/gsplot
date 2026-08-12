@@ -64,6 +64,11 @@ def test_root_exposes_only_the_canonical_manifest_and_native_objects(tmp_path) -
         "SizeSpec",
         "LayoutMode",
         "StyleMode",
+        "Limit",
+        "Scale",
+        "TickSpec",
+        "LabelRecord",
+        "LabelRecords",
     }
     assert set(gs.__all__) == expected
 

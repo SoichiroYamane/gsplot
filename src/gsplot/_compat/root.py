@@ -117,6 +117,11 @@ _CANONICAL_EXPORTS: Final[dict[str, tuple[str, str]]] = {
     "SizeSpec": ("gsplot._core.types", "SizeSpec"),
     "LayoutMode": ("gsplot._core.types", "LayoutMode"),
     "StyleMode": ("gsplot._core.types", "StyleMode"),
+    "Limit": ("gsplot._core.types", "Limit"),
+    "Scale": ("gsplot._core.types", "Scale"),
+    "TickSpec": ("gsplot._core.types", "TickSpec"),
+    "LabelRecord": ("gsplot._core.types", "LabelRecord"),
+    "LabelRecords": ("gsplot._core.types", "LabelRecords"),
 }
 
 LEGACY_ALL: Final[tuple[str, ...]] = (

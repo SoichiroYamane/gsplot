@@ -42,6 +42,16 @@ SizeSpec: TypeAlias = SizePreset | tuple[float, float] | None
 LayoutMode: TypeAlias = Literal["auto", "constrained", "tight", "none"]
 # Public type alias: StyleMode; concise target-local style choices.
 StyleMode: TypeAlias = Literal["auto", "paper"] | None
+# Public type alias: Limit; finite two-value axis limits after validation.
+Limit: TypeAlias = tuple[float, float]
+# Public type alias: Scale; supported Cartesian scale names.
+Scale: TypeAlias = Literal["linear", "log", "symlog", "logit"]
+# Public type alias: TickSpec; finite numeric tick locations after validation.
+TickSpec: TypeAlias = Sequence[float]
+# Public type alias: LabelRecord; concise labels with optional axis limits.
+LabelRecord: TypeAlias = tuple[str, str] | tuple[str, str, Limit | None, Limit | None]
+# Public type alias: LabelRecords; ordered or exact-key per-target label records.
+LabelRecords: TypeAlias = Sequence[LabelRecord] | Mapping[object, LabelRecord]
 
 
 class _NormalizeProtocol(Protocol):
@@ -695,6 +705,11 @@ __all__ = [
     "SizeSpec",
     "LayoutMode",
     "StyleMode",
+    "Limit",
+    "Scale",
+    "TickSpec",
+    "LabelRecord",
+    "LabelRecords",
     "NormalizeSpec",
     "AxisSpec",
     "InsetSpec",

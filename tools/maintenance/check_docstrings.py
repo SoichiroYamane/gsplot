@@ -16,6 +16,11 @@ _TYPE_ALIAS_COMMENTS = {
     "ColorSpec": "# Public type alias: ColorSpec",
     "MosaicSpec": "# Public type alias: MosaicSpec",
     "NormalizeSpec": "# Public type alias: NormalizeSpec",
+    "Limit": "# Public type alias: Limit",
+    "Scale": "# Public type alias: Scale",
+    "TickSpec": "# Public type alias: TickSpec",
+    "LabelRecord": "# Public type alias: LabelRecord",
+    "LabelRecords": "# Public type alias: LabelRecords",
 }
 _NO_EXAMPLES = {
     "GsplotError",
