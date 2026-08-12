@@ -11,6 +11,7 @@ from .errors import (
 )
 from .numerics import as_float_array, segment_points, validate_color_values, validate_xy
 from .types import (
+    AxesTarget,
     AxisSpec,
     BuildInfo,
     ColorSpec,
@@ -19,6 +20,7 @@ from .types import (
     MetadataSnapshot,
     MosaicSpec,
     NormalizeSpec,
+    PerTarget,
     RGBColor,
     Theme,
 )
@@ -47,6 +49,8 @@ __all__ = [
     "RGBColor",
     "ColorSpec",
     "MosaicSpec",
+    "AxesTarget",
+    "PerTarget",
     "NormalizeSpec",
     "AxisSpec",
     "InsetSpec",

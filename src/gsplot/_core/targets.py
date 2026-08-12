@@ -11,6 +11,7 @@ from matplotlib.figure import Figure
 
 from .errors import PlotError
 from .plans import TargetKind, TargetPlan, _axis_root_figure
+from .types import AxesTarget
 
 T = TypeVar("T")
 
@@ -55,7 +56,7 @@ def _snapshot_target(
     raise PlotError(f"{operation}: target must be an Axes or ordered Axes collection")
 
 
-def normalize_axes(target: Any, *, operation: str) -> TargetPlan:
+def normalize_axes(target: AxesTarget, *, operation: str) -> TargetPlan:
     """Normalize one finite Axes target before any Matplotlib mutation.
 
     Sequence order, NumPy C order, and mapping insertion order are preserved.

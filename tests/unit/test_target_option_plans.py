@@ -11,6 +11,7 @@ import pytest
 from matplotlib.figure import Figure
 
 from gsplot._core import MISSING as CORE_MISSING
+from gsplot._core import AxesTarget, PerTarget
 from gsplot._core.errors import OptionError, PlotError
 from gsplot._core.options import (
     MISSING,
@@ -59,6 +60,11 @@ def test_target_normalization_preserves_every_supported_order() -> None:
     assert mapping.axes == (axes[3], axes[0])
     assert mapping.keys == ("right", "left")
     assert mapping.kind == "mapping"
+
+    target_hint: AxesTarget = mapping.axes
+    values_hint: PerTarget = {axis: index for index, axis in enumerate(axes)}
+    assert target_hint == mapping.axes
+    assert tuple(values_hint) == axes
 
 
 def test_target_normalization_uses_the_unique_root_figure() -> None:
