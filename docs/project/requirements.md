@@ -153,6 +153,38 @@ function signature is unchanged.
 - Renamed or removed documentation pages must update all toctrees, links, and
   versioned documentation scripts.
 
+### FR-9: Versioned documentation delivery
+
+The website delivery contract tracked by
+[Issue #174](https://github.com/SoichiroYamane/gsplot/issues/174) is stable
+repository behavior:
+
+- GitHub's published, non-draft, non-prerelease Releases are the source for
+  immutable documentation versions. The initial documentation floor is
+  v0.1.1, and v0.3.0 must be deployed first as the stable release.
+- `/stable/` is a copied alias of the latest successfully built immutable
+  release, `/dev/` is the current `main` documentation with `noindex`, and
+  `/vX.Y.Z/` is an immutable release tree. The root is a small, no-JavaScript
+  entry page pointing to `/stable/`.
+- Version catalogs and switcher data are generated from one typed,
+  schema-validated catalog. Drafts, prereleases, malformed tags, duplicate
+  versions, stale fallback, and missing release refs fail visibly.
+- Historical documentation must import its own release source/package in an
+  isolated environment. Build manifests record source SHAs and package
+  provenance, and failed versions must not produce deployable partial output.
+- Existing version paths, resolving `.html` pages, and pre-cutover root or
+  `/stable/` URLs require a tested compatibility mapping before removal or
+  redirection.
+- The Pages artifact contains only deployable files plus public-safe
+  `/_meta/catalog.json` and `/_meta/build-manifest.json`. It excludes caches,
+  build scripts, private paths, credentials, raw workflow data, and unneeded
+  generated sources.
+- Catalog, build, deployment, and post-deployment smoke checks use separate
+  least-privilege workflow boundaries. Release source code and demos never
+  receive GitHub, Pages, PyPI, OIDC, or repository-write credentials.
+- Strict Sphinx, demo, metadata, link, artifact, dependency, workflow, and
+  accessibility checks are required; skipped checks are reported as skipped.
+
 ## Structural reform target contract
 
 The following target contract is approved by
