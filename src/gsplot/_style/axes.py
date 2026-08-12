@@ -6,7 +6,6 @@ import inspect
 from collections.abc import Mapping, Sequence
 from typing import Any, Literal, get_type_hints, overload
 
-import matplotlib.ticker as ticker
 import numpy as np
 from matplotlib.axes import Axes
 from matplotlib.figure import Figure
@@ -196,13 +195,13 @@ def _apply_axis_spec(axis: Axes, spec: AxisSpec) -> None:
 
 
 def _set_minor(axis: Axes, enabled: bool, coordinate: Literal["x", "y"]) -> None:
-    """Set one minor locator without consulting pyplot."""
+    """Set one scale-aware minor locator without consulting pyplot."""
 
-    locator = ticker.AutoMinorLocator() if enabled else ticker.NullLocator()
-    if coordinate == "x":
-        axis.xaxis.set_minor_locator(locator)
+    selected = axis.xaxis if coordinate == "x" else axis.yaxis
+    if enabled:
+        selected.minorticks_on()
     else:
-        axis.yaxis.set_minor_locator(locator)
+        selected.minorticks_off()
 
 
 def _text(value: Any, name: str) -> str:

@@ -4,7 +4,7 @@ import inspect
 
 import matplotlib.pyplot as plt
 import pytest
-from matplotlib.ticker import AutoMinorLocator
+from matplotlib.ticker import AutoMinorLocator, LogLocator
 
 from gsplot._core import LayoutError, PlotError
 from gsplot._style.axes import label, square
@@ -117,6 +117,19 @@ def test_label_preflight_rejects_ambiguous_records_and_invalid_domains() -> None
         with pytest.raises((LayoutError, PlotError)):
             label((first, object()), "after", "value")  # type: ignore[list-item]
         assert first.get_xlabel() == "before"
+    finally:
+        plt.close(figure)
+
+
+def test_label_uses_scale_aware_minor_tick_locators() -> None:
+    """Log scales receive native log minor locators instead of linear locators."""
+
+    figure, axis = plt.subplots()
+    try:
+        axis.plot([1, 10], [0.1, 0.9])
+        label(axis, "x", "y", xscale="log", yscale="logit")
+        assert isinstance(axis.xaxis.minor.locator, LogLocator)
+        assert not isinstance(axis.yaxis.minor.locator, AutoMinorLocator)
     finally:
         plt.close(figure)
 
