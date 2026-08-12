@@ -238,7 +238,7 @@ def colors(
     try:
         colormap = mpl.colormaps.get_cmap(cmap)
     except (TypeError, ValueError) as exc:
-        raise PlotError(f"colors: unknown Matplotlib colormap: {cmap!r}") from exc
+        raise PlotError("colors: unknown Matplotlib colormap") from exc
     points = (
         np.array([0.5], dtype=float)
         if n == 1
