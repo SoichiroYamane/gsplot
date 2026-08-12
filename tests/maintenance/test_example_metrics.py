@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
+import io
 import json
+import sys
 from pathlib import Path
 
 import pytest
@@ -59,6 +61,14 @@ def test_docstring_mask_preserves_code_on_the_same_line(tmp_path: Path) -> None:
     assert metrics.comment_free_lines == 1
     assert metrics.executable_lines == 1
     assert metrics.lexical_chars == len(";value=1")
+
+
+def test_metrics_accept_standard_input(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Historical tagged source can be measured without a temporary file."""
+
+    monkeypatch.setattr(sys, "stdin", io.StringIO("value = 1\n"))
+
+    assert measure(Path("-")).executable_lines == 1
 
 
 def test_selected_prototype_reproduces_frozen_metrics() -> None:

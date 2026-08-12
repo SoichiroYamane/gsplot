@@ -12,6 +12,7 @@ import argparse
 import ast
 import io
 import json
+import sys
 import tokenize
 from dataclasses import asdict, dataclass
 from pathlib import Path
@@ -115,7 +116,7 @@ def _count_gsplot_calls(tree: ast.AST) -> int:
 def measure(path: Path) -> Metrics:
     """Measure one syntactically valid UTF-8 Python source without executing it."""
 
-    source = path.read_text(encoding="utf-8")
+    source = sys.stdin.read() if path == Path("-") else path.read_text(encoding="utf-8")
     tree = ast.parse(source, filename=str(path))
     comment_free = _without_comments(source)
     comment_free_code = [line for line in comment_free if line.strip()]

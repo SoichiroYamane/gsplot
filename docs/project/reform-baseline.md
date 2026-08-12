@@ -83,6 +83,23 @@ by at least 60 percent from the Issue #181 repair while preserving its
 scientific content and accepted visual meaning. The accepted prototype is a
 design fixture, not an executable claim that unmerged APIs already exist.
 
+Reproduce all three tracked measurements without creating a repository file:
+
+```bash
+python tools/maintenance/check_example_metrics.py \
+  tools/maintenance/fixtures/publication_tuple_prototype.py \
+  --manifest tools/maintenance/example-metrics.json \
+  --expect selected_tuple_prototype --check-budgets
+python tools/maintenance/check_example_metrics.py \
+  demo/4_paper_plot/paper_plot.py \
+  --manifest tools/maintenance/example-metrics.json \
+  --expect issue_181_repair
+git show v0.3.0:demo/4_paper_plot/paper_plot.py | \
+  python tools/maintenance/check_example_metrics.py - \
+    --manifest tools/maintenance/example-metrics.json \
+    --expect historical_v0_3
+```
+
 ## Validation baseline
 
 The following checks were run in the locked development environment:
