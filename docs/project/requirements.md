@@ -65,7 +65,8 @@ The concise defaults and ownership rules are:
 - `label()`, `square()`, `index()`, `inset()`, and `legend()` validate every
   target and per-target value before mutating the first Axes. Label styling
   never triggers a Figure relayout. Index labels use deterministic lowercase
-  bijective Latin lettering.
+  bijective Latin lettering. `legend()` defaults to `loc="best"`, a frameless
+  non-fancy presentation, and label spacing 0.3.
 - `save()` writes PNG and PDF for a suffix-free path by default, uses 600 DPI
   for raster output, tight cropping, Type 42 PDF/PS fonts, `show=True`, and
   ordered transactional replacement. It receives an explicit Figure or a

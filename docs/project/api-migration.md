@@ -42,7 +42,7 @@ window.
 | Option-free color | historical shared viridis sequence | compatibility-dependent root sequence | target Axes cycle; pure `series=n` when requested |
 | Labels | minor ticks, 5 pt pad, incidental relayout | explicit target via `AxisSpec` | minor ticks and 5 pt pad, no Figure relayout |
 | Panel indexes | lowercase labels positioned from rendered bounds | `panel_labels`, uppercase generated labels | `index`, lowercase bijective labels at frozen Axes transforms |
-| Legend | lower left, frameless, non-fancy, spacing 0.3 | explicit options, conservative replacement | historical defaults restored by explicit target-local `legend` |
+| Legend | lower left, frameless, non-fancy, spacing 0.3 | explicit options, conservative replacement | `best` placement with frameless, non-fancy styling and spacing 0.3 |
 | Save | PNG+PDF, 600 DPI, tight crop, show, overwrite | conservative `savefig`; suffix-free defaults to PNG | `save` restores historical flow transactionally; `savefig` unchanged |
 | Display | coupled to historical save/store flow | `show(Figure)` is display-only | explicit Figure/same-Figure Axes, no-op on non-interactive backend |
 | Config | implicit legacy JSON/singleton | explicit immutable schema 1 | explicit immutable schema 2; schema 1 translates through 1.x |
