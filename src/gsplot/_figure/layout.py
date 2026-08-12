@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import inspect
 import warnings
-from collections.abc import Mapping, Sequence
+from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass
 from typing import Any, Literal, cast
 
@@ -282,6 +282,16 @@ def _legacy_layout(
     return "tight" if tight else "constrained" if constrained else "none"
 
 
+def _option_spec(
+    name: str,
+    default: Any,
+    validator: Callable[[Any, str], Any],
+) -> OptionSpec[Any]:
+    """Build a typed option without runtime generic subscription on Python 3.10."""
+
+    return OptionSpec(name, default, validator=validator)
+
+
 def _resolve_options(
     shape: _ShapePlan,
     *,
@@ -340,33 +350,33 @@ def _resolve_options(
             "layout": config.figure.layout,
         }
     specs: tuple[OptionSpec[Any], ...] = (
-        OptionSpec[Any]("size", "auto", validator=_size),
-        OptionSpec[Any]("unit", "in", validator=_unit),
-        OptionSpec[Any]("sharex", False, validator=_share),
-        OptionSpec[Any]("sharey", False, validator=_share),
-        OptionSpec(
+        _option_spec("size", "auto", _size),
+        _option_spec("unit", "in", _unit),
+        _option_spec("sharex", False, _share),
+        _option_spec("sharey", False, _share),
+        _option_spec(
             "squeeze",
             True,
-            validator=lambda value, name: ensure_bool(value, name, error=LayoutError),
+            lambda value, name: ensure_bool(value, name, error=LayoutError),
         ),
-        OptionSpec(
+        _option_spec(
             "width_ratios",
             None,
-            validator=lambda value, name: _ratios(value, name, shape.columns),
+            lambda value, name: _ratios(value, name, shape.columns),
         ),
-        OptionSpec(
+        _option_spec(
             "height_ratios",
             None,
-            validator=lambda value, name: _ratios(value, name, shape.rows),
+            lambda value, name: _ratios(value, name, shape.rows),
         ),
-        OptionSpec("subplot_kw", None, validator=_subplot_options),
-        OptionSpec(
+        _option_spec("subplot_kw", None, _subplot_options),
+        _option_spec(
             "clear",
             False,
-            validator=lambda value, name: ensure_bool(value, name, error=LayoutError),
+            lambda value, name: ensure_bool(value, name, error=LayoutError),
         ),
-        OptionSpec[Any]("layout", "auto", validator=_layout),
-        OptionSpec[Any]("style", "auto", validator=_style),
+        _option_spec("layout", "auto", _layout),
+        _option_spec("style", "auto", _style),
     )
     plan = bind_options("subplots", specs, explicit=direct, configured=configured)
     if (figsize is not MISSING) or any(
