@@ -38,6 +38,9 @@ def test_conf_defaults_to_non_indexable_main_metadata(
     assert values["ogp_canonical_url"] == (
         "https://soichiroyamane.github.io/gsplot/dev/"
     )
+    assert values["ogp_social_cards"] == {"enable": False}
+    assert values["ogp_image"] == "_static/logo/logo_title_gsplot.png"
+    assert values["ogp_image_alt"]
     assert values["html_theme_options"]["switcher"]["json_url"].endswith(
         "/_meta/switcher.json"
     )

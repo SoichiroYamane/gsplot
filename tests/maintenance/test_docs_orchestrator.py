@@ -18,6 +18,7 @@ from tools.maintenance.docs_site.orchestrator import (
     BuildError,
     _isolated_environment,
     _sanitize_and_validate_output,
+    _strip_legacy_runtime_references,
     build_site,
 )
 from tools.maintenance.docs_site.switcher import load_switcher, validate_switcher
@@ -54,11 +55,27 @@ def _repository(
     )
     _write(
         repo / "docs/conf.py",
-        "project = 'fixture'\n" "extensions = ['myst_parser']\n" + static_config,
+        "project = 'fixture'\n"
+        "extensions = ['myst_parser', 'sphinxext.opengraph']\n"
+        "html_theme = 'pydata_sphinx_theme'\n" + static_config,
     )
-    _write(repo / "docs/index.md", "# Fixture documentation\n")
+    _write(
+        repo / "docs/index.md",
+        "# Fixture documentation\n\n"
+        "```{image} _images/SC_cal.png\n"
+        ":alt: Fixture compatibility image\n"
+        "```\n\n"
+        "```{toctree}\n"
+        ":maxdepth: 1\n\n"
+        "api_reference/index\n"
+        "```\n",
+    )
+    _write(repo / "docs/api_reference/index.md", "# Fixture API\n")
     if include_static:
+        _write(repo / "docs/_images/SC_cal.png", "fixture image\n")
         _write(repo / "docs/_static/site.css", "body { color: black; }\n")
+        _write(repo / "docs/_static/logo_gsplot.svg", "<svg></svg>\n")
+        _write(repo / "docs/_static/logo/logo_title_gsplot.png", "fixture logo\n")
     _write(repo / "src/gsplot/__init__.py", "__version__ = '0.3.0'\n")
     _git(repo, "add", ".")
     _git(repo, "commit", "-q", "-m", "fixture release")
@@ -101,11 +118,53 @@ def test_build_site_records_provenance_and_stable_alias(tmp_path: Path) -> None:
     assert (output / "dev/index.html").is_file()
     assert (output / "v0.3.0/index.html").is_file()
     assert (output / "stable/index.html").is_file()
+    release_index = (output / "v0.3.0/index.html").read_text(encoding="utf-8")
+    assert (
+        '<meta property="og:image" content="https://soichiroyamane.github.io/gsplot/v0.3.0/'
+        '_static/logo/logo_title_gsplot.png" />'
+    ) in release_index
+    assert (
+        '<meta property="og:image:alt" content="gsplot documentation page preview"'
+        in (release_index)
+    )
+    assert (output / "stable/index.html").read_text(encoding="utf-8") == release_index
+    dev_index = (output / "dev/index.html").read_text(encoding="utf-8")
+    assert '<meta name="robots" content="noindex, follow" />' in dev_index
+    assert "gsplot dev documentation" in dev_index
+    root_entry = (output / "index.html").read_text(encoding="utf-8")
+    assert 'http-equiv="refresh"' in root_entry
+    assert "/gsplot/stable/" in root_entry
+    assert (output / "404.html").is_file()
+    assert (output / "robots.txt").read_text(encoding="utf-8").count("Sitemap:") == 1
+    sitemap = (output / "sitemap.xml").read_text(encoding="utf-8")
+    assert "/v0.3.0/index.html" in sitemap
+    assert "/stable/" not in sitemap
+    assert "/dev/" not in sitemap
+    redirect = (output / "genindex.html").read_text(encoding="utf-8")
+    assert 'http-equiv="refresh"' in redirect
+    assert "/gsplot/dev/genindex.html" in redirect
+    api_redirect = (output / "api_reference/index.html").read_text(encoding="utf-8")
+    assert "/gsplot/dev/api_reference/index.html" in api_redirect
     assert (output / "_meta/catalog.json").is_file()
     assert (output / "_meta/switcher.json").is_file()
     assert (output / "_meta/build-manifest.json").is_file()
+    assert (output / "_sources/index.md.txt").is_file()
+    assert (output / "_images/SC_cal.png").is_file()
     assert not list(output.rglob("*.buildinfo"))
     assert not list(output.rglob("create_switcher.py"))
+    legacy_tippy = output / "_static/tippy"
+    assert [path.name for path in legacy_tippy.glob("*.js")] == [
+        "index.e4541f43-c3c4-4f8e-910e-1cc2b87bf3db.js"
+    ]
+    assert not (output / "_static/webpack-macros.html").exists()
+    assert not (output / "_static/tutorial").exists()
+    assert not list(output.glob("v0.3.0/_sources"))
+    assert not list(output.glob("v0.3.0/_modules"))
+    assert not list(output.glob("v0.3.0/_static/tippy"))
+    assert not any(
+        "_sources/" in page.read_text(encoding="utf-8")
+        for page in (output / "v0.3.0").rglob("*.html")
+    )
     assert [record.channel for record in manifest.builds] == [
         "dev",
         "release",
@@ -115,14 +174,24 @@ def test_build_site_records_provenance_and_stable_alias(tmp_path: Path) -> None:
     assert manifest.builds[1].source_commit == release_commit
     assert manifest.builds[1].package_version == "0.3.0"
     assert manifest.builds[1].package_source == "src/gsplot"
-    assert manifest.file_count == sum(1 for item in output.rglob("*") if item.is_file())
-    assert manifest.uncompressed_bytes == sum(
-        item.stat().st_size for item in output.rglob("*") if item.is_file()
+    assert manifest.file_count == sum(
+        1
+        for item in output.rglob("*")
+        if item.is_file() and item.name != "build-manifest.json"
     )
+    assert manifest.uncompressed_bytes == sum(
+        item.stat().st_size
+        for item in output.rglob("*")
+        if item.is_file() and item.name != "build-manifest.json"
+    )
+    assert manifest.compressed_bytes > 0
     public_manifest = json.loads(
         (output / "_meta/build-manifest.json").read_text(encoding="utf-8")
     )
     assert public_manifest["stable_tag"] == "v0.3.0"
+    assert public_manifest["artifact"]["compressed_bytes"] == (
+        manifest.compressed_bytes
+    )
     switcher = load_switcher(output / "_meta/switcher.json")
     validate_switcher(
         switcher,
@@ -183,6 +252,60 @@ def test_output_validation_rejects_missing_static_assets(tmp_path: Path) -> None
     (output / "index.html").write_text("<html></html>\n", encoding="utf-8")
 
     with pytest.raises(BuildError, match="required static assets"):
+        _sanitize_and_validate_output(
+            output,
+            "v0.3.0",
+            "v0.3.0",
+            "python -m sphinx -W -b html docs <output>",
+        )
+
+
+def test_runtime_sanitizer_keeps_html_structure_and_rejects_external_runtime(
+    tmp_path: Path,
+) -> None:
+    output = tmp_path / "output"
+    output.mkdir()
+    (output / "_static").mkdir()
+    (output / "_static/site.css").write_text("body {}\n", encoding="utf-8")
+    page = output / "index.html"
+    page.write_text(
+        "<html><head>"
+        '<script>DOCUMENTATION_OPTIONS.pagename = "index";</script>'
+        '<link rel="canonical" href="https://example.test/index.html" />'
+        "</head><body>"
+        '<script defer src="_static/tippy/page.random.js"></script>'
+        '<script>var togglebuttonSelector = ".toggle";</script>'
+        "</body></html>\n",
+        encoding="utf-8",
+    )
+
+    _strip_legacy_runtime_references(output)
+    sanitized = page.read_text(encoding="utf-8")
+    assert '<link rel="canonical"' in sanitized
+    assert "togglebutton" not in sanitized
+
+    page.write_text(
+        sanitized.replace(
+            "</body>",
+            '<script src="https://cdn.example.test/runtime.js"></script></body>',
+        ),
+        encoding="utf-8",
+    )
+    with pytest.raises(BuildError, match="external runtime resource"):
+        _sanitize_and_validate_output(
+            output,
+            "v0.3.0",
+            "v0.3.0",
+            "python -m sphinx -W -b html docs <output>",
+        )
+
+    static_page = output / "_static/runtime.html"
+    static_page.write_text(
+        '<script src="https://cdn.example.test/runtime.js"></script>\n',
+        encoding="utf-8",
+    )
+    page.write_text(sanitized, encoding="utf-8")
+    with pytest.raises(BuildError, match="external runtime resource"):
         _sanitize_and_validate_output(
             output,
             "v0.3.0",

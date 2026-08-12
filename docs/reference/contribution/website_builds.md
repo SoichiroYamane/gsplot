@@ -43,10 +43,24 @@ The result contains `dev/`, one immutable directory per included release,
 `_meta/build-manifest.json` files. The switcher is generated and validated
 from the same catalog as the build matrix. The manifest records source
 commits, package provenance, generated paths, output checks, exclusions, and
-artifact size. A failed version removes the temporary worktree and does not
-publish a partial output tree.
+artifact size. The artifact size is the file count and uncompressed and
+deterministic per-file compressed byte totals; the manifest file itself is
+excluded so recording its size cannot change the recorded budget. A failed
+version removes the temporary worktree and does not publish a partial output
+tree.
+
+The final site has a small root entry, a custom `404.html`, `robots.txt`, and
+an immutable-release sitemap. Existing root HTML routes are generated as
+no-JavaScript compatibility pages pointing into `/dev/`. Root assets are
+copied from the selected stable release before channel cleanup, while source
+copies, demo media, build caches, and extension-generated runtime data are
+removed from version directories. The small set of inventoried legacy asset
+paths is retained only at the root and is never used as a build input.
 
 The builder uses the pinned Poetry documentation environment and an explicit
 source-path compatibility strategy for historical packages. It never passes
 GitHub, Pages, PyPI, OIDC, or repository-write credentials to release source,
-demo, or Sphinx processes.
+demo, or Sphinx processes. Historical Mermaid directives are rendered to SVG
+at build time with the pinned `mmdc` CLI; the published HTML does not load a
+Mermaid or other documentation runtime from a CDN. A full local catalog build
+therefore requires a compatible `mmdc` executable on `PATH`.

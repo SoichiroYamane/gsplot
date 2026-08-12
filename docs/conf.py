@@ -114,18 +114,14 @@ extensions = [
     "sphinx.ext.intersphinx",
     "sphinx.ext.napoleon",
     "sphinx.ext.todo",
-    "sphinx.ext.viewcode",
-    "sphinxcontrib.mermaid",
     "myst_parser",
-    "sphinx_design",
     "sphinx_copybutton",
     "sphinxext.opengraph",
-    "sphinx_pyscript",
-    "sphinx_tippy",
-    "sphinx_togglebutton",
 ]
 
 autosummary_generate = True
+html_copy_source = False
+html_show_sourcelink = False
 exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
 add_module_names = False
 modindex_common_prefix = ["gsplot."]
@@ -133,11 +129,9 @@ html_use_modindex = False
 highlight_language = "python3"
 numfig = True
 
-intersphinx_mapping = {
-    "python": ("https://docs.python.org/3", None),
-    "numpy": ("https://numpy.org/doc/stable/", None),
-    "matplotlib": ("https://matplotlib.org/stable/", None),
-}
+# The published build must not depend on a live external inventory service.
+# External references in user-facing pages use explicit links instead.
+intersphinx_mapping = {}
 
 # Napoleon
 napoleon_google_docstring = False
@@ -389,5 +383,8 @@ templates_path = ["_templates"]
 html_baseurl = f"{docs_metadata.site_url}/"
 ogp_site_url = html_baseurl
 ogp_canonical_url = html_baseurl
+ogp_social_cards = {"enable": False}
+ogp_image = "_static/logo/logo_title_gsplot.png"
+ogp_image_alt = "gsplot documentation page preview"
 html_static_path = ["_static"]
 pygments_style = "monokai"
