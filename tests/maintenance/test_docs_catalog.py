@@ -13,6 +13,7 @@ from tools.maintenance.docs_site.catalog import (
     ReleaseCatalog,
     build_catalog,
     fetch_github_releases,
+    fetch_public_manifest_release_tags,
     load_catalog,
     load_policy,
     parse_release_tag,
@@ -180,6 +181,63 @@ def test_policy_must_match_a_published_eligible_release() -> None:
             has_docs=lambda commit: commit in COMMITS.values(),
             policy_exclusions={policy.tag: policy},
         )
+
+
+def test_catalog_preserves_a_previous_release_only_with_retirement_policy() -> None:
+    policy = ExclusionPolicy(
+        tag="v0.2.0",
+        reason="The release was intentionally retired after a reviewed migration.",
+        approved_at="2026-08-12",
+        issue_url="https://github.com/SoichiroYamane/gsplot/issues/174",
+        replacement_url="https://soichiroyamane.github.io/gsplot/stable/",
+    )
+
+    catalog = build_catalog(
+        [_release("v0.3.0")],
+        main_commit=MAIN_SHA,
+        resolve_commit=lambda tag: COMMITS[tag],
+        has_docs=lambda commit: commit in COMMITS.values(),
+        policy_exclusions={policy.tag: policy},
+        previous_release_tags={"v0.2.0"},
+    )
+
+    assert [item.tag for item in catalog.releases] == ["v0.3.0"]
+    assert [item.tag for item in catalog.exclusions] == ["v0.2.0"]
+    assert catalog.exclusions[0].approved_at == "2026-08-12"
+
+
+def test_catalog_rejects_silent_removal_of_a_previous_release() -> None:
+    with pytest.raises(CatalogError, match="missing without retirement policy"):
+        build_catalog(
+            [_release("v0.3.0")],
+            main_commit=MAIN_SHA,
+            resolve_commit=lambda tag: COMMITS[tag],
+            has_docs=lambda commit: commit in COMMITS.values(),
+            previous_release_tags={"v0.2.0"},
+        )
+
+
+def test_public_manifest_release_tags_are_loaded_and_validated() -> None:
+    requests: list[str] = []
+
+    def opener(request, *, timeout, context):
+        requests.append(request.full_url)
+        return _Response(
+            {
+                "schema_version": 2,
+                "builds": [
+                    {"channel": "release", "source_ref": "v0.3.0"},
+                    {"channel": "stable", "source_ref": "v0.3.0"},
+                ],
+            }
+        )
+
+    tags = fetch_public_manifest_release_tags(
+        "https://example.test/gsplot/_meta/build-manifest.json", opener=opener
+    )
+
+    assert tags == frozenset({"v0.3.0"})
+    assert requests == ["https://example.test/gsplot/_meta/build-manifest.json"]
 
 
 def test_catalog_round_trip_is_schema_valid(tmp_path: Path) -> None:
