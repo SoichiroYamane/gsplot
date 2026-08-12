@@ -35,6 +35,7 @@ from .types import (
     Theme,
     TickSpec,
     Unit,
+    ZoomCorners,
 )
 from .validation import (
     MISSING,
@@ -70,6 +71,7 @@ __all__ = [
     "SizeSpec",
     "LayoutMode",
     "StyleMode",
+    "ZoomCorners",
     "Limit",
     "Scale",
     "TickSpec",

@@ -64,6 +64,7 @@ _LEGACY_EXPORTS: Final[dict[str, tuple[str, str]]] = {
 
 _CANONICAL_EXPORTS: Final[dict[str, tuple[str, str]]] = {
     "subplots": ("gsplot._figure.layout", "subplots"),
+    "inset": ("gsplot._figure.inset", "inset"),
     "inset_axes": ("gsplot._figure.inset", "inset_axes"),
     "savefig": ("gsplot._figure.output", "savefig"),
     "show": ("gsplot._compat.root_api", "show"),
@@ -73,6 +74,7 @@ _CANONICAL_EXPORTS: Final[dict[str, tuple[str, str]]] = {
     "cmap_line": ("gsplot._plot.colored", "cmap_line"),
     "cmap_dash": ("gsplot._plot.colored", "cmap_dash"),
     "cmap_scatter": ("gsplot._plot.colored", "cmap_scatter"),
+    "colors": ("gsplot._plot.colormap", "colors"),
     "sample_cmap": ("gsplot._plot.colormap", "sample_cmap"),
     "style_axes": ("gsplot._style.axes", "style_axes"),
     "label": ("gsplot._compat.root_api", "label"),
@@ -91,6 +93,7 @@ _CANONICAL_EXPORTS: Final[dict[str, tuple[str, str]]] = {
     "set_theme": ("gsplot._style.themes", "set_theme"),
     "paper": ("gsplot._style.paper", "paper"),
     "load_config": ("gsplot._compat.config", "load_config"),
+    "read": ("gsplot._io.arrays", "read"),
     "read_array": ("gsplot._io.arrays", "read_array"),
     "write_meta": ("gsplot._io.metadata", "write_meta"),
     "build_info": ("gsplot._io.build", "build_info"),
@@ -120,6 +123,7 @@ _CANONICAL_EXPORTS: Final[dict[str, tuple[str, str]]] = {
     "SizeSpec": ("gsplot._core.types", "SizeSpec"),
     "LayoutMode": ("gsplot._core.types", "LayoutMode"),
     "StyleMode": ("gsplot._core.types", "StyleMode"),
+    "ZoomCorners": ("gsplot._core.types", "ZoomCorners"),
     "Limit": ("gsplot._core.types", "Limit"),
     "Scale": ("gsplot._core.types", "Scale"),
     "TickSpec": ("gsplot._core.types", "TickSpec"),

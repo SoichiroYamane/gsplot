@@ -14,15 +14,16 @@ the canonical API. New code should use the root names documented in
    * - ``gsplot.plot.*``
      - ``gsplot.line``, ``gsplot.scatter``, and the ``gsplot.cmap_*`` family
    * - ``gsplot.figure.*``
-     - ``gsplot.subplots``, ``gsplot.inset_axes``, ``gsplot.savefig``
+     - ``gsplot.subplots``, ``gsplot.inset``, ``gsplot.inset_axes``, and
+       ``gsplot.savefig``
    * - ``gsplot.style.*``
      - ``gsplot.style_axes``, ``gsplot.set_theme``, and explicit legend helpers
    * - ``gsplot.config.*``
      - ``gsplot.Config`` and ``gsplot.load_config``
    * - ``gsplot.data.*``
-     - ``gsplot.read_array``
+     - ``gsplot.read`` or advanced ``gsplot.read_array``
    * - ``gsplot.color.*``
-     - ``gsplot.sample_cmap``
+     - ``gsplot.colors`` or advanced ``gsplot.sample_cmap``
    * - ``gsplot.path.*``
      - ``pathlib.Path`` and explicit caller-owned paths
 

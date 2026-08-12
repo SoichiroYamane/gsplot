@@ -55,17 +55,18 @@ if TYPE_CHECKING:
         Theme,
         TickSpec,
         Unit,
+        ZoomCorners,
     )
     from ._figure.backend import use_backend
-    from ._figure.inset import inset_axes
+    from ._figure.inset import inset, inset_axes
     from ._figure.layout import subplots
     from ._figure.output import savefig, show
-    from ._io.arrays import read_array
+    from ._io.arrays import read, read_array
     from ._io.build import build_info
     from ._io.metadata import write_meta
     from ._plot.basic import line, scatter
     from ._plot.colored import cmap_dash, cmap_line, cmap_scatter
-    from ._plot.colormap import sample_cmap
+    from ._plot.colormap import colors, sample_cmap
     from ._style.axes import (
         box_aspect,
         label,
@@ -120,12 +121,14 @@ if TYPE_CHECKING:
 
 __all__ = [
     "subplots",
+    "inset",
     "inset_axes",
     "line",
     "scatter",
     "cmap_line",
     "cmap_dash",
     "cmap_scatter",
+    "colors",
     "sample_cmap",
     "style_axes",
     "label",
@@ -146,6 +149,7 @@ __all__ = [
     "savefig",
     "show",
     "load_config",
+    "read",
     "read_array",
     "write_meta",
     "build_info",
@@ -176,6 +180,7 @@ __all__ = [
     "SizeSpec",
     "LayoutMode",
     "StyleMode",
+    "ZoomCorners",
     "Limit",
     "Scale",
     "TickSpec",

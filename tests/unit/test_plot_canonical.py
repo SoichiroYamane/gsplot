@@ -10,7 +10,46 @@ from gsplot._config import Config
 from gsplot._core import DataError, PlotError
 from gsplot._plot.basic import line, scatter
 from gsplot._plot.colored import cmap_dash, cmap_line, cmap_scatter
-from gsplot._plot.colormap import sample_cmap
+from gsplot._plot.colormap import colors, sample_cmap
+
+
+def test_colors_uses_inclusive_positions_and_one_color_midpoint() -> None:
+    """The concise sampler returns independent deterministic RGBA rows."""
+
+    colormap = ListedColormap(["black", "red", "white"])
+    palette = colors(3, colormap)
+    assert palette.shape == (3, 4)
+    assert palette.dtype == np.float64
+    assert np.all(np.isfinite(palette))
+    assert np.allclose(palette[0], colormap(0.0))
+    assert np.allclose(palette[-1], colormap(1.0))
+    assert np.allclose(colors(1, colormap)[0], colormap(0.5))
+    assert np.allclose(colors(3, colormap, reverse=True), palette[::-1])
+
+    another = colors(3, colormap)
+    palette[0] = np.nan
+    assert np.all(np.isfinite(another))
+
+
+@pytest.mark.parametrize("n", (True, 0, -1, 1.5))
+def test_colors_rejects_invalid_counts(n: object) -> None:
+    """Counts are exact positive integers rather than integer-like values."""
+
+    with pytest.raises(PlotError, match="colors: n"):
+        colors(n)  # type: ignore[arg-type]
+
+
+def test_colors_rejects_invalid_colormap_and_reverse_controls() -> None:
+    """Colormap lookup and reversal use the concise typed error contract."""
+
+    with pytest.raises(PlotError, match="colors: cmap"):
+        colors(cmap="")
+    with pytest.raises(PlotError, match="unknown"):
+        colors(cmap="missing-colormap")
+    with pytest.raises(PlotError, match="colors: cmap"):
+        colors(cmap=object())  # type: ignore[arg-type]
+    with pytest.raises(PlotError, match="colors: reverse"):
+        colors(reverse=1)  # type: ignore[arg-type]
 
 
 def test_sample_cmap_is_bounded_and_deterministic() -> None:

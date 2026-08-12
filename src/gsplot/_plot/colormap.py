@@ -185,6 +185,74 @@ def sample_cmap(
     return np.asarray(colormap(normalized), dtype=float).copy()
 
 
+def colors(
+    n: int = 10,
+    cmap: str | Colormap = "viridis",
+    *,
+    reverse: bool = False,
+) -> NDArray[np.float64]:
+    """Return evenly spaced publication colors from a Matplotlib colormap.
+
+    Parameters
+    ----------
+    n
+        Positive number of RGBA rows, defaulting to ``10``.
+    cmap
+        Registered Matplotlib colormap name or native ``Colormap`` object.
+    reverse
+        Reverse the sampled row order when ``True``.
+
+    Returns
+    -------
+    numpy.ndarray
+        New finite floating-point ``(n, 4)`` RGBA array.
+
+    Raises
+    ------
+    PlotError
+        If the count, colormap, or reverse control is invalid.
+
+    Notes
+    -----
+    Multiple colors cover the inclusive interval from zero to one. One color
+    samples the midpoint ``0.5``. The operation does not register or mutate a
+    colormap.
+
+    Examples
+    --------
+    >>> import gsplot as gs
+    >>> palette = gs.colors(3)
+    >>> palette.shape
+    (3, 4)
+    """
+
+    if type(n) is not int or n < 1:
+        raise PlotError("colors: n must be a positive integer")
+    if isinstance(cmap, str):
+        if not cmap.strip():
+            raise PlotError("colors: cmap must be a non-empty colormap name")
+    elif not isinstance(cmap, Colormap):
+        raise PlotError("colors: cmap must be a colormap name or Colormap")
+    if not isinstance(reverse, bool):
+        raise PlotError("colors: reverse must be a boolean")
+    try:
+        colormap = mpl.colormaps.get_cmap(cmap)
+    except (TypeError, ValueError) as exc:
+        raise PlotError("colors: unknown Matplotlib colormap") from exc
+    points = (
+        np.array([0.5], dtype=float)
+        if n == 1
+        else np.linspace(0.0, 1.0, n, dtype=float)
+    )
+    try:
+        result = np.asarray(colormap(points), dtype=float)
+    except (TypeError, ValueError) as exc:
+        raise PlotError("colors: cmap could not be sampled as RGBA rows") from exc
+    if result.shape != (n, 4) or not np.all(np.isfinite(result)):
+        raise PlotError("colors: cmap must return finite RGBA rows")
+    return result[::-1].copy() if reverse else result.copy()
+
+
 def cmap_from_config(config: Config | None) -> str:
     """Resolve the explicit plotting colormap default."""
 
@@ -195,4 +263,4 @@ def cmap_from_config(config: Config | None) -> str:
     return config.plotting.default_cmap
 
 
-__all__ = ["sample_cmap", "map_values", "cmap_from_config"]
+__all__ = ["colors", "sample_cmap", "map_values", "cmap_from_config"]

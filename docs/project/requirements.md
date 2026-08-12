@@ -66,13 +66,20 @@ The concise defaults and ownership rules are:
   target and per-target value before mutating the first Axes. Label styling
   never triggers a Figure relayout. Index labels use deterministic lowercase
   bijective Latin lettering. `legend()` defaults to `loc="best"`, a frameless
-  non-fancy presentation, and label spacing 0.3.
+  non-fancy presentation, and label spacing 0.3. `inset()` accepts automatic
+  zoom indicators or exactly two explicit Matplotlib corner pairs, defaults
+  the child z-order to 5, and places every indicator component immediately
+  below it unless an explicit finite indicator z-order is supplied.
 - `save()` writes PNG and PDF for a suffix-free path by default, uses 600 DPI
   for raster output, tight cropping, Type 42 PDF/PS fonts, `show=True`, and
   ordered transactional replacement. It receives an explicit Figure or a
   same-Figure Axes target. `show()` is display-only and never saves or closes.
 - `read()` exposes a finite common NumPy text-loading surface without changing
-  the working directory. Advanced `read_array()` remains available.
+  the working directory. It defaults to comma-delimited input and unpacked
+  columns. Whitespace input remains explicit with `delimiter=None`, and native
+  structured-unpack field arrays retain their order and individual dtypes.
+  Advanced `read_array()` remains available and preserves the selected NumPy
+  loader's ndarray-or-list return.
 - Canonical precedence is an explicit argument, then an explicitly supplied
   immutable `Config`, then a validated default. Omitted values are represented
   internally without exposing a sentinel in signatures or public exports.
@@ -137,6 +144,10 @@ explicit compatibility classification.
   error rather than silently producing an unusable figure.
 - `inset_axes` must create Matplotlib-compatible inset axes below an explicit
   parent Axes.
+- `inset` must validate tuple placement, optional labels, style, zoom corners,
+  child z-order, and indicator z-order before creating an Axes. Automatic and
+  exact two-connector indicators must remain attached to the parent Axes and
+  follow the child limits without triggering a Figure relayout.
 - `savefig` must save an explicit Figure in the requested formats and display
   it only after all successful writes when `show=True`.
 - `show` must be display-only and must never save or close a Figure.
@@ -155,7 +166,9 @@ explicit compatibility classification.
   gsplot intentionally documents an override.
 - `read_array` must provide one explicit boundary for the documented
   `numpy.genfromtxt` and `numpy.loadtxt` behaviors. File paths and path-like
-  values must remain usable without changing the working directory.
+  values must remain usable without changing the working directory. The raw
+  loader result must be preserved so structured unpacking can return separate
+  typed field arrays rather than a coerced homogeneous ndarray.
 - Numerical helpers must not silently alter the caller's input arrays.
 
 ### FR-4: Styling helpers
@@ -318,10 +331,11 @@ runtime baseline until each linked Issue #183 slice is merged.
 The canonical root functions are:
 
 ```text
-subplots, inset_axes, line, scatter, cmap_line, cmap_dash, cmap_scatter,
-sample_cmap, label, square, index, style_axes, title, suptitle, minor_ticks,
-box_aspect, panel_labels, fig_facecolor, legend, legends, legend_entries,
-cmap_legend, set_theme, savefig, show, load_config, read_array, write_meta,
+subplots, inset, inset_axes, line, scatter, colors, cmap_line, cmap_dash,
+cmap_scatter, sample_cmap, label, square, index, style_axes, title, suptitle,
+minor_ticks, box_aspect, panel_labels, fig_facecolor, legend, legends,
+legend_entries,
+cmap_legend, set_theme, savefig, show, load_config, read, read_array, write_meta,
 build_info, use_backend
 ```
 
@@ -378,8 +392,9 @@ properties.
 - The reform target removes Rich, PyYAML, and `types-PyYAML` from direct
   runtime dependencies and does not parse legacy YAML after the cutover. No
   unrelated dependency is introduced to replace them.
-- `read_array()` never changes the working directory. `write_meta()` writes a
-  typed snapshot using stable JSON and explicit atomic/exclusive policies.
+- `read()` and `read_array()` never change the working directory and preserve
+  NumPy's native structured-unpack result. `write_meta()` writes a typed
+  snapshot using stable JSON and explicit atomic/exclusive policies.
 
 ### Compatibility and documentation
 
