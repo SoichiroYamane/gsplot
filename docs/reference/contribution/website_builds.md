@@ -62,8 +62,10 @@ source-path compatibility strategy for historical packages. It never passes
 GitHub, Pages, PyPI, OIDC, or repository-write credentials to release source,
 demo, or Sphinx processes. Historical Mermaid directives are rendered to SVG
 at build time with the pinned `mmdc` CLI; the published HTML does not load a
-Mermaid or other documentation runtime from a CDN. A full local catalog build
-therefore requires a compatible `mmdc` executable on `PATH`.
+Mermaid or other documentation runtime from a CDN. Historical source is still
+built with warnings as errors; only the documented legacy `docutils` warning
+category is isolated in the temporary compatibility overlay. A full local
+catalog build therefore requires a compatible `mmdc` executable on `PATH`.
 
 ## Workflow boundaries
 
