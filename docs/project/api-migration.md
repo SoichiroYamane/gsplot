@@ -41,7 +41,7 @@ window.
 | Scatter defaults | marker `o`, size 1, alpha 1 | preserved by the root helper | preserved by concise `scatter` |
 | Option-free color | historical shared viridis sequence | compatibility-dependent root sequence | target Axes cycle; pure `series=n` when requested |
 | Labels | minor ticks, 5 pt pad, incidental relayout | concise `label` plus advanced `AxisSpec` | minor ticks and 5 pt pad, no Figure relayout |
-| Panel indexes | lowercase labels positioned from rendered bounds | concise `index` plus advanced `panel_labels` | lowercase bijective labels at frozen Axes transforms |
+| Panel indexes | lowercase labels positioned from rendered bounds | concise `index` plus advanced `panel_labels` | lowercase bijective labels with DPI-aware 4-point corner clearance |
 | Legend | lower left, frameless, non-fancy, spacing 0.3 | `best`, frameless, non-fancy, spacing 0.3; conservative replacement | implemented concise contract |
 | Save | PNG+PDF, 600 DPI, tight crop, show, overwrite | conservative `savefig`; suffix-free defaults to PNG | `save` restores historical flow transactionally; `savefig` unchanged |
 | Display | coupled to historical save/store flow | `show(Figure)` is display-only | explicit Figure/same-Figure Axes, no-op on non-interactive backend |
@@ -75,7 +75,7 @@ legend  paper  save  show  read
 | `sample_cmap` | `colors` | new concise sampler; advanced normalization API retained |
 | `style_axes` | `label` | new concise records/shared-value operation; typed advanced API retained |
 | `box_aspect` | `square` | concise finite-aspect spelling; advanced helper retained |
-| `panel_labels` | `index` | concise lowercase labels and frozen transforms; advanced helper retained |
+| `panel_labels` | `index` | concise lowercase labels and DPI-aware 4-point corner clearance; advanced helper retained |
 | `legend` | `legend` | additive direct finite paper defaults and multi-target semantics |
 | `legends`, `legend_entries`, `cmap_legend` | unchanged advanced APIs | retained through 1.x |
 | `set_theme`, `fig_facecolor` | `paper` plus unchanged advanced APIs | `paper` owns the publication baseline; other themes remain explicit |

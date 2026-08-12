@@ -58,9 +58,9 @@ def test_shared_labels_apply_publication_defaults_and_optional_helpers() -> None
         assert all(axis.get_box_aspect() == 1 for axis in axes)
         texts = tuple(axis.texts[0] for axis in axes)
         assert tuple(text.get_text() for text in texts) == ("(a)", "(b)")
-        assert all(text.get_position() == (0.02, 0.98) for text in texts)
-        assert all(text.get_ha() == "center" for text in texts)
-        assert all(text.get_va() == "center" for text in texts)
+        assert all(text.get_position() == (0, 1) for text in texts)
+        assert all(text.get_ha() == "left" for text in texts)
+        assert all(text.get_va() == "top" for text in texts)
     finally:
         plt.close(figure)
 
@@ -159,7 +159,42 @@ def test_square_and_index_validate_all_inputs_before_mutation() -> None:
         texts = index(axes, labels=("left", "right"), props={"fontsize": 9})
         assert tuple(text.get_text() for text in texts) == ("left", "right")
         assert all(text.get_fontsize() == 9 for text in texts)
-        assert all(text.get_position() == (0.02, 1.02) for text in texts)
+        assert all(text.get_position() == (0, 1) for text in texts)
+        assert all(text.get_ha() == "left" for text in texts)
+        assert all(text.get_va() == "bottom" for text in texts)
+
+        custom = index(
+            axes[0],
+            labels=("custom",),
+            props={"horizontalalignment": "right", "verticalalignment": "center"},
+        )
+        assert custom.get_ha() == "right"
+        assert custom.get_va() == "center"
+    finally:
+        plt.close(figure)
+
+
+@pytest.mark.parametrize("dpi", (72, 144))
+def test_index_default_clearance_avoids_axes_spines_at_multiple_dpi(dpi: int) -> None:
+    """Default inside and outside glyph bounds clear the top-left Axes box."""
+
+    figure, (inside_axis, outside_axis) = plt.subplots(1, 2, dpi=dpi)
+    try:
+        inside = index(inside_axis, loc="in")
+        outside = index(outside_axis, loc="out")
+        figure.canvas.draw()
+        renderer = figure.canvas.get_renderer()
+        expected_gap = 4 * dpi / 72
+
+        inside_box = inside.get_window_extent(renderer)
+        inside_axes_box = inside_axis.get_window_extent(renderer)
+        assert inside_box.x0 - inside_axes_box.x0 == pytest.approx(expected_gap)
+        assert inside_axes_box.y1 - inside_box.y1 == pytest.approx(expected_gap)
+
+        outside_box = outside.get_window_extent(renderer)
+        outside_axes_box = outside_axis.get_window_extent(renderer)
+        assert outside_box.x0 - outside_axes_box.x0 == pytest.approx(expected_gap)
+        assert outside_box.y0 - outside_axes_box.y1 == pytest.approx(expected_gap)
     finally:
         plt.close(figure)
 

@@ -11,6 +11,7 @@ from matplotlib.axes import Axes
 from matplotlib.backend_bases import RendererBase
 from matplotlib.figure import Figure
 from matplotlib.text import Text
+from matplotlib.transforms import ScaledTranslation
 
 from .._core.errors import LayoutError, PlotError
 from .._core.options import MISSING
@@ -46,6 +47,8 @@ _PANEL_PROPS = frozenset(
         "zorder",
     }
 )
+
+_INDEX_CLEARANCE_POINTS = 4.0
 
 
 class _RendererCanvas(Protocol):
@@ -131,34 +134,44 @@ def _prepare_index(
         selected_props[size_key] = ensure_positive(
             selected_size, f"index: {size_key}", error=LayoutError
         )
-    selected_props.setdefault("ha", "center")
-    selected_props.setdefault("va", "center")
-    position = (0.02, 0.98 if loc == "in" else 1.02)
+    if "ha" not in selected_props and "horizontalalignment" not in selected_props:
+        selected_props["ha"] = "left"
+    if "va" not in selected_props and "verticalalignment" not in selected_props:
+        selected_props["va"] = "top" if loc == "in" else "bottom"
+    offset_points = (
+        _INDEX_CLEARANCE_POINTS,
+        -_INDEX_CLEARANCE_POINTS if loc == "in" else _INDEX_CLEARANCE_POINTS,
+    )
     try:
         for text in selected_labels:
-            Text(position[0], position[1], text, **selected_props)
+            Text(0, 1, text, **selected_props)
     except (TypeError, ValueError) as exc:
         raise PlotError("index: invalid text options") from exc
-    return selected_labels, selected_props, position
+    return selected_labels, selected_props, offset_points
 
 
 def _apply_index(
     target: TargetPlan,
     labels: tuple[str, ...],
     props: Mapping[str, Any],
-    position: tuple[float, float],
+    offset_points: tuple[float, float],
 ) -> Text | tuple[Text, ...]:
     """Attach one completely preflighted panel index per target Axes."""
 
     created: list[Text] = []
     try:
         for axis, text in zip(target.axes, labels):
+            transform = axis.transAxes + ScaledTranslation(
+                offset_points[0] / 72,
+                offset_points[1] / 72,
+                target.figure.dpi_scale_trans,
+            )
             created.append(
                 axis.text(
-                    position[0],
-                    position[1],
+                    0,
+                    1,
                     text,
-                    transform=axis.transAxes,
+                    transform=transform,
                     **props,
                 )
             )
@@ -210,8 +223,9 @@ def index(
         Optional ordered labels or an exact-key mapping. Omitted values are
         generated as ``(a)`` through ``(z)``, then ``(aa)`` onward.
     loc
-        ``"in"`` uses Axes coordinates ``(0.02, 0.98)``; ``"out"`` uses
-        ``(0.02, 1.02)``.
+        Place text from the upper-left Axes corner with four points of
+        resolution-independent clearance. ``"in"`` moves right and down;
+        ``"out"`` moves right and up.
     size
         Matplotlib font size. The default is the historical ``"large"``.
     props
