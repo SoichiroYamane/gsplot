@@ -1,6 +1,7 @@
 """Behavioral tests for the concise multi-target line and scatter API."""
 
 import inspect
+import warnings
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -200,6 +201,20 @@ def test_marker_face_alpha_and_retained_advanced_options_are_explicit() -> None:
         points = gs.scatter(axis, [0, 1], [0, 1], size=4, c=[0.0, 1.0])
         assert points.get_sizes().tolist() == [4]
         assert np.array_equal(points.get_array(), [0.0, 1.0])
+    finally:
+        plt.close(figure)
+
+
+def test_concise_scatter_color_avoids_matplotlib_c_ambiguity() -> None:
+    """A color-like c value routes to color while numeric arrays retain c data."""
+
+    figure, axis = gs.subplots(style=None)
+    try:
+        with warnings.catch_warnings(record=True) as captured:
+            warnings.simplefilter("always")
+            points = gs.scatter(axis, [0, 1], [0, 1], c=(1.0, 0.0, 0.0))
+        assert not captured
+        assert np.allclose(points.get_facecolors()[0], to_rgba("red"))
     finally:
         plt.close(figure)
 

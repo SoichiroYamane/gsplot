@@ -558,7 +558,10 @@ def _line_kwargs(options: OptionPlan) -> tuple[dict[str, Any], bool, bool]:
 def _scatter_kwargs(options: OptionPlan) -> dict[str, Any]:
     """Convert one immutable scatter plan into Matplotlib properties."""
 
-    return {name: value for name, value in options.items() if value is not MISSING}
+    values = {name: value for name, value in options.items() if value is not MISSING}
+    if "c" in values and is_color_like(values["c"]):
+        values["color"] = values.pop("c")
+    return values
 
 
 def _preflight_line(
