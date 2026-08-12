@@ -5,26 +5,10 @@ from __future__ import annotations
 import math
 from collections.abc import Iterable, Mapping, Set
 from numbers import Real
-from typing import Any, TypeVar, cast
+from typing import Any, cast
 
 from .errors import ConfigError, DataError, LayoutError
-
-T = TypeVar("T")
-MISSING: object = object()
-
-
-def resolve_option(
-    explicit: T | object,
-    configured: T | object,
-    default: T,
-) -> T:
-    """Resolve one value using explicit, configured, then default precedence."""
-
-    if explicit is not MISSING:
-        return explicit  # type: ignore[return-value]
-    if configured is not MISSING:
-        return configured  # type: ignore[return-value]
-    return default
+from .options import MISSING, resolve_option
 
 
 def ensure_finite_real(
