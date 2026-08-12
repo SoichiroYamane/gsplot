@@ -74,6 +74,7 @@ _CANONICAL_EXPORTS: Final[dict[str, tuple[str, str]]] = {
     "cmap_line": ("gsplot._plot.colored", "cmap_line"),
     "cmap_dash": ("gsplot._plot.colored", "cmap_dash"),
     "cmap_scatter": ("gsplot._plot.colored", "cmap_scatter"),
+    "colors": ("gsplot._plot.colormap", "colors"),
     "sample_cmap": ("gsplot._plot.colormap", "sample_cmap"),
     "style_axes": ("gsplot._style.axes", "style_axes"),
     "label": ("gsplot._compat.root_api", "label"),

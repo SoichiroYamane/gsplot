@@ -66,7 +66,7 @@ if TYPE_CHECKING:
     from ._io.metadata import write_meta
     from ._plot.basic import line, scatter
     from ._plot.colored import cmap_dash, cmap_line, cmap_scatter
-    from ._plot.colormap import sample_cmap
+    from ._plot.colormap import colors, sample_cmap
     from ._style.axes import (
         box_aspect,
         label,
@@ -128,6 +128,7 @@ __all__ = [
     "cmap_line",
     "cmap_dash",
     "cmap_scatter",
+    "colors",
     "sample_cmap",
     "style_axes",
     "label",
