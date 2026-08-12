@@ -56,6 +56,27 @@ def test_titles_panel_labels_and_explicit_themes() -> None:
     plt.close(figure)
 
 
+def test_rendered_panel_label_locations_require_one_figure() -> None:
+    """Rendered panel labels use Figure coordinates and reject mixed targets."""
+
+    figure, axes = plt.subplots(1, 2)
+    other_figure, other_axis = plt.subplots()
+    try:
+        inside = panel_labels(tuple(axes), labels=("(a)", "(b)"), loc="in")
+        outside = panel_labels(tuple(axes), labels=("A", "B"), loc="out")
+
+        assert all(text.figure is figure for text in inside + outside)
+        assert all(text.get_transform() is figure.transFigure for text in inside)
+        assert all(text.get_transform() is figure.transFigure for text in outside)
+        with pytest.raises(LayoutError, match="loc"):
+            panel_labels(tuple(axes), loc="left")
+        with pytest.raises(LayoutError, match="one Figure"):
+            panel_labels((axes[0], other_axis), loc="in")
+    finally:
+        plt.close(figure)
+        plt.close(other_figure)
+
+
 def test_legends_are_local_and_require_explicit_replacement() -> None:
     """Legend construction never replaces an existing legend by default."""
 

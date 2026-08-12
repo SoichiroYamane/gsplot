@@ -210,45 +210,24 @@ def _demo_environment() -> dict[str, str]:
 
 _DEMO_OUTPUTS = {
     "demo/0_hello_world": set(),
-    "demo/1_axes": {"demo/1_axes/axes.png", "demo/1_axes/axes.pdf"},
-    "demo/2_line_and_label": {
-        "demo/2_line_and_label/line_and_label.png",
-        "demo/2_line_and_label/line_and_label.pdf",
-    },
-    "demo/3_config": {
-        "demo/3_config/config.png",
-        "demo/3_config/config.pdf",
-    },
+    "demo/1_axes": {"demo/1_axes/axes.png"},
+    "demo/2_line_and_label": {"demo/2_line_and_label/line_and_label.png"},
+    "demo/3_config": {"demo/3_config/config.png"},
     "demo/4_paper_plot": {
         "demo/4_paper_plot/SC_cal.png",
         "demo/4_paper_plot/SC_cal.pdf",
     },
-    "demo/5_scatter": {
-        "demo/5_scatter/scatter.png",
-        "demo/5_scatter/scatter.pdf",
-    },
-    "demo/6_line_colormap": {
-        "demo/6_line_colormap/line_colormap.png",
-        "demo/6_line_colormap/line_colormap.pdf",
-    },
-    "demo/7_graph_white": {
-        "demo/7_graph_white/graph_white.png",
-        "demo/7_graph_white/graph_white.pdf",
-    },
-    "demo/8_graph_transparent": {
-        "demo/8_graph_transparent/graph_transparent.png",
-        "demo/8_graph_transparent/graph_transparent.pdf",
-    },
+    "demo/5_scatter": {"demo/5_scatter/scatter.png"},
+    "demo/6_line_colormap": {"demo/6_line_colormap/line_colormap.png"},
+    "demo/7_graph_white": {"demo/7_graph_white/graph_white.png"},
+    "demo/8_graph_transparent": {"demo/8_graph_transparent/graph_transparent.png"},
     "demo/9_compatibility": {
         "demo/9_compatibility/compatibility.png",
         "demo/9_compatibility/compatibility.pdf",
     },
     "demo/10_subplots": {"demo/10_subplots/subplots.png"},
     "demo/11_directory": set(),
-    "demo/test_plot": {
-        "demo/test_plot/SC_cal.png",
-        "demo/test_plot/SC_cal.pdf",
-    },
+    "demo/test_plot": {"demo/test_plot/SC_cal.png"},
 }
 
 
@@ -268,9 +247,20 @@ def _file_state(root: Path) -> dict[str, tuple[int, int]]:
 def _check_demo_outputs(
     before: dict[str, tuple[int, int]], allowed: set[str], demo_name: str
 ) -> None:
-    """Reject one demo's created, modified, or deleted files outside its allowlist."""
+    """Reject unexpected, missing, or stale outputs from one demo run."""
 
     after = _file_state(PROJECT_ROOT / "demo")
+    _validate_demo_output_state(before, after, allowed, demo_name)
+
+
+def _validate_demo_output_state(
+    before: dict[str, tuple[int, int]],
+    after: dict[str, tuple[int, int]],
+    allowed: set[str],
+    demo_name: str,
+) -> None:
+    """Validate one demo's output snapshot without filesystem access."""
+
     changed = {path for path, state in after.items() if before.get(path) != state}
     changed.update(set(before) - set(after))
     unexpected = sorted(changed - allowed)
@@ -278,6 +268,18 @@ def _check_demo_outputs(
         raise RuntimeError(
             f"{demo_name} created, modified, or deleted files outside its "
             "output allowlist: " + ", ".join(unexpected)
+        )
+    missing = sorted(path for path in allowed if path not in after)
+    if missing:
+        raise RuntimeError(
+            f"{demo_name} did not produce required output(s): " + ", ".join(missing)
+        )
+    stale = sorted(
+        path for path in allowed if path in before and before[path] == after[path]
+    )
+    if stale:
+        raise RuntimeError(
+            f"{demo_name} left required output(s) unchanged: " + ", ".join(stale)
         )
 
 

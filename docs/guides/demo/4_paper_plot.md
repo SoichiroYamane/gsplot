@@ -10,6 +10,11 @@ figure.
 The example data is included in the repository and is also available
 [in the demo data directory](https://github.com/SoichiroYamane/gsplot/tree/main/demo/data).
 
+Running the example writes `SC_cal.png` and `SC_cal.pdf` from the same Figure.
+The PNG uses the explicit 600-DPI publication export settings and a tight
+bounding box. Sphinx regenerates these ignored build products in a headless
+subprocess before embedding the PNG below.
+
 ```{literalinclude} ../../../demo/4_paper_plot/gsplot.json
 ```
 

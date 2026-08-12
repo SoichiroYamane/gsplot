@@ -58,21 +58,22 @@ data, configuration, and Python files are inputs and must remain unchanged.
 | Demo | Allowed outputs |
 | --- | --- |
 | `0_hello_world`, `11_directory` | none |
-| `1_axes` | `axes.png`, `axes.pdf` |
-| `2_line_and_label` | `line_and_label.png`, `line_and_label.pdf` |
-| `3_config` | `config.png`, `config.pdf` |
-| `4_paper_plot`, `test_plot` | `SC_cal.png`, `SC_cal.pdf` |
-| `5_scatter` | `scatter.png`, `scatter.pdf` |
-| `6_line_colormap` | `line_colormap.png`, `line_colormap.pdf` |
-| `7_graph_white` | `graph_white.png`, `graph_white.pdf` |
-| `8_graph_transparent` | `graph_transparent.png`, `graph_transparent.pdf` |
+| `1_axes` | `axes.png` |
+| `2_line_and_label` | `line_and_label.png` |
+| `3_config` | `config.png` |
+| `4_paper_plot` | `SC_cal.png`, `SC_cal.pdf` |
+| `test_plot` | `SC_cal.png` |
+| `5_scatter` | `scatter.png` |
+| `6_line_colormap` | `line_colormap.png` |
+| `7_graph_white` | `graph_white.png` |
+| `8_graph_transparent` | `graph_transparent.png` |
 | `9_compatibility` | `compatibility.png`, `compatibility.pdf` |
 | `10_subplots` | `subplots.png` |
 
-The allowlist is enforced by `docs/conf.py`; an unexpected created or modified
-file fails the Sphinx build. Demo subprocesses run with bytecode generation
-disabled, and the compatibility demo's non-interactive display warning is
-expected under the Agg backend.
+The allowlist is enforced by `docs/conf.py`; an unexpected, missing, or stale
+declared output fails the Sphinx build. Demo subprocesses run with bytecode
+generation disabled, and the compatibility demo's non-interactive display
+warning is expected under the Agg backend.
 
 ## Reform validation snapshot
 
