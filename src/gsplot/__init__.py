@@ -37,18 +37,23 @@ if TYPE_CHECKING:
         BuildInfo,
         ColorSpec,
         InsetSpec,
+        LabelRecord,
+        LabelRecords,
         LayoutMode,
         LegendEntries,
+        Limit,
         LineStyle,
         Marker,
         MetadataSnapshot,
         MosaicSpec,
         NormalizeSpec,
         PerTarget,
+        Scale,
         SizePreset,
         SizeSpec,
         StyleMode,
         Theme,
+        TickSpec,
         Unit,
     )
     from ._figure.backend import use_backend
@@ -61,9 +66,17 @@ if TYPE_CHECKING:
     from ._plot.basic import line, scatter
     from ._plot.colored import cmap_dash, cmap_line, cmap_scatter
     from ._plot.colormap import sample_cmap
-    from ._style.axes import box_aspect, minor_ticks, style_axes, suptitle, title
+    from ._style.axes import (
+        box_aspect,
+        label,
+        minor_ticks,
+        square,
+        style_axes,
+        suptitle,
+        title,
+    )
     from ._style.legends import cmap_legend, legend, legend_entries, legends
-    from ._style.panels import panel_labels
+    from ._style.panels import index, panel_labels
     from ._style.paper import paper
     from ._style.themes import fig_facecolor, set_theme
 
@@ -94,7 +107,6 @@ if TYPE_CHECKING:
     graph_transparent: Any
     graph_transparent_axes: Any
     graph_facecolor: Any
-    label: Any
     label_add_index: Any
     legend_axes: Any
     legend_handlers: Any
@@ -116,11 +128,14 @@ __all__ = [
     "cmap_scatter",
     "sample_cmap",
     "style_axes",
+    "label",
+    "square",
     "title",
     "suptitle",
     "minor_ticks",
     "box_aspect",
     "panel_labels",
+    "index",
     "fig_facecolor",
     "legend",
     "legends",
@@ -161,6 +176,11 @@ __all__ = [
     "SizeSpec",
     "LayoutMode",
     "StyleMode",
+    "Limit",
+    "Scale",
+    "TickSpec",
+    "LabelRecord",
+    "LabelRecords",
 ]
 
 

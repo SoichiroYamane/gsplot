@@ -19,11 +19,14 @@ def test_root_exposes_only_the_canonical_manifest_and_native_objects(tmp_path) -
         "cmap_scatter",
         "sample_cmap",
         "style_axes",
+        "label",
+        "square",
         "title",
         "suptitle",
         "minor_ticks",
         "box_aspect",
         "panel_labels",
+        "index",
         "fig_facecolor",
         "legend",
         "legends",
@@ -64,6 +67,11 @@ def test_root_exposes_only_the_canonical_manifest_and_native_objects(tmp_path) -
         "SizeSpec",
         "LayoutMode",
         "StyleMode",
+        "Limit",
+        "Scale",
+        "TickSpec",
+        "LabelRecord",
+        "LabelRecords",
     }
     assert set(gs.__all__) == expected
 

@@ -2,19 +2,28 @@
 
 from __future__ import annotations
 
+import inspect
 from collections.abc import Mapping, Sequence
-from typing import Any, Literal
+from typing import Any, Literal, get_type_hints, overload
 
-import matplotlib.ticker as ticker
 import numpy as np
 from matplotlib.axes import Axes
 from matplotlib.figure import Figure
 from matplotlib.text import Text
 
 from .._core.errors import LayoutError, OptionError, PlotError
-from .._core.types import AxisSpec
-
-AxesTarget = Axes | Sequence[Axes] | Mapping[str, Axes]
+from .._core.options import MISSING
+from .._core.plans import TargetPlan
+from .._core.targets import normalize_axes, resolve_target_mapping
+from .._core.types import (
+    AxesTarget,
+    AxisSpec,
+    LabelRecords,
+    Limit,
+    Scale,
+    TickSpec,
+)
+from .._core.validation import ensure_bool, ensure_finite_real, ensure_positive
 
 _TEXT_PROPS = frozenset(
     {
@@ -100,6 +109,10 @@ def _validate_scale_domain(axis: Axes, spec: AxisSpec) -> None:
             domain_values = tuple(float(item) for item in bounds)
         else:
             domain_values = ()
+        if any(not np.isfinite(value) for value in domain_values):
+            raise LayoutError(
+                f"{coordinate}scale={scale!r} requires finite domain data"
+            )
         if scale == "log" and any(value <= 0 for value in domain_values):
             raise LayoutError(f"{coordinate}scale='log' requires positive data")
         if scale == "logit" and any(
@@ -149,40 +162,46 @@ def style_axes(target: AxesTarget, spec: AxisSpec) -> None:
     for axis in axes:
         _validate_scale_domain(axis, spec)
     for axis in axes:
-        if spec.xlabel is not None or spec.xlabelpad is not None:
-            axis.set_xlabel(
-                spec.xlabel if spec.xlabel is not None else axis.get_xlabel(),
-                labelpad=spec.xlabelpad,
-            )
-        if spec.ylabel is not None or spec.ylabelpad is not None:
-            axis.set_ylabel(
-                spec.ylabel if spec.ylabel is not None else axis.get_ylabel(),
-                labelpad=spec.ylabelpad,
-            )
-        axis.set_xscale(spec.xscale)
-        axis.set_yscale(spec.yscale)
-        if spec.xlim is not None:
-            axis.set_xlim(spec.xlim)
-        if spec.ylim is not None:
-            axis.set_ylim(spec.ylim)
-        if spec.xticks is not None:
-            axis.set_xticks(spec.xticks)
-        if spec.yticks is not None:
-            axis.set_yticks(spec.yticks)
-        if spec.xminor is not None:
-            _set_minor(axis, spec.xminor, "x")
-        if spec.yminor is not None:
-            _set_minor(axis, spec.yminor, "y")
+        _apply_axis_spec(axis, spec)
+
+
+def _apply_axis_spec(axis: Axes, spec: AxisSpec) -> None:
+    """Apply one already validated axis specification."""
+
+    if spec.xlabel is not None or spec.xlabelpad is not None:
+        axis.set_xlabel(
+            spec.xlabel if spec.xlabel is not None else axis.get_xlabel(),
+            labelpad=spec.xlabelpad,
+        )
+    if spec.ylabel is not None or spec.ylabelpad is not None:
+        axis.set_ylabel(
+            spec.ylabel if spec.ylabel is not None else axis.get_ylabel(),
+            labelpad=spec.ylabelpad,
+        )
+    axis.set_xscale(spec.xscale)
+    axis.set_yscale(spec.yscale)
+    if spec.xlim is not None:
+        axis.set_xlim(spec.xlim)
+    if spec.ylim is not None:
+        axis.set_ylim(spec.ylim)
+    if spec.xticks is not None:
+        axis.set_xticks(spec.xticks)
+    if spec.yticks is not None:
+        axis.set_yticks(spec.yticks)
+    if spec.xminor is not None:
+        _set_minor(axis, spec.xminor, "x")
+    if spec.yminor is not None:
+        _set_minor(axis, spec.yminor, "y")
 
 
 def _set_minor(axis: Axes, enabled: bool, coordinate: Literal["x", "y"]) -> None:
-    """Set one minor locator without consulting pyplot."""
+    """Set one scale-aware minor locator without consulting pyplot."""
 
-    locator = ticker.AutoMinorLocator() if enabled else ticker.NullLocator()
-    if coordinate == "x":
-        axis.xaxis.set_minor_locator(locator)
+    selected = axis.xaxis if coordinate == "x" else axis.yaxis
+    if enabled:
+        selected.minorticks_on()
     else:
-        axis.yaxis.set_minor_locator(locator)
+        selected.minorticks_off()
 
 
 def _text(value: Any, name: str) -> str:
@@ -359,6 +378,381 @@ def box_aspect(target: AxesTarget, aspect: float | None) -> None:
         item.set_box_aspect(aspect)
 
 
+def _record_spec(
+    value: Any,
+    *,
+    name: str,
+    xscale: Scale,
+    yscale: Scale,
+    xticks: TickSpec | None,
+    yticks: TickSpec | None,
+    xminor: bool,
+    yminor: bool,
+    xpad: float,
+    ypad: float,
+) -> AxisSpec:
+    """Normalize one concise two- or four-field label record."""
+
+    if isinstance(value, (str, bytes)):
+        raise LayoutError(f"label: {name} must be a two- or four-field record")
+    try:
+        fields = tuple(value)
+    except TypeError as exc:
+        raise LayoutError(f"label: {name} must be a two- or four-field record") from exc
+    if len(fields) not in {2, 4}:
+        raise LayoutError(f"label: {name} must be a two- or four-field record")
+    if not isinstance(fields[0], str) or not isinstance(fields[1], str):
+        raise LayoutError(f"label: {name} labels must be strings")
+    record_xlim = None if len(fields) == 2 else fields[2]
+    record_ylim = None if len(fields) == 2 else fields[3]
+    return AxisSpec(
+        xlabel=fields[0],
+        ylabel=fields[1],
+        xlim=record_xlim,
+        ylim=record_ylim,
+        xscale=xscale,
+        yscale=yscale,
+        xticks=None if xticks is None else tuple(xticks),
+        yticks=None if yticks is None else tuple(yticks),
+        xminor=xminor,
+        yminor=yminor,
+        xlabelpad=xpad,
+        ylabelpad=ypad,
+    )
+
+
+def _label_specs(
+    target: TargetPlan,
+    xlabel: Any,
+    ylabel: Any,
+    xlim: Any,
+    ylim: Any,
+    *,
+    xscale: Any,
+    yscale: Any,
+    xticks: Any,
+    yticks: Any,
+    minor: Any,
+    xminor: Any,
+    yminor: Any,
+    pad: Any,
+    xpad: Any,
+    ypad: Any,
+) -> tuple[AxisSpec, ...]:
+    """Resolve all concise label values before any Axes is changed."""
+
+    selected_minor = ensure_bool(minor, "label: minor", error=LayoutError)
+    selected_xminor = (
+        selected_minor
+        if xminor is None
+        else ensure_bool(xminor, "label: xminor", error=LayoutError)
+    )
+    selected_yminor = (
+        selected_minor
+        if yminor is None
+        else ensure_bool(yminor, "label: yminor", error=LayoutError)
+    )
+    selected_pad = ensure_finite_real(pad, "label: pad", error=LayoutError)
+    selected_xpad = (
+        selected_pad
+        if xpad is None
+        else ensure_finite_real(xpad, "label: xpad", error=LayoutError)
+    )
+    selected_ypad = (
+        selected_pad
+        if ypad is None
+        else ensure_finite_real(ypad, "label: ypad", error=LayoutError)
+    )
+
+    common = {
+        "xscale": xscale,
+        "yscale": yscale,
+        "xticks": xticks,
+        "yticks": yticks,
+        "xminor": selected_xminor,
+        "yminor": selected_yminor,
+        "xpad": selected_xpad,
+        "ypad": selected_ypad,
+    }
+    if isinstance(xlabel, str):
+        selected_ylabel = "" if ylabel is MISSING else ylabel
+        if not isinstance(selected_ylabel, str):
+            raise LayoutError("label: ylabel must be a string")
+        spec = AxisSpec(
+            xlabel=xlabel,
+            ylabel=selected_ylabel,
+            xlim=None if xlim is MISSING else xlim,
+            ylim=None if ylim is MISSING else ylim,
+            xscale=xscale,
+            yscale=yscale,
+            xticks=xticks,
+            yticks=yticks,
+            xminor=selected_xminor,
+            yminor=selected_yminor,
+            xlabelpad=selected_xpad,
+            ylabelpad=selected_ypad,
+        )
+        return tuple(spec for _ in target.axes)
+
+    if any(value is not MISSING for value in (ylabel, xlim, ylim)):
+        raise LayoutError(
+            "label: record input cannot be combined with ylabel, xlim, or ylim"
+        )
+    if isinstance(xlabel, Mapping):
+        records = resolve_target_mapping(target, xlabel, name="xlabel records")
+    elif isinstance(xlabel, Sequence) and not isinstance(xlabel, (str, bytes)):
+        records = tuple(xlabel)
+        if not records:
+            raise LayoutError("label: label records must not be empty")
+        if len(records) != len(target.axes):
+            raise LayoutError("label: label records must match the target length")
+    else:
+        raise LayoutError(
+            "label: xlabel must be a string or ordered/exact-key label records"
+        )
+    return tuple(
+        _record_spec(record, name=f"record[{position}]", **common)
+        for position, record in enumerate(records)
+    )
+
+
+@overload
+def label(
+    target: AxesTarget,
+    xlabel: str = "",
+    ylabel: str = "",
+    xlim: Limit | None = None,
+    ylim: Limit | None = None,
+    *,
+    xscale: Scale = "linear",
+    yscale: Scale = "linear",
+    xticks: TickSpec | None = None,
+    yticks: TickSpec | None = None,
+    minor: bool = True,
+    xminor: bool | None = None,
+    yminor: bool | None = None,
+    pad: float = 5,
+    xpad: float | None = None,
+    ypad: float | None = None,
+    square: bool = False,
+    index: bool | Literal["in", "out"] = False,
+) -> None: ...
+
+
+@overload
+def label(
+    target: AxesTarget,
+    xlabel: LabelRecords,
+    *,
+    xscale: Scale = "linear",
+    yscale: Scale = "linear",
+    xticks: TickSpec | None = None,
+    yticks: TickSpec | None = None,
+    minor: bool = True,
+    xminor: bool | None = None,
+    yminor: bool | None = None,
+    pad: float = 5,
+    xpad: float | None = None,
+    ypad: float | None = None,
+    square: bool = False,
+    index: bool | Literal["in", "out"] = False,
+) -> None: ...
+
+
+def label(
+    target: AxesTarget,
+    xlabel: Any = "",
+    ylabel: Any = MISSING,
+    xlim: Any = MISSING,
+    ylim: Any = MISSING,
+    *,
+    xscale: Any = "linear",
+    yscale: Any = "linear",
+    xticks: Any = None,
+    yticks: Any = None,
+    minor: Any = True,
+    xminor: Any = None,
+    yminor: Any = None,
+    pad: Any = 5,
+    xpad: Any = None,
+    ypad: Any = None,
+    square: Any = False,
+    index: Any = False,
+) -> None:
+    """Set publication labels and optional panel geometry on explicit Axes.
+
+    Parameters
+    ----------
+    target
+        One Axes or a deterministic same-Figure collection of Axes.
+    xlabel, ylabel
+        Shared axis labels. ``xlabel`` may instead contain ordered or
+        exact-key two- or four-field label records.
+    xlim, ylim
+        Optional finite, unequal limits; inverted limits are preserved.
+    xscale, yscale
+        Shared ``linear``, ``log``, ``symlog``, or ``logit`` scales.
+    xticks, yticks
+        Optional shared finite tick locations.
+    minor, xminor, yminor
+        Minor-tick controls. Coordinate-specific ``None`` inherits ``minor``.
+    pad, xpad, ypad
+        Label padding in points. Coordinate-specific ``None`` inherits ``pad``.
+    square
+        Apply the same unit box aspect as :func:`square` when true.
+    index
+        Add generated panel indexes outside, or at the selected ``in``/``out``
+        location.
+
+    Returns
+    -------
+    None
+        The supplied Axes are changed in place.
+
+    Raises
+    ------
+    LayoutError, PlotError
+        If targets, records, domains, ticks, padding, or controls are invalid.
+
+    Notes
+    -----
+    Every target and value is validated before mutation. The operation never
+    executes a Figure layout engine, resizes a Figure, or inspects pyplot's
+    current Figure.
+
+    Examples
+    --------
+    >>> import gsplot as gs
+    >>> figure, ax = gs.subplots()
+    >>> gs.label(ax, "time", "signal", xlim=(0, 1), square=True)
+    >>> ax.get_xlabel()
+    'time'
+    >>> figure.clear()
+    """
+
+    target_plan = normalize_axes(target, operation="label")
+    try:
+        specs = _label_specs(
+            target_plan,
+            xlabel,
+            ylabel,
+            xlim,
+            ylim,
+            xscale=xscale,
+            yscale=yscale,
+            xticks=xticks,
+            yticks=yticks,
+            minor=minor,
+            xminor=xminor,
+            yminor=yminor,
+            pad=pad,
+            xpad=xpad,
+            ypad=ypad,
+        )
+    except LayoutError as exc:
+        if str(exc).startswith("label:"):
+            raise
+        raise LayoutError(f"label: {exc}") from exc
+    selected_square = ensure_bool(square, "label: square", error=LayoutError)
+    if isinstance(index, bool):
+        index_loc = "out" if index else None
+    elif isinstance(index, str) and index in {"in", "out"}:
+        index_loc = index
+    else:
+        raise LayoutError("label: index must be False, True, 'in', or 'out'")
+
+    index_plan = None
+    if index_loc is not None:
+        from .panels import _prepare_index
+
+        index_plan = _prepare_index(target_plan, None, loc=index_loc)
+    for axis, spec in zip(target_plan.axes, specs):
+        _validate_scale_domain(axis, spec)
+    aspect = (
+        ensure_positive(1, "label: aspect", error=LayoutError)
+        if selected_square
+        else None
+    )
+
+    for axis, spec in zip(target_plan.axes, specs):
+        _apply_axis_spec(axis, spec)
+    if aspect is not None:
+        _apply_square(target_plan.axes, aspect)
+    if index_plan is not None:
+        from .panels import _apply_index
+
+        _apply_index(target_plan, *index_plan)
+
+
+def _apply_square(axes: Sequence[Axes], aspect: float) -> None:
+    """Apply one validated positive box aspect."""
+
+    for axis in axes:
+        axis.set_box_aspect(aspect)
+
+
+def square(target: AxesTarget, aspect: float = 1) -> None:
+    """Apply a finite positive box aspect to explicit Axes.
+
+    Parameters
+    ----------
+    target
+        One Axes or a deterministic same-Figure collection of Axes.
+    aspect
+        Positive ratio of box height to box width. The default is ``1``.
+
+    Returns
+    -------
+    None
+        The supplied Axes are changed in place.
+
+    Raises
+    ------
+    LayoutError, PlotError
+        If the target is invalid or ``aspect`` is not finite and positive.
+
+    Examples
+    --------
+    >>> import gsplot as gs
+    >>> figure, ax = gs.subplots()
+    >>> gs.square(ax)
+    >>> ax.get_box_aspect()
+    1.0
+    >>> figure.clear()
+    """
+
+    target_plan = normalize_axes(target, operation="square")
+    selected = ensure_positive(aspect, "square: aspect", error=LayoutError)
+    _apply_square(target_plan.axes, selected)
+
+
+def _label_signature(
+    target: AxesTarget,
+    xlabel: str | LabelRecords = "",
+    ylabel: str = "",
+    xlim: Limit | None = None,
+    ylim: Limit | None = None,
+    *,
+    xscale: Scale = "linear",
+    yscale: Scale = "linear",
+    xticks: TickSpec | None = None,
+    yticks: TickSpec | None = None,
+    minor: bool = True,
+    xminor: bool | None = None,
+    yminor: bool | None = None,
+    pad: float = 5,
+    xpad: float | None = None,
+    ypad: float | None = None,
+    square: bool = False,
+    index: bool | Literal["in", "out"] = False,
+) -> None:
+    raise AssertionError("signature-only function")
+
+
+label.__signature__ = inspect.signature(_label_signature)  # type: ignore[attr-defined]
+label.__annotations__ = get_type_hints(_label_signature)
+
+
 __all__ = [
     "AxesTarget",
     "axes_targets",
@@ -367,4 +761,6 @@ __all__ = [
     "suptitle",
     "minor_ticks",
     "box_aspect",
+    "label",
+    "square",
 ]

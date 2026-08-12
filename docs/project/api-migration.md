@@ -40,9 +40,9 @@ window.
 | Line defaults | marker `o`, size 7, edge width 1.5, `--`, width 1, alpha 1, face alpha 0.2 | preserved by the root helper | preserved by concise `line` |
 | Scatter defaults | marker `o`, size 1, alpha 1 | preserved by the root helper | preserved by concise `scatter` |
 | Option-free color | historical shared viridis sequence | compatibility-dependent root sequence | target Axes cycle; pure `series=n` when requested |
-| Labels | minor ticks, 5 pt pad, incidental relayout | explicit target via `AxisSpec` | minor ticks and 5 pt pad, no Figure relayout |
-| Panel indexes | lowercase labels positioned from rendered bounds | `panel_labels`, uppercase generated labels | `index`, lowercase bijective labels at frozen Axes transforms |
-| Legend | lower left, frameless, non-fancy, spacing 0.3 | explicit options, conservative replacement | `best` placement with frameless, non-fancy styling and spacing 0.3 |
+| Labels | minor ticks, 5 pt pad, incidental relayout | concise `label` plus advanced `AxisSpec` | minor ticks and 5 pt pad, no Figure relayout |
+| Panel indexes | lowercase labels positioned from rendered bounds | concise `index` plus advanced `panel_labels` | lowercase bijective labels; outside aligns to the y-label left edge with a 6-point top gap |
+| Legend | lower left, frameless, non-fancy, spacing 0.3 | `best`, frameless, non-fancy, spacing 0.3; conservative replacement | implemented concise contract |
 | Save | PNG+PDF, 600 DPI, tight crop, show, overwrite | conservative `savefig`; suffix-free defaults to PNG | `save` restores historical flow transactionally; `savefig` unchanged |
 | Display | coupled to historical save/store flow | `show(Figure)` is display-only | explicit Figure/same-Figure Axes, no-op on non-interactive backend |
 | Config | implicit legacy JSON/singleton | explicit immutable schema 1 | explicit immutable schema 2; schema 1 translates through 1.x |
@@ -75,7 +75,7 @@ legend  paper  save  show  read
 | `sample_cmap` | `colors` | new concise sampler; advanced normalization API retained |
 | `style_axes` | `label` | new concise records/shared-value operation; typed advanced API retained |
 | `box_aspect` | `square` | concise finite-aspect spelling; advanced helper retained |
-| `panel_labels` | `index` | concise lowercase labels and frozen transforms; advanced helper retained |
+| `panel_labels` | `index` | concise lowercase labels with DPI-aware inside clearance and y-label-aligned outside placement; advanced helper retained |
 | `legend` | `legend` | additive direct finite paper defaults and multi-target semantics |
 | `legends`, `legend_entries`, `cmap_legend` | unchanged advanced APIs | retained through 1.x |
 | `set_theme`, `fig_facecolor` | `paper` plus unchanged advanced APIs | `paper` owns the publication baseline; other themes remain explicit |
@@ -186,8 +186,8 @@ The classification uses these terms:
 | `graph_transparent` | `set_theme` | adapter + breaking name | Transparency is a named theme value rather than an implicit current-figure operation. |
 | `graph_transparent_axes` | `set_theme` | adapter | The target takes an explicit target. |
 | `graph_facecolor` | `fig_facecolor` | adapter + breaking name | Figure ownership is explicit. |
-| `label` | `style_axes` | adapter + breaking name | Axis labels, limits, scales, ticks, and padding use typed `AxisSpec` values. |
-| `label_add_index` | `panel_labels` | adapter + breaking name | Panel targets and label placement are explicit and return created `Text` objects. |
+| `label` | `label` | adapter + explicit ownership | An Axes target selects concise labels; historical record-only calls retain current-Figure behavior behind one warning. |
+| `label_add_index` | `index` | adapter + breaking ownership | Panel targets and placement are explicit; the concise helper returns native `Text` objects. |
 | `title` | `title` | adapter + breaking ownership | The canonical call targets an explicit `Axes`; figure-level text uses `suptitle`. |
 | `title_axes` | `title` | adapter | The old current-axes behavior forwards to the explicit target form. |
 | `legend` | `legend` | canonical rename retained | Handles, labels, handler maps, replacement, and properties are explicit. |
@@ -232,10 +232,10 @@ read as evidence that an unmerged target already exists.
 
 ```text
 subplots  inset_axes  line  scatter  cmap_line  cmap_dash  cmap_scatter
-sample_cmap  style_axes  title  suptitle  minor_ticks  box_aspect
-panel_labels  fig_facecolor  legend  legends  legend_entries  cmap_legend
-set_theme  savefig  show  load_config  read_array  write_meta  build_info
-use_backend
+sample_cmap  label  square  index  style_axes  title  suptitle  minor_ticks
+box_aspect  panel_labels  fig_facecolor  legend  legends  legend_entries
+cmap_legend  set_theme  savefig  show  load_config  read_array  write_meta
+build_info  use_backend
 ```
 
 It also exports the following typed values and errors:
@@ -246,9 +246,11 @@ LegendEntries  GsplotError  ConfigError  DataError  LayoutError  PlotError
 OutputError  MetadataError
 ```
 
-The stable aliases and protocols are `MosaicSpec`, `NormalizeSpec`, and
-`ColorSpec`. The canonical package advertises `py.typed` and uses NumPy-style
-docstrings for every public function and class.
+The stable aliases and protocols are `MosaicSpec`, `NormalizeSpec`,
+`ColorSpec`, `AxesTarget`, `PerTarget`, `LineStyle`, `Marker`, `Unit`,
+`SizePreset`, `SizeSpec`, `LayoutMode`, `StyleMode`, `Limit`, `Scale`,
+`TickSpec`, `LabelRecord`, and `LabelRecords`. The canonical package advertises
+`py.typed` and uses NumPy-style docstrings for every public function and class.
 
 ## Historical module migration
 
@@ -276,7 +278,7 @@ at the adapter boundary; new implementation code must not import them.
 | `gsplot.style.graph` | `gsplot.box_aspect`, `gsplot.set_theme`, `gsplot.fig_facecolor` |
 | `gsplot.style.legend` | `gsplot.legend`, `gsplot.legends`, `gsplot.legend_entries` |
 | `gsplot.style.legend_colormap` | `gsplot.cmap_legend` |
-| `gsplot.style.label` | `gsplot.style_axes`, `gsplot.panel_labels` |
+| `gsplot.style.label` | `gsplot.label`, `gsplot.index`, advanced `gsplot.style_axes` and `gsplot.panel_labels` |
 | `gsplot.style.title` | `gsplot.title`, `gsplot.suptitle` |
 | `gsplot.data.load_file` | `gsplot.read_array` |
 

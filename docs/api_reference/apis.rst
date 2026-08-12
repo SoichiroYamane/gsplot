@@ -25,6 +25,9 @@ Functions
    gsplot.cmap_dash
    gsplot.cmap_scatter
    gsplot.sample_cmap
+   gsplot.label
+   gsplot.square
+   gsplot.index
    gsplot.style_axes
    gsplot.title
    gsplot.suptitle
@@ -76,6 +79,20 @@ Type aliases
    gsplot.MosaicSpec
    gsplot.NormalizeSpec
    gsplot.ColorSpec
+   gsplot.AxesTarget
+   gsplot.PerTarget
+   gsplot.LineStyle
+   gsplot.Marker
+   gsplot.Unit
+   gsplot.SizePreset
+   gsplot.SizeSpec
+   gsplot.LayoutMode
+   gsplot.StyleMode
+   gsplot.Limit
+   gsplot.Scale
+   gsplot.TickSpec
+   gsplot.LabelRecord
+   gsplot.LabelRecords
 
 .. toctree::
    :hidden:

@@ -7,11 +7,14 @@ from typing import TYPE_CHECKING, Any
 
 __all__ = [
     "style_axes",
+    "label",
+    "square",
     "title",
     "suptitle",
     "minor_ticks",
     "box_aspect",
     "panel_labels",
+    "index",
     "fig_facecolor",
     "legend",
     "legends",
@@ -23,11 +26,14 @@ __all__ = [
 
 if TYPE_CHECKING:
     style_axes: Any
+    label: Any
+    square: Any
     title: Any
     suptitle: Any
     minor_ticks: Any
     box_aspect: Any
     panel_labels: Any
+    index: Any
     fig_facecolor: Any
     legend: Any
     legends: Any
@@ -39,11 +45,14 @@ if TYPE_CHECKING:
 
 _MODULES = {
     "style_axes": ("gsplot._style.axes", "style_axes"),
+    "label": ("gsplot._style.axes", "label"),
+    "square": ("gsplot._style.axes", "square"),
     "title": ("gsplot._style.axes", "title"),
     "suptitle": ("gsplot._style.axes", "suptitle"),
     "minor_ticks": ("gsplot._style.axes", "minor_ticks"),
     "box_aspect": ("gsplot._style.axes", "box_aspect"),
     "panel_labels": ("gsplot._style.panels", "panel_labels"),
+    "index": ("gsplot._style.panels", "index"),
     "fig_facecolor": ("gsplot._style.themes", "fig_facecolor"),
     "legend": ("gsplot._style.legends", "legend"),
     "legends": ("gsplot._style.legends", "legends"),

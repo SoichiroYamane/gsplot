@@ -21,8 +21,9 @@ print(gs.build_info())
 ```python
 import gsplot as gs
 
-fig, ax = gs.subplots(figsize=(6, 4))
-gs.line(ax, [0, 1, 2, 3], [0, 1, 4, 9], props={"label": "y = x²"})
+fig, ax = gs.subplots()
+gs.line(ax, [0, 1, 2, 3], [0, 1, 4, 9], label="y = x²")
+gs.label(ax, "x", "x²", square=True)
 gs.legend(ax)
 gs.savefig(fig, "first_figure", show=False)
 ```
@@ -30,6 +31,11 @@ gs.savefig(fig, "first_figure", show=False)
 This creates a normal Matplotlib figure and saves `first_figure.png`. The
 canonical `savefig` operation defaults to `show=True`; pass `show=False` for
 batch or headless output.
+
+`label` keeps the Figure lifecycle explicit: it changes only `ax`, enables
+minor ticks with 5-point label padding, and makes the panel square without
+executing a Figure layout engine. `legend` uses best placement with no frame,
+no rounded box, and compact 0.3 label spacing unless you pass direct options.
 
 Continue with the [demonstrations](../demo/index.md) to learn about layouts,
 configuration, styling, compatibility, and reproducibility.

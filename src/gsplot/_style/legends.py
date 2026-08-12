@@ -2,11 +2,13 @@
 
 from __future__ import annotations
 
+import inspect
 from collections.abc import Mapping, Sequence
-from typing import Any, cast
+from typing import Any, cast, get_type_hints, overload
 
 import matplotlib as mpl
 import numpy as np
+from matplotlib.artist import Artist
 from matplotlib.axes import Axes
 from matplotlib.colors import Colormap, Normalize
 from matplotlib.figure import Figure
@@ -15,8 +17,12 @@ from matplotlib.legend_handler import HandlerBase
 from matplotlib.lines import Line2D
 
 from .._core.errors import LayoutError, OptionError, PlotError
-from .._core.types import LegendEntries, NormalizeSpec
-from .axes import AxesTarget, axes_targets
+from .._core.options import MISSING
+from .._core.plans import TargetPlan
+from .._core.targets import normalize_axes, resolve_target_mapping
+from .._core.types import AxesTarget, LegendEntries, NormalizeSpec
+from .._core.validation import ensure_bool, ensure_nonnegative
+from .axes import axes_targets
 
 _LEGEND_PROPS = frozenset(
     {
@@ -27,6 +33,8 @@ _LEGEND_PROPS = frozenset(
         "facecolor",
         "edgecolor",
         "fancybox",
+        "fontsize",
+        "frameon",
         "framealpha",
         "handleheight",
         "handlelength",
@@ -94,40 +102,199 @@ def _entries(
         selected_handles = tuple(discovered_handles)
         selected_labels = tuple(discovered_labels)
     else:
-        selected_handles = tuple(handles)
-        selected_labels = tuple(labels or ())
+        if isinstance(handles, (str, bytes)) or isinstance(labels, (str, bytes)):
+            raise LayoutError("legend: handles and labels must be sequences")
+        try:
+            selected_handles = tuple(handles)
+            selected_labels = tuple(labels) if labels is not None else ()
+        except TypeError as exc:
+            raise LayoutError("legend: handles and labels must be sequences") from exc
     if len(selected_handles) != len(selected_labels):
-        raise LayoutError("handles and labels must have the same length")
+        raise LayoutError("legend: handles and labels must have the same length")
     if not selected_handles:
-        raise LayoutError("legend requires at least one entry")
+        raise LayoutError("legend: at least one entry is required")
     if any(not isinstance(label, str) for label in selected_labels):
-        raise LayoutError("legend labels must be strings")
+        raise LayoutError("legend: labels must be strings")
     return selected_handles, selected_labels
 
 
-def legend(
-    ax: Axes,
+def _handler_map(
+    value: Mapping[object, HandlerBase] | None,
+) -> dict[object, HandlerBase]:
+    """Copy and validate a local legend handler map."""
+
+    if value is None:
+        return {}
+    if not isinstance(value, Mapping):
+        raise PlotError("legend: handler_map must be a mapping")
+    selected = dict(value)
+    if any(not isinstance(handler, HandlerBase) for handler in selected.values()):
+        raise PlotError("legend: handler_map values must be HandlerBase instances")
+    return selected
+
+
+def _legend_props(
+    props: Mapping[str, object] | None,
     *,
-    handles: Sequence[Any] | None = None,
-    labels: Sequence[str] | None = None,
-    handler_map: Mapping[Any, HandlerBase] | None = None,
+    loc: Any,
+    frameon: Any,
+    fancybox: Any,
+    labelspacing: Any,
+    handlelength: Any,
+) -> dict[str, Any]:
+    """Resolve direct concise legend options against the advanced mapping."""
+
+    selected = _props(props, "legend")
+    controls = (
+        ("loc", loc, "best"),
+        ("frameon", frameon, False),
+        ("fancybox", fancybox, False),
+        ("labelspacing", labelspacing, 0.3),
+        ("handlelength", handlelength, None),
+    )
+    for name, supplied, default in controls:
+        if supplied is not MISSING and name in selected:
+            raise OptionError(f"legend: {name} conflicts with props")
+        if supplied is MISSING and name in selected:
+            continue
+        value = default if supplied is MISSING else supplied
+        if name == "loc":
+            if isinstance(value, bool) or not isinstance(value, (str, int)):
+                raise LayoutError("legend: loc must be a location string or integer")
+            if isinstance(value, str) and not value.strip():
+                raise LayoutError("legend: loc must not be empty")
+        elif name in {"frameon", "fancybox"}:
+            value = ensure_bool(value, f"legend: {name}", error=LayoutError)
+        elif name == "labelspacing":
+            value = ensure_nonnegative(value, "legend: labelspacing", error=LayoutError)
+        elif value is not None:
+            value = ensure_nonnegative(value, "legend: handlelength", error=LayoutError)
+        selected[name] = value
+    return selected
+
+
+def _entry_sets(
+    target: TargetPlan,
+    handles: Sequence[Artist] | Mapping[object, Sequence[Artist]] | None,
+    labels: Sequence[str] | Mapping[object, Sequence[str]] | None,
+) -> tuple[tuple[Axes, tuple[Any, ...], tuple[str, ...]], ...]:
+    """Resolve explicit or discovered entries for every target Axes."""
+
+    if (handles is None) != (labels is None):
+        raise TypeError("handles and labels must be supplied together")
+    if handles is None:
+        entries: list[tuple[Axes, tuple[Any, ...], tuple[str, ...]]] = []
+        for axis in target.axes:
+            discovered_handles, discovered_labels = axis.get_legend_handles_labels()
+            if not discovered_handles:
+                continue
+            discovered_entry_handles, discovered_entry_labels = _entries(
+                axis, discovered_handles, discovered_labels
+            )
+            entries.append((axis, discovered_entry_handles, discovered_entry_labels))
+        if target.kind == "single" and not entries:
+            raise LayoutError("legend: target Axes has no legend entries")
+        return tuple(entries)
+
+    assert labels is not None
+    if target.kind == "single":
+        if isinstance(handles, Mapping) or isinstance(labels, Mapping):
+            if not isinstance(handles, Mapping) or not isinstance(labels, Mapping):
+                raise LayoutError(
+                    "legend: handles and labels must use the same target form"
+                )
+            mapped_handles = resolve_target_mapping(target, handles, name="handles")
+            mapped_labels = resolve_target_mapping(target, labels, name="labels")
+            single_handles = mapped_handles[0]
+            single_labels = mapped_labels[0]
+        else:
+            single_handles = handles
+            single_labels = labels
+        stored_handles, stored_labels = _entries(
+            target.axes[0], single_handles, single_labels
+        )
+        return ((target.axes[0], stored_handles, stored_labels),)
+
+    if not isinstance(handles, Mapping) or not isinstance(labels, Mapping):
+        raise LayoutError(
+            "legend: multi-target handles and labels must be exact-key mappings"
+        )
+    handle_sets = resolve_target_mapping(target, handles, name="handles")
+    label_sets = resolve_target_mapping(target, labels, name="labels")
+    entries = []
+    for axis, axis_handles, axis_labels in zip(target.axes, handle_sets, label_sets):
+        stored_handles, stored_labels = _entries(axis, axis_handles, axis_labels)
+        entries.append((axis, stored_handles, stored_labels))
+    return tuple(entries)
+
+
+@overload
+def legend(
+    target: Axes,
+    *,
+    handles: Sequence[Artist] | Mapping[object, Sequence[Artist]] | None = None,
+    labels: Sequence[str] | Mapping[object, Sequence[str]] | None = None,
+    handler_map: Mapping[object, HandlerBase] | None = None,
+    loc: str | int = "best",
+    frameon: bool = False,
+    fancybox: bool = False,
+    labelspacing: float = 0.3,
+    handlelength: float | None = None,
     reverse: bool = False,
     replace: bool = False,
-    props: Mapping[str, Any] | None = None,
-) -> Legend:
-    """Create one local Legend on an explicit Axes.
+    props: Mapping[str, object] | None = None,
+) -> Legend: ...
+
+
+@overload
+def legend(
+    target: AxesTarget,
+    *,
+    handles: Sequence[Artist] | Mapping[object, Sequence[Artist]] | None = None,
+    labels: Sequence[str] | Mapping[object, Sequence[str]] | None = None,
+    handler_map: Mapping[object, HandlerBase] | None = None,
+    loc: str | int = "best",
+    frameon: bool = False,
+    fancybox: bool = False,
+    labelspacing: float = 0.3,
+    handlelength: float | None = None,
+    reverse: bool = False,
+    replace: bool = False,
+    props: Mapping[str, object] | None = None,
+) -> Legend | tuple[Legend, ...]: ...
+
+
+def legend(
+    target: AxesTarget,
+    *,
+    handles: Sequence[Artist] | Mapping[object, Sequence[Artist]] | None = None,
+    labels: Sequence[str] | Mapping[object, Sequence[str]] | None = None,
+    handler_map: Mapping[object, HandlerBase] | None = None,
+    loc: Any = MISSING,
+    frameon: Any = MISSING,
+    fancybox: Any = MISSING,
+    labelspacing: Any = MISSING,
+    handlelength: Any = MISSING,
+    reverse: Any = False,
+    replace: Any = False,
+    props: Mapping[str, object] | None = None,
+) -> Legend | tuple[Legend, ...]:
+    """Create publication legends on one or more explicit Axes.
 
     Parameters
     ----------
-    ax
-        Explicit target Axes.
+    target
+        One Axes or a deterministic same-Figure collection of Axes.
     handles, labels
-        Optional matched legend entries.  When omitted, Matplotlib discovery
-        is used.
+        Optional matched entries. Multi-target explicit entries require exact
+        target-key mappings; otherwise Matplotlib discovery is used.
     handler_map
         Optional local handler mapping; it never changes Matplotlib defaults.
+    loc, frameon, fancybox, labelspacing, handlelength
+        Direct publication controls. Defaults are ``"best"``, ``False``,
+        ``False``, ``0.3``, and ``None`` respectively.
     reverse
-        Reverse the selected entries before construction.
+        Reverse each selected entry sequence before construction.
     replace
         Remove existing legends only when explicitly set to ``True``.
     props
@@ -135,8 +302,9 @@ def legend(
 
     Returns
     -------
-    matplotlib.legend.Legend
-        The native Legend attached to ``ax``.
+    matplotlib.legend.Legend or tuple of Legend
+        Native Legends in normalized target order. Collection targets skip
+        Axes that have no discovered entries.
 
     Raises
     ------
@@ -149,45 +317,95 @@ def legend(
     >>> figure, ax = gs.subplots()
     >>> gs.line(ax, [0, 1], [0, 1], props={"label": "signal"})
     [<matplotlib.lines.Line2D object ...>]
-    >>> item = gs.legend(ax)
+    >>> item = gs.legend(ax, handlelength=3)
     >>> item.axes is ax
     True
     >>> figure.clear()
     """
 
-    if not isinstance(ax, Axes):
-        raise PlotError("ax must be a matplotlib.axes.Axes instance")
-    target = ax
-    if not isinstance(reverse, bool) or not isinstance(replace, bool):
-        raise LayoutError("reverse and replace must be booleans")
-    selected_props = _props(props, "legend")
-    if not isinstance(handler_map, Mapping) and handler_map is not None:
-        raise PlotError("handler_map must be a mapping")
-    selected_handlers = {} if handler_map is None else dict(handler_map)
-    selected_handles, selected_labels = _entries(target, handles, labels)
-    if reverse:
-        selected_handles = selected_handles[::-1]
-        selected_labels = selected_labels[::-1]
-    existing = _existing(target)
-    if existing and not replace:
-        raise LayoutError("an existing legend requires replace=True")
-    # Constructing the Legend is intentionally done before removing an old one.
-    created = Legend(
-        target,
-        selected_handles,
-        selected_labels,
-        handler_map=selected_handlers,
-        **selected_props,
+    target_plan = normalize_axes(target, operation="legend")
+    selected_reverse = ensure_bool(reverse, "legend: reverse", error=LayoutError)
+    selected_replace = ensure_bool(replace, "legend: replace", error=LayoutError)
+    selected_handlers = _handler_map(handler_map)
+    selected_props = _legend_props(
+        props,
+        loc=loc,
+        frameon=frameon,
+        fancybox=fancybox,
+        labelspacing=labelspacing,
+        handlelength=handlelength,
     )
-    for old in existing:
-        old.remove()
-    target.add_artist(created)
-    target.legend_ = created
-    return created
+    entry_sets = _entry_sets(target_plan, handles, labels)
+
+    planned: list[tuple[Axes, Legend, tuple[Legend, ...], Legend | None]] = []
+    for axis, selected_handles, selected_labels in entry_sets:
+        if selected_reverse:
+            selected_handles = selected_handles[::-1]
+            selected_labels = selected_labels[::-1]
+        existing = _existing(axis)
+        if existing and not selected_replace:
+            raise LayoutError("legend: an existing legend requires replace=True")
+        try:
+            created = Legend(
+                axis,
+                selected_handles,
+                selected_labels,
+                handler_map=cast(Any, selected_handlers),
+                **selected_props,
+            )
+        except (TypeError, ValueError) as exc:
+            raise PlotError("legend: invalid entries, handlers, or options") from exc
+        current = axis.get_legend()
+        planned.append(
+            (axis, created, existing, current if isinstance(current, Legend) else None)
+        )
+
+    attempted: list[tuple[Axes, Legend, tuple[Legend, ...], Legend | None]] = []
+    try:
+        for axis, created, existing, current in planned:
+            attempted.append((axis, created, existing, current))
+            if selected_replace:
+                for old in existing:
+                    old.remove()
+            axis.add_artist(created)
+            axis.legend_ = created
+    except Exception:
+        for axis, created, existing, current in reversed(attempted):
+            if created in axis.get_children():
+                created.remove()
+            for old in existing:
+                if old not in axis.get_children():
+                    axis.add_artist(old)
+            axis.legend_ = current
+        raise
+    result = tuple(created for _, created, _, _ in planned)
+    return result[0] if target_plan.kind == "single" else result
+
+
+def _legend_signature(
+    target: AxesTarget,
+    *,
+    handles: Sequence[Artist] | Mapping[object, Sequence[Artist]] | None = None,
+    labels: Sequence[str] | Mapping[object, Sequence[str]] | None = None,
+    handler_map: Mapping[object, HandlerBase] | None = None,
+    loc: str | int = "best",
+    frameon: bool = False,
+    fancybox: bool = False,
+    labelspacing: float = 0.3,
+    handlelength: float | None = None,
+    reverse: bool = False,
+    replace: bool = False,
+    props: Mapping[str, object] | None = None,
+) -> Legend | tuple[Legend, ...]:
+    raise AssertionError("signature-only function")
+
+
+legend.__signature__ = inspect.signature(_legend_signature)  # type: ignore[attr-defined]
+legend.__annotations__ = get_type_hints(_legend_signature)
 
 
 def legends(
-    target: Figure | Sequence[Axes] | Mapping[str, Axes],
+    target: Figure | Sequence[Axes] | Mapping[object, Axes],
     *,
     replace: bool = False,
     props: Mapping[str, Any] | None = None,

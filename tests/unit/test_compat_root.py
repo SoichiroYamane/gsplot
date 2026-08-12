@@ -1,6 +1,7 @@
 """Tests for root-level canonical/legacy dispatch boundaries."""
 
 import inspect
+import warnings
 from pathlib import Path
 from typing import get_args, get_type_hints
 
@@ -113,6 +114,70 @@ def test_root_canonical_annotations_are_runtime_resolvable() -> None:
         for value in get_args(get_type_hints(gs.scatter)["return"])
     )
     assert get_type_hints(gs.show)["return"] is type(None)
+    assert get_type_hints(gs.label)["xlabel"] != object
+    assert "LabelRecords" in str(inspect.signature(gs.label))
+    assert get_type_hints(gs.legend)["loc"] == str | int
+
+
+def test_root_label_dispatches_without_current_figure_guessing() -> None:
+    """Explicit targets stay concise while non-empty old records remain usable."""
+
+    figure, axis = plt.subplots()
+    try:
+        with warnings.catch_warnings(record=True) as caught:
+            warnings.simplefilter("always")
+            gs.label(axis, "time", "signal", square=True, index="in")
+        assert not any(issubclass(item.category, DeprecationWarning) for item in caught)
+        assert axis.get_xlabel() == "time"
+        assert axis.get_ylabel() == "signal"
+        assert axis.get_box_aspect() == 1
+        assert axis.texts[0].get_text() == "(a)"
+
+        with pytest.warns(DeprecationWarning, match="gsplot.label"):
+            gs.label([["legacy x", "legacy y"]], 7, 8, False, False, 3, 4)
+        assert axis.get_xlabel() == "legacy x"
+        assert axis.get_ylabel() == "legacy y"
+        assert axis.xaxis.labelpad == 7
+        assert axis.yaxis.labelpad == 8
+
+        with pytest.warns(DeprecationWarning, match="gsplot.label"):
+            gs.label(lab_lims=[["keyword x", "keyword y"]], tight_layout=False)
+        assert axis.get_xlabel() == "keyword x"
+        assert axis.get_ylabel() == "keyword y"
+    finally:
+        plt.close(figure)
+
+
+def test_root_label_rejects_empty_or_unknown_forms_before_pyplot_state() -> None:
+    """Ambiguous first arguments fail without creating a current Figure."""
+
+    plt.close("all")
+    before = tuple(plt.get_fignums())
+    with pytest.raises(TypeError, match="non-empty"):
+        gs.label([])
+    with pytest.raises(TypeError, match="AxesTarget"):
+        gs.label(["x", "y"])
+    assert tuple(plt.get_fignums()) == before
+
+
+def test_root_legend_treats_publication_controls_as_canonical() -> None:
+    """Direct concise controls do not enter the deprecated legacy branch."""
+
+    figure, axis = plt.subplots()
+    try:
+        axis.plot([0, 1], [0, 1], label="signal")
+        with warnings.catch_warnings(record=True) as caught:
+            warnings.simplefilter("always")
+            created = gs.legend(axis, loc="lower right", handlelength=3)
+        assert not any(issubclass(item.category, DeprecationWarning) for item in caught)
+        assert created._loc == 4
+        assert created.handlelength == 3
+
+        with pytest.warns(DeprecationWarning, match="legacy gsplot.legend"):
+            replaced = gs.legend(axis, ncols=1, replace=True)
+        assert replaced.axes is axis
+    finally:
+        plt.close(figure)
 
 
 def test_root_title_and_show_dispatch_by_explicit_target() -> None:
