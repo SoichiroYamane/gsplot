@@ -333,7 +333,7 @@ class Config:
                 "nonfinite": self.plotting.nonfinite,
             }
         else:
-            raise ConfigError(f"unknown configuration section: {name!r}")
+            raise ConfigError("unknown configuration section")
         return MappingProxyType(values)
 
     @overload
@@ -442,7 +442,7 @@ class Config:
         if option not in values:
             if default is not MISSING:
                 return default
-            raise ConfigError(f"unknown configuration key: {section}.{option}")
+            raise ConfigError("unknown configuration key in requested section")
         return values[option]
 
     def as_mapping(self) -> Mapping[str, Any]:

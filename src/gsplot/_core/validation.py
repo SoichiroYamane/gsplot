@@ -82,10 +82,9 @@ def reject_unknown_keys(
 ) -> None:
     """Raise when a mapping contains a key outside its closed schema."""
 
-    unknown = sorted(set(mapping) - set(allowed))
+    unknown = set(mapping) - set(allowed)
     if unknown:
-        joined = ", ".join(repr(key) for key in unknown)
-        raise error(f"{context} contains unknown key(s): {joined}")
+        raise error(f"{context} contains unknown key(s)")
 
 
 def ensure_mapping(

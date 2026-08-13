@@ -78,6 +78,47 @@ def test_mapping_values_are_validated_and_precedence_is_explicit() -> None:
         config.get("figure", "missing")
 
 
+def test_untrusted_configuration_names_are_not_interpolated(tmp_path) -> None:
+    """Unknown keys and accessor arguments produce stable safe messages."""
+
+    untrusted_name = "/private/user/home/secret"
+
+    with pytest.raises(ConfigError) as root_error:
+        Config.from_mapping({"schema_version": 2, untrusted_name: True})
+    assert str(root_error.value) == "configuration contains unknown key(s)"
+    assert untrusted_name not in str(root_error.value)
+
+    with pytest.raises(ConfigError) as nested_error:
+        Config.from_mapping({"schema_version": 2, "figure": {untrusted_name: True}})
+    assert str(nested_error.value) == "figure contains unknown key(s)"
+    assert untrusted_name not in str(nested_error.value)
+
+    config_file = tmp_path / "unknown-key.json"
+    config_file.write_text(
+        '{"schema_version": 2, "plotting": {"%s": true}}' % untrusted_name,
+        encoding="utf-8",
+    )
+    with pytest.raises(ConfigError) as file_error:
+        Config.from_file(config_file)
+    assert str(file_error.value) == "plotting contains unknown key(s)"
+    assert untrusted_name not in str(file_error.value)
+
+    with pytest.raises(ConfigError) as section_error:
+        Config().section(untrusted_name)  # type: ignore[arg-type]
+    assert str(section_error.value) == "unknown configuration section"
+    assert untrusted_name not in str(section_error.value)
+
+    with pytest.raises(ConfigError) as invalid_section_error:
+        Config().get(untrusted_name, "size")  # type: ignore[arg-type]
+    assert str(invalid_section_error.value) == "unknown configuration section"
+    assert untrusted_name not in str(invalid_section_error.value)
+
+    with pytest.raises(ConfigError) as option_error:
+        Config().get("figure", untrusted_name)
+    assert str(option_error.value) == "unknown configuration key in requested section"
+    assert untrusted_name not in str(option_error.value)
+
+
 @pytest.mark.parametrize(
     "mapping",
     [
