@@ -21,7 +21,10 @@ _LEGACY_EXPORTS: Final[dict[str, tuple[str, str]]] = {
     "axes_inset_padding": ("gsplot._compat.legacy_api", "axes_inset_padding"),
     "get_figure_size": ("gsplot._compat.legacy_api", "get_figure_size"),
     "show": ("gsplot._compat.root_api", "show"),
-    "hello_world": ("gsplot.hello_world.hello_world", "hello_world"),
+    "hello_world": (
+        "gsplot._compat.legacy.hello_world.hello_world",
+        "hello_world",
+    ),
     "config_load": ("gsplot._compat.legacy_api", "config_load"),
     "config_dict": ("gsplot._compat.legacy_api", "config_dict"),
     "config_entry_option": ("gsplot._compat.legacy_api", "config_entry_option"),
@@ -59,7 +62,7 @@ _LEGACY_EXPORTS: Final[dict[str, tuple[str, str]]] = {
     "title_axes": ("gsplot._compat.legacy_api", "title_axes"),
     "Config": ("gsplot.config.config", "Config"),
     "save_metadata": ("gsplot._compat.root_legacy", "save_metadata"),
-    "logger": ("gsplot.logger", "logger"),
+    "logger": ("gsplot._compat.root_legacy", "logger"),
 }
 
 _CANONICAL_EXPORTS: Final[dict[str, tuple[str, str]]] = {

@@ -24,4 +24,16 @@ def save_metadata(*args: object, **kwargs: object) -> NoReturn:
     )
 
 
-__all__ = ["save_metadata"]
+def logger(*args: object, **kwargs: object) -> None:
+    """Retain the historical root call as a side-effect-free no-op."""
+
+    del args, kwargs
+    warnings.warn(
+        "gsplot.logger is deprecated and is now a no-op; configure Python "
+        "logging explicitly in the application",
+        DeprecationWarning,
+        stacklevel=2,
+    )
+
+
+__all__ = ["logger", "save_metadata"]

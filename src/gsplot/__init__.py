@@ -118,6 +118,8 @@ if TYPE_CHECKING:
     ticks_on: Any
     ticks_on_axes: Any
     title_axes: Any
+    logger: Any
+    save_metadata: Any
 
 __all__ = [
     "subplots",

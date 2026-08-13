@@ -4,9 +4,10 @@ This page is the cumulative migration matrix for the structural reform tracked
 in [Issue #165](https://github.com/SoichiroYamane/gsplot/issues/165) and the
 concise publication API tracked in
 [Issue #183](https://github.com/SoichiroYamane/gsplot/issues/183). It maps the
-historical 0.3 API, current 0.4 implementation, and approved 1.x concise target.
-An entry describes target behavior only after its linked implementation slice
-has merged; until then the current 0.4 column is runtime truth.
+historical 0.3 API, the pre-concise 0.4 baseline, and the currently implemented
+concise contract that is intended to stabilize through 1.x. The runtime,
+generated API index, and inventory command remain the authority for merged
+behavior; unmerged roadmap work is not described as available.
 
 ## Compatibility policy
 
@@ -23,7 +24,12 @@ has merged; until then the current 0.4 column is runtime truth.
 - The old `gsplot.base.*` implementation namespace is not a supported public
   compatibility surface unless it was part of the pre-cutover API reference.
 - A compatibility adapter may normalize old arguments, but canonical modules
- must never import the compatibility layer or contain duplicate algorithms.
+  must never import the compatibility layer or contain duplicate algorithms.
+- A documented historical module's declared functions resolve to the same
+  reviewed adapters as the root names. Compatibility-only implementation
+  classes may remain reachable from their historical modules, but they are not
+  canonical exports and cannot replace the root adapter for a documented
+  function.
 
 ## Effective default-value matrix
 
@@ -31,7 +37,7 @@ Signature compatibility alone is not sufficient for plotting APIs. The
 following matrix records the effective defaults during the compatibility
 window.
 
-| Surface | Historical 0.3 | Current 0.4 | Concise 1.x target |
+| Surface | Historical 0.3 | Pre-concise 0.4 baseline | Current 0.4 / 1.x contract |
 | --- | --- | --- | --- |
 | Figure size | 5 x 5 in | Matplotlib default unless explicit | `auto`: 85 mm for one column, 170 mm for multiple columns; tuple/preset override |
 | Layout | tight | none unless explicit | constrained for a new Figure; preserve a reused Figure |
@@ -42,10 +48,10 @@ window.
 | Option-free color | historical shared viridis sequence | compatibility-dependent root sequence | target Axes cycle; pure `series=n` when requested |
 | Labels | minor ticks, 5 pt pad, incidental relayout | concise `label` plus advanced `AxisSpec` | minor ticks and 5 pt pad, no Figure relayout |
 | Panel indexes | lowercase labels positioned from rendered bounds | concise `index` plus advanced `panel_labels` | lowercase bijective labels; outside aligns to the y-label left edge with a 6-point top gap |
-| Legend | lower left, frameless, non-fancy, spacing 0.3 | `best`, frameless, non-fancy, spacing 0.3; conservative replacement | implemented concise contract |
-| Inset zoom | two explicit connector corner pairs | advanced placement; root adapter ignores explicit pairs | automatic or exact two-pair connectors; indicator defaults 0.01 below child z-order 5 |
-| Text read | whitespace, unpacked columns | explicit options mapping; structured unpack is coerced | comma delimiter and unpack true; native structured field arrays preserved |
-| Save | PNG+PDF, 600 DPI, tight crop, show, overwrite | conservative `savefig`; suffix-free defaults to PNG | `save` restores historical flow transactionally; `savefig` unchanged |
+| Legend | ambient/config placement (`best` without config; demos often used `lower left`), globally frameless/non-fancy with spacing 0.3 | explicit options with conservative replacement | explicit `best`, frameless, non-fancy, spacing 0.3; conservative replacement |
+| Inset zoom | two explicit connector corner pairs | advanced placement only | automatic or exact two-pair connectors; indicator defaults 0.01 below child z-order 5 |
+| Text read | comma delimiter, unpacked columns | explicit options mapping; structured unpack was coerced | comma delimiter and unpack true; native structured field arrays preserved |
+| Save | PNG+PDF, 600 DPI, tight crop, show, overwrite | conservative `savefig`; suffix-free path selected PNG | transactional `save` restores the historical flow; `savefig` remains conservative |
 | Display | coupled to historical save/store flow | `show(Figure)` is display-only | explicit Figure/same-Figure Axes, no-op on non-interactive backend |
 | Config | implicit legacy JSON/singleton | explicit immutable schema 1 | explicit immutable schema 2; schema 1 translates through 1.x |
 | Import | changed `rcParams` and initialized legacy services | side-effect-light | side-effect-light |
@@ -60,9 +66,9 @@ the root adapter boundary. Removing import-time Matplotlib `rcParams` mutation
 is also intentional; ambient Matplotlib defaults apply unless an application
 configures them explicitly.
 
-## Current-to-concise root migration
+## Implemented concise root migration
 
-The primary concise target is:
+The implemented primary concise surface is:
 
 ```text
 subplots  inset  line  scatter  colors  label  index  square
@@ -88,6 +94,30 @@ legend  paper  save  show  read
 | `load_config` | `load_config` | explicit loading retained; schema 2 becomes canonical |
 | `write_meta`, `build_info`, `use_backend` | unchanged advanced APIs | retained through 1.x |
 | `cmap_line`, `cmap_dash`, `cmap_scatter` | unchanged advanced APIs | retained through 1.x |
+
+### Public boundary inventory
+
+The compatibility audit freezes the following finite surfaces. Counts are
+acceptance checks, not a substitute for reviewing the names in the JSON
+inventory.
+
+| Boundary | Count | Source and enforcement |
+| --- | ---: | --- |
+| Canonical root `__all__` | 67 | Must equal the lazy canonical manifest, static canonical exports, and canonical autosummary index. |
+| Historical v0.3 root `__all__` | 41 | Frozen from tag `v0.3.0`; must equal the discoverable legacy root list. |
+| Historical direct root attributes outside `__all__` | 5 | `Config`, `logger`, `save_metadata`, `__commit__`, and `__version__`. |
+| Lazy legacy manifest | 44 | The 41 historical discoverable names plus shadowed `Config`, `logger`, and `save_metadata`. |
+| Direct metadata attributes | 2 | `__commit__` and `__version__`; neither is a lazy function export. |
+| Documented historical modules | 20 | Frozen module paths and each module's ordered `__all__` from the v0.3 API reference. |
+
+Every canonical function has a finite annotated runtime signature, an
+annotated return, no visible omission sentinel, and no `**kwargs` in the
+primary introspection view. The overlapping `line`, `scatter`, `label`,
+`legend`, `title`, and `show` adapters also have finite implementation binders;
+their concise signatures cannot conceal a generic compatibility keyword bag.
+Type aliases are inventoried as type aliases rather than misleading callable
+signatures. The generated root API pages are the detailed signature and return
+reference; the tables on this page classify every changed or retained surface.
 
 ### Line and scatter advanced option table
 
@@ -176,10 +206,10 @@ The classification uses these terms:
 | `get_figure_size` | `Figure.get_size_inches()` | adapter | New code uses the Matplotlib figure directly; a compatibility helper may preserve the old convenience call. |
 | `show` | `save` and `show` | adapter + breaking behavior | `save(target, ..., show=True)` transactionally saves before display. Canonical `show(target)` displays one explicit Figure or same-Figure Axes target and never saves or closes. |
 | `get_cmap` | `colors` / `sample_cmap` | adapter + breaking signature | Count sampling uses concise `colors`; value normalization remains in the advanced sampler. |
-| `line` | `line` | canonical rename retained | The target takes an explicit `Axes`, returns `list[Line2D]`, and uses a closed property schema rather than an open keyword bag. |
-| `line_colormap_solid` | `cmap_line` | adapter + breaking name | The target owns colored-segment validation and returns a `LineCollection`. |
-| `line_colormap_dashed` | `cmap_dash` | adapter + breaking name | The target returns a tuple of `LineCollection` objects and validates positive dash lengths. |
-| `scatter` | `scatter` | canonical rename retained | The target takes an explicit `Axes` and returns the Matplotlib `PathCollection`. |
+| `line` | `line` | canonical name retained | One or more explicit same-Figure Axes return a native `list[Line2D]` or target-ordered tuple of lists; the concise view and finite long options use a closed property schema. |
+| `line_colormap_solid` | `cmap_line` | adapter + breaking name | The compatibility adapter preserves its one-item list return; canonical `cmap_line` owns colored-segment validation and returns a `LineCollection`. |
+| `line_colormap_dashed` | `cmap_dash` | adapter + breaking name | The compatibility adapter preserves its legacy list return; canonical `cmap_dash` returns a tuple of `LineCollection` objects and validates positive dash lengths. |
+| `scatter` | `scatter` | canonical name retained | One or more explicit same-Figure Axes return a native `PathCollection` or target-ordered tuple; the concise view and finite long options use a closed property schema. |
 | `scatter_colormap` | `cmap_scatter` | adapter + breaking name | The target validates color data and returns a `PathCollection`. |
 | `graph_square` | `box_aspect` | adapter + breaking name | Aspect application is explicit and does not inspect a caller frame or global axes store. |
 | `graph_square_axes` | `box_aspect` | adapter | The target accepts an explicit `Axes` or typed target collection. |
@@ -191,7 +221,7 @@ The classification uses these terms:
 | `label` | `label` | adapter + explicit ownership | An Axes target selects concise labels; historical record-only calls retain current-Figure behavior behind one warning. |
 | `label_add_index` | `index` | adapter + breaking ownership | Panel targets and placement are explicit; the concise helper returns native `Text` objects. |
 | `title` | `title` | adapter + breaking ownership | The canonical call targets an explicit `Axes`; figure-level text uses `suptitle`. |
-| `title_axes` | `title` | adapter | The old current-axes behavior forwards to the explicit target form. |
+| `title_axes` | `title` | adapter | The old explicit-Axes spelling forwards to the canonical explicit target form. |
 | `legend` | `legend` | canonical rename retained | Handles, labels, handler maps, replacement, and properties are explicit. |
 | `legend_axes` | `legends` | adapter + breaking name | The target returns all legends on an explicit target. |
 | `legend_handlers` | `legend` | adapter | Handler maps become local call arguments and are never global mutable state. |
@@ -206,12 +236,12 @@ The classification uses these terms:
 | `config_load` | `load_config` | adapter + breaking name | Loading is explicit and returns an immutable `Config`. Importing the package does not load files. |
 | `config_dict` | `Config` | adapter + breaking ownership | Configuration is a typed immutable value, not a mutable process-wide dictionary. |
 | `config_entry_option` | `Config.get` / `Config.section` | adapter | Accessors validate the schema and do not expose mutable global state. |
-| `save_metadata` | `write_meta` | adapter + breaking ownership | Metadata destination and snapshot are explicit; writes are atomic and validated. |
+| `save_metadata` | `write_meta` | rejecting adapter + breaking ownership | It warns and raises `MetadataError`; metadata destination and snapshot must be explicit and writes are atomic and validated. |
 | `home` | no canonical replacement | compatibility-only | New code uses `Path.home()` or an explicit path. |
 | `pwd` | no canonical replacement | compatibility-only | New code uses `Path.cwd()` or an explicit path. |
 | `pwd_main` | no canonical replacement | compatibility-only | New code owns its path explicitly. |
-| `pwd_move` | no canonical replacement | deprecated adapter | The reform does not offer a working-directory mutation helper; the adapter warns or becomes a documented no-op. |
-| `hello_world` | documentation example | docs-only | It is not part of the canonical scientific plotting API. |
+| `pwd_move` | no canonical replacement | deprecated adapter | The compatibility call warns and is a no-op; the reform does not mutate the working directory. |
+| `hello_world` | documentation example | docs-only adapter | The retained call warns and is a no-op; it is not part of the canonical scientific plotting API. |
 | `__version__` | `__version__` | canonical compatibility attribute | The value comes from installed distribution metadata with a safe source-tree fallback. |
 | `__commit__` | `build_info().commit` | deprecating adapter | The canonical build value is typed metadata; `commit` is `None` after cutover unless explicitly supplied by a build system. |
 
@@ -224,13 +254,11 @@ or normal interactive discovery:
 | --- | --- | --- |
 | `Config` | shadowed legacy fallback | Canonical resolution wins; the legacy target remains inventoried so a boundary rewrite cannot silently change precedence. |
 | `save_metadata` | rejecting deprecation adapter | Warns and directs callers to explicit `write_meta`; it never performs implicit metadata collection. |
-| `logger` | compatibility-only module value | Retained for safe historical import lookup only; new code uses standard-library logging and gsplot does not configure logging on import. |
+| `logger` | side-effect-free no-op adapter | The root and historical module call warn and return `None`; they never recreate the removed application log. New code configures standard-library logging explicitly. |
 
 ## Current canonical root manifest
 
-The implemented 0.4 root exports the following functions. The concise names
-listed above are added by their linked Issue #183 slices; this list must not be
-read as evidence that an unmerged target already exists.
+The implemented 0.4 root exports the following functions:
 
 ```text
 subplots  inset  inset_axes  line  scatter  cmap_line  cmap_dash  cmap_scatter
@@ -258,9 +286,11 @@ and class.
 ## Historical module migration
 
 The following module and symbol pages were part of the pre-cutover API
-reference. During the compatibility window they are forwarding-only shims to
-the canonical root implementation. Their old signatures may be accepted only
-at the adapter boundary; new implementation code must not import them.
+reference. During the compatibility window their declared functions are
+forwarding-only shims to the same reviewed root adapters. Their old signatures
+may be accepted only at that adapter boundary; compatibility-only classes may
+remain available as fallback attributes, and new implementation code must not
+import either form.
 
 | Historical path | Target area |
 | --- | --- |
@@ -294,6 +324,23 @@ poetry run python tools/maintenance/collect_public_api.py
 That command is intentionally read-only and prints JSON to standard output;
 it does not create an inventory file or alter the working tree. Its output
 separates root `__all__`, lazy canonical targets, lazy legacy targets,
-discoverable legacy names, direct metadata attributes, and compatibility paths
-parsed from this page. This makes hidden lazy names such as `save_metadata` and
-`logger` reviewable without promoting them into the concise API.
+type-checker exports, API-index exports, typed kinds and signatures, direct
+metadata attributes, structured parameter/default/annotation contracts,
+docstring summaries and fingerprints, the frozen v0.3 baseline, and the actual
+exports of every compatibility path parsed from this page. This makes hidden
+lazy names such as `save_metadata` and `logger` reviewable without promoting
+them into the concise API.
+
+### Warning and exception migration
+
+Valid canonical calls emit no compatibility warning. Importing a historical
+module emits `DeprecationWarning`; a documented function from that module then
+uses the same finite adapter as its root spelling. A legacy call form emits a
+caller-facing `DeprecationWarning`, while ambiguous or mixed canonical/legacy
+forms fail before current-Figure or compatibility state is consulted.
+Type/binding ambiguity raises `TypeError` or `OptionError`; validated domain
+failures use `ConfigError`, `DataError`, `LayoutError`, `PlotError`,
+`OutputError`, or `MetadataError` as documented by the canonical operation.
+The special `save_metadata` adapter warns and raises `MetadataError`; `logger`,
+`hello_world`, and `pwd_move` warn and return without their removed side
+effects.

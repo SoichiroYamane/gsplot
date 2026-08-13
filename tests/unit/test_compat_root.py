@@ -263,6 +263,16 @@ def test_nontranslating_legacy_helpers_warn_without_side_effects(capsys) -> None
         gs.save_metadata()
 
 
+def test_historical_logger_is_a_side_effect_free_noop(tmp_path, monkeypatch) -> None:
+    """The retained root lookup cannot recreate the removed application log."""
+
+    monkeypatch.setenv("HOME", str(tmp_path))
+    before = tuple(tmp_path.rglob("*"))
+    with pytest.warns(DeprecationWarning, match="no-op"):
+        assert gs.logger() is None
+    assert tuple(tmp_path.rglob("*")) == before
+
+
 def test_root_load_config_translates_only_schema_less_legacy_files(tmp_path) -> None:
     """The root boundary warns for old files while canonical files stay strict."""
 
