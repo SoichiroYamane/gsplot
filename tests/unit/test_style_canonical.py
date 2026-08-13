@@ -128,6 +128,13 @@ def test_paper_applies_the_frozen_profile_without_global_state() -> None:
     assert axis.xaxis._minor_tick_kw["size"] == 2
     assert axis.xaxis._minor_tick_kw["width"] == 0.6
     assert axis.xaxis.label.get_fontfamily() == ["DejaVu Sans"]
+    assert all(
+        label.get_fontfamily() == ["DejaVu Sans"]
+        for label in (
+            *axis.get_xticklabels(which="both"),
+            *axis.get_yticklabels(which="both"),
+        )
+    )
     assert axis.xaxis.label.get_fontsize() == 10
 
     lines = [
