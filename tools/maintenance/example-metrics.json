@@ -21,13 +21,13 @@
       "source": "main commit 782117f:demo/4_paper_plot/paper_plot.py"
     },
     "final_example": {
-      "comment_free_chars": 2167,
+      "comment_free_chars": 2172,
       "comment_free_lines": 64,
-      "executable_chars": 2033,
+      "executable_chars": 2038,
       "executable_lines": 62,
       "gsplot_calls": 11,
-      "lexical_chars": 1613,
-      "path": "demo/4_paper_plot/paper_plot.py",
+      "lexical_chars": 1618,
+      "path": "examples/publication/publication.py",
       "physical_lines": 74
     },
     "selected_tuple_prototype": {
@@ -51,6 +51,6 @@
     "minimum_issue_181_reduction_percent": 60.0,
     "physical_lines": 98
   },
-  "final_target": "demo/4_paper_plot/paper_plot.py",
+  "final_target": "examples/publication/publication.py",
   "schema_version": 1
 }

@@ -50,7 +50,7 @@ the Figure design canvas exactly. The advanced `savefig` helper retains its
 conservative output controls.
 
 For a complete scientific example, see the
-[paper-plot demo](https://soichiroyamane.github.io/gsplot/stable/guides/demo/4_paper_plot.html).
+[publication example](https://soichiroyamane.github.io/gsplot/dev/guides/examples/publication.html).
 
 ## Configuration
 
@@ -71,7 +71,7 @@ When a value is specified more than once, the precedence is:
 3. the function's default value.
 
 Canonical code never searches the working directory or home directory for a
-configuration file. See the [configuration guide](https://soichiroyamane.github.io/gsplot/stable/guides/demo/3_config.html)
+configuration file. See the [configuration guide](https://soichiroyamane.github.io/gsplot/dev/guides/examples/configuration.html)
 for the supported schema, precedence, and backend notes.
 
 ## Development
@@ -86,15 +86,15 @@ MPLBACKEND=Agg poetry run pytest -q
 MPLBACKEND=Agg poetry run sphinx-build -W -b html docs docs/_build/html
 ```
 
-The demos under `demo/` are executable documentation. Run one from its own
+The scripts under `examples/` are executable documentation. Run one from its own
 directory, for example:
 
 ```bash
-cd demo/1_axes && python axes.py
+cd examples/layouts && python mosaic.py
 ```
 
-`demo/9_compatibility` intentionally demonstrates the deprecated 0.x surface.
-All other plotting demos use the canonical explicit-target API.
+`examples/compatibility/legacy_v0.py` intentionally demonstrates the deprecated
+0.x surface. All other plotting examples use the canonical explicit-target API.
 
 See [the developer setup guide](https://soichiroyamane.github.io/gsplot/stable/reference/contribution/developer_env.html)
 for formatting, type checking, packaging, and Docker instructions.

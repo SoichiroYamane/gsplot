@@ -47,6 +47,10 @@ def test_smoke_check_validates_the_public_site_contract() -> None:
         "/": '<meta http-equiv="refresh" content="0; url=/gsplot/stable/">',
         "/stable/": "gsplot v0.3.0 documentation 0.3.0",
         "/dev/": '<meta name="robots" content="noindex, follow"> Development documentation',
+        "/dev/guides/examples/index.html": "<h1>Examples</h1>",
+        "/dev/guides/demo/index.html": (
+            '<meta http-equiv="refresh" content="0; ' 'url=../examples/index.html">'
+        ),
         "/v0.3.0/": "v0.3.0 documentation",
         "/_meta/switcher.json": json.dumps(switcher),
         "/_meta/catalog.json": json.dumps(catalog.to_mapping()),

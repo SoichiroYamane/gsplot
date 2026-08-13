@@ -278,7 +278,7 @@ def validate_output_state(
 
 
 def _isolated_environment(sandbox: Path) -> dict[str, str]:
-    environment: dict[str, str] = {}
+    environment: dict[str, str] = {"PATH": os.environ.get("PATH", os.defpath)}
     for name, value in os.environ.items():
         upper = name.upper()
         if (
@@ -293,7 +293,18 @@ def _isolated_environment(sandbox: Path) -> dict[str, str]:
             or upper in {"ALL_PROXY", "HTTP_PROXY", "HTTPS_PROXY", "NO_PROXY"}
         ):
             continue
-        environment[name] = value
+        if upper in {
+            "LANG",
+            "LANGUAGE",
+            "LC_ALL",
+            "LC_CTYPE",
+            "LD_LIBRARY_PATH",
+            "DYLD_LIBRARY_PATH",
+            "SYSTEMROOT",
+            "TMPDIR",
+            "TZ",
+        }:
+            environment[name] = value
     directories = {
         "HOME": sandbox / "home",
         "XDG_CACHE_HOME": sandbox / "xdg-cache",

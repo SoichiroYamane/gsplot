@@ -139,6 +139,16 @@ def check_site(
         raise SmokeError("development page is missing its noindex policy")
     if "development" not in dev_text:
         raise SmokeError("development page is not visibly marked")
+    examples = _require_status(fetch, base, "/dev/guides/examples/index.html")
+    if "examples" not in examples.decode("utf-8", errors="replace").lower():
+        raise SmokeError("development examples index is not identifiable")
+    legacy_examples = _require_status(fetch, base, "/dev/guides/demo/index.html")
+    legacy_text = legacy_examples.decode("utf-8", errors="replace")
+    if (
+        'http-equiv="refresh"' not in legacy_text
+        or "../examples/index.html" not in legacy_text
+    ):
+        raise SmokeError("development demonstrations redirect is invalid")
 
     for release in catalog.releases:
         page = _require_status(fetch, base, f"/{release.tag}/")

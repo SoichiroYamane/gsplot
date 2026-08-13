@@ -23,7 +23,7 @@ layout uses 85 mm. `line`, `scatter`, `label`, and `legend` validate complete
 multi-Axes plans before mutating the first target.
 
 For a complete data-backed recipe, see
-[the publication demo](demo/4_paper_plot.md).
+[the publication example](examples/publication.md).
 
 ## Defaults owned by gsplot
 

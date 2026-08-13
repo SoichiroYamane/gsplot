@@ -53,5 +53,5 @@ separate breaking-change review.
 The complete import, signature, default, return, warning, and exception matrix
 is maintained in the
 [API migration contract](../project/api-migration.md). The
-[compatibility demonstration](demo/9_compatibility.md) is intentionally the
-only numbered plotting demo that uses the deprecated 0.x workflow.
+[legacy compatibility example](examples/legacy-v0.md) is intentionally the
+only plotting example that uses the deprecated 0.x workflow.

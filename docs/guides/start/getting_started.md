@@ -42,4 +42,4 @@ no rounded box, and compact 0.3 label spacing unless you pass direct options.
 
 Continue with the [publication guide](../publication.md) for sizing and output
 decisions, the [advanced guide](../advanced.md) for explicit Matplotlib-level
-control, or the [demonstrations](../demo/index.md) for executable examples.
+control, or the [examples](../examples/index.md) for executable recipes.

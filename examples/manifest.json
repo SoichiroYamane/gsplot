@@ -1,0 +1,80 @@
+{
+  "schema_version": 1,
+  "examples": [
+    {
+      "id": "layout-mosaic",
+      "script": "examples/layouts/mosaic.py",
+      "page": "docs/guides/examples/layout-mosaic.md",
+      "outputs": ["examples/layouts/axes.png"]
+    },
+    {
+      "id": "lines-and-labels",
+      "script": "examples/plotting/lines_and_labels.py",
+      "page": "docs/guides/examples/lines-and-labels.md",
+      "outputs": ["examples/plotting/line_and_label.png"]
+    },
+    {
+      "id": "configuration",
+      "script": "examples/configuration/configuration.py",
+      "page": "docs/guides/examples/configuration.md",
+      "outputs": [
+        "examples/configuration/config.png",
+        "examples/configuration/config.pdf"
+      ]
+    },
+    {
+      "id": "publication",
+      "script": "examples/publication/publication.py",
+      "page": "docs/guides/examples/publication.md",
+      "outputs": [
+        "examples/publication/SC_cal.png",
+        "examples/publication/SC_cal.pdf"
+      ]
+    },
+    {
+      "id": "scatter",
+      "script": "examples/plotting/scatter.py",
+      "page": "docs/guides/examples/scatter.md",
+      "outputs": ["examples/plotting/scatter.png"]
+    },
+    {
+      "id": "colored-lines",
+      "script": "examples/plotting/colored_lines.py",
+      "page": "docs/guides/examples/colored-lines.md",
+      "outputs": ["examples/plotting/line_colormap.png"]
+    },
+    {
+      "id": "white-theme",
+      "script": "examples/themes/white.py",
+      "page": "docs/guides/examples/white-theme.md",
+      "outputs": ["examples/themes/graph_white.png"]
+    },
+    {
+      "id": "transparent-theme",
+      "script": "examples/themes/transparent.py",
+      "page": "docs/guides/examples/transparent-theme.md",
+      "outputs": ["examples/themes/graph_transparent.png"]
+    },
+    {
+      "id": "legacy-v0",
+      "script": "examples/compatibility/legacy_v0.py",
+      "page": "docs/guides/examples/legacy-v0.md",
+      "outputs": [
+        "examples/compatibility/compatibility.png",
+        "examples/compatibility/compatibility.pdf"
+      ]
+    },
+    {
+      "id": "matplotlib-interoperability",
+      "script": "examples/layouts/matplotlib_interoperability.py",
+      "page": "docs/guides/examples/matplotlib-interoperability.md",
+      "outputs": ["examples/layouts/subplots.png"]
+    },
+    {
+      "id": "explicit-paths",
+      "script": "examples/paths/explicit_paths.py",
+      "page": "docs/guides/examples/explicit-paths.md",
+      "outputs": []
+    }
+  ]
+}

@@ -119,17 +119,27 @@ def test_manifest_rejects_undocumented_outputs_and_scripts(tmp_path: Path) -> No
         load_manifest(root)
 
 
+def test_manifest_rejects_an_output_symlink_outside_examples(tmp_path: Path) -> None:
+    root = _project(tmp_path)
+    outside = tmp_path / "outside.png"
+    outside.write_bytes(b"not an example output")
+    (root / "examples/plotting/figure.png").symlink_to(outside)
+
+    with pytest.raises(ExampleError, match="resolves outside examples"):
+        load_manifest(root)
+
+
 def test_isolated_environment_scrubs_credentials_and_indexes(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:
     monkeypatch.setenv("GITHUB_TOKEN", "not-public")
     monkeypatch.setenv("PIP_INDEX_URL", "https://user:password@example.test")
     monkeypatch.setenv("PYTHONPATH", "/untrusted")
-    monkeypatch.setenv("SAFE_SETTING", "retained")
+    monkeypatch.setenv("UNRELATED_SETTING", "not inherited")
 
     environment = _isolated_environment(tmp_path)
 
-    assert environment["SAFE_SETTING"] == "retained"
+    assert "UNRELATED_SETTING" not in environment
     assert environment["MPLBACKEND"] == "Agg"
     assert environment["HOME"] == str(tmp_path / "home")
     assert "GITHUB_TOKEN" not in environment
