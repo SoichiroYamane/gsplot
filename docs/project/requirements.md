@@ -457,7 +457,11 @@ source, documentation, tests, Issues, PRs, or built distributions.
   and validation.
 - Static distribution metadata uses the standard `[project]` table. Poetry
   configuration is limited to build and development-tool concerns that do not
-  duplicate that metadata.
+  duplicate that metadata. Distribution metadata identifies Giordano Mattoni
+  as the original author and Soichiro Yamane as the project maintainer without
+  publishing personal email addresses. Repository README links and images that
+  are included in distribution metadata use public absolute URLs so they
+  remain valid on package indexes.
 - Each build produces one pure-Python wheel and one source distribution for
   the same version. The wheel contains the complete `gsplot` package,
   `py.typed`, core metadata, and the MIT license; it excludes tests, demos,

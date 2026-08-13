@@ -1,11 +1,11 @@
 <div align="center">
-  <img src="docs/_static/logo/logo_title_gsplot.png" alt="gsplot logo" width="300">
+  <img src="https://raw.githubusercontent.com/SoichiroYamane/gsplot/main/docs/_static/logo/logo_title_gsplot.png" alt="gsplot logo" width="300">
 </div>
 
 [![Documentation](https://github.com/SoichiroYamane/gsplot/actions/workflows/gh-pages-sphinx.yml/badge.svg)](https://soichiroyamane.github.io/gsplot/stable/)
 [![PyPI](https://img.shields.io/pypi/v/gsplot)](https://pypi.org/project/gsplot/)
 [![Python](https://img.shields.io/badge/python-3.10%2B-blue)](https://www.python.org/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-green)](LICENSE)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green)](https://github.com/SoichiroYamane/gsplot/blob/main/LICENSE)
 
 # gsplot
 
@@ -96,19 +96,20 @@ cd demo/1_axes && python axes.py
 `demo/9_compatibility` intentionally demonstrates the deprecated 0.x surface.
 All other plotting demos use the canonical explicit-target API.
 
-See [the developer setup guide](docs/reference/contribution/developer_env.md)
+See [the developer setup guide](https://soichiroyamane.github.io/gsplot/stable/reference/contribution/developer_env.html)
 for formatting, type checking, packaging, and Docker instructions.
 
 For private vulnerability reports and the supported-version policy, see
-[SECURITY.md](SECURITY.md).
+[SECURITY.md](https://github.com/SoichiroYamane/gsplot/blob/main/SECURITY.md).
 
-## Authors
+## Authors and maintenance
 
-This repository was forked from code developed by Giordano Mattoni.
+This repository builds on the original code developed by Giordano Mattoni.
 
-- Giordano Mattoni
-- Soichiro Yamane
+- Original author: Giordano Mattoni
+- Maintainer: Soichiro Yamane
 
 ## License
 
-This project is distributed under the [MIT License](LICENSE).
+This project is distributed under the
+[MIT License](https://github.com/SoichiroYamane/gsplot/blob/main/LICENSE).

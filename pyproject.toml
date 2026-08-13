@@ -4,8 +4,8 @@ version = "0.4.0"
 description = "Concise publication-quality scientific plotting built on Matplotlib"
 authors = [
   { name = "Giordano Mattoni" },
-  { name = "Soichiro Yamane" },
 ]
+maintainers = [{ name = "Soichiro Yamane" }]
 readme = "README.md"
 requires-python = ">=3.10"
 license = "MIT"

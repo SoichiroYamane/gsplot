@@ -21,6 +21,7 @@ from email.message import Message
 from email.parser import BytesParser
 from email.policy import default
 from pathlib import Path, PurePosixPath
+from urllib.parse import urlsplit
 
 _WHEEL_PATTERN = re.compile(
     r"^gsplot-(?P<version>[A-Za-z0-9][A-Za-z0-9_.+!]*)-py3-none-any\.whl$"
@@ -39,6 +40,12 @@ _EXPECTED_URLS = {
     "Repository": "https://github.com/SoichiroYamane/gsplot",
 }
 _EXPECTED_KEYWORDS = {"matplotlib", "plotting", "publication", "scientific"}
+_MARKDOWN_TARGET_PATTERN = re.compile(
+    r"(?:!\[[^\]]*\]|\[[^\]]+\])\((?P<target>[^)\s]+)"
+)
+_HTML_TARGET_PATTERN = re.compile(
+    r"\b(?:href|src)\s*=\s*[\"'](?P<target>[^\"']+)", re.IGNORECASE
+)
 _MAX_ARTIFACT_BYTES = 20 * 1024 * 1024
 _MAX_MEMBER_BYTES = 5 * 1024 * 1024
 _MAX_MEMBERS = 1000
@@ -110,11 +117,32 @@ def _metadata_projection(message: Message) -> dict[str, object]:
         "Keywords": message.get("Keywords"),
         "Author": message.get("Author"),
         "Author-email": message.get("Author-email"),
+        "Maintainer": message.get("Maintainer"),
+        "Maintainer-email": message.get("Maintainer-email"),
         "Requires-Python": message.get("Requires-Python"),
         "Requires-Dist": tuple(sorted(message.get_all("Requires-Dist", []))),
         "Project-URL": tuple(sorted(urls.items())),
         "Description-Content-Type": message.get("Description-Content-Type"),
     }
+
+
+def _relative_description_targets(message: Message) -> list[str]:
+    """Return repository-relative links that cannot resolve on package indexes."""
+
+    description = message.get_payload()
+    if not isinstance(description, str):
+        return ["<non-text description>"]
+    targets = {
+        match.group("target")
+        for pattern in (_MARKDOWN_TARGET_PATTERN, _HTML_TARGET_PATTERN)
+        for match in pattern.finditer(description)
+    }
+    return sorted(
+        target
+        for target in targets
+        if not target.startswith("#")
+        and urlsplit(target).scheme not in {"http", "https", "mailto"}
+    )
 
 
 def _check_metadata(message: Message, *, version: str, label: str) -> list[str]:
@@ -128,6 +156,7 @@ def _check_metadata(message: Message, *, version: str, label: str) -> list[str]:
         "Summary": _EXPECTED_SUMMARY,
         "License-Expression": "MIT",
         "Author": "Giordano Mattoni",
+        "Maintainer": "Soichiro Yamane",
         "Requires-Python": ">=3.10",
         "Description-Content-Type": "text/markdown",
     }
@@ -137,6 +166,8 @@ def _check_metadata(message: Message, *, version: str, label: str) -> list[str]:
             errors.append(f"{label} metadata field {field} must be {expected!r}")
     if message.get("Author-email") is not None:
         errors.append(f"{label} metadata must not publish an author email")
+    if message.get("Maintainer-email") is not None:
+        errors.append(f"{label} metadata must not publish a maintainer email")
     if message.get_all("License-File", []) != ["LICENSE"]:
         errors.append(f"{label} metadata must declare only LICENSE")
     requirements = set(message.get_all("Requires-Dist", []))
@@ -151,6 +182,10 @@ def _check_metadata(message: Message, *, version: str, label: str) -> list[str]:
     errors.extend(f"{label} {error}" for error in url_errors)
     if urls != _EXPECTED_URLS:
         errors.append(f"{label} metadata has unexpected project URLs")
+    if _relative_description_targets(message):
+        errors.append(
+            f"{label} metadata description contains repository-relative links"
+        )
     return errors
 
 

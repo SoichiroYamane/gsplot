@@ -23,6 +23,7 @@ License-Expression: MIT
 License-File: LICENSE
 Keywords: matplotlib,plotting,publication,scientific
 Author: Giordano Mattoni
+Maintainer: Soichiro Yamane
 Requires-Python: >=3.10
 Requires-Dist: matplotlib (>=3.9.0)
 Requires-Dist: numpy (>=1.26.4)
@@ -33,6 +34,8 @@ Project-URL: Repository, https://github.com/SoichiroYamane/gsplot
 Description-Content-Type: text/markdown
 
 # gsplot
+
+[Documentation](https://soichiroyamane.github.io/gsplot/stable/)
 """
 WHEEL = b"""Wheel-Version: 1.0
 Generator: gsplot-test
@@ -113,6 +116,44 @@ def test_valid_exact_artifact_pair_passes(tmp_path: Path) -> None:
     _build_pair(dist_dir)
 
     assert check_dist.check(dist_dir, SOURCE_ROOT) == []
+
+
+def test_distribution_metadata_requires_distinct_public_roles() -> None:
+    """Author and maintainer roles remain complete without publishing email."""
+
+    malformed = METADATA.replace(
+        b"Maintainer: Soichiro Yamane\n",
+        b"Author-email: private@example.test\nMaintainer-email: private@example.test\n",
+    )
+    message, parse_errors = check_dist._parse_metadata(malformed, label="wheel")
+
+    assert parse_errors == []
+    assert message is not None
+    errors = check_dist._check_metadata(message, version=VERSION, label="wheel")
+    assert "wheel metadata field Maintainer must be 'Soichiro Yamane'" in errors
+    assert "wheel metadata must not publish an author email" in errors
+    assert "wheel metadata must not publish a maintainer email" in errors
+
+
+def test_distribution_metadata_rejects_repository_relative_links() -> None:
+    """Package-index descriptions cannot rely on repository URL context."""
+
+    malformed = METADATA.replace(
+        b"[Documentation](https://soichiroyamane.github.io/gsplot/stable/)",
+        b'<img src="docs/logo.png">\n\n[License](LICENSE)',
+    )
+    message, parse_errors = check_dist._parse_metadata(malformed, label="wheel")
+
+    assert parse_errors == []
+    assert message is not None
+    assert check_dist._relative_description_targets(message) == [
+        "LICENSE",
+        "docs/logo.png",
+    ]
+    assert (
+        "wheel metadata description contains repository-relative links"
+        in check_dist._check_metadata(message, version=VERSION, label="wheel")
+    )
 
 
 def test_unexpected_wheel_content_fails_closed(tmp_path: Path) -> None:
