@@ -11,26 +11,8 @@ from typing import Any
 
 import gsplot
 from gsplot._compat.root import _CANONICAL_EXPORTS
+from gsplot._core.types import _PUBLIC_TYPE_ALIAS_DOCS
 
-_TYPE_ALIAS_COMMENTS = {
-    "ColorSpec": "# Public type alias: ColorSpec",
-    "MosaicSpec": "# Public type alias: MosaicSpec",
-    "NormalizeSpec": "# Public type alias: NormalizeSpec",
-    "Limit": "# Public type alias: Limit",
-    "Scale": "# Public type alias: Scale",
-    "TickSpec": "# Public type alias: TickSpec",
-    "LabelRecord": "# Public type alias: LabelRecord",
-    "LabelRecords": "# Public type alias: LabelRecords",
-}
-_NO_EXAMPLES = {
-    "GsplotError",
-    "ConfigError",
-    "DataError",
-    "LayoutError",
-    "PlotError",
-    "OutputError",
-    "MetadataError",
-}
 _NO_RAISES = {"as_mapping", "build_info", "default", "transparent", "white"}
 _REVIEWED_DEFAULTS: dict[str, dict[str, object]] = {
     "colors": {"n": 10, "cmap": "viridis", "reverse": False},
@@ -249,7 +231,7 @@ def _check_callable(name: str, value: Any) -> list[str]:
         errors.append(f"{name}: Returns section must document the returned value")
     if name.split(".")[-1] not in _NO_RAISES and not _has_section(doc, "Raises"):
         errors.append(f"{name}: validation/error contract requires a Raises section")
-    if name.split(".")[-1] not in _NO_EXAMPLES and not _has_section(doc, "Examples"):
+    if not _has_section(doc, "Examples"):
         errors.append(f"{name}: public callable requires an Examples section")
     errors.extend(_check_reviewed_defaults(name.split(".")[-1], signature))
     return errors
@@ -263,8 +245,10 @@ def _check_class(name: str, value: type[Any]) -> list[str]:
     if not doc:
         return [f"{name}: missing class docstring"]
     if issubclass(value, BaseException):
+        if not _has_section(doc, "Examples"):
+            errors.append(f"{name}: public exception requires an Examples section")
         return errors
-    if name not in _NO_EXAMPLES and not _has_section(doc, "Examples"):
+    if not _has_section(doc, "Examples"):
         errors.append(f"{name}: public constructor requires an Examples section")
     if is_dataclass(value):
         if not _has_section(doc, "Parameters"):
@@ -284,6 +268,7 @@ def _check_root(repository_root: Path) -> list[str]:
     """Check root exports, re-export fidelity, and stable metadata values."""
 
     errors: list[str] = []
+    type_aliases: set[str] = set()
     for name, (module_name, attribute_name) in _CANONICAL_EXPORTS.items():
         try:
             root_value = getattr(gsplot, name)
@@ -310,6 +295,8 @@ def _check_root(repository_root: Path) -> list[str]:
             errors.extend(_check_callable(name, canonical_value))
         elif inspect.isclass(canonical_value):
             errors.extend(_check_class(name, canonical_value))
+        else:
+            type_aliases.add(name)
 
     version_doc = (
         inspect.getdoc(__import__("gsplot.version", fromlist=["__version__"])) or ""
@@ -320,9 +307,21 @@ def _check_root(repository_root: Path) -> list[str]:
 
     type_source = repository_root / "src" / "gsplot" / "_core" / "types.py"
     source = type_source.read_text(encoding="utf-8")
-    for name, marker in _TYPE_ALIAS_COMMENTS.items():
+    documented_aliases = set(_PUBLIC_TYPE_ALIAS_DOCS)
+    missing_aliases = sorted(type_aliases - documented_aliases)
+    stale_aliases = sorted(documented_aliases - type_aliases)
+    if missing_aliases:
+        errors.append("undocumented public type aliases: " + ", ".join(missing_aliases))
+    if stale_aliases:
+        errors.append("stale public type alias docs: " + ", ".join(stale_aliases))
+    for name, description in _PUBLIC_TYPE_ALIAS_DOCS.items():
+        marker = f"# Public type alias: {name};"
         if marker not in source:
             errors.append(f"{type_source}: missing module comment for {name}")
+        if not description.strip():
+            errors.append(f"{name}: public type alias description is empty")
+        if not _has_section(description, "Examples") or ">>>" not in description:
+            errors.append(f"{name}: public type alias requires an executable example")
     return errors
 
 

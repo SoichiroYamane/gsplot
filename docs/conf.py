@@ -26,6 +26,8 @@ except ImportError as exc:  # pragma: no cover - exercised by docs CI setup
         "run `poetry install` before building the documentation"
     ) from exc
 
+from gsplot._core.types import _PUBLIC_TYPE_ALIAS_DOCS
+
 __version__ = gsplot.__version__
 package_file = Path(gsplot.__file__).resolve()
 if package_file.parent.name != "gsplot":
@@ -195,6 +197,16 @@ def skip_members(app, what, name, obj, skip, options):
     if public_names is not None and name not in public_names:
         return True
     return skip
+
+
+def document_type_alias(app, what, name, obj, options, lines) -> None:
+    """Replace implementation-type prose with the gsplot alias contract."""
+
+    if what != "data" or not name.startswith("gsplot."):
+        return
+    description = _PUBLIC_TYPE_ALIAS_DOCS.get(name.removeprefix("gsplot."))
+    if description is not None:
+        lines[:] = description.splitlines()
 
 
 def _demo_environment() -> dict[str, str]:
@@ -370,6 +382,7 @@ def setup(app):
 
     generate_images()
     app.connect("autodoc-skip-member", skip_members)
+    app.connect("autodoc-process-docstring", document_type_alias)
 
 
 json_url = f"{site_base_url}/_meta/switcher.json"

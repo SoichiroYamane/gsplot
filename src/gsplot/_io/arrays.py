@@ -87,10 +87,15 @@ def read_array(
 
     Examples
     --------
+    >>> from pathlib import Path
+    >>> from tempfile import TemporaryDirectory
     >>> import gsplot as gs
-    >>> array = gs.read_array("data.txt", loader="genfromtxt")
-    >>> array.ndim >= 1
-    True
+    >>> with TemporaryDirectory() as directory:
+    ...     path = Path(directory) / "data.txt"
+    ...     _ = path.write_text("0 1\\n2 3\\n", encoding="utf-8")
+    ...     array = gs.read_array(path, loader="genfromtxt")
+    >>> array.shape
+    (2, 2)
     """
 
     selected_path = _path(path, operation="read_array")
@@ -203,10 +208,15 @@ def read(
 
     Examples
     --------
+    >>> from pathlib import Path
+    >>> from tempfile import TemporaryDirectory
     >>> import gsplot as gs
-    >>> columns = gs.read("data.csv", skip_header=1, usecols=(0, 2))
-    >>> len(columns) >= 1
-    True
+    >>> with TemporaryDirectory() as directory:
+    ...     path = Path(directory) / "data.csv"
+    ...     _ = path.write_text("x,y,z\\n0,1,2\\n3,4,5\\n", encoding="utf-8")
+    ...     columns = gs.read(path, skip_header=1, usecols=(0, 2))
+    >>> columns.shape
+    (2, 2)
     """
 
     selected_path = _path(path, operation="read")

@@ -192,3 +192,23 @@ def test_demo_manifest_rejects_unsafe_or_cross_demo_paths(
 
     with pytest.raises(RuntimeError, match=match):
         values["_load_demo_manifest"](manifest)
+
+
+def test_type_alias_pages_use_the_gsplot_contract(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Autodoc must not expose an implementation type's generic prose."""
+
+    values = _load_conf(monkeypatch)
+    process = values["document_type_alias"]
+    lines = ["Represent a PEP 604 union type"]
+
+    process(None, "data", "gsplot.AxesTarget", object(), None, lines)
+
+    assert lines[0] == "One Axes or a deterministic finite collection of Axes."
+    assert "Examples" in lines
+    assert ">>> target: gs.AxesTarget = axes" in lines
+
+    unchanged = ["ordinary function documentation"]
+    process(None, "function", "gsplot.line", object(), None, unchanged)
+    assert unchanged == ["ordinary function documentation"]
