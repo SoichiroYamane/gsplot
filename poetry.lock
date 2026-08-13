@@ -3137,4 +3137,4 @@ packaging = ">=24.0"
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.10"
-content-hash = "c5000cdcbf173189c8e91b7fc6f85c9efc52176f891d3ec8e63b3d4006fa4b36"
+content-hash = "8428e5cd27688decfe6b42162108555cafe78efa1427eaa8aa2a25d493a7288c"
