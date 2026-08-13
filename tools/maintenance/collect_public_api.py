@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import argparse
 import ast
+import hashlib
 import importlib
 import inspect
 import json
@@ -142,6 +143,54 @@ def _signature(value: Any, kind: str) -> str | None:
         return None
 
 
+def _annotation(value: Any) -> str | None:
+    """Format one annotation without exposing Python object addresses."""
+
+    if value is inspect.Signature.empty:
+        return None
+    return inspect.formatannotation(value)
+
+
+def _call_contract(value: Any, kind: str) -> dict[str, Any] | None:
+    """Return structured parameters, defaults, and return annotation."""
+
+    if kind not in {"callable", "class", "function"}:
+        return None
+    try:
+        signature = inspect.signature(value)
+    except (TypeError, ValueError):
+        return None
+    return {
+        "parameters": [
+            {
+                "annotation": _annotation(parameter.annotation),
+                "default": (
+                    None
+                    if parameter.default is inspect.Parameter.empty
+                    else repr(parameter.default)
+                ),
+                "kind": parameter.kind.name,
+                "name": parameter.name,
+                "required": parameter.default is inspect.Parameter.empty,
+            }
+            for parameter in signature.parameters.values()
+        ],
+        "return_annotation": _annotation(signature.return_annotation),
+    }
+
+
+def _docstring_record(value: Any) -> dict[str, str] | None:
+    """Return a compact, reproducible fingerprint of one public docstring."""
+
+    docstring = inspect.getdoc(value)
+    if docstring is None:
+        return None
+    return {
+        "sha256": hashlib.sha256(docstring.encode("utf-8")).hexdigest(),
+        "summary": docstring.splitlines()[0],
+    }
+
+
 def _manifest(value: object) -> dict[str, dict[str, str]]:
     """Normalize one finite lazy-export manifest for JSON output."""
 
@@ -238,7 +287,7 @@ def collect(
 
     module = importlib.import_module(module_name)
     names: Iterable[str] = getattr(module, "__all__", ())
-    exports: list[dict[str, str | None]] = []
+    exports: list[dict[str, Any]] = []
 
     for name in names:
         value = getattr(module, name)
@@ -246,6 +295,8 @@ def collect(
         exports.append(
             {
                 "name": name,
+                "call_contract": _call_contract(value, kind),
+                "docstring": _docstring_record(value),
                 "kind": kind,
                 "module": getattr(value, "__module__", None),
                 "qualname": getattr(value, "__qualname__", None),

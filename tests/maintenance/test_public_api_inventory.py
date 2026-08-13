@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import ast
+import hashlib
 import importlib
 import inspect
 from pathlib import Path
@@ -69,6 +70,76 @@ def test_inventory_exports_have_reproducible_signatures() -> None:
             parameter.annotation is not inspect.Parameter.empty
             for parameter in signature.parameters.values()
         )
+
+
+def test_canonical_manifest_targets_match_runtime_contract_records() -> None:
+    """Targets, defaults, annotations, and docstrings cannot drift by layer."""
+
+    inventory = collect(migration_doc=PROJECT_ROOT / "docs/project/api-migration.md")
+    exports = {record["name"]: record for record in inventory["exports"]}
+
+    for name, target_record in inventory["canonical_manifest"].items():
+        target_module = importlib.import_module(target_record["module"])
+        target = getattr(target_module, target_record["attribute"])
+        runtime = getattr(gsplot, name)
+        record = exports[name]
+
+        assert runtime is target
+        assert record["module"] == getattr(target, "__module__", None)
+        assert record["qualname"] == getattr(target, "__qualname__", None)
+
+        contract = record["call_contract"]
+        if record["kind"] in {"callable", "class", "function"}:
+            try:
+                signature = inspect.signature(target)
+            except (TypeError, ValueError):
+                assert record["signature"] is None
+                assert contract is None
+                signature = None
+            if signature is not None:
+                assert record["signature"] == str(signature)
+                assert contract is not None
+                assert len(contract["parameters"]) == len(signature.parameters)
+                for item, parameter in zip(
+                    contract["parameters"],
+                    signature.parameters.values(),
+                    strict=True,
+                ):
+                    assert item == {
+                        "annotation": (
+                            None
+                            if parameter.annotation is inspect.Parameter.empty
+                            else inspect.formatannotation(parameter.annotation)
+                        ),
+                        "default": (
+                            None
+                            if parameter.default is inspect.Parameter.empty
+                            else repr(parameter.default)
+                        ),
+                        "kind": parameter.kind.name,
+                        "name": parameter.name,
+                        "required": parameter.default is inspect.Parameter.empty,
+                    }
+                assert contract["return_annotation"] == (
+                    None
+                    if signature.return_annotation is inspect.Signature.empty
+                    else inspect.formatannotation(signature.return_annotation)
+                )
+        else:
+            assert record["signature"] is None
+            assert contract is None
+
+        docstring = inspect.getdoc(target)
+        if docstring is None:
+            assert record["docstring"] is None
+        else:
+            assert record["docstring"] == {
+                "sha256": hashlib.sha256(docstring.encode("utf-8")).hexdigest(),
+                "summary": docstring.splitlines()[0],
+            }
+
+        if record["kind"] in {"class", "function"}:
+            assert record["docstring"] is not None
 
 
 def test_historical_baseline_matches_every_retained_boundary() -> None:

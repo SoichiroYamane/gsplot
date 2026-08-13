@@ -325,10 +325,11 @@ That command is intentionally read-only and prints JSON to standard output;
 it does not create an inventory file or alter the working tree. Its output
 separates root `__all__`, lazy canonical targets, lazy legacy targets,
 type-checker exports, API-index exports, typed kinds and signatures, direct
-metadata attributes, the frozen v0.3 baseline, and the actual exports of every
-compatibility path parsed from this page. This makes hidden lazy names such as
-`save_metadata` and `logger` reviewable without promoting them into the concise
-API.
+metadata attributes, structured parameter/default/annotation contracts,
+docstring summaries and fingerprints, the frozen v0.3 baseline, and the actual
+exports of every compatibility path parsed from this page. This makes hidden
+lazy names such as `save_metadata` and `logger` reviewable without promoting
+them into the concise API.
 
 ### Warning and exception migration
 
