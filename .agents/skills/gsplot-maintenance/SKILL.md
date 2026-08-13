@@ -1,6 +1,6 @@
 ---
 name: gsplot-maintenance
-description: Maintain, redesign, secure, and review the public gsplot Python scientific-plotting repository, including Matplotlib behavior, configuration precedence, public APIs, directory migrations, tests, demos, Sphinx documentation, Poetry dependencies, security advisories, pull requests, GitHub Actions, packaging, and repository guidance. Use when Codex changes or validates this repository's code, architecture, dependencies, workflows, docs, demos, AGENTS.md, linked Issue/PR records, or repository-scoped skills.
+description: Maintain, redesign, secure, and review the public gsplot Python scientific-plotting repository, including Matplotlib behavior, configuration precedence, public APIs, directory migrations, tests, demos, Sphinx documentation, local website previews, Playwright MCP UI checks, Poetry dependencies, security advisories, pull requests, GitHub Actions, packaging, and repository guidance. Use when Codex changes or validates this repository's code, architecture, dependencies, workflows, docs, demos, website previews, AGENTS.md, linked Issue/PR records, or repository-scoped skills.
 ---
 
 # gsplot Maintenance
@@ -225,6 +225,80 @@ Follow these invariants when changing code:
 3. Test direct arguments, config-only values, defaults, and invalid values.
    Do not mutate a shared config dictionary, returned value, or `rcParams`
    unintentionally.
+
+### Website and rendered documentation change
+
+Use this workflow for website work and documentation changes that affect the
+rendered layout, navigation, typography, theme, copy, or interaction. It is a
+visual/product-direction gate and does not delay security fixes, CI/release
+blockers, non-visual correctness fixes, or generated-contract changes that
+need the ordinary review path.
+
+1. Keep the change local and uncommitted while the rendered direction is still
+   under discussion. For long-running work, use a private local topic branch;
+   do not create a public PR merely to obtain visual feedback.
+2. Build the development Sphinx output outside the checkout and serve it on
+   loopback. The output must use the same `/dev/` route shape as the website:
+
+   ```bash
+   set -euo pipefail
+   preview_dir="$(mktemp -d)"
+   GSPLOT_DOCS_BASE_URL=http://localhost:8000 \
+   GSPLOT_DOCS_VERSION=dev \
+   MPLBACKEND=Agg \
+   poetry run sphinx-build -W -b html docs "$preview_dir/dev"
+   python -m http.server 8000 --bind 127.0.0.1 --directory "$preview_dir"
+   ```
+
+   For versioned website work, use the fixture catalog and
+   `tools.maintenance.build_docs_site` described in
+   `docs/reference/contribution/website_builds.md`. Write both the catalog and
+   the site output to temporary paths outside the repository, and serve the
+   completed output only after the builder succeeds. A complete versioned
+   build may require the pinned Mermaid/Node toolchain and an explicit local
+   Chrome or Chromium executable; report that limitation rather than bypassing
+   the documented toolchain. Use a fail-closed shell so no server is started
+   after a catalog or site-build failure:
+
+   ```bash
+   set -euo pipefail
+   preview_dir="$(mktemp -d)"
+   poetry run python -m tools.maintenance.build_docs_catalog \
+     --repo-root . \
+     --fixture tests/fixtures/docs_site/releases.json \
+     --output "$preview_dir/catalog.json" \
+     --switcher-output "$preview_dir/switcher.json" \
+     --base-url http://localhost:8000
+   poetry run python -m tools.maintenance.build_docs_site \
+     --repo-root . \
+     --catalog "$preview_dir/catalog.json" \
+     --output "$preview_dir/site" \
+     --base-url http://localhost:8000
+   python -m http.server 8000 --bind 127.0.0.1 --directory "$preview_dir/site"
+   ```
+3. When Playwright MCP is available, use it as the browser-control channel for
+   the local checkpoint. Navigate with `browser_navigate`, inspect
+   `browser_snapshot` before taking element actions, resize with
+   `browser_resize` for wide, narrow, and phone viewports, exercise focus with
+   `browser_press_key`, and inspect `browser_console_messages` at warning and
+   error levels. Check the changed route and, for a versioned site, `/dev/`,
+   `/stable/`, a representative release route, and relevant compatibility
+   redirects/assets. Use `browser_take_screenshot` only for useful visual
+   evidence. Prefer snapshots and narrowly scoped read-only actions; do not
+   use `browser_run_code_unsafe` for routine checks.
+4. Record only concise, redacted evidence: route, viewport, theme, whether the
+   source was the development or versioned build, and the pass/fail result.
+   Keep screenshots, recordings, console dumps, temporary output, personal
+   paths, and raw browser data out of the repository. Playwright MCP does not
+   replace Sphinx warnings-as-errors, the versioned-site builder, link/route
+   checks, CI, or deployment smoke checks.
+5. Present the local result and request explicit user visual sign-off. A
+   successful build, accessibility snapshot, or browser/account login is not
+   sign-off. If the direction is rejected, iterate locally without committing
+   or pushing. After sign-off, perform Review 1, Review 2, and the relevant
+   reproducible checks, then create the cohesive commit. Push only after the
+   user explicitly authorizes the remote handoff; a single response can cover
+   both when it clearly authorizes `commit` and `push`.
 
 ## Security-update workflow
 
