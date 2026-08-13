@@ -124,6 +124,15 @@ def test_json_parser_rejects_duplicates_trailing_data_and_nonfinite(tmp_path) ->
     with pytest.raises(ConfigError, match="non-finite"):
         Config.from_file(nonfinite)
 
+    untrusted_key = tmp_path / "untrusted-key.json"
+    untrusted_key.write_text(
+        '{"schema_version": 2, "/private/user/home/secret": 1e999}',
+        encoding="utf-8",
+    )
+    with pytest.raises(ConfigError) as untrusted_error:
+        Config.from_file(untrusted_key)
+    assert "/private/user/home/secret" not in str(untrusted_error.value)
+
 
 def test_discovery_order_and_missing_explicit_file(tmp_path) -> None:
     """Discovery is cwd, user config directory, then home."""
@@ -151,8 +160,18 @@ def test_discovery_order_and_missing_explicit_file(tmp_path) -> None:
     assert discover_config_path(cwd=cwd, home=home) == cwd / "gsplot.json"
     assert load_config(cwd / "gsplot.json").figure.unit == "mm"
 
-    with pytest.raises(ConfigError, match="cannot stat"):
-        load_config(tmp_path / "missing.json")
+    missing = tmp_path / "private" / "user" / "home" / "secret" / "config.json"
+    with pytest.raises(ConfigError, match="cannot stat") as caught:
+        load_config(missing)
+    assert str(missing) not in str(caught.value)
+    assert isinstance(caught.value.__cause__, OSError)
+
+    unreadable = tmp_path / "private" / "user" / "home" / "secret" / "directory.json"
+    unreadable.mkdir(parents=True)
+    with pytest.raises(ConfigError, match="cannot read") as read_error:
+        load_config(unreadable)
+    assert str(unreadable) not in str(read_error.value)
+    assert isinstance(read_error.value.__cause__, OSError)
 
 
 def test_schema_one_translates_once_and_deprecated_views_are_lossy(tmp_path) -> None:

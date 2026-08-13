@@ -36,6 +36,7 @@ ROOT_KEYS = {"schema_version", "figure", "plotting"}
 UNITS = {"mm", "cm", "in", "pt"}
 SIZE_PRESETS = {"auto", "single", "double"}
 LAYOUT_MODES = {"auto", "constrained", "tight", "none"}
+_NONFINITE_PATH_KEYS = ROOT_KEYS | FIGURE_KEYS | LEGACY_FIGURE_KEYS | PLOTTING_KEYS
 
 
 def _reject_duplicate_pairs(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
@@ -44,7 +45,7 @@ def _reject_duplicate_pairs(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
     result: dict[str, Any] = {}
     for key, value in pairs:
         if key in result:
-            raise ConfigError(f"duplicate configuration key: {key!r}")
+            raise ConfigError("duplicate configuration key")
         result[key] = value
     return result
 
@@ -52,7 +53,7 @@ def _reject_duplicate_pairs(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
 def _reject_constant(value: str) -> Any:
     """Reject JSON NaN and infinity spellings."""
 
-    raise ConfigError(f"non-finite JSON constant is not allowed: {value}")
+    raise ConfigError("non-finite JSON constant is not allowed")
 
 
 def _reject_nonfinite(value: Any, path: str = "configuration") -> None:
@@ -62,7 +63,8 @@ def _reject_nonfinite(value: Any, path: str = "configuration") -> None:
         raise ConfigError(f"{path} contains a non-finite number")
     if isinstance(value, Mapping):
         for key, nested in value.items():
-            _reject_nonfinite(nested, f"{path}.{key}")
+            child_path = f"{path}.{key}" if key in _NONFINITE_PATH_KEYS else path
+            _reject_nonfinite(nested, child_path)
     elif isinstance(value, list):
         for index, nested in enumerate(value):
             _reject_nonfinite(nested, f"{path}[{index}]")
@@ -80,7 +82,7 @@ def parse_json_text(text: str) -> dict[str, Any]:
     except ConfigError:
         raise
     except (TypeError, json.JSONDecodeError) as exc:
-        raise ConfigError(f"invalid JSON configuration: {exc}") from exc
+        raise ConfigError("invalid JSON configuration") from exc
 
     mapping = ensure_mapping(value, "configuration")
     _reject_nonfinite(mapping)
@@ -94,7 +96,7 @@ def read_json_file(path: str | PathLike[str]) -> dict[str, Any]:
     try:
         size = config_path.stat().st_size
     except OSError as exc:
-        raise ConfigError(f"cannot stat configuration file: {config_path}") from exc
+        raise ConfigError("cannot stat configuration file") from exc
     if size > MAX_CONFIG_BYTES:
         raise ConfigError(
             f"configuration file exceeds the {MAX_CONFIG_BYTES}-byte limit"
@@ -102,7 +104,7 @@ def read_json_file(path: str | PathLike[str]) -> dict[str, Any]:
     try:
         text = config_path.read_text(encoding="utf-8")
     except OSError as exc:
-        raise ConfigError(f"cannot read configuration file: {config_path}") from exc
+        raise ConfigError("cannot read configuration file") from exc
     return parse_json_text(text)
 
 
@@ -112,7 +114,7 @@ def parse_schema_version(value: Any) -> Literal[1, 2]:
     if isinstance(value, bool) or not isinstance(value, int):
         raise ConfigError("schema_version must be the integer 1 or 2")
     if value not in {1, SCHEMA_VERSION}:
-        raise ConfigError(f"unsupported schema_version: {value}")
+        raise ConfigError("unsupported schema_version")
     return cast(Literal[1, 2], value)
 
 
