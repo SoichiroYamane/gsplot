@@ -257,8 +257,9 @@ def test_nontranslating_legacy_helpers_warn_without_side_effects(capsys) -> None
         assert gs.hello_world() is None
     assert capsys.readouterr().out == ""
 
-    with pytest.warns(DeprecationWarning, match="MetadataSnapshot"), pytest.raises(
-        gs.MetadataError, match="implicit metadata"
+    with (
+        pytest.warns(DeprecationWarning, match="MetadataSnapshot"),
+        pytest.raises(gs.MetadataError, match="implicit metadata"),
     ):
         gs.save_metadata()
 
