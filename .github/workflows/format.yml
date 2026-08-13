@@ -28,13 +28,13 @@ jobs:
           poetry install --no-interaction --no-root
 
       - name: Check Black formatting
-        run: poetry run black --check src/gsplot tests scripts tools/maintenance docs/conf.py
+        run: poetry run black --check src/gsplot tests examples tools/maintenance docs/conf.py
 
       - name: Check import ordering
-        run: poetry run isort --profile black --check-only src/gsplot tests scripts tools/maintenance docs/conf.py
+        run: poetry run isort --profile black --check-only src/gsplot tests examples tools/maintenance docs/conf.py
 
       - name: Check Python syntax
-        run: poetry run python -m compileall -q src/gsplot tests scripts tools/maintenance
+        run: poetry run python -m compileall -q src/gsplot tests examples tools/maintenance
 
       - name: Check package boundaries
         run: poetry run python tools/maintenance/check_architecture.py
