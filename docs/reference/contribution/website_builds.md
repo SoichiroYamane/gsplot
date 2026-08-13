@@ -66,6 +66,10 @@ Mermaid or other documentation runtime from a CDN. Historical source is still
 built with warnings as errors; only the documented legacy `docutils` warning
 category is isolated in the temporary compatibility overlay. A full local
 catalog build therefore requires a compatible `mmdc` executable on `PATH`.
+The locked Mermaid toolchain requires Node.js 22.12.0 or newer. Install it with
+scripts disabled, keep Puppeteer's browser download disabled, and provide an
+explicit system Chrome or Chromium executable through
+`GSPLOT_MERMAID_CHROME_PATH`, as the deployment workflow does.
 
 ## Workflow boundaries
 
