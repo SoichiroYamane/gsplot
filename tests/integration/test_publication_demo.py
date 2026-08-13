@@ -1,4 +1,4 @@
-"""Integration tests for the publication-style executable documentation."""
+"""Integration tests for the concise publication-style documentation."""
 
 from __future__ import annotations
 
@@ -11,6 +11,7 @@ import matplotlib as mpl
 import matplotlib.pyplot as plt
 import pytest
 from matplotlib.figure import Figure
+from mpl_toolkits.axes_grid1.inset_locator import BboxConnector, BboxPatch
 
 DEMO_PATH = (
     Path(__file__).resolve().parents[2] / "demo" / "4_paper_plot" / "paper_plot.py"
@@ -28,101 +29,79 @@ def _load_demo() -> ModuleType:
     return module
 
 
-def test_publication_demo_restores_native_visual_contract() -> None:
-    """The builder restores historical artists without leaking rcParams."""
-
-    demo = _load_demo()
-    before = {name: mpl.rcParams[name] for name in demo.PUBLICATION_RCPARAMS}
-    figure, axes, insets = demo.build_publication_figure()
-    try:
-        assert tuple(figure.get_size_inches()) == pytest.approx((15.0, 5.0))
-        assert type(figure.get_layout_engine()).__name__ == "TightLayoutEngine"
-        assert {name: len(axis.lines) for name, axis in axes.items()} == {
-            "A": 9,
-            "B": 9,
-            "C": 5,
-        }
-        assert {name: len(axis.lines) for name, axis in insets.items()} == {
-            "heat": 9,
-            "square": 9,
-        }
-        assert all(
-            line.get_markersize() == 0 for axis in axes.values() for line in axis.lines
-        )
-        assert tuple(line.get_linestyle() for line in axes["A"].lines[:4]) == (
-            "-",
-            "--",
-            "-.",
-            ":",
-        )
-        assert (
-            tuple(
-                getattr(line, "_unscaled_dash_pattern") for line in axes["A"].lines[4:]
-            )
-            == demo.LINE_STYLES[4:]
-        )
-        assert all(axis.get_box_aspect() == 1 for axis in axes.values())
-        assert axes["A"].get_legend() is not None
-        assert axes["B"].get_legend() is None
-        assert axes["C"].get_legend() is not None
-        assert tuple(text.get_text() for text in figure.texts) == (
-            "($\\,$a$\\,$)",
-            "($\\,$b$\\,$)",
-            "($\\,$c$\\,$)",
-        )
-        assert len(axes["B"].child_axes) == 2
-        assert any(
-            type(artist).__name__ == "InsetIndicator" for artist in axes["B"].artists
-        )
-
-        figure.canvas.draw()
-        first_tick = axes["A"].xaxis.get_major_ticks()[0]
-        assert first_tick.tick1line.get_marker() == 2
-        assert first_tick.tick2line.get_marker() == 3
-        assert first_tick.tick2line.get_visible()
-        assert insets["heat"].get_xlim() == pytest.approx((0.9, 1.01))
-        assert insets["heat"].get_ylim() == pytest.approx((1.5, 1.8))
-        assert insets["square"].get_xlabel() == "($T/T_{\\rm{c}})^2$"
-        assert all(mpl.rcParams[name] == value for name, value in before.items())
-    finally:
-        plt.close(figure)
-
-
-def test_publication_export_uses_one_explicit_figure(
+def test_publication_demo_uses_concise_defaults_and_closes_figure(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:
-    """PNG and PDF export share one Figure and scoped Type 42 settings."""
+    """The executable recipe preserves its science and explicit lifecycle."""
 
     demo = _load_demo()
-    figure = Figure()
+    before = mpl.rcParams.copy()
     observed: dict[str, Any] = {}
 
-    def fake_savefig(target: Figure, path: Path, **options: Any) -> tuple[Path, ...]:
-        observed.update(target=target, path=path, options=options)
-        observed["fonttypes"] = (
-            mpl.rcParams["pdf.fonttype"],
-            mpl.rcParams["ps.fonttype"],
-        )
-        return (path.with_suffix(".png"), path.with_suffix(".pdf"))
+    def fake_save(target: Figure, output: Path) -> tuple[Path, ...]:
+        axes = {axis.get_label(): axis for axis in target.axes if axis.get_label()}
+        observed.update(target=target, output=output, axes=axes)
+        target.canvas.draw()
+        return (output.with_suffix(".png"), output.with_suffix(".pdf"))
 
-    before = (mpl.rcParams["pdf.fonttype"], mpl.rcParams["ps.fonttype"])
-    monkeypatch.setattr(demo.gs, "savefig", fake_savefig)
-    path = tmp_path / "SC_cal"
+    monkeypatch.setattr(demo, "ROOT", tmp_path)
+    monkeypatch.setattr(demo.gs, "save", fake_save)
+    demo.main()
 
-    assert demo.save_publication_figure(figure, path) == (
-        path.with_suffix(".png"),
-        path.with_suffix(".pdf"),
+    figure = observed["target"]
+    axes = observed["axes"]
+    assert observed["output"] == tmp_path / "SC_cal"
+    assert tuple(figure.get_size_inches()) == pytest.approx(
+        (170 / 25.4, (170 / 3) / 25.4)
     )
-    assert observed == {
-        "target": figure,
-        "path": path,
-        "options": {
-            "formats": ("png", "pdf"),
-            "dpi": 600,
-            "props": {"bbox_inches": "tight"},
-            "show": True,
-            "overwrite": True,
-        },
-        "fonttypes": (42, 42),
+    assert type(figure.get_layout_engine()).__name__ == "ConstrainedLayoutEngine"
+    assert {name: len(axes[name].lines) for name in "ABC"} == {
+        "A": 9,
+        "B": 9,
+        "C": 5,
     }
-    assert (mpl.rcParams["pdf.fonttype"], mpl.rcParams["ps.fonttype"]) == before
+    assert len(axes["B"].child_axes) == 2
+    assert sorted(len(axis.lines) for axis in axes["B"].child_axes) == [9, 9]
+    assert all(
+        line.get_markersize() == 0 for name in "ABC" for line in axes[name].lines
+    )
+    assert axes["A"].get_legend()._loc == 3
+    assert axes["B"].get_legend() is None
+    assert axes["C"].get_legend()._loc == 4
+    assert tuple(axes[name].get_xlabel() for name in "ABC") == (
+        "$T/T_c$",
+        "$T/T_c$",
+        "$T/T_c$",
+    )
+    assert tuple(axes[name].get_box_aspect() for name in "ABC") == (1.0, 1.0, 1.0)
+    indicator = axes["B"].patches[-3:]
+    assert isinstance(indicator[0], BboxPatch)
+    assert all(isinstance(artist, BboxConnector) for artist in indicator[1:])
+    assert tuple((artist.loc2, artist.loc1) for artist in indicator[1:]) == (
+        (3, 2),
+        (4, 1),
+    )
+    assert all(artist.get_zorder() == pytest.approx(4.99) for artist in indicator)
+    assert not plt.fignum_exists(figure.number)
+    assert mpl.rcParams == before
+
+
+def test_publication_demo_closes_figure_when_output_fails(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    """A failed export does not leak the Figure owned by the demo."""
+
+    demo = _load_demo()
+    observed: dict[str, Figure] = {}
+
+    def fail_save(target: Figure, output: Path) -> tuple[Path, ...]:
+        observed["target"] = target
+        raise OSError("simulated output failure")
+
+    monkeypatch.setattr(demo, "ROOT", tmp_path)
+    monkeypatch.setattr(demo.gs, "save", fail_save)
+
+    with pytest.raises(OSError, match="simulated output failure"):
+        demo.main()
+
+    assert not plt.fignum_exists(observed["target"].number)

@@ -20,6 +20,16 @@
       "physical_lines": 265,
       "source": "main commit 782117f:demo/4_paper_plot/paper_plot.py"
     },
+    "final_example": {
+      "comment_free_chars": 2374,
+      "comment_free_lines": 72,
+      "executable_chars": 2189,
+      "executable_lines": 69,
+      "gsplot_calls": 12,
+      "lexical_chars": 1695,
+      "path": "demo/4_paper_plot/paper_plot.py",
+      "physical_lines": 82
+    },
     "selected_tuple_prototype": {
       "comment_free_chars": 2323,
       "comment_free_lines": 71,

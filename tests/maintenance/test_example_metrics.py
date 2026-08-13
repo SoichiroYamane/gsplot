@@ -23,6 +23,7 @@ MANIFEST_PATH = PROJECT_ROOT / "tools/maintenance/example-metrics.json"
 PROTOTYPE_PATH = (
     PROJECT_ROOT / "tools/maintenance/fixtures/publication_tuple_prototype.py"
 )
+FINAL_PATH = PROJECT_ROOT / "demo" / "4_paper_plot" / "paper_plot.py"
 STYLE_PATH = PROJECT_ROOT / "tests/fixtures/reform/publication-style-v1.json"
 
 
@@ -81,6 +82,23 @@ def test_selected_prototype_reproduces_frozen_metrics() -> None:
         compare_expected(metrics, manifest["baselines"]["selected_tuple_prototype"])
         == []
     )
+    assert (
+        check_budgets(
+            metrics,
+            manifest["budgets"],
+            manifest["baselines"]["issue_181_repair"],
+        )
+        == []
+    )
+
+
+def test_final_publication_example_reproduces_frozen_metrics() -> None:
+    """The executable documentation stays within every accepted source budget."""
+
+    manifest = load_manifest(MANIFEST_PATH)
+    metrics = measure(FINAL_PATH)
+
+    assert compare_expected(metrics, manifest["baselines"]["final_example"]) == []
     assert (
         check_budgets(
             metrics,
