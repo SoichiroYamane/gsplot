@@ -241,6 +241,7 @@ need the ordinary review path.
    loopback. The output must use the same `/dev/` route shape as the website:
 
    ```bash
+   set -euo pipefail
    preview_dir="$(mktemp -d)"
    GSPLOT_DOCS_BASE_URL=http://localhost:8000 \
    GSPLOT_DOCS_VERSION=dev \
@@ -256,7 +257,25 @@ need the ordinary review path.
    completed output only after the builder succeeds. A complete versioned
    build may require the pinned Mermaid/Node toolchain and an explicit local
    Chrome or Chromium executable; report that limitation rather than bypassing
-   the documented toolchain.
+   the documented toolchain. Use a fail-closed shell so no server is started
+   after a catalog or site-build failure:
+
+   ```bash
+   set -euo pipefail
+   preview_dir="$(mktemp -d)"
+   poetry run python -m tools.maintenance.build_docs_catalog \
+     --repo-root . \
+     --fixture tests/fixtures/docs_site/releases.json \
+     --output "$preview_dir/catalog.json" \
+     --switcher-output "$preview_dir/switcher.json" \
+     --base-url http://localhost:8000
+   poetry run python -m tools.maintenance.build_docs_site \
+     --repo-root . \
+     --catalog "$preview_dir/catalog.json" \
+     --output "$preview_dir/site" \
+     --base-url http://localhost:8000
+   python -m http.server 8000 --bind 127.0.0.1 --directory "$preview_dir/site"
+   ```
 3. When Playwright MCP is available, use it as the browser-control channel for
    the local checkpoint. Navigate with `browser_navigate`, inspect
    `browser_snapshot` before taking element actions, resize with

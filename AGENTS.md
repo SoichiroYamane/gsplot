@@ -379,6 +379,7 @@ Build the Sphinx output in a temporary directory outside the checkout and
 serve it only on the loopback interface. For a development-channel preview:
 
 ```bash
+set -euo pipefail
 preview_dir="$(mktemp -d)"
 GSPLOT_DOCS_BASE_URL=http://localhost:8000 \
 GSPLOT_DOCS_VERSION=dev \
@@ -394,7 +395,8 @@ the same way. A complete versioned build may require the pinned Mermaid/Node
 toolchain and an explicit local Chrome or Chromium executable; report that
 limitation rather than bypassing the documented toolchain. Do not expose a
 development server publicly or pass credentials to Sphinx, demo, or browser
-processes.
+processes. Use `set -euo pipefail` for any multi-command preview shell so a
+catalog or site-build failure prevents the server from starting.
 
 When Playwright MCP is available, use its browser tools for the interactive
 checkpoint: navigate to the changed route (and `/dev/`, `/stable/`, and a
