@@ -10,12 +10,19 @@ from pathlib import Path
 
 import gsplot
 from gsplot._compat.root import resolve_legacy
+from tools.maintenance.check_public_api_contract import contract_is_current
 from tools.maintenance.collect_public_api import (
     HISTORICAL_DOCUMENTED_MODULES,
     collect,
 )
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
+
+
+def test_complete_public_api_contract_is_frozen() -> None:
+    """Every reviewed runtime and compatibility detail needs an explicit diff."""
+
+    assert contract_is_current()
 
 
 def test_inventory_combines_every_public_boundary() -> None:

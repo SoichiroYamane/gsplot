@@ -1,0 +1,3650 @@
+{
+  "api_index": [
+    "subplots",
+    "inset",
+    "inset_axes",
+    "line",
+    "scatter",
+    "cmap_line",
+    "cmap_dash",
+    "cmap_scatter",
+    "colors",
+    "sample_cmap",
+    "label",
+    "square",
+    "index",
+    "style_axes",
+    "title",
+    "suptitle",
+    "minor_ticks",
+    "box_aspect",
+    "panel_labels",
+    "paper",
+    "fig_facecolor",
+    "legend",
+    "legends",
+    "legend_entries",
+    "cmap_legend",
+    "set_theme",
+    "save",
+    "savefig",
+    "show",
+    "load_config",
+    "read",
+    "read_array",
+    "write_meta",
+    "build_info",
+    "use_backend",
+    "Config",
+    "AxisSpec",
+    "Theme",
+    "InsetSpec",
+    "MetadataSnapshot",
+    "BuildInfo",
+    "LegendEntries",
+    "GsplotError",
+    "ConfigError",
+    "DataError",
+    "LayoutError",
+    "PlotError",
+    "OutputError",
+    "MetadataError",
+    "MosaicSpec",
+    "NormalizeSpec",
+    "ColorSpec",
+    "AxesTarget",
+    "PerTarget",
+    "LineStyle",
+    "Marker",
+    "Unit",
+    "SizePreset",
+    "SizeSpec",
+    "LayoutMode",
+    "StyleMode",
+    "ZoomCorners",
+    "Limit",
+    "Scale",
+    "TickSpec",
+    "LabelRecord",
+    "LabelRecords"
+  ],
+  "canonical_manifest": {
+    "AxesTarget": {
+      "attribute": "AxesTarget",
+      "module": "gsplot._core.types"
+    },
+    "AxisSpec": {
+      "attribute": "AxisSpec",
+      "module": "gsplot._core.types"
+    },
+    "BuildInfo": {
+      "attribute": "BuildInfo",
+      "module": "gsplot._core.types"
+    },
+    "ColorSpec": {
+      "attribute": "ColorSpec",
+      "module": "gsplot._core.types"
+    },
+    "Config": {
+      "attribute": "Config",
+      "module": "gsplot._config.model"
+    },
+    "ConfigError": {
+      "attribute": "ConfigError",
+      "module": "gsplot._core.errors"
+    },
+    "DataError": {
+      "attribute": "DataError",
+      "module": "gsplot._core.errors"
+    },
+    "GsplotError": {
+      "attribute": "GsplotError",
+      "module": "gsplot._core.errors"
+    },
+    "InsetSpec": {
+      "attribute": "InsetSpec",
+      "module": "gsplot._core.types"
+    },
+    "LabelRecord": {
+      "attribute": "LabelRecord",
+      "module": "gsplot._core.types"
+    },
+    "LabelRecords": {
+      "attribute": "LabelRecords",
+      "module": "gsplot._core.types"
+    },
+    "LayoutError": {
+      "attribute": "LayoutError",
+      "module": "gsplot._core.errors"
+    },
+    "LayoutMode": {
+      "attribute": "LayoutMode",
+      "module": "gsplot._core.types"
+    },
+    "LegendEntries": {
+      "attribute": "LegendEntries",
+      "module": "gsplot._core.types"
+    },
+    "Limit": {
+      "attribute": "Limit",
+      "module": "gsplot._core.types"
+    },
+    "LineStyle": {
+      "attribute": "LineStyle",
+      "module": "gsplot._core.types"
+    },
+    "Marker": {
+      "attribute": "Marker",
+      "module": "gsplot._core.types"
+    },
+    "MetadataError": {
+      "attribute": "MetadataError",
+      "module": "gsplot._core.errors"
+    },
+    "MetadataSnapshot": {
+      "attribute": "MetadataSnapshot",
+      "module": "gsplot._core.types"
+    },
+    "MosaicSpec": {
+      "attribute": "MosaicSpec",
+      "module": "gsplot._core.types"
+    },
+    "NormalizeSpec": {
+      "attribute": "NormalizeSpec",
+      "module": "gsplot._core.types"
+    },
+    "OutputError": {
+      "attribute": "OutputError",
+      "module": "gsplot._core.errors"
+    },
+    "PerTarget": {
+      "attribute": "PerTarget",
+      "module": "gsplot._core.types"
+    },
+    "PlotError": {
+      "attribute": "PlotError",
+      "module": "gsplot._core.errors"
+    },
+    "Scale": {
+      "attribute": "Scale",
+      "module": "gsplot._core.types"
+    },
+    "SizePreset": {
+      "attribute": "SizePreset",
+      "module": "gsplot._core.types"
+    },
+    "SizeSpec": {
+      "attribute": "SizeSpec",
+      "module": "gsplot._core.types"
+    },
+    "StyleMode": {
+      "attribute": "StyleMode",
+      "module": "gsplot._core.types"
+    },
+    "Theme": {
+      "attribute": "Theme",
+      "module": "gsplot._core.types"
+    },
+    "TickSpec": {
+      "attribute": "TickSpec",
+      "module": "gsplot._core.types"
+    },
+    "Unit": {
+      "attribute": "Unit",
+      "module": "gsplot._core.types"
+    },
+    "ZoomCorners": {
+      "attribute": "ZoomCorners",
+      "module": "gsplot._core.types"
+    },
+    "box_aspect": {
+      "attribute": "box_aspect",
+      "module": "gsplot._style.axes"
+    },
+    "build_info": {
+      "attribute": "build_info",
+      "module": "gsplot._io.build"
+    },
+    "cmap_dash": {
+      "attribute": "cmap_dash",
+      "module": "gsplot._plot.colored"
+    },
+    "cmap_legend": {
+      "attribute": "cmap_legend",
+      "module": "gsplot._style.legends"
+    },
+    "cmap_line": {
+      "attribute": "cmap_line",
+      "module": "gsplot._plot.colored"
+    },
+    "cmap_scatter": {
+      "attribute": "cmap_scatter",
+      "module": "gsplot._plot.colored"
+    },
+    "colors": {
+      "attribute": "colors",
+      "module": "gsplot._plot.colormap"
+    },
+    "fig_facecolor": {
+      "attribute": "fig_facecolor",
+      "module": "gsplot._style.themes"
+    },
+    "index": {
+      "attribute": "index",
+      "module": "gsplot._style.panels"
+    },
+    "inset": {
+      "attribute": "inset",
+      "module": "gsplot._figure.inset"
+    },
+    "inset_axes": {
+      "attribute": "inset_axes",
+      "module": "gsplot._figure.inset"
+    },
+    "label": {
+      "attribute": "label",
+      "module": "gsplot._compat.root_api"
+    },
+    "legend": {
+      "attribute": "legend",
+      "module": "gsplot._compat.root_api"
+    },
+    "legend_entries": {
+      "attribute": "legend_entries",
+      "module": "gsplot._style.legends"
+    },
+    "legends": {
+      "attribute": "legends",
+      "module": "gsplot._style.legends"
+    },
+    "line": {
+      "attribute": "line",
+      "module": "gsplot._compat.root_api"
+    },
+    "load_config": {
+      "attribute": "load_config",
+      "module": "gsplot._compat.config"
+    },
+    "minor_ticks": {
+      "attribute": "minor_ticks",
+      "module": "gsplot._style.axes"
+    },
+    "panel_labels": {
+      "attribute": "panel_labels",
+      "module": "gsplot._style.panels"
+    },
+    "paper": {
+      "attribute": "paper",
+      "module": "gsplot._style.paper"
+    },
+    "read": {
+      "attribute": "read",
+      "module": "gsplot._io.arrays"
+    },
+    "read_array": {
+      "attribute": "read_array",
+      "module": "gsplot._io.arrays"
+    },
+    "sample_cmap": {
+      "attribute": "sample_cmap",
+      "module": "gsplot._plot.colormap"
+    },
+    "save": {
+      "attribute": "save",
+      "module": "gsplot._figure.output"
+    },
+    "savefig": {
+      "attribute": "savefig",
+      "module": "gsplot._figure.output"
+    },
+    "scatter": {
+      "attribute": "scatter",
+      "module": "gsplot._compat.root_api"
+    },
+    "set_theme": {
+      "attribute": "set_theme",
+      "module": "gsplot._style.themes"
+    },
+    "show": {
+      "attribute": "show",
+      "module": "gsplot._compat.root_api"
+    },
+    "square": {
+      "attribute": "square",
+      "module": "gsplot._style.axes"
+    },
+    "style_axes": {
+      "attribute": "style_axes",
+      "module": "gsplot._style.axes"
+    },
+    "subplots": {
+      "attribute": "subplots",
+      "module": "gsplot._figure.layout"
+    },
+    "suptitle": {
+      "attribute": "suptitle",
+      "module": "gsplot._style.axes"
+    },
+    "title": {
+      "attribute": "title",
+      "module": "gsplot._compat.root_api"
+    },
+    "use_backend": {
+      "attribute": "use_backend",
+      "module": "gsplot._figure.backend"
+    },
+    "write_meta": {
+      "attribute": "write_meta",
+      "module": "gsplot._io.metadata"
+    }
+  },
+  "compatibility_modules": {
+    "gsplot.color.colormap": [
+      "get_cmap"
+    ],
+    "gsplot.config.config": [
+      "config_load",
+      "config_dict",
+      "config_entry_option"
+    ],
+    "gsplot.data.load_file": [
+      "load_file",
+      "load_file_fast"
+    ],
+    "gsplot.figure.axes": [
+      "axes"
+    ],
+    "gsplot.figure.axes_inset": [
+      "axes_inset",
+      "axes_inset_padding"
+    ],
+    "gsplot.figure.figure_tools": [
+      "get_figure_size"
+    ],
+    "gsplot.figure.show": [
+      "show"
+    ],
+    "gsplot.hello_world.hello_world": [
+      "hello_world"
+    ],
+    "gsplot.path.path": [
+      "home",
+      "pwd",
+      "pwd_move",
+      "pwd_main"
+    ],
+    "gsplot.plot.line": [
+      "line"
+    ],
+    "gsplot.plot.line_colormap_dashed": [
+      "line_colormap_dashed"
+    ],
+    "gsplot.plot.line_colormap_solid": [
+      "line_colormap_solid"
+    ],
+    "gsplot.plot.scatter": [
+      "scatter"
+    ],
+    "gsplot.plot.scatter_colormap": [
+      "scatter_colormap"
+    ],
+    "gsplot.style.graph": [
+      "graph_square",
+      "graph_square_axes",
+      "graph_white",
+      "graph_white_axes",
+      "graph_transparent",
+      "graph_transparent_axes",
+      "graph_facecolor"
+    ],
+    "gsplot.style.label": [
+      "label",
+      "label_add_index"
+    ],
+    "gsplot.style.legend": [
+      "legend",
+      "legend_axes",
+      "legend_handlers",
+      "legend_reverse",
+      "legend_get_handlers"
+    ],
+    "gsplot.style.legend_colormap": [
+      "legend_colormap"
+    ],
+    "gsplot.style.ticks": [
+      "ticks_off",
+      "ticks_on",
+      "ticks_on_axes"
+    ],
+    "gsplot.style.title": [
+      "title",
+      "title_axes"
+    ]
+  },
+  "documented_compatibility_paths": [
+    "gsplot.color.colormap",
+    "gsplot.config.config",
+    "gsplot.data.load_file",
+    "gsplot.figure.axes",
+    "gsplot.figure.axes_inset",
+    "gsplot.figure.figure_tools",
+    "gsplot.figure.show",
+    "gsplot.hello_world.hello_world",
+    "gsplot.path.path",
+    "gsplot.plot.line",
+    "gsplot.plot.line_colormap_dashed",
+    "gsplot.plot.line_colormap_solid",
+    "gsplot.plot.scatter",
+    "gsplot.plot.scatter_colormap",
+    "gsplot.style.graph",
+    "gsplot.style.label",
+    "gsplot.style.legend",
+    "gsplot.style.legend_colormap",
+    "gsplot.style.ticks",
+    "gsplot.style.title"
+  ],
+  "exports": [
+    {
+      "call_contract": {
+        "parameters": [
+          {
+            "annotation": "'int | MosaicSpec'",
+            "default": null,
+            "kind": "VAR_POSITIONAL",
+            "name": "shape",
+            "required": true
+          },
+          {
+            "annotation": "'int | None'",
+            "default": "None",
+            "kind": "KEYWORD_ONLY",
+            "name": "nrows",
+            "required": false
+          },
+          {
+            "annotation": "'int | None'",
+            "default": "None",
+            "kind": "KEYWORD_ONLY",
+            "name": "ncols",
+            "required": false
+          },
+          {
+            "annotation": "'MosaicSpec | None'",
+            "default": "None",
+            "kind": "KEYWORD_ONLY",
+            "name": "mosaic",
+            "required": false
+          },
+          {
+            "annotation": "'SizeSpec'",
+            "default": "'auto'",
+            "kind": "KEYWORD_ONLY",
+            "name": "size",
+            "required": false
+          },
+          {
+            "annotation": "'Unit'",
+            "default": "'in'",
+            "kind": "KEYWORD_ONLY",
+            "name": "unit",
+            "required": false
+          },
+          {
+            "annotation": "'ShareMode'",
+            "default": "False",
+            "kind": "KEYWORD_ONLY",
+            "name": "sharex",
+            "required": false
+          },
+          {
+            "annotation": "'ShareMode'",
+            "default": "False",
+            "kind": "KEYWORD_ONLY",
+            "name": "sharey",
+            "required": false
+          },
+          {
+            "annotation": "'bool'",
+            "default": "True",
+            "kind": "KEYWORD_ONLY",
+            "name": "squeeze",
+            "required": false
+          },
+          {
+            "annotation": "'Sequence[float] | None'",
+            "default": "None",
+            "kind": "KEYWORD_ONLY",
+            "name": "width_ratios",
+            "required": false
+          },
+          {
+            "annotation": "'Sequence[float] | None'",
+            "default": "None",
+            "kind": "KEYWORD_ONLY",
+            "name": "height_ratios",
+            "required": false
+          },
+          {
+            "annotation": "'Mapping[str, Any] | None'",
+            "default": "None",
+            "kind": "KEYWORD_ONLY",
+            "name": "subplot_kw",
+            "required": false
+          },
+          {
+            "annotation": "'Figure | None'",
+            "default": "None",
+            "kind": "KEYWORD_ONLY",
+            "name": "fig",
+            "required": false
+          },
+          {
+            "annotation": "'bool'",
+            "default": "False",
+            "kind": "KEYWORD_ONLY",
+            "name": "clear",
+            "required": false
+          },
+          {
+            "annotation": "'LayoutMode'",
+            "default": "'auto'",
+            "kind": "KEYWORD_ONLY",
+            "name": "layout",
+            "required": false
+          },
+          {
+            "annotation": "'StyleMode'",
+            "default": "'auto'",
+            "kind": "KEYWORD_ONLY",
+            "name": "style",
+            "required": false
+          },
+          {
+            "annotation": "'Config | None'",
+            "default": "None",
+            "kind": "KEYWORD_ONLY",
+            "name": "config",
+            "required": false
+          },
+          {
+            "annotation": "'tuple[float, float] | None'",
+            "default": "None",
+            "kind": "KEYWORD_ONLY",
+            "name": "figsize",
+            "required": false
+          },
+          {
+            "annotation": "'bool | None'",
+            "default": "None",
+            "kind": "KEYWORD_ONLY",
+            "name": "tight_layout",
+            "required": false
+          },
+          {
+            "annotation": "'bool | None'",
+            "default": "None",
+            "kind": "KEYWORD_ONLY",
+            "name": "constrained_layout",
+            "required": false
+          }
+        ],
+        "return_annotation": "'tuple[Figure, AxesContainer]'"
+      },
+      "docstring": {
+        "sha256": "464a2296ca5b16a75e56ca7398acc9e495955825dd81e695a22bb8bba2d953cc",
+        "summary": "Create or reuse a native Figure with concise publication defaults."
+      },
+      "kind": "function",
+      "module": "gsplot._figure.layout",
+      "name": "subplots",
+      "qualname": "subplots",
+      "signature": "(*shape: 'int | MosaicSpec', nrows: 'int | None' = None, ncols: 'int | None' = None, mosaic: 'MosaicSpec | None' = None, size: 'SizeSpec' = 'auto', unit: 'Unit' = 'in', sharex: 'ShareMode' = False, sharey: 'ShareMode' = False, squeeze: 'bool' = True, width_ratios: 'Sequence[float] | None' = None, height_ratios: 'Sequence[float] | None' = None, subplot_kw: 'Mapping[str, Any] | None' = None, fig: 'Figure | None' = None, clear: 'bool' = False, layout: 'LayoutMode' = 'auto', style: 'StyleMode' = 'auto', config: 'Config | None' = None, figsize: 'tuple[float, float] | None' = None, tight_layout: 'bool | None' = None, constrained_layout: 'bool | None' = None) -> 'tuple[Figure, AxesContainer]'"
+    },
+    {
+      "call_contract": {
+        "parameters": [
+          {
+            "annotation": "'Axes'",
+            "default": null,
+            "kind": "POSITIONAL_OR_KEYWORD",
+            "name": "parent",
+            "required": true
+          },
+          {
+            "annotation": "'tuple[float, float, float, float] | InsetSpec'",
+            "default": null,
+            "kind": "POSITIONAL_OR_KEYWORD",
+            "name": "bounds",
+            "required": true
+          },
+          {
+            "annotation": "'LabelRecord | None'",
+            "default": "None",
+            "kind": "KEYWORD_ONLY",
+            "name": "label",
+            "required": false
+          },
+          {
+            "annotation": "'bool | ZoomCorners'",
+            "default": "False",
+            "kind": "KEYWORD_ONLY",
+            "name": "zoom",
+            "required": false
+          },
+          {
+            "annotation": "\"Literal['paper'] | None\"",
+            "default": "'paper'",
+            "kind": "KEYWORD_ONLY",
+            "name": "style",
+            "required": false
+          },
+          {
+            "annotation": "'float'",
+            "default": "5",
+            "kind": "KEYWORD_ONLY",
+            "name": "zorder",
+            "required": false
+          },
+          {
+            "annotation": "'float | None'",
+            "default": "None",
+            "kind": "KEYWORD_ONLY",
+            "name": "zoom_zorder",
+            "required": false
+          }
+        ],
+        "return_annotation": "'Axes'"
+      },
+      "docstring": {
+        "sha256": "596cfd71eda5b13577cc39e684323fea7a59ccaa64fb42f84aa2e652193390d6",
+        "summary": "Create a publication-styled inset on an explicit parent Axes."
+      },
+      "kind": "function",
+      "module": "gsplot._figure.inset",
+      "name": "inset",
+      "qualname": "inset",
+      "signature": "(parent: 'Axes', bounds: 'tuple[float, float, float, float] | InsetSpec', *, label: 'LabelRecord | None' = None, zoom: 'bool | ZoomCorners' = False, style: \"Literal['paper'] | None\" = 'paper', zorder: 'float' = 5, zoom_zorder: 'float | None' = None) -> 'Axes'"
+    },
+    {
+      "call_contract": {
+        "parameters": [
+          {
+            "annotation": "'Axes'",
+            "default": null,
+            "kind": "POSITIONAL_OR_KEYWORD",
+            "name": "parent",
+            "required": true
+          },
+          {
+            "annotation": "'InsetSpec'",
+            "default": null,
+            "kind": "POSITIONAL_OR_KEYWORD",
+            "name": "spec",
+            "required": true
+          }
+        ],
+        "return_annotation": "'Axes'"
+      },
+      "docstring": {
+        "sha256": "84a88d9f3ca3592d7b07c3ffb1f0564bf32694180c76fcfd27e47dd53cb14b8a",
+        "summary": "Create one placement-only inset below an explicit parent Axes."
+      },
+      "kind": "function",
+      "module": "gsplot._figure.inset",
+      "name": "inset_axes",
+      "qualname": "inset_axes",
+      "signature": "(parent: 'Axes', spec: 'InsetSpec') -> 'Axes'"
+    },
+    {
+      "call_contract": {
+        "parameters": [
+          {
+            "annotation": "'AxesTarget'",
+            "default": null,
+            "kind": "POSITIONAL_OR_KEYWORD",
+            "name": "target",
+            "required": true
+          },
+          {
+            "annotation": "'DataInput'",
+            "default": null,
+            "kind": "POSITIONAL_OR_KEYWORD",
+            "name": "x",
+            "required": true
+          },
+          {
+            "annotation": "'DataInput'",
+            "default": null,
+            "kind": "POSITIONAL_OR_KEYWORD",
+            "name": "y",
+            "required": true
+          },
+          {
+            "annotation": "'int | Sequence[int] | Mapping[object, int] | None'",
+            "default": "None",
+            "kind": "KEYWORD_ONLY",
+            "name": "series",
+            "required": false
+          },
+          {
+            "annotation": "'str | Sequence[str] | Mapping[object, str] | None'",
+            "default": "None",
+            "kind": "KEYWORD_ONLY",
+            "name": "label",
+            "required": false
+          },
+          {
+            "annotation": "'ColorSpec | Mapping[object, ColorSpec] | None'",
+            "default": "None",
+            "kind": "KEYWORD_ONLY",
+            "name": "c",
+            "required": false
+          },
+          {
+            "annotation": "'MarkerType | Sequence[MarkerType] | Mapping[object, MarkerType]'",
+            "default": "'o'",
+            "kind": "KEYWORD_ONLY",
+            "name": "marker",
+            "required": false
+          },
+          {
+            "annotation": "'float | Sequence[float] | Mapping[object, float]'",
+            "default": "7",
+            "kind": "KEYWORD_ONLY",
+            "name": "ms",
+            "required": false
+          },
+          {
+            "annotation": "'float | Sequence[float] | Mapping[object, float]'",
+            "default": "1.5",
+            "kind": "KEYWORD_ONLY",
+            "name": "mew",
+            "required": false
+          },
+          {
+            "annotation": "'ColorSpec | Mapping[object, ColorSpec] | None'",
+            "default": "None",
+            "kind": "KEYWORD_ONLY",
+            "name": "mec",
+            "required": false
+          },
+          {
+            "annotation": "'ColorSpec | Mapping[object, ColorSpec] | None'",
+            "default": "None",
+            "kind": "KEYWORD_ONLY",
+            "name": "mfc",
+            "required": false
+          },
+          {
+            "annotation": "'float | Sequence[float] | Mapping[object, float]'",
+            "default": "0.2",
+            "kind": "KEYWORD_ONLY",
+            "name": "alpha_mfc",
+            "required": false
+          },
+          {
+            "annotation": "'LineStyleType | Sequence[LineStyleType] | Mapping[object, LineStyleType]'",
+            "default": "'--'",
+            "kind": "KEYWORD_ONLY",
+            "name": "ls",
+            "required": false
+          },
+          {
+            "annotation": "'float | Sequence[float] | Mapping[object, float]'",
+            "default": "1",
+            "kind": "KEYWORD_ONLY",
+            "name": "lw",
+            "required": false
+          },
+          {
+            "annotation": "'float | Sequence[float] | Mapping[object, float]'",
+            "default": "1",
+            "kind": "KEYWORD_ONLY",
+            "name": "alpha",
+            "required": false
+          },
+          {
+            "annotation": "'Config | None'",
+            "default": "None",
+            "kind": "KEYWORD_ONLY",
+            "name": "config",
+            "required": false
+          },
+          {
+            "annotation": "'Mapping[str, object] | None'",
+            "default": "None",
+            "kind": "KEYWORD_ONLY",
+            "name": "props",
+            "required": false
+          }
+        ],
+        "return_annotation": "'LineResult'"
+      },
+      "docstring": {
+        "sha256": "ed456aad69c7bf844dd5fffbe96face4eb7bb05d3b1a49109821c2caf70b5dd7",
+        "summary": "Plot publication-ready lines on one or more explicit Axes."
+      },
+      "kind": "function",
+      "module": "gsplot._compat.root_api",
+      "name": "line",
+      "qualname": "line",
+      "signature": "(target: 'AxesTarget', x: 'DataInput', y: 'DataInput', *, series: 'int | Sequence[int] | Mapping[object, int] | None' = None, label: 'str | Sequence[str] | Mapping[object, str] | None' = None, c: 'ColorSpec | Mapping[object, ColorSpec] | None' = None, marker: 'MarkerType | Sequence[MarkerType] | Mapping[object, MarkerType]' = 'o', ms: 'float | Sequence[float] | Mapping[object, float]' = 7, mew: 'float | Sequence[float] | Mapping[object, float]' = 1.5, mec: 'ColorSpec | Mapping[object, ColorSpec] | None' = None, mfc: 'ColorSpec | Mapping[object, ColorSpec] | None' = None, alpha_mfc: 'float | Sequence[float] | Mapping[object, float]' = 0.2, ls: 'LineStyleType | Sequence[LineStyleType] | Mapping[object, LineStyleType]' = '--', lw: 'float | Sequence[float] | Mapping[object, float]' = 1, alpha: 'float | Sequence[float] | Mapping[object, float]' = 1, config: 'Config | None' = None, props: 'Mapping[str, object] | None' = None) -> 'LineResult'"
+    },
+    {
+      "call_contract": {
+        "parameters": [
+          {
+            "annotation": "'AxesTarget'",
+            "default": null,
+            "kind": "POSITIONAL_OR_KEYWORD",
+            "name": "target",
+            "required": true
+          },
+          {
+            "annotation": "'DataInput'",
+            "default": null,
+            "kind": "POSITIONAL_OR_KEYWORD",
+            "name": "x",
+            "required": true
+          },
+          {
+            "annotation": "'DataInput'",
+            "default": null,
+            "kind": "POSITIONAL_OR_KEYWORD",
+            "name": "y",
+            "required": true
+          },
+          {
+            "annotation": "'int | Sequence[int] | Mapping[object, int] | None'",
+            "default": "None",
+            "kind": "KEYWORD_ONLY",
+            "name": "series",
+            "required": false
+          },
+          {
+            "annotation": "'str | Sequence[str] | Mapping[object, str] | None'",
+            "default": "None",
+            "kind": "KEYWORD_ONLY",
+            "name": "label",
+            "required": false
+          },
+          {
+            "annotation": "'ColorSpec | Mapping[object, ColorSpec] | None'",
+            "default": "None",
+            "kind": "KEYWORD_ONLY",
+            "name": "c",
+            "required": false
+          },
+          {
+            "annotation": "'MarkerType | Sequence[MarkerType] | Mapping[object, MarkerType]'",
+            "default": "'o'",
+            "kind": "KEYWORD_ONLY",
+            "name": "marker",
+            "required": false
+          },
+          {
+            "annotation": "'float | Sequence[float] | Mapping[object, float]'",
+            "default": "1",
+            "kind": "KEYWORD_ONLY",
+            "name": "s",
+            "required": false
+          },
+          {
+            "annotation": "'float | Sequence[float] | Mapping[object, float]'",
+            "default": "1",
+            "kind": "KEYWORD_ONLY",
+            "name": "alpha",
+            "required": false
+          },
+          {
+            "annotation": "'Config | None'",
+            "default": "None",
+            "kind": "KEYWORD_ONLY",
+            "name": "config",
+            "required": false
+          },
+          {
+            "annotation": "'Mapping[str, object] | None'",
+            "default": "None",
+            "kind": "KEYWORD_ONLY",
+            "name": "props",
+            "required": false
+          }
+        ],
+        "return_annotation": "'ScatterResult'"
+      },
+      "docstring": {
+        "sha256": "df30c37523accac7776d79756f36ef674ba4299ec757289e7727dd6fe2e6ea3d",
+        "summary": "Plot publication-ready points on one or more explicit Axes."
+      },
+      "kind": "function",
+      "module": "gsplot._compat.root_api",
+      "name": "scatter",
+      "qualname": "scatter",
+      "signature": "(target: 'AxesTarget', x: 'DataInput', y: 'DataInput', *, series: 'int | Sequence[int] | Mapping[object, int] | None' = None, label: 'str | Sequence[str] | Mapping[object, str] | None' = None, c: 'ColorSpec | Mapping[object, ColorSpec] | None' = None, marker: 'MarkerType | Sequence[MarkerType] | Mapping[object, MarkerType]' = 'o', s: 'float | Sequence[float] | Mapping[object, float]' = 1, alpha: 'float | Sequence[float] | Mapping[object, float]' = 1, config: 'Config | None' = None, props: 'Mapping[str, object] | None' = None) -> 'ScatterResult'"
+    },
+    {
+      "call_contract": {
+        "parameters": [
+          {
+            "annotation": "'Axes'",
+            "default": null,
+            "kind": "POSITIONAL_OR_KEYWORD",
+            "name": "ax",
+            "required": true
+          },
+          {
+            "annotation": "'ArrayLike'",
+            "default": null,
+            "kind": "POSITIONAL_OR_KEYWORD",
+            "name": "x",
+            "required": true
+          },
+          {
+            "annotation": "'ArrayLike'",
+            "default": null,
+            "kind": "POSITIONAL_OR_KEYWORD",
+            "name": "y",
+            "required": true
+          },
+          {
+            "annotation": "'ArrayLike'",
+            "default": null,
+            "kind": "POSITIONAL_OR_KEYWORD",
+            "name": "values",
+            "required": true
+          },
+          {
+            "annotation": "'str | Colormap | None'",
+            "default": "None",
+            "kind": "KEYWORD_ONLY",
+            "name": "cmap",
+            "required": false
+          },
+          {
+            "annotation": "'NormalizeSpec | None'",
+            "default": "None",
+            "kind": "KEYWORD_ONLY",
+            "name": "norm",
+            "required": false
+          },
+          {
+            "annotation": "'Mapping[str, Any] | None'",
+            "default": "None",
+            "kind": "KEYWORD_ONLY",
+            "name": "props",
+            "required": false
+          },
+          {
+            "annotation": "'Config | None'",
+            "default": "None",
+            "kind": "KEYWORD_ONLY",
+            "name": "config",
+            "required": false
+          }
+        ],
+        "return_annotation": "'LineCollection'"
+      },
+      "docstring": {
+        "sha256": "2c449ee1d08db5f33d6dc6ef23e1cb28480fe1f5d065338120e8dda88a184946",
+        "summary": "Draw a finite polyline whose segments are mapped through a colormap."
+      },
+      "kind": "function",
+      "module": "gsplot._plot.colored",
+      "name": "cmap_line",
+      "qualname": "cmap_line",
+      "signature": "(ax: 'Axes', x: 'ArrayLike', y: 'ArrayLike', values: 'ArrayLike', *, cmap: 'str | Colormap | None' = None, norm: 'NormalizeSpec | None' = None, props: 'Mapping[str, Any] | None' = None, config: 'Config | None' = None) -> 'LineCollection'"
+    },
+    {
+      "call_contract": {
+        "parameters": [
+          {
+            "annotation": "'Axes'",
+            "default": null,
+            "kind": "POSITIONAL_OR_KEYWORD",
+            "name": "ax",
+            "required": true
+          },
+          {
+            "annotation": "'ArrayLike'",
+            "default": null,
+            "kind": "POSITIONAL_OR_KEYWORD",
+            "name": "x",
+            "required": true
+          },
+          {
+            "annotation": "'ArrayLike'",
+            "default": null,
+            "kind": "POSITIONAL_OR_KEYWORD",
+            "name": "y",
+            "required": true
+          },
+          {
+            "annotation": "'ArrayLike'",
+            "default": null,
+            "kind": "POSITIONAL_OR_KEYWORD",
+            "name": "values",
+            "required": true
+          },
+          {
+            "annotation": "'tuple[float, float]'",
+            "default": "(10.0, 10.0)",
+            "kind": "KEYWORD_ONLY",
+            "name": "dash",
+            "required": false
+          },
+          {
+            "annotation": "'str | Colormap | None'",
+            "default": "None",
+            "kind": "KEYWORD_ONLY",
+            "name": "cmap",
+            "required": false
+          },
+          {
+            "annotation": "'NormalizeSpec | None'",
+            "default": "None",
+            "kind": "KEYWORD_ONLY",
+            "name": "norm",
+            "required": false
+          },
+          {
+            "annotation": "'Mapping[str, Any] | None'",
+            "default": "None",
+            "kind": "KEYWORD_ONLY",
+            "name": "props",
+            "required": false
+          },
+          {
+            "annotation": "'Config | None'",
+            "default": "None",
+            "kind": "KEYWORD_ONLY",
+            "name": "config",
+            "required": false
+          }
+        ],
+        "return_annotation": "'tuple[LineCollection, ...]'"
+      },
+      "docstring": {
+        "sha256": "8eb06c7fd0bf0a99e14e13894756389acfe68b7eccbbf8c5e3f1212c224c18b7",
+        "summary": "Draw a colormapped line with a local Matplotlib dash pattern."
+      },
+      "kind": "function",
+      "module": "gsplot._plot.colored",
+      "name": "cmap_dash",
+      "qualname": "cmap_dash",
+      "signature": "(ax: 'Axes', x: 'ArrayLike', y: 'ArrayLike', values: 'ArrayLike', *, dash: 'tuple[float, float]' = (10.0, 10.0), cmap: 'str | Colormap | None' = None, norm: 'NormalizeSpec | None' = None, props: 'Mapping[str, Any] | None' = None, config: 'Config | None' = None) -> 'tuple[LineCollection, ...]'"
+    },
+    {
+      "call_contract": {
+        "parameters": [
+          {
+            "annotation": "'Axes'",
+            "default": null,
+            "kind": "POSITIONAL_OR_KEYWORD",
+            "name": "ax",
+            "required": true
+          },
+          {
+            "annotation": "'ArrayLike'",
+            "default": null,
+            "kind": "POSITIONAL_OR_KEYWORD",
+            "name": "x",
+            "required": true
+          },
+          {
+            "annotation": "'ArrayLike'",
+            "default": null,
+            "kind": "POSITIONAL_OR_KEYWORD",
+            "name": "y",
+            "required": true
+          },
+          {
+            "annotation": "'ArrayLike'",
+            "default": null,
+            "kind": "POSITIONAL_OR_KEYWORD",
+            "name": "values",
+            "required": true
+          },
+          {
+            "annotation": "'str | Colormap | None'",
+            "default": "None",
+            "kind": "KEYWORD_ONLY",
+            "name": "cmap",
+            "required": false
+          },
+          {
+            "annotation": "'NormalizeSpec | None'",
+            "default": "None",
+            "kind": "KEYWORD_ONLY",
+            "name": "norm",
+            "required": false
+          },
+          {
+            "annotation": "'Mapping[str, Any] | None'",
+            "default": "None",
+            "kind": "KEYWORD_ONLY",
+            "name": "props",
+            "required": false
+          },
+          {
+            "annotation": "'Config | None'",
+            "default": "None",
+            "kind": "KEYWORD_ONLY",
+            "name": "config",
+            "required": false
+          }
+        ],
+        "return_annotation": "'PathCollection'"
+      },
+      "docstring": {
+        "sha256": "d7b0d3073245cd5bfd30849a0aea619058c9aec03e28a45c145db2440f02ed74",
+        "summary": "Create a scalar-colored native scatter collection."
+      },
+      "kind": "function",
+      "module": "gsplot._plot.colored",
+      "name": "cmap_scatter",
+      "qualname": "cmap_scatter",
+      "signature": "(ax: 'Axes', x: 'ArrayLike', y: 'ArrayLike', values: 'ArrayLike', *, cmap: 'str | Colormap | None' = None, norm: 'NormalizeSpec | None' = None, props: 'Mapping[str, Any] | None' = None, config: 'Config | None' = None) -> 'PathCollection'"
+    },
+    {
+      "call_contract": {
+        "parameters": [
+          {
+            "annotation": "'int'",
+            "default": "10",
+            "kind": "POSITIONAL_OR_KEYWORD",
+            "name": "n",
+            "required": false
+          },
+          {
+            "annotation": "'str | Colormap'",
+            "default": "'viridis'",
+            "kind": "POSITIONAL_OR_KEYWORD",
+            "name": "cmap",
+            "required": false
+          },
+          {
+            "annotation": "'bool'",
+            "default": "False",
+            "kind": "KEYWORD_ONLY",
+            "name": "reverse",
+            "required": false
+          }
+        ],
+        "return_annotation": "'NDArray[np.float64]'"
+      },
+      "docstring": {
+        "sha256": "0779892f87be4d3d8396e27438efe5b99e4fd308530abc3274630ea3071f3ccd",
+        "summary": "Return evenly spaced publication colors from a Matplotlib colormap."
+      },
+      "kind": "function",
+      "module": "gsplot._plot.colormap",
+      "name": "colors",
+      "qualname": "colors",
+      "signature": "(n: 'int' = 10, cmap: 'str | Colormap' = 'viridis', *, reverse: 'bool' = False) -> 'NDArray[np.float64]'"
+    },
+    {
+      "call_contract": {
+        "parameters": [
+          {
+            "annotation": "'str | Colormap'",
+            "default": null,
+            "kind": "POSITIONAL_OR_KEYWORD",
+            "name": "name",
+            "required": true
+          },
+          {
+            "annotation": "'int | None'",
+            "default": "None",
+            "kind": "KEYWORD_ONLY",
+            "name": "count",
+            "required": false
+          },
+          {
+            "annotation": "'ArrayLike | None'",
+            "default": "None",
+            "kind": "KEYWORD_ONLY",
+            "name": "values",
+            "required": false
+          },
+          {
+            "annotation": "'NormalizeSpec | None'",
+            "default": "None",
+            "kind": "KEYWORD_ONLY",
+            "name": "norm",
+            "required": false
+          },
+          {
+            "annotation": "'bool'",
+            "default": "False",
+            "kind": "KEYWORD_ONLY",
+            "name": "reverse",
+            "required": false
+          }
+        ],
+        "return_annotation": "'NDArray[np.float64]'"
+      },
+      "docstring": {
+        "sha256": "7b816ebb1ed1176f9fdc1f12aead3d7be48bd510360cf897800f8fc9a6b757e2",
+        "summary": "Sample a Matplotlib colormap as an ``(n, 4)`` RGBA array."
+      },
+      "kind": "function",
+      "module": "gsplot._plot.colormap",
+      "name": "sample_cmap",
+      "qualname": "sample_cmap",
+      "signature": "(name: 'str | Colormap', *, count: 'int | None' = None, values: 'ArrayLike | None' = None, norm: 'NormalizeSpec | None' = None, reverse: 'bool' = False) -> 'NDArray[np.float64]'"
+    },
+    {
+      "call_contract": {
+        "parameters": [
+          {
+            "annotation": "'AxesTarget'",
+            "default": null,
+            "kind": "POSITIONAL_OR_KEYWORD",
+            "name": "target",
+            "required": true
+          },
+          {
+            "annotation": "'AxisSpec'",
+            "default": null,
+            "kind": "POSITIONAL_OR_KEYWORD",
+            "name": "spec",
+            "required": true
+          }
+        ],
+        "return_annotation": "'None'"
+      },
+      "docstring": {
+        "sha256": "e8fad10ab0385a5a9aa66dec2d355d24a47c74d38fec5ad177a13667f590e26c",
+        "summary": "Apply one validated :class:`AxisSpec` to explicit Axes targets."
+      },
+      "kind": "function",
+      "module": "gsplot._style.axes",
+      "name": "style_axes",
+      "qualname": "style_axes",
+      "signature": "(target: 'AxesTarget', spec: 'AxisSpec') -> 'None'"
+    },
+    {
+      "call_contract": {
+        "parameters": [
+          {
+            "annotation": "'AxesTarget'",
+            "default": null,
+            "kind": "POSITIONAL_OR_KEYWORD",
+            "name": "target",
+            "required": true
+          },
+          {
+            "annotation": "'str | LabelRecords'",
+            "default": "''",
+            "kind": "POSITIONAL_OR_KEYWORD",
+            "name": "xlabel",
+            "required": false
+          },
+          {
+            "annotation": "'str'",
+            "default": "''",
+            "kind": "POSITIONAL_OR_KEYWORD",
+            "name": "ylabel",
+            "required": false
+          },
+          {
+            "annotation": "'Limit | None'",
+            "default": "None",
+            "kind": "POSITIONAL_OR_KEYWORD",
+            "name": "xlim",
+            "required": false
+          },
+          {
+            "annotation": "'Limit | None'",
+            "default": "None",
+            "kind": "POSITIONAL_OR_KEYWORD",
+            "name": "ylim",
+            "required": false
+          },
+          {
+            "annotation": "'Scale'",
+            "default": "'linear'",
+            "kind": "KEYWORD_ONLY",
+            "name": "xscale",
+            "required": false
+          },
+          {
+            "annotation": "'Scale'",
+            "default": "'linear'",
+            "kind": "KEYWORD_ONLY",
+            "name": "yscale",
+            "required": false
+          },
+          {
+            "annotation": "'TickSpec | None'",
+            "default": "None",
+            "kind": "KEYWORD_ONLY",
+            "name": "xticks",
+            "required": false
+          },
+          {
+            "annotation": "'TickSpec | None'",
+            "default": "None",
+            "kind": "KEYWORD_ONLY",
+            "name": "yticks",
+            "required": false
+          },
+          {
+            "annotation": "'bool'",
+            "default": "True",
+            "kind": "KEYWORD_ONLY",
+            "name": "minor",
+            "required": false
+          },
+          {
+            "annotation": "'bool | None'",
+            "default": "None",
+            "kind": "KEYWORD_ONLY",
+            "name": "xminor",
+            "required": false
+          },
+          {
+            "annotation": "'bool | None'",
+            "default": "None",
+            "kind": "KEYWORD_ONLY",
+            "name": "yminor",
+            "required": false
+          },
+          {
+            "annotation": "'float'",
+            "default": "5",
+            "kind": "KEYWORD_ONLY",
+            "name": "pad",
+            "required": false
+          },
+          {
+            "annotation": "'float | None'",
+            "default": "None",
+            "kind": "KEYWORD_ONLY",
+            "name": "xpad",
+            "required": false
+          },
+          {
+            "annotation": "'float | None'",
+            "default": "None",
+            "kind": "KEYWORD_ONLY",
+            "name": "ypad",
+            "required": false
+          },
+          {
+            "annotation": "'bool'",
+            "default": "False",
+            "kind": "KEYWORD_ONLY",
+            "name": "square",
+            "required": false
+          },
+          {
+            "annotation": "\"bool | Literal['in', 'out']\"",
+            "default": "False",
+            "kind": "KEYWORD_ONLY",
+            "name": "index",
+            "required": false
+          }
+        ],
+        "return_annotation": "'None'"
+      },
+      "docstring": {
+        "sha256": "8962b8d3aadbf26b4679cc40e8da3a9e5e906110d0ced99a9116f97d7ab952d0",
+        "summary": "Set publication labels and optional panel geometry on explicit Axes."
+      },
+      "kind": "function",
+      "module": "gsplot._compat.root_api",
+      "name": "label",
+      "qualname": "label",
+      "signature": "(target: 'AxesTarget', xlabel: 'str | LabelRecords' = '', ylabel: 'str' = '', xlim: 'Limit | None' = None, ylim: 'Limit | None' = None, *, xscale: 'Scale' = 'linear', yscale: 'Scale' = 'linear', xticks: 'TickSpec | None' = None, yticks: 'TickSpec | None' = None, minor: 'bool' = True, xminor: 'bool | None' = None, yminor: 'bool | None' = None, pad: 'float' = 5, xpad: 'float | None' = None, ypad: 'float | None' = None, square: 'bool' = False, index: \"bool | Literal['in', 'out']\" = False) -> 'None'"
+    },
+    {
+      "call_contract": {
+        "parameters": [
+          {
+            "annotation": "'AxesTarget'",
+            "default": null,
+            "kind": "POSITIONAL_OR_KEYWORD",
+            "name": "target",
+            "required": true
+          },
+          {
+            "annotation": "'float'",
+            "default": "1",
+            "kind": "POSITIONAL_OR_KEYWORD",
+            "name": "aspect",
+            "required": false
+          }
+        ],
+        "return_annotation": "'None'"
+      },
+      "docstring": {
+        "sha256": "7e525c6fe62067ee602ffed42fc73b3d98a9e1777682b3c1eb7d98f13c398f29",
+        "summary": "Apply a finite positive box aspect to explicit Axes."
+      },
+      "kind": "function",
+      "module": "gsplot._style.axes",
+      "name": "square",
+      "qualname": "square",
+      "signature": "(target: 'AxesTarget', aspect: 'float' = 1) -> 'None'"
+    },
+    {
+      "call_contract": {
+        "parameters": [
+          {
+            "annotation": "'Axes'",
+            "default": null,
+            "kind": "POSITIONAL_OR_KEYWORD",
+            "name": "ax",
+            "required": true
+          },
+          {
+            "annotation": "'str'",
+            "default": null,
+            "kind": "POSITIONAL_OR_KEYWORD",
+            "name": "text",
+            "required": true
+          },
+          {
+            "annotation": "'Mapping[str, Any] | None'",
+            "default": "None",
+            "kind": "KEYWORD_ONLY",
+            "name": "props",
+            "required": false
+          }
+        ],
+        "return_annotation": "'Text'"
+      },
+      "docstring": {
+        "sha256": "4080a7fe093b747c0dedc19318ecb995e19f5f4fd6cc6d1b090862efacea57ca",
+        "summary": "Set an explicit Axes title and return its native Text artist."
+      },
+      "kind": "function",
+      "module": "gsplot._compat.root_api",
+      "name": "title",
+      "qualname": "title",
+      "signature": "(ax: 'Axes', text: 'str', *, props: 'Mapping[str, Any] | None' = None) -> 'Text'"
+    },
+    {
+      "call_contract": {
+        "parameters": [
+          {
+            "annotation": "'Figure'",
+            "default": null,
+            "kind": "POSITIONAL_OR_KEYWORD",
+            "name": "fig",
+            "required": true
+          },
+          {
+            "annotation": "'str'",
+            "default": null,
+            "kind": "POSITIONAL_OR_KEYWORD",
+            "name": "text",
+            "required": true
+          },
+          {
+            "annotation": "'Mapping[str, Any] | None'",
+            "default": "None",
+            "kind": "KEYWORD_ONLY",
+            "name": "props",
+            "required": false
+          }
+        ],
+        "return_annotation": "'Text'"
+      },
+      "docstring": {
+        "sha256": "2d368501451ba95408946241e143be2b5e444939bb180bbb69e4d6087c997c16",
+        "summary": "Set an explicit Figure suptitle and return its native Text artist."
+      },
+      "kind": "function",
+      "module": "gsplot._style.axes",
+      "name": "suptitle",
+      "qualname": "suptitle",
+      "signature": "(fig: 'Figure', text: 'str', *, props: 'Mapping[str, Any] | None' = None) -> 'Text'"
+    },
+    {
+      "call_contract": {
+        "parameters": [
+          {
+            "annotation": "'AxesTarget'",
+            "default": null,
+            "kind": "POSITIONAL_OR_KEYWORD",
+            "name": "target",
+            "required": true
+          },
+          {
+            "annotation": "'bool'",
+            "default": null,
+            "kind": "POSITIONAL_OR_KEYWORD",
+            "name": "enabled",
+            "required": true
+          },
+          {
+            "annotation": "\"Literal['x', 'y', 'both']\"",
+            "default": "'both'",
+            "kind": "KEYWORD_ONLY",
+            "name": "axis",
+            "required": false
+          }
+        ],
+        "return_annotation": "'None'"
+      },
+      "docstring": {
+        "sha256": "7a21739dba36ac44b744c000a34a18d8802c27d0ffb0710313945755589eb71c",
+        "summary": "Enable or disable minor ticks on explicit Axes targets."
+      },
+      "kind": "function",
+      "module": "gsplot._style.axes",
+      "name": "minor_ticks",
+      "qualname": "minor_ticks",
+      "signature": "(target: 'AxesTarget', enabled: 'bool', *, axis: \"Literal['x', 'y', 'both']\" = 'both') -> 'None'"
+    },
+    {
+      "call_contract": {
+        "parameters": [
+          {
+            "annotation": "'AxesTarget'",
+            "default": null,
+            "kind": "POSITIONAL_OR_KEYWORD",
+            "name": "target",
+            "required": true
+          },
+          {
+            "annotation": "'float | None'",
+            "default": null,
+            "kind": "POSITIONAL_OR_KEYWORD",
+            "name": "aspect",
+            "required": true
+          }
+        ],
+        "return_annotation": "'None'"
+      },
+      "docstring": {
+        "sha256": "4146300903e63cf7cf986e288510a8449859a19c55bdeb60199e9ed9bf007088",
+        "summary": "Set or clear an explicit Axes box aspect."
+      },
+      "kind": "function",
+      "module": "gsplot._style.axes",
+      "name": "box_aspect",
+      "qualname": "box_aspect",
+      "signature": "(target: 'AxesTarget', aspect: 'float | None') -> 'None'"
+    },
+    {
+      "call_contract": {
+        "parameters": [
+          {
+            "annotation": "'Sequence[Axes] | Mapping[str, Axes]'",
+            "default": null,
+            "kind": "POSITIONAL_OR_KEYWORD",
+            "name": "target",
+            "required": true
+          },
+          {
+            "annotation": "'Sequence[str] | None'",
+            "default": "None",
+            "kind": "POSITIONAL_OR_KEYWORD",
+            "name": "labels",
+            "required": false
+          },
+          {
+            "annotation": "'str'",
+            "default": "'corner'",
+            "kind": "KEYWORD_ONLY",
+            "name": "loc",
+            "required": false
+          },
+          {
+            "annotation": "'Mapping[str, Any] | None'",
+            "default": "None",
+            "kind": "KEYWORD_ONLY",
+            "name": "props",
+            "required": false
+          }
+        ],
+        "return_annotation": "'tuple[Text, ...]'"
+      },
+      "docstring": {
+        "sha256": "6708739a39364375d14dba195c105125c57ebf265c8210b78cafb4c257e4998a",
+        "summary": "Add deterministic labels to an explicit ordered panel collection."
+      },
+      "kind": "function",
+      "module": "gsplot._style.panels",
+      "name": "panel_labels",
+      "qualname": "panel_labels",
+      "signature": "(target: 'Sequence[Axes] | Mapping[str, Axes]', labels: 'Sequence[str] | None' = None, *, loc: 'str' = 'corner', props: 'Mapping[str, Any] | None' = None) -> 'tuple[Text, ...]'"
+    },
+    {
+      "call_contract": {
+        "parameters": [
+          {
+            "annotation": "'AxesTarget'",
+            "default": null,
+            "kind": "POSITIONAL_OR_KEYWORD",
+            "name": "target",
+            "required": true
+          },
+          {
+            "annotation": "'Sequence[str] | Mapping[object, str] | None'",
+            "default": "None",
+            "kind": "POSITIONAL_OR_KEYWORD",
+            "name": "labels",
+            "required": false
+          },
+          {
+            "annotation": "\"Literal['in', 'out']\"",
+            "default": "'out'",
+            "kind": "KEYWORD_ONLY",
+            "name": "loc",
+            "required": false
+          },
+          {
+            "annotation": "'float | str'",
+            "default": "'large'",
+            "kind": "KEYWORD_ONLY",
+            "name": "size",
+            "required": false
+          },
+          {
+            "annotation": "'Mapping[str, object] | None'",
+            "default": "None",
+            "kind": "KEYWORD_ONLY",
+            "name": "props",
+            "required": false
+          }
+        ],
+        "return_annotation": "'Text | tuple[Text, ...]'"
+      },
+      "docstring": {
+        "sha256": "b7042ceceb673e423b422c5457c9988c8aad6f5086c183a04d8dbb046a7217d8",
+        "summary": "Add deterministic lowercase panel indexes to explicit Axes."
+      },
+      "kind": "function",
+      "module": "gsplot._style.panels",
+      "name": "index",
+      "qualname": "index",
+      "signature": "(target: 'AxesTarget', labels: 'Sequence[str] | Mapping[object, str] | None' = None, *, loc: \"Literal['in', 'out']\" = 'out', size: 'float | str' = 'large', props: 'Mapping[str, object] | None' = None) -> 'Text | tuple[Text, ...]'"
+    },
+    {
+      "call_contract": {
+        "parameters": [
+          {
+            "annotation": "'Figure'",
+            "default": null,
+            "kind": "POSITIONAL_OR_KEYWORD",
+            "name": "fig",
+            "required": true
+          },
+          {
+            "annotation": "'ColorSpec'",
+            "default": null,
+            "kind": "POSITIONAL_OR_KEYWORD",
+            "name": "color",
+            "required": true
+          }
+        ],
+        "return_annotation": "'None'"
+      },
+      "docstring": {
+        "sha256": "f05e7540a2fd012b1f828c8cdc4d491718c6176344f0cc7d83e8e2e56698e03d",
+        "summary": "Set one explicit Figure patch facecolor."
+      },
+      "kind": "function",
+      "module": "gsplot._style.themes",
+      "name": "fig_facecolor",
+      "qualname": "fig_facecolor",
+      "signature": "(fig: 'Figure', color: 'ColorSpec') -> 'None'"
+    },
+    {
+      "call_contract": {
+        "parameters": [
+          {
+            "annotation": "'AxesTarget'",
+            "default": null,
+            "kind": "POSITIONAL_OR_KEYWORD",
+            "name": "target",
+            "required": true
+          },
+          {
+            "annotation": "'Sequence[Artist] | Mapping[object, Sequence[Artist]] | None'",
+            "default": "None",
+            "kind": "KEYWORD_ONLY",
+            "name": "handles",
+            "required": false
+          },
+          {
+            "annotation": "'Sequence[str] | Mapping[object, Sequence[str]] | None'",
+            "default": "None",
+            "kind": "KEYWORD_ONLY",
+            "name": "labels",
+            "required": false
+          },
+          {
+            "annotation": "'Mapping[object, HandlerBase] | None'",
+            "default": "None",
+            "kind": "KEYWORD_ONLY",
+            "name": "handler_map",
+            "required": false
+          },
+          {
+            "annotation": "'str | int'",
+            "default": "'best'",
+            "kind": "KEYWORD_ONLY",
+            "name": "loc",
+            "required": false
+          },
+          {
+            "annotation": "'bool'",
+            "default": "False",
+            "kind": "KEYWORD_ONLY",
+            "name": "frameon",
+            "required": false
+          },
+          {
+            "annotation": "'bool'",
+            "default": "False",
+            "kind": "KEYWORD_ONLY",
+            "name": "fancybox",
+            "required": false
+          },
+          {
+            "annotation": "'float'",
+            "default": "0.3",
+            "kind": "KEYWORD_ONLY",
+            "name": "labelspacing",
+            "required": false
+          },
+          {
+            "annotation": "'float | None'",
+            "default": "None",
+            "kind": "KEYWORD_ONLY",
+            "name": "handlelength",
+            "required": false
+          },
+          {
+            "annotation": "'bool'",
+            "default": "False",
+            "kind": "KEYWORD_ONLY",
+            "name": "reverse",
+            "required": false
+          },
+          {
+            "annotation": "'bool'",
+            "default": "False",
+            "kind": "KEYWORD_ONLY",
+            "name": "replace",
+            "required": false
+          },
+          {
+            "annotation": "'Mapping[str, object] | None'",
+            "default": "None",
+            "kind": "KEYWORD_ONLY",
+            "name": "props",
+            "required": false
+          }
+        ],
+        "return_annotation": "'Legend | tuple[Legend, ...]'"
+      },
+      "docstring": {
+        "sha256": "25bb1c05d00dba3b8d1eb6164ba6006701e071c6a793be37177567287d49bfd4",
+        "summary": "Create publication legends on one or more explicit Axes."
+      },
+      "kind": "function",
+      "module": "gsplot._compat.root_api",
+      "name": "legend",
+      "qualname": "legend",
+      "signature": "(target: 'AxesTarget', *, handles: 'Sequence[Artist] | Mapping[object, Sequence[Artist]] | None' = None, labels: 'Sequence[str] | Mapping[object, Sequence[str]] | None' = None, handler_map: 'Mapping[object, HandlerBase] | None' = None, loc: 'str | int' = 'best', frameon: 'bool' = False, fancybox: 'bool' = False, labelspacing: 'float' = 0.3, handlelength: 'float | None' = None, reverse: 'bool' = False, replace: 'bool' = False, props: 'Mapping[str, object] | None' = None) -> 'Legend | tuple[Legend, ...]'"
+    },
+    {
+      "call_contract": {
+        "parameters": [
+          {
+            "annotation": "'Figure | Sequence[Axes] | Mapping[object, Axes]'",
+            "default": null,
+            "kind": "POSITIONAL_OR_KEYWORD",
+            "name": "target",
+            "required": true
+          },
+          {
+            "annotation": "'bool'",
+            "default": "False",
+            "kind": "KEYWORD_ONLY",
+            "name": "replace",
+            "required": false
+          },
+          {
+            "annotation": "'Mapping[str, Any] | None'",
+            "default": "None",
+            "kind": "KEYWORD_ONLY",
+            "name": "props",
+            "required": false
+          }
+        ],
+        "return_annotation": "'tuple[Legend, ...]'"
+      },
+      "docstring": {
+        "sha256": "0808abe46ce0e234d697761b76128cfe83024f58444c9058440bfadfa5341cdd",
+        "summary": "Create legends for explicit axes with discoverable entries."
+      },
+      "kind": "function",
+      "module": "gsplot._style.legends",
+      "name": "legends",
+      "qualname": "legends",
+      "signature": "(target: 'Figure | Sequence[Axes] | Mapping[object, Axes]', *, replace: 'bool' = False, props: 'Mapping[str, Any] | None' = None) -> 'tuple[Legend, ...]'"
+    },
+    {
+      "call_contract": {
+        "parameters": [
+          {
+            "annotation": "'Axes'",
+            "default": null,
+            "kind": "POSITIONAL_OR_KEYWORD",
+            "name": "ax",
+            "required": true
+          },
+          {
+            "annotation": "'Mapping[Any, HandlerBase] | None'",
+            "default": "None",
+            "kind": "KEYWORD_ONLY",
+            "name": "handler_map",
+            "required": false
+          }
+        ],
+        "return_annotation": "'LegendEntries'"
+      },
+      "docstring": {
+        "sha256": "9485e183b241b372b26c68224b84169495e2b5295328ec0c25ded4108e36b243",
+        "summary": "Return discovered handles and labels without creating or printing."
+      },
+      "kind": "function",
+      "module": "gsplot._style.legends",
+      "name": "legend_entries",
+      "qualname": "legend_entries",
+      "signature": "(ax: 'Axes', *, handler_map: 'Mapping[Any, HandlerBase] | None' = None) -> 'LegendEntries'"
+    },
+    {
+      "call_contract": {
+        "parameters": [
+          {
+            "annotation": "'Axes'",
+            "default": null,
+            "kind": "POSITIONAL_OR_KEYWORD",
+            "name": "ax",
+            "required": true
+          },
+          {
+            "annotation": "'str | Colormap'",
+            "default": "'viridis'",
+            "kind": "KEYWORD_ONLY",
+            "name": "cmap",
+            "required": false
+          },
+          {
+            "annotation": "'str | None'",
+            "default": "None",
+            "kind": "KEYWORD_ONLY",
+            "name": "label",
+            "required": false
+          },
+          {
+            "annotation": "'int'",
+            "default": "8",
+            "kind": "KEYWORD_ONLY",
+            "name": "stripes",
+            "required": false
+          },
+          {
+            "annotation": "'NormalizeSpec | None'",
+            "default": "None",
+            "kind": "KEYWORD_ONLY",
+            "name": "norm",
+            "required": false
+          },
+          {
+            "annotation": "'bool'",
+            "default": "False",
+            "kind": "KEYWORD_ONLY",
+            "name": "reverse",
+            "required": false
+          },
+          {
+            "annotation": "'bool'",
+            "default": "False",
+            "kind": "KEYWORD_ONLY",
+            "name": "replace",
+            "required": false
+          },
+          {
+            "annotation": "'Mapping[str, Any] | None'",
+            "default": "None",
+            "kind": "KEYWORD_ONLY",
+            "name": "props",
+            "required": false
+          }
+        ],
+        "return_annotation": "'Legend'"
+      },
+      "docstring": {
+        "sha256": "4672f07f70977d5a6e889b11cf428bd6204791d778932de88dcb5ab58fc3100c",
+        "summary": "Create a local legend composed of finite colormap stripe proxies."
+      },
+      "kind": "function",
+      "module": "gsplot._style.legends",
+      "name": "cmap_legend",
+      "qualname": "cmap_legend",
+      "signature": "(ax: 'Axes', *, cmap: 'str | Colormap' = 'viridis', label: 'str | None' = None, stripes: 'int' = 8, norm: 'NormalizeSpec | None' = None, reverse: 'bool' = False, replace: 'bool' = False, props: 'Mapping[str, Any] | None' = None) -> 'Legend'"
+    },
+    {
+      "call_contract": {
+        "parameters": [
+          {
+            "annotation": "'Figure | Axes'",
+            "default": null,
+            "kind": "POSITIONAL_OR_KEYWORD",
+            "name": "target",
+            "required": true
+          },
+          {
+            "annotation": "'Theme'",
+            "default": null,
+            "kind": "POSITIONAL_OR_KEYWORD",
+            "name": "theme",
+            "required": true
+          }
+        ],
+        "return_annotation": "'None'"
+      },
+      "docstring": {
+        "sha256": "87ed17235e1f88b72acbcfbd44fadba4d3a2470ca8e359c382a03b0694cd85c7",
+        "summary": "Apply a validated Theme only to an explicit Figure or Axes."
+      },
+      "kind": "function",
+      "module": "gsplot._style.themes",
+      "name": "set_theme",
+      "qualname": "set_theme",
+      "signature": "(target: 'Figure | Axes', theme: 'Theme') -> 'None'"
+    },
+    {
+      "call_contract": {
+        "parameters": [
+          {
+            "annotation": "'AxesTarget'",
+            "default": null,
+            "kind": "POSITIONAL_OR_KEYWORD",
+            "name": "target",
+            "required": true
+          },
+          {
+            "annotation": "'bool'",
+            "default": "True",
+            "kind": "KEYWORD_ONLY",
+            "name": "cycle",
+            "required": false
+          }
+        ],
+        "return_annotation": "'None'"
+      },
+      "docstring": {
+        "sha256": "b4eb16fac1d3608cc1adcb3d2dd550e5ab4619460ed198b7a772d3884d842ef8",
+        "summary": "Apply the frozen publication baseline to explicit Axes only."
+      },
+      "kind": "function",
+      "module": "gsplot._style.paper",
+      "name": "paper",
+      "qualname": "paper",
+      "signature": "(target: 'AxesTarget', *, cycle: 'bool' = True) -> 'None'"
+    },
+    {
+      "call_contract": {
+        "parameters": [
+          {
+            "annotation": "'Figure | AxesTarget'",
+            "default": null,
+            "kind": "POSITIONAL_OR_KEYWORD",
+            "name": "target",
+            "required": true
+          },
+          {
+            "annotation": "'str | PathLike[str]'",
+            "default": null,
+            "kind": "POSITIONAL_OR_KEYWORD",
+            "name": "path",
+            "required": true
+          },
+          {
+            "annotation": "'str | Sequence[str] | None'",
+            "default": "None",
+            "kind": "KEYWORD_ONLY",
+            "name": "formats",
+            "required": false
+          },
+          {
+            "annotation": "'float'",
+            "default": "600",
+            "kind": "KEYWORD_ONLY",
+            "name": "dpi",
+            "required": false
+          },
+          {
+            "annotation": "'bool'",
+            "default": "True",
+            "kind": "KEYWORD_ONLY",
+            "name": "crop",
+            "required": false
+          },
+          {
+            "annotation": "'float | None'",
+            "default": "None",
+            "kind": "KEYWORD_ONLY",
+            "name": "pad",
+            "required": false
+          },
+          {
+            "annotation": "'bool'",
+            "default": "True",
+            "kind": "KEYWORD_ONLY",
+            "name": "show",
+            "required": false
+          },
+          {
+            "annotation": "'bool'",
+            "default": "False",
+            "kind": "KEYWORD_ONLY",
+            "name": "close",
+            "required": false
+          },
+          {
+            "annotation": "'bool'",
+            "default": "False",
+            "kind": "KEYWORD_ONLY",
+            "name": "create_parent",
+            "required": false
+          },
+          {
+            "annotation": "'bool'",
+            "default": "True",
+            "kind": "KEYWORD_ONLY",
+            "name": "overwrite",
+            "required": false
+          },
+          {
+            "annotation": "'bool'",
+            "default": "False",
+            "kind": "KEYWORD_ONLY",
+            "name": "transparent",
+            "required": false
+          },
+          {
+            "annotation": "'Mapping[str, object] | None'",
+            "default": "None",
+            "kind": "KEYWORD_ONLY",
+            "name": "metadata",
+            "required": false
+          }
+        ],
+        "return_annotation": "'tuple[Path, ...]'"
+      },
+      "docstring": {
+        "sha256": "e9e1c2cba367a6adda813becd23ca5b66a1f45f6fb8142284f3b5a157a24075e",
+        "summary": "Save one explicit Figure through a concise transactional workflow."
+      },
+      "kind": "function",
+      "module": "gsplot._figure.output",
+      "name": "save",
+      "qualname": "save",
+      "signature": "(target: 'Figure | AxesTarget', path: 'str | PathLike[str]', *, formats: 'str | Sequence[str] | None' = None, dpi: 'float' = 600, crop: 'bool' = True, pad: 'float | None' = None, show: 'bool' = True, close: 'bool' = False, create_parent: 'bool' = False, overwrite: 'bool' = True, transparent: 'bool' = False, metadata: 'Mapping[str, object] | None' = None) -> 'tuple[Path, ...]'"
+    },
+    {
+      "call_contract": {
+        "parameters": [
+          {
+            "annotation": "'Figure'",
+            "default": null,
+            "kind": "POSITIONAL_OR_KEYWORD",
+            "name": "fig",
+            "required": true
+          },
+          {
+            "annotation": "'str | PathLike[str]'",
+            "default": null,
+            "kind": "POSITIONAL_OR_KEYWORD",
+            "name": "path",
+            "required": true
+          },
+          {
+            "annotation": "'str | Sequence[str] | None'",
+            "default": "None",
+            "kind": "KEYWORD_ONLY",
+            "name": "formats",
+            "required": false
+          },
+          {
+            "annotation": "'float | None'",
+            "default": "None",
+            "kind": "KEYWORD_ONLY",
+            "name": "dpi",
+            "required": false
+          },
+          {
+            "annotation": "'bool'",
+            "default": "False",
+            "kind": "KEYWORD_ONLY",
+            "name": "close",
+            "required": false
+          },
+          {
+            "annotation": "'bool'",
+            "default": "False",
+            "kind": "KEYWORD_ONLY",
+            "name": "create_parent",
+            "required": false
+          },
+          {
+            "annotation": "'bool'",
+            "default": "False",
+            "kind": "KEYWORD_ONLY",
+            "name": "overwrite",
+            "required": false
+          },
+          {
+            "annotation": "'bool'",
+            "default": "True",
+            "kind": "KEYWORD_ONLY",
+            "name": "show",
+            "required": false
+          },
+          {
+            "annotation": "'Mapping[str, Any] | None'",
+            "default": "None",
+            "kind": "KEYWORD_ONLY",
+            "name": "props",
+            "required": false
+          }
+        ],
+        "return_annotation": "'tuple[Path, ...]'"
+      },
+      "docstring": {
+        "sha256": "be63b0cb2cd9077563211df2b8c8aa6f5e0bd3f22282262c08f91f540341286a",
+        "summary": "Save an explicit Figure and optionally display it after all writes."
+      },
+      "kind": "function",
+      "module": "gsplot._figure.output",
+      "name": "savefig",
+      "qualname": "savefig",
+      "signature": "(fig: 'Figure', path: 'str | PathLike[str]', *, formats: 'str | Sequence[str] | None' = None, dpi: 'float | None' = None, close: 'bool' = False, create_parent: 'bool' = False, overwrite: 'bool' = False, show: 'bool' = True, props: 'Mapping[str, Any] | None' = None) -> 'tuple[Path, ...]'"
+    },
+    {
+      "call_contract": {
+        "parameters": [
+          {
+            "annotation": "'Figure | AxesTarget'",
+            "default": null,
+            "kind": "POSITIONAL_OR_KEYWORD",
+            "name": "target",
+            "required": true
+          }
+        ],
+        "return_annotation": "'None'"
+      },
+      "docstring": {
+        "sha256": "fc71e30786bed065cb4c058d4b78e9f56ab793dc4bf8bde4f6a9f74d589bde63",
+        "summary": "Display only the unique Figure owned by an explicit target."
+      },
+      "kind": "function",
+      "module": "gsplot._compat.root_api",
+      "name": "show",
+      "qualname": "show",
+      "signature": "(target: 'Figure | AxesTarget') -> 'None'"
+    },
+    {
+      "call_contract": {
+        "parameters": [
+          {
+            "annotation": "'str | PathLike[str] | None'",
+            "default": "None",
+            "kind": "POSITIONAL_OR_KEYWORD",
+            "name": "path",
+            "required": false
+          }
+        ],
+        "return_annotation": "'Config'"
+      },
+      "docstring": {
+        "sha256": "96a9dccbfde50c4cf9b3a36e69e095264ec453271195ee22e05630df27824e2e",
+        "summary": "Load canonical configuration and translate one schema-less legacy file."
+      },
+      "kind": "function",
+      "module": "gsplot._compat.config",
+      "name": "load_config",
+      "qualname": "load_config",
+      "signature": "(path: 'str | PathLike[str] | None' = None) -> 'Config'"
+    },
+    {
+      "call_contract": {
+        "parameters": [
+          {
+            "annotation": "'str | PathLike[str]'",
+            "default": null,
+            "kind": "POSITIONAL_OR_KEYWORD",
+            "name": "path",
+            "required": true
+          },
+          {
+            "annotation": "\"Literal['genfromtxt', 'loadtxt']\"",
+            "default": "'genfromtxt'",
+            "kind": "KEYWORD_ONLY",
+            "name": "loader",
+            "required": false
+          },
+          {
+            "annotation": "'str | None'",
+            "default": "','",
+            "kind": "KEYWORD_ONLY",
+            "name": "delimiter",
+            "required": false
+          },
+          {
+            "annotation": "'str | None'",
+            "default": "'#'",
+            "kind": "KEYWORD_ONLY",
+            "name": "comments",
+            "required": false
+          },
+          {
+            "annotation": "'int'",
+            "default": "0",
+            "kind": "KEYWORD_ONLY",
+            "name": "skip_header",
+            "required": false
+          },
+          {
+            "annotation": "'int | Sequence[int] | None'",
+            "default": "None",
+            "kind": "KEYWORD_ONLY",
+            "name": "usecols",
+            "required": false
+          },
+          {
+            "annotation": "'bool'",
+            "default": "True",
+            "kind": "KEYWORD_ONLY",
+            "name": "unpack",
+            "required": false
+          },
+          {
+            "annotation": "'Literal[0, 1, 2]'",
+            "default": "1",
+            "kind": "KEYWORD_ONLY",
+            "name": "ndmin",
+            "required": false
+          },
+          {
+            "annotation": "'DTypeLike'",
+            "default": "<class 'float'>",
+            "kind": "KEYWORD_ONLY",
+            "name": "dtype",
+            "required": false
+          }
+        ],
+        "return_annotation": "'NDArray[Any] | list[NDArray[Any]]'"
+      },
+      "docstring": {
+        "sha256": "651dfb8067dc9d811b13fd1574a5559718a2e1b2598a99b24c690c9ca87c8670",
+        "summary": "Read comma-delimited columns with finite NumPy text options."
+      },
+      "kind": "function",
+      "module": "gsplot._io.arrays",
+      "name": "read",
+      "qualname": "read",
+      "signature": "(path: 'str | PathLike[str]', *, loader: \"Literal['genfromtxt', 'loadtxt']\" = 'genfromtxt', delimiter: 'str | None' = ',', comments: 'str | None' = '#', skip_header: 'int' = 0, usecols: 'int | Sequence[int] | None' = None, unpack: 'bool' = True, ndmin: 'Literal[0, 1, 2]' = 1, dtype: 'DTypeLike' = <class 'float'>) -> 'NDArray[Any] | list[NDArray[Any]]'"
+    },
+    {
+      "call_contract": {
+        "parameters": [
+          {
+            "annotation": "'str | PathLike[str]'",
+            "default": null,
+            "kind": "POSITIONAL_OR_KEYWORD",
+            "name": "path",
+            "required": true
+          },
+          {
+            "annotation": "\"Literal['genfromtxt', 'loadtxt']\"",
+            "default": "'genfromtxt'",
+            "kind": "KEYWORD_ONLY",
+            "name": "loader",
+            "required": false
+          },
+          {
+            "annotation": "'int'",
+            "default": "1",
+            "kind": "KEYWORD_ONLY",
+            "name": "ndmin",
+            "required": false
+          },
+          {
+            "annotation": "'Mapping[str, Any] | None'",
+            "default": "None",
+            "kind": "KEYWORD_ONLY",
+            "name": "options",
+            "required": false
+          }
+        ],
+        "return_annotation": "'NDArray[Any] | list[NDArray[Any]]'"
+      },
+      "docstring": {
+        "sha256": "ddd2b918e903176b3c5cc9849f47fdd4e46df5ccf8d35e4a5693a5a2f2121684",
+        "summary": "Read a text array without changing the process working directory."
+      },
+      "kind": "function",
+      "module": "gsplot._io.arrays",
+      "name": "read_array",
+      "qualname": "read_array",
+      "signature": "(path: 'str | PathLike[str]', *, loader: \"Literal['genfromtxt', 'loadtxt']\" = 'genfromtxt', ndmin: 'int' = 1, options: 'Mapping[str, Any] | None' = None) -> 'NDArray[Any] | list[NDArray[Any]]'"
+    },
+    {
+      "call_contract": {
+        "parameters": [
+          {
+            "annotation": "'MetadataSnapshot'",
+            "default": null,
+            "kind": "POSITIONAL_OR_KEYWORD",
+            "name": "snapshot",
+            "required": true
+          },
+          {
+            "annotation": "'str | PathLike[str]'",
+            "default": null,
+            "kind": "POSITIONAL_OR_KEYWORD",
+            "name": "destination",
+            "required": true
+          },
+          {
+            "annotation": "'bool'",
+            "default": "False",
+            "kind": "KEYWORD_ONLY",
+            "name": "overwrite",
+            "required": false
+          },
+          {
+            "annotation": "'bool'",
+            "default": "False",
+            "kind": "KEYWORD_ONLY",
+            "name": "create_parent",
+            "required": false
+          }
+        ],
+        "return_annotation": "'Path'"
+      },
+      "docstring": {
+        "sha256": "01e87b8dbb1090736f56be9a31fe48e82e31b7206e0cfe992c6ce3622be5b486",
+        "summary": "Write one stable UTF-8 metadata document to an explicit destination."
+      },
+      "kind": "function",
+      "module": "gsplot._io.metadata",
+      "name": "write_meta",
+      "qualname": "write_meta",
+      "signature": "(snapshot: 'MetadataSnapshot', destination: 'str | PathLike[str]', *, overwrite: 'bool' = False, create_parent: 'bool' = False) -> 'Path'"
+    },
+    {
+      "call_contract": {
+        "parameters": [],
+        "return_annotation": "'BuildInfo'"
+      },
+      "docstring": {
+        "sha256": "c4d0bf77a3f8fdbe367f34b4d1851e97c11e9949700e714f83855010dc5bb454",
+        "summary": "Return only the installed gsplot version and a null commit value."
+      },
+      "kind": "function",
+      "module": "gsplot._io.build",
+      "name": "build_info",
+      "qualname": "build_info",
+      "signature": "() -> 'BuildInfo'"
+    },
+    {
+      "call_contract": {
+        "parameters": [
+          {
+            "annotation": "'str'",
+            "default": null,
+            "kind": "POSITIONAL_OR_KEYWORD",
+            "name": "name",
+            "required": true
+          }
+        ],
+        "return_annotation": "'None'"
+      },
+      "docstring": {
+        "sha256": "d6644fe0e2c29ddf38f1833a2f9dcacbf949e855b40162ea7a2fc0cba53845c5",
+        "summary": "Select a Matplotlib backend before pyplot or a figure is initialized."
+      },
+      "kind": "function",
+      "module": "gsplot._figure.backend",
+      "name": "use_backend",
+      "qualname": "use_backend",
+      "signature": "(name: 'str') -> 'None'"
+    },
+    {
+      "call_contract": {
+        "parameters": [
+          {
+            "annotation": "'Literal[2]'",
+            "default": "2",
+            "kind": "KEYWORD_ONLY",
+            "name": "schema_version",
+            "required": false
+          },
+          {
+            "annotation": "'FigureConfig'",
+            "default": "<factory>",
+            "kind": "KEYWORD_ONLY",
+            "name": "figure",
+            "required": false
+          },
+          {
+            "annotation": "'PlottingConfig'",
+            "default": "<factory>",
+            "kind": "KEYWORD_ONLY",
+            "name": "plotting",
+            "required": false
+          }
+        ],
+        "return_annotation": "None"
+      },
+      "docstring": {
+        "sha256": "863d6159256b75c8f793712a22531fe80cef44bd46e0afb404c225d8055e629c",
+        "summary": "Immutable schema-versioned configuration for canonical operations."
+      },
+      "kind": "class",
+      "module": "gsplot._config.model",
+      "name": "Config",
+      "qualname": "Config",
+      "signature": "(*, schema_version: 'Literal[2]' = 2, figure: 'FigureConfig' = <factory>, plotting: 'PlottingConfig' = <factory>) -> None"
+    },
+    {
+      "call_contract": {
+        "parameters": [
+          {
+            "annotation": "'str | None'",
+            "default": "None",
+            "kind": "KEYWORD_ONLY",
+            "name": "xlabel",
+            "required": false
+          },
+          {
+            "annotation": "'str | None'",
+            "default": "None",
+            "kind": "KEYWORD_ONLY",
+            "name": "ylabel",
+            "required": false
+          },
+          {
+            "annotation": "'tuple[float, float] | None'",
+            "default": "None",
+            "kind": "KEYWORD_ONLY",
+            "name": "xlim",
+            "required": false
+          },
+          {
+            "annotation": "'tuple[float, float] | None'",
+            "default": "None",
+            "kind": "KEYWORD_ONLY",
+            "name": "ylim",
+            "required": false
+          },
+          {
+            "annotation": "\"Literal['linear', 'log', 'symlog', 'logit']\"",
+            "default": "'linear'",
+            "kind": "KEYWORD_ONLY",
+            "name": "xscale",
+            "required": false
+          },
+          {
+            "annotation": "\"Literal['linear', 'log', 'symlog', 'logit']\"",
+            "default": "'linear'",
+            "kind": "KEYWORD_ONLY",
+            "name": "yscale",
+            "required": false
+          },
+          {
+            "annotation": "'tuple[float, ...] | None'",
+            "default": "None",
+            "kind": "KEYWORD_ONLY",
+            "name": "xticks",
+            "required": false
+          },
+          {
+            "annotation": "'tuple[float, ...] | None'",
+            "default": "None",
+            "kind": "KEYWORD_ONLY",
+            "name": "yticks",
+            "required": false
+          },
+          {
+            "annotation": "'bool | None'",
+            "default": "None",
+            "kind": "KEYWORD_ONLY",
+            "name": "xminor",
+            "required": false
+          },
+          {
+            "annotation": "'bool | None'",
+            "default": "None",
+            "kind": "KEYWORD_ONLY",
+            "name": "yminor",
+            "required": false
+          },
+          {
+            "annotation": "'float | None'",
+            "default": "None",
+            "kind": "KEYWORD_ONLY",
+            "name": "xlabelpad",
+            "required": false
+          },
+          {
+            "annotation": "'float | None'",
+            "default": "None",
+            "kind": "KEYWORD_ONLY",
+            "name": "ylabelpad",
+            "required": false
+          }
+        ],
+        "return_annotation": "None"
+      },
+      "docstring": {
+        "sha256": "a71579efed42ae9e5e3ec78d8ebff03328b859ad2db714fd78850cce3c1940bd",
+        "summary": "Immutable Cartesian labels, limits, scales, ticks, and padding."
+      },
+      "kind": "class",
+      "module": "gsplot._core.types",
+      "name": "AxisSpec",
+      "qualname": "AxisSpec",
+      "signature": "(*, xlabel: 'str | None' = None, ylabel: 'str | None' = None, xlim: 'tuple[float, float] | None' = None, ylim: 'tuple[float, float] | None' = None, xscale: \"Literal['linear', 'log', 'symlog', 'logit']\" = 'linear', yscale: \"Literal['linear', 'log', 'symlog', 'logit']\" = 'linear', xticks: 'tuple[float, ...] | None' = None, yticks: 'tuple[float, ...] | None' = None, xminor: 'bool | None' = None, yminor: 'bool | None' = None, xlabelpad: 'float | None' = None, ylabelpad: 'float | None' = None) -> None"
+    },
+    {
+      "call_contract": {
+        "parameters": [
+          {
+            "annotation": "'ColorSpec | None'",
+            "default": "None",
+            "kind": "KEYWORD_ONLY",
+            "name": "figure_facecolor",
+            "required": false
+          },
+          {
+            "annotation": "'ColorSpec | None'",
+            "default": "None",
+            "kind": "KEYWORD_ONLY",
+            "name": "axes_facecolor",
+            "required": false
+          },
+          {
+            "annotation": "'ColorSpec | None'",
+            "default": "None",
+            "kind": "KEYWORD_ONLY",
+            "name": "text_color",
+            "required": false
+          },
+          {
+            "annotation": "'ColorSpec | None'",
+            "default": "None",
+            "kind": "KEYWORD_ONLY",
+            "name": "spine_color",
+            "required": false
+          },
+          {
+            "annotation": "'ColorSpec | None'",
+            "default": "None",
+            "kind": "KEYWORD_ONLY",
+            "name": "tick_color",
+            "required": false
+          },
+          {
+            "annotation": "'bool | None'",
+            "default": "None",
+            "kind": "KEYWORD_ONLY",
+            "name": "grid",
+            "required": false
+          },
+          {
+            "annotation": "'ColorSpec | None'",
+            "default": "None",
+            "kind": "KEYWORD_ONLY",
+            "name": "grid_color",
+            "required": false
+          },
+          {
+            "annotation": "'float | None'",
+            "default": "None",
+            "kind": "KEYWORD_ONLY",
+            "name": "grid_alpha",
+            "required": false
+          }
+        ],
+        "return_annotation": "None"
+      },
+      "docstring": {
+        "sha256": "3e76368a6f89ffef17472adafb449bb51ed620a76bc9c151f429bfbaa711381a",
+        "summary": "Immutable explicit Figure/Axes appearance values."
+      },
+      "kind": "class",
+      "module": "gsplot._core.types",
+      "name": "Theme",
+      "qualname": "Theme",
+      "signature": "(*, figure_facecolor: 'ColorSpec | None' = None, axes_facecolor: 'ColorSpec | None' = None, text_color: 'ColorSpec | None' = None, spine_color: 'ColorSpec | None' = None, tick_color: 'ColorSpec | None' = None, grid: 'bool | None' = None, grid_color: 'ColorSpec | None' = None, grid_alpha: 'float | None' = None) -> None"
+    },
+    {
+      "call_contract": {
+        "parameters": [
+          {
+            "annotation": "'tuple[float, float, float, float] | None'",
+            "default": "None",
+            "kind": "KEYWORD_ONLY",
+            "name": "bounds",
+            "required": false
+          },
+          {
+            "annotation": "'float | str | None'",
+            "default": "None",
+            "kind": "KEYWORD_ONLY",
+            "name": "width",
+            "required": false
+          },
+          {
+            "annotation": "'float | str | None'",
+            "default": "None",
+            "kind": "KEYWORD_ONLY",
+            "name": "height",
+            "required": false
+          },
+          {
+            "annotation": "'str | int'",
+            "default": "'upper right'",
+            "kind": "KEYWORD_ONLY",
+            "name": "loc",
+            "required": false
+          },
+          {
+            "annotation": "'tuple[float, ...] | None'",
+            "default": "None",
+            "kind": "KEYWORD_ONLY",
+            "name": "bbox_to_anchor",
+            "required": false
+          },
+          {
+            "annotation": "'float'",
+            "default": "0.5",
+            "kind": "KEYWORD_ONLY",
+            "name": "borderpad",
+            "required": false
+          }
+        ],
+        "return_annotation": "None"
+      },
+      "docstring": {
+        "sha256": "df3203327c42946e0238f63226f778e9b8cb42218d55bb6be63d98937b688501",
+        "summary": "Immutable placement specification for an explicit parent Axes."
+      },
+      "kind": "class",
+      "module": "gsplot._core.types",
+      "name": "InsetSpec",
+      "qualname": "InsetSpec",
+      "signature": "(*, bounds: 'tuple[float, float, float, float] | None' = None, width: 'float | str | None' = None, height: 'float | str | None' = None, loc: 'str | int' = 'upper right', bbox_to_anchor: 'tuple[float, ...] | None' = None, borderpad: 'float' = 0.5) -> None"
+    },
+    {
+      "call_contract": {
+        "parameters": [
+          {
+            "annotation": "'str'",
+            "default": null,
+            "kind": "POSITIONAL_OR_KEYWORD",
+            "name": "package_version",
+            "required": true
+          },
+          {
+            "annotation": "'Literal[1]'",
+            "default": "1",
+            "kind": "KEYWORD_ONLY",
+            "name": "schema_version",
+            "required": false
+          },
+          {
+            "annotation": "'str | None'",
+            "default": "None",
+            "kind": "KEYWORD_ONLY",
+            "name": "commit",
+            "required": false
+          },
+          {
+            "annotation": "'str | None'",
+            "default": "None",
+            "kind": "KEYWORD_ONLY",
+            "name": "config_digest",
+            "required": false
+          },
+          {
+            "annotation": "'Mapping[str, str] | None'",
+            "default": "None",
+            "kind": "KEYWORD_ONLY",
+            "name": "labels",
+            "required": false
+          }
+        ],
+        "return_annotation": "None"
+      },
+      "docstring": {
+        "sha256": "089aa7bf8b9adcda2099309ea9da70d979713fe36e8413341acb927c461723aa",
+        "summary": "Immutable, privacy-bounded metadata for one explicit output."
+      },
+      "kind": "class",
+      "module": "gsplot._core.types",
+      "name": "MetadataSnapshot",
+      "qualname": "MetadataSnapshot",
+      "signature": "(package_version: 'str', *, schema_version: 'Literal[1]' = 1, commit: 'str | None' = None, config_digest: 'str | None' = None, labels: 'Mapping[str, str] | None' = None) -> None"
+    },
+    {
+      "call_contract": {
+        "parameters": [
+          {
+            "annotation": "'str'",
+            "default": null,
+            "kind": "POSITIONAL_OR_KEYWORD",
+            "name": "version",
+            "required": true
+          },
+          {
+            "annotation": "'str | None'",
+            "default": "None",
+            "kind": "POSITIONAL_OR_KEYWORD",
+            "name": "commit",
+            "required": false
+          }
+        ],
+        "return_annotation": "None"
+      },
+      "docstring": {
+        "sha256": "7112914ef12c4b1cac35c5b7c069aaac32da58bd9e5da0f263fee069d6f2fc0e",
+        "summary": "Immutable distribution metadata returned by :func:`build_info`."
+      },
+      "kind": "class",
+      "module": "gsplot._core.types",
+      "name": "BuildInfo",
+      "qualname": "BuildInfo",
+      "signature": "(version: 'str', commit: 'str | None' = None) -> None"
+    },
+    {
+      "call_contract": {
+        "parameters": [
+          {
+            "annotation": "'Sequence[Artist]'",
+            "default": null,
+            "kind": "POSITIONAL_OR_KEYWORD",
+            "name": "handles",
+            "required": true
+          },
+          {
+            "annotation": "'Sequence[str]'",
+            "default": null,
+            "kind": "POSITIONAL_OR_KEYWORD",
+            "name": "labels",
+            "required": true
+          },
+          {
+            "annotation": "'Mapping[Any, HandlerBase] | None'",
+            "default": "None",
+            "kind": "POSITIONAL_OR_KEYWORD",
+            "name": "handler_map",
+            "required": false
+          }
+        ],
+        "return_annotation": "None"
+      },
+      "docstring": {
+        "sha256": "581045295c72dda925ba1cd93bcd5ea1549dc08052d42babc35380ecdf909832",
+        "summary": "Immutable handles, labels, and local legend handler mappings."
+      },
+      "kind": "class",
+      "module": "gsplot._core.types",
+      "name": "LegendEntries",
+      "qualname": "LegendEntries",
+      "signature": "(handles: 'Sequence[Artist]', labels: 'Sequence[str]', handler_map: 'Mapping[Any, HandlerBase] | None' = None) -> None"
+    },
+    {
+      "call_contract": null,
+      "docstring": {
+        "sha256": "3dae6fe260c196d96b8e8ba86a0eab23d482ad2344a82741c963b0775b1ce978",
+        "summary": "Base class for errors that are part of the canonical API contract."
+      },
+      "kind": "class",
+      "module": "gsplot._core.errors",
+      "name": "GsplotError",
+      "qualname": "GsplotError",
+      "signature": null
+    },
+    {
+      "call_contract": null,
+      "docstring": {
+        "sha256": "4d9cc4dbf2843569326ae2ad6132f92f70ad5d9e9a9106801ff39fa1702fcc18",
+        "summary": "Raised when configuration cannot be parsed or validated."
+      },
+      "kind": "class",
+      "module": "gsplot._core.errors",
+      "name": "ConfigError",
+      "qualname": "ConfigError",
+      "signature": null
+    },
+    {
+      "call_contract": null,
+      "docstring": {
+        "sha256": "e71dcbf7e2d2f084065537206ebdd6f590ff6ec4481216f5ff89b014ffb7e885",
+        "summary": "Raised when plotting or numerical input violates the data contract."
+      },
+      "kind": "class",
+      "module": "gsplot._core.errors",
+      "name": "DataError",
+      "qualname": "DataError",
+      "signature": null
+    },
+    {
+      "call_contract": null,
+      "docstring": {
+        "sha256": "28085044ce91cc6f52afeb4fd2ecf9c4b19e224b30b004e78eefb4fd6d149278",
+        "summary": "Raised when a figure or axes layout is invalid."
+      },
+      "kind": "class",
+      "module": "gsplot._core.errors",
+      "name": "LayoutError",
+      "qualname": "LayoutError",
+      "signature": null
+    },
+    {
+      "call_contract": null,
+      "docstring": {
+        "sha256": "f692138cae5e620082f9c610cb52250f53a93de82728edca333725cac516e5a8",
+        "summary": "Raised when a plotting operation cannot be completed safely."
+      },
+      "kind": "class",
+      "module": "gsplot._core.errors",
+      "name": "PlotError",
+      "qualname": "PlotError",
+      "signature": null
+    },
+    {
+      "call_contract": {
+        "parameters": [
+          {
+            "annotation": "'str'",
+            "default": null,
+            "kind": "POSITIONAL_OR_KEYWORD",
+            "name": "message",
+            "required": true
+          },
+          {
+            "annotation": "'Iterable[Path]'",
+            "default": "()",
+            "kind": "KEYWORD_ONLY",
+            "name": "committed_paths",
+            "required": false
+          }
+        ],
+        "return_annotation": "'None'"
+      },
+      "docstring": {
+        "sha256": "be901271afe5885381e19a1770095edc87169fb197b92424ccb7a7d13b9b5de3",
+        "summary": "Raised when figure output or display cannot be completed."
+      },
+      "kind": "class",
+      "module": "gsplot._core.errors",
+      "name": "OutputError",
+      "qualname": "OutputError",
+      "signature": "(message: 'str', *, committed_paths: 'Iterable[Path]' = ()) -> 'None'"
+    },
+    {
+      "call_contract": null,
+      "docstring": {
+        "sha256": "93a867b6c178738fcba8c5051865e4329f97f716c6c737960c10c1bd3f13bc1e",
+        "summary": "Raised when reproducibility metadata is invalid or cannot be written."
+      },
+      "kind": "class",
+      "module": "gsplot._core.errors",
+      "name": "MetadataError",
+      "qualname": "MetadataError",
+      "signature": null
+    },
+    {
+      "call_contract": null,
+      "docstring": {
+        "sha256": "6a2e4095a89de2369f4d426e76b3b5211acb3427ba3f8dd0f7ab254229a683b2",
+        "summary": "Represent a PEP 604 union type"
+      },
+      "kind": "type_alias",
+      "module": "types",
+      "name": "MosaicSpec",
+      "qualname": null,
+      "signature": null
+    },
+    {
+      "call_contract": null,
+      "docstring": {
+        "sha256": "6a2e4095a89de2369f4d426e76b3b5211acb3427ba3f8dd0f7ab254229a683b2",
+        "summary": "Represent a PEP 604 union type"
+      },
+      "kind": "type_alias",
+      "module": "types",
+      "name": "NormalizeSpec",
+      "qualname": null,
+      "signature": null
+    },
+    {
+      "call_contract": null,
+      "docstring": {
+        "sha256": "6a2e4095a89de2369f4d426e76b3b5211acb3427ba3f8dd0f7ab254229a683b2",
+        "summary": "Represent a PEP 604 union type"
+      },
+      "kind": "type_alias",
+      "module": "types",
+      "name": "ColorSpec",
+      "qualname": null,
+      "signature": null
+    },
+    {
+      "call_contract": null,
+      "docstring": {
+        "sha256": "6a2e4095a89de2369f4d426e76b3b5211acb3427ba3f8dd0f7ab254229a683b2",
+        "summary": "Represent a PEP 604 union type"
+      },
+      "kind": "type_alias",
+      "module": "types",
+      "name": "AxesTarget",
+      "qualname": null,
+      "signature": null
+    },
+    {
+      "call_contract": null,
+      "docstring": {
+        "sha256": "6a2e4095a89de2369f4d426e76b3b5211acb3427ba3f8dd0f7ab254229a683b2",
+        "summary": "Represent a PEP 604 union type"
+      },
+      "kind": "type_alias",
+      "module": "types",
+      "name": "PerTarget",
+      "qualname": null,
+      "signature": null
+    },
+    {
+      "call_contract": null,
+      "docstring": {
+        "sha256": "6a2e4095a89de2369f4d426e76b3b5211acb3427ba3f8dd0f7ab254229a683b2",
+        "summary": "Represent a PEP 604 union type"
+      },
+      "kind": "type_alias",
+      "module": "types",
+      "name": "LineStyle",
+      "qualname": null,
+      "signature": null
+    },
+    {
+      "call_contract": null,
+      "docstring": {
+        "sha256": "6a2e4095a89de2369f4d426e76b3b5211acb3427ba3f8dd0f7ab254229a683b2",
+        "summary": "Represent a PEP 604 union type"
+      },
+      "kind": "type_alias",
+      "module": "types",
+      "name": "Marker",
+      "qualname": null,
+      "signature": null
+    },
+    {
+      "call_contract": null,
+      "docstring": null,
+      "kind": "type_alias",
+      "module": "typing",
+      "name": "Unit",
+      "qualname": "Literal",
+      "signature": null
+    },
+    {
+      "call_contract": null,
+      "docstring": null,
+      "kind": "type_alias",
+      "module": "typing",
+      "name": "SizePreset",
+      "qualname": "Literal",
+      "signature": null
+    },
+    {
+      "call_contract": null,
+      "docstring": null,
+      "kind": "type_alias",
+      "module": "typing",
+      "name": "SizeSpec",
+      "qualname": "Union",
+      "signature": null
+    },
+    {
+      "call_contract": null,
+      "docstring": null,
+      "kind": "type_alias",
+      "module": "typing",
+      "name": "LayoutMode",
+      "qualname": "Literal",
+      "signature": null
+    },
+    {
+      "call_contract": null,
+      "docstring": null,
+      "kind": "type_alias",
+      "module": "typing",
+      "name": "StyleMode",
+      "qualname": "Optional",
+      "signature": null
+    },
+    {
+      "call_contract": null,
+      "docstring": {
+        "sha256": "2bcdb9d2c5855cee481592f6fd4670a538a7a4b5b006543d99bebf6d7e36e1ae",
+        "summary": "Built-in immutable sequence."
+      },
+      "kind": "type_alias",
+      "module": "builtins",
+      "name": "ZoomCorners",
+      "qualname": "tuple",
+      "signature": null
+    },
+    {
+      "call_contract": null,
+      "docstring": {
+        "sha256": "2bcdb9d2c5855cee481592f6fd4670a538a7a4b5b006543d99bebf6d7e36e1ae",
+        "summary": "Built-in immutable sequence."
+      },
+      "kind": "type_alias",
+      "module": "builtins",
+      "name": "Limit",
+      "qualname": "tuple",
+      "signature": null
+    },
+    {
+      "call_contract": null,
+      "docstring": null,
+      "kind": "type_alias",
+      "module": "typing",
+      "name": "Scale",
+      "qualname": "Literal",
+      "signature": null
+    },
+    {
+      "call_contract": null,
+      "docstring": {
+        "sha256": "93bd16073ddca5c2f16294bbec7e4379c93e7ccc1d1715b14fcf0136310dedca",
+        "summary": "All the operations on a read-only sequence."
+      },
+      "kind": "type_alias",
+      "module": "collections.abc",
+      "name": "TickSpec",
+      "qualname": "Sequence",
+      "signature": null
+    },
+    {
+      "call_contract": null,
+      "docstring": {
+        "sha256": "6a2e4095a89de2369f4d426e76b3b5211acb3427ba3f8dd0f7ab254229a683b2",
+        "summary": "Represent a PEP 604 union type"
+      },
+      "kind": "type_alias",
+      "module": "types",
+      "name": "LabelRecord",
+      "qualname": null,
+      "signature": null
+    },
+    {
+      "call_contract": null,
+      "docstring": {
+        "sha256": "6a2e4095a89de2369f4d426e76b3b5211acb3427ba3f8dd0f7ab254229a683b2",
+        "summary": "Represent a PEP 604 union type"
+      },
+      "kind": "type_alias",
+      "module": "types",
+      "name": "LabelRecords",
+      "qualname": null,
+      "signature": null
+    }
+  ],
+  "historical_baseline": {
+    "documented_modules": {
+      "gsplot.color.colormap": [
+        "get_cmap"
+      ],
+      "gsplot.config.config": [
+        "config_load",
+        "config_dict",
+        "config_entry_option"
+      ],
+      "gsplot.data.load_file": [
+        "load_file",
+        "load_file_fast"
+      ],
+      "gsplot.figure.axes": [
+        "axes"
+      ],
+      "gsplot.figure.axes_inset": [
+        "axes_inset",
+        "axes_inset_padding"
+      ],
+      "gsplot.figure.figure_tools": [
+        "get_figure_size"
+      ],
+      "gsplot.figure.show": [
+        "show"
+      ],
+      "gsplot.hello_world.hello_world": [
+        "hello_world"
+      ],
+      "gsplot.path.path": [
+        "home",
+        "pwd",
+        "pwd_move",
+        "pwd_main"
+      ],
+      "gsplot.plot.line": [
+        "line"
+      ],
+      "gsplot.plot.line_colormap_dashed": [
+        "line_colormap_dashed"
+      ],
+      "gsplot.plot.line_colormap_solid": [
+        "line_colormap_solid"
+      ],
+      "gsplot.plot.scatter": [
+        "scatter"
+      ],
+      "gsplot.plot.scatter_colormap": [
+        "scatter_colormap"
+      ],
+      "gsplot.style.graph": [
+        "graph_square",
+        "graph_square_axes",
+        "graph_white",
+        "graph_white_axes",
+        "graph_transparent",
+        "graph_transparent_axes",
+        "graph_facecolor"
+      ],
+      "gsplot.style.label": [
+        "label",
+        "label_add_index"
+      ],
+      "gsplot.style.legend": [
+        "legend",
+        "legend_axes",
+        "legend_handlers",
+        "legend_reverse",
+        "legend_get_handlers"
+      ],
+      "gsplot.style.legend_colormap": [
+        "legend_colormap"
+      ],
+      "gsplot.style.ticks": [
+        "ticks_off",
+        "ticks_on",
+        "ticks_on_axes"
+      ],
+      "gsplot.style.title": [
+        "title",
+        "title_axes"
+      ]
+    },
+    "root_all": [
+      "get_cmap",
+      "load_file",
+      "load_file_fast",
+      "axes",
+      "axes_inset",
+      "axes_inset_padding",
+      "get_figure_size",
+      "show",
+      "hello_world",
+      "config_load",
+      "config_dict",
+      "config_entry_option",
+      "home",
+      "pwd",
+      "pwd_move",
+      "pwd_main",
+      "line",
+      "line_colormap_solid",
+      "line_colormap_dashed",
+      "scatter",
+      "scatter_colormap",
+      "graph_square",
+      "graph_square_axes",
+      "graph_white",
+      "graph_white_axes",
+      "graph_transparent",
+      "graph_transparent_axes",
+      "graph_facecolor",
+      "label",
+      "label_add_index",
+      "legend",
+      "legend_axes",
+      "legend_handlers",
+      "legend_reverse",
+      "legend_get_handlers",
+      "legend_colormap",
+      "ticks_off",
+      "ticks_on",
+      "ticks_on_axes",
+      "title",
+      "title_axes"
+    ],
+    "root_direct_attributes": [
+      "Config",
+      "logger",
+      "save_metadata",
+      "__commit__",
+      "__version__"
+    ],
+    "tag": "v0.3.0"
+  },
+  "legacy_discoverable": [
+    "get_cmap",
+    "load_file",
+    "load_file_fast",
+    "axes",
+    "axes_inset",
+    "axes_inset_padding",
+    "get_figure_size",
+    "show",
+    "hello_world",
+    "config_load",
+    "config_dict",
+    "config_entry_option",
+    "home",
+    "pwd",
+    "pwd_move",
+    "pwd_main",
+    "line",
+    "line_colormap_solid",
+    "line_colormap_dashed",
+    "scatter",
+    "scatter_colormap",
+    "graph_square",
+    "graph_square_axes",
+    "graph_white",
+    "graph_white_axes",
+    "graph_transparent",
+    "graph_transparent_axes",
+    "graph_facecolor",
+    "label",
+    "label_add_index",
+    "legend",
+    "legend_axes",
+    "legend_handlers",
+    "legend_reverse",
+    "legend_get_handlers",
+    "legend_colormap",
+    "ticks_off",
+    "ticks_on",
+    "ticks_on_axes",
+    "title",
+    "title_axes"
+  ],
+  "legacy_manifest": {
+    "Config": {
+      "attribute": "Config",
+      "module": "gsplot.config.config"
+    },
+    "axes": {
+      "attribute": "axes",
+      "module": "gsplot._compat.legacy_api"
+    },
+    "axes_inset": {
+      "attribute": "axes_inset",
+      "module": "gsplot._compat.legacy_api"
+    },
+    "axes_inset_padding": {
+      "attribute": "axes_inset_padding",
+      "module": "gsplot._compat.legacy_api"
+    },
+    "config_dict": {
+      "attribute": "config_dict",
+      "module": "gsplot._compat.legacy_api"
+    },
+    "config_entry_option": {
+      "attribute": "config_entry_option",
+      "module": "gsplot._compat.legacy_api"
+    },
+    "config_load": {
+      "attribute": "config_load",
+      "module": "gsplot._compat.legacy_api"
+    },
+    "get_cmap": {
+      "attribute": "get_cmap",
+      "module": "gsplot._compat.legacy_api"
+    },
+    "get_figure_size": {
+      "attribute": "get_figure_size",
+      "module": "gsplot._compat.legacy_api"
+    },
+    "graph_facecolor": {
+      "attribute": "graph_facecolor",
+      "module": "gsplot._compat.legacy_api"
+    },
+    "graph_square": {
+      "attribute": "graph_square",
+      "module": "gsplot._compat.legacy_api"
+    },
+    "graph_square_axes": {
+      "attribute": "graph_square_axes",
+      "module": "gsplot._compat.legacy_api"
+    },
+    "graph_transparent": {
+      "attribute": "graph_transparent",
+      "module": "gsplot._compat.legacy_api"
+    },
+    "graph_transparent_axes": {
+      "attribute": "graph_transparent_axes",
+      "module": "gsplot._compat.legacy_api"
+    },
+    "graph_white": {
+      "attribute": "graph_white",
+      "module": "gsplot._compat.legacy_api"
+    },
+    "graph_white_axes": {
+      "attribute": "graph_white_axes",
+      "module": "gsplot._compat.legacy_api"
+    },
+    "hello_world": {
+      "attribute": "hello_world",
+      "module": "gsplot._compat.legacy.hello_world.hello_world"
+    },
+    "home": {
+      "attribute": "home",
+      "module": "gsplot._compat.legacy_api"
+    },
+    "label": {
+      "attribute": "label",
+      "module": "gsplot._compat.root_api"
+    },
+    "label_add_index": {
+      "attribute": "label_add_index",
+      "module": "gsplot._compat.legacy_api"
+    },
+    "legend": {
+      "attribute": "legend",
+      "module": "gsplot._compat.root_api"
+    },
+    "legend_axes": {
+      "attribute": "legend_axes",
+      "module": "gsplot._compat.legacy_api"
+    },
+    "legend_colormap": {
+      "attribute": "legend_colormap",
+      "module": "gsplot._compat.legacy_api"
+    },
+    "legend_get_handlers": {
+      "attribute": "legend_get_handlers",
+      "module": "gsplot._compat.legacy_api"
+    },
+    "legend_handlers": {
+      "attribute": "legend_handlers",
+      "module": "gsplot._compat.legacy_api"
+    },
+    "legend_reverse": {
+      "attribute": "legend_reverse",
+      "module": "gsplot._compat.legacy_api"
+    },
+    "line": {
+      "attribute": "line",
+      "module": "gsplot._compat.root_api"
+    },
+    "line_colormap_dashed": {
+      "attribute": "line_colormap_dashed",
+      "module": "gsplot._compat.legacy_api"
+    },
+    "line_colormap_solid": {
+      "attribute": "line_colormap_solid",
+      "module": "gsplot._compat.legacy_api"
+    },
+    "load_file": {
+      "attribute": "load_file",
+      "module": "gsplot._compat.legacy_api"
+    },
+    "load_file_fast": {
+      "attribute": "load_file_fast",
+      "module": "gsplot._compat.legacy_api"
+    },
+    "logger": {
+      "attribute": "logger",
+      "module": "gsplot._compat.root_legacy"
+    },
+    "pwd": {
+      "attribute": "pwd",
+      "module": "gsplot._compat.legacy_api"
+    },
+    "pwd_main": {
+      "attribute": "pwd_main",
+      "module": "gsplot._compat.legacy_api"
+    },
+    "pwd_move": {
+      "attribute": "pwd_move",
+      "module": "gsplot._compat.legacy_api"
+    },
+    "save_metadata": {
+      "attribute": "save_metadata",
+      "module": "gsplot._compat.root_legacy"
+    },
+    "scatter": {
+      "attribute": "scatter",
+      "module": "gsplot._compat.root_api"
+    },
+    "scatter_colormap": {
+      "attribute": "scatter_colormap",
+      "module": "gsplot._compat.legacy_api"
+    },
+    "show": {
+      "attribute": "show",
+      "module": "gsplot._compat.root_api"
+    },
+    "ticks_off": {
+      "attribute": "ticks_off",
+      "module": "gsplot._compat.legacy_api"
+    },
+    "ticks_on": {
+      "attribute": "ticks_on",
+      "module": "gsplot._compat.legacy_api"
+    },
+    "ticks_on_axes": {
+      "attribute": "ticks_on_axes",
+      "module": "gsplot._compat.legacy_api"
+    },
+    "title": {
+      "attribute": "title",
+      "module": "gsplot._compat.root_api"
+    },
+    "title_axes": {
+      "attribute": "title_axes",
+      "module": "gsplot._compat.legacy_api"
+    }
+  },
+  "metadata_attributes": [
+    "__commit__",
+    "__version__"
+  ],
+  "module": "gsplot",
+  "root_all": [
+    "subplots",
+    "inset",
+    "inset_axes",
+    "line",
+    "scatter",
+    "cmap_line",
+    "cmap_dash",
+    "cmap_scatter",
+    "colors",
+    "sample_cmap",
+    "style_axes",
+    "label",
+    "square",
+    "title",
+    "suptitle",
+    "minor_ticks",
+    "box_aspect",
+    "panel_labels",
+    "index",
+    "fig_facecolor",
+    "legend",
+    "legends",
+    "legend_entries",
+    "cmap_legend",
+    "set_theme",
+    "paper",
+    "save",
+    "savefig",
+    "show",
+    "load_config",
+    "read",
+    "read_array",
+    "write_meta",
+    "build_info",
+    "use_backend",
+    "Config",
+    "AxisSpec",
+    "Theme",
+    "InsetSpec",
+    "MetadataSnapshot",
+    "BuildInfo",
+    "LegendEntries",
+    "GsplotError",
+    "ConfigError",
+    "DataError",
+    "LayoutError",
+    "PlotError",
+    "OutputError",
+    "MetadataError",
+    "MosaicSpec",
+    "NormalizeSpec",
+    "ColorSpec",
+    "AxesTarget",
+    "PerTarget",
+    "LineStyle",
+    "Marker",
+    "Unit",
+    "SizePreset",
+    "SizeSpec",
+    "LayoutMode",
+    "StyleMode",
+    "ZoomCorners",
+    "Limit",
+    "Scale",
+    "TickSpec",
+    "LabelRecord",
+    "LabelRecords"
+  ],
+  "type_checking_exports": [
+    "AxesTarget",
+    "AxisSpec",
+    "BuildInfo",
+    "ColorSpec",
+    "Config",
+    "ConfigError",
+    "DataError",
+    "GsplotError",
+    "InsetSpec",
+    "LabelRecord",
+    "LabelRecords",
+    "LayoutError",
+    "LayoutMode",
+    "LegendEntries",
+    "Limit",
+    "LineStyle",
+    "Marker",
+    "MetadataError",
+    "MetadataSnapshot",
+    "MosaicSpec",
+    "NormalizeSpec",
+    "OutputError",
+    "PerTarget",
+    "PlotError",
+    "Scale",
+    "SizePreset",
+    "SizeSpec",
+    "StyleMode",
+    "Theme",
+    "TickSpec",
+    "Unit",
+    "ZoomCorners",
+    "axes",
+    "axes_inset",
+    "axes_inset_padding",
+    "box_aspect",
+    "build_info",
+    "cmap_dash",
+    "cmap_legend",
+    "cmap_line",
+    "cmap_scatter",
+    "colors",
+    "config_dict",
+    "config_entry_option",
+    "config_load",
+    "fig_facecolor",
+    "get_cmap",
+    "get_figure_size",
+    "graph_facecolor",
+    "graph_square",
+    "graph_square_axes",
+    "graph_transparent",
+    "graph_transparent_axes",
+    "graph_white",
+    "graph_white_axes",
+    "hello_world",
+    "home",
+    "index",
+    "inset",
+    "inset_axes",
+    "label",
+    "label_add_index",
+    "legend",
+    "legend_axes",
+    "legend_colormap",
+    "legend_entries",
+    "legend_get_handlers",
+    "legend_handlers",
+    "legend_reverse",
+    "legends",
+    "line",
+    "line_colormap_dashed",
+    "line_colormap_solid",
+    "load_config",
+    "load_file",
+    "load_file_fast",
+    "logger",
+    "minor_ticks",
+    "panel_labels",
+    "paper",
+    "pwd",
+    "pwd_main",
+    "pwd_move",
+    "read",
+    "read_array",
+    "sample_cmap",
+    "save",
+    "save_metadata",
+    "savefig",
+    "scatter",
+    "scatter_colormap",
+    "set_theme",
+    "show",
+    "square",
+    "style_axes",
+    "subplots",
+    "suptitle",
+    "ticks_off",
+    "ticks_on",
+    "ticks_on_axes",
+    "title",
+    "title_axes",
+    "use_backend",
+    "write_meta"
+  ]
+}
