@@ -9,6 +9,7 @@ of installing untrusted release code into the maintainer environment.
 from __future__ import annotations
 
 import gzip
+import html
 import json
 import os
 import re
@@ -20,7 +21,7 @@ from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
-from urllib.parse import unquote, urlparse
+from urllib.parse import unquote, urljoin, urlparse
 
 from .catalog import ReleaseCatalog, ReleaseRecord, load_catalog
 from .site import SiteError, finalize_site
@@ -139,6 +140,10 @@ _EXTERNAL_RUNTIME_RESOURCE = re.compile(
     re.IGNORECASE,
 )
 _CANONICAL_LINK = re.compile(r'<link\s+rel="canonical"\s+href="([^"]+)"', re.IGNORECASE)
+_REDIRECT_REFRESH = re.compile(
+    r'<meta\s+http-equiv="refresh"\s+content="0;\s*url=([^"]+)"',
+    re.IGNORECASE,
+)
 _META_VALUE = re.compile(
     r'<meta\s+property="([^"]+)"\s+content="([^"]*)"\s*/?>',
     re.IGNORECASE,
@@ -1036,6 +1041,67 @@ def _validate_page_metadata(
     relative = page.relative_to(output).as_posix()
     expected_url = f"{base_url}/{channel}/{relative}"
     canonical_match = _CANONICAL_LINK.search(text)
+    refresh_match = _REDIRECT_REFRESH.search(text)
+    if refresh_match is not None:
+        if canonical_match is None:
+            raise BuildError(
+                version,
+                channel,
+                "validate generated HTML metadata",
+                f"redirect canonical URL is missing for {relative}",
+            )
+        refresh_target = html.unescape(refresh_match.group(1))
+        canonical = html.unescape(canonical_match.group(1))
+        canonical_parts = urlparse(canonical)
+        base_parts = urlparse(base_url)
+        channel_path = f"{base_parts.path.rstrip('/')}/{channel}/"
+        destination_relative = unquote(
+            canonical_parts.path[len(channel_path) :]
+            if canonical_parts.path.startswith(channel_path)
+            else ""
+        )
+        destination = output / Path(*destination_relative.split("/"))
+        refresh_parts = urlparse(refresh_target)
+        if (
+            refresh_parts.scheme
+            or refresh_parts.netloc
+            or refresh_parts.query
+            or refresh_parts.fragment
+            or refresh_target.startswith("/")
+            or urljoin(expected_url, refresh_target) != canonical
+            or canonical == expected_url
+            or canonical_parts.scheme != base_parts.scheme
+            or canonical_parts.netloc != base_parts.netloc
+            or canonical_parts.query
+            or canonical_parts.fragment
+            or not destination_relative
+            or any(part in {"", ".", ".."} for part in destination_relative.split("/"))
+            or not destination.is_file()
+            or re.search(
+                rf'<a\s+href="{re.escape(refresh_match.group(1))}"',
+                text,
+                re.IGNORECASE,
+            )
+            is None
+        ):
+            raise BuildError(
+                version,
+                channel,
+                "validate generated HTML metadata",
+                f"unsafe or inconsistent redirect metadata for {relative}",
+            )
+        robot_values = {
+            name.lower(): content.lower()
+            for name, content in _META_NAME_VALUE.findall(text)
+        }
+        if channel == "dev" and robot_values.get("robots") != "noindex, follow":
+            raise BuildError(
+                version,
+                channel,
+                "validate generated HTML metadata",
+                f"development indexing policy is missing for {relative}",
+            )
+        return
     if canonical_match is None or canonical_match.group(1) != expected_url:
         raise BuildError(
             version,

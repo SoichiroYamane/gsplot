@@ -2,17 +2,17 @@
 
 from __future__ import annotations
 
-import json
 import logging
 import os
 import re
-import subprocess
 import sys
 from dataclasses import dataclass
 from pathlib import Path
 from urllib.parse import urlparse
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
 DEFAULT_SITE_BASE_URL = "https://soichiroyamane.github.io/gsplot"
 _DOCS_VERSION_PATTERN = re.compile(
     r"^v?(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$"
@@ -27,6 +27,8 @@ except ImportError as exc:  # pragma: no cover - exercised by docs CI setup
     ) from exc
 
 from gsplot._core.types import _PUBLIC_TYPE_ALIAS_DOCS
+from tools.maintenance.docs_redirects import collect_redirect_pages
+from tools.maintenance.example_runner import run_examples
 
 __version__ = gsplot.__version__
 package_file = Path(gsplot.__file__).resolve()
@@ -209,180 +211,16 @@ def document_type_alias(app, what, name, obj, options, lines) -> None:
         lines[:] = description.splitlines()
 
 
-def _demo_environment() -> dict[str, str]:
-    """Return an isolated, headless environment for a demo subprocess."""
-
-    environment = os.environ.copy()
-    environment.setdefault("MPLBACKEND", "Agg")
-    # Demos must resolve the installed/editable package from the Poetry
-    # environment, never a checkout-root path injected by the documentation
-    # build.  Remove an inherited path so local shell state cannot mask it.
-    environment.pop("PYTHONPATH", None)
-    return environment
-
-
-def _safe_demo_path(value: object, field: str) -> str:
-    """Return one normalized repository-relative demo path."""
-
-    if not isinstance(value, str) or not value:
-        raise RuntimeError(f"demo manifest {field} must be a non-empty string")
-    selected = Path(value)
-    if selected.is_absolute() or ".." in selected.parts or selected.parts[0] != "demo":
-        raise RuntimeError(f"demo manifest {field} must stay under demo/")
-    if selected.as_posix() != value:
-        raise RuntimeError(f"demo manifest {field} must use normalized POSIX syntax")
-    return value
-
-
-def _load_demo_manifest(manifest_path: Path) -> dict[str, set[str]]:
-    """Load and validate the explicit demo script/output inventory."""
-
-    try:
-        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError) as exc:
-        raise RuntimeError("could not load the demo manifest") from exc
-    if not isinstance(manifest, dict) or set(manifest) != {"schema_version", "demos"}:
-        raise RuntimeError("demo manifest must contain schema_version and demos")
-    if manifest["schema_version"] != 1 or not isinstance(manifest["demos"], list):
-        raise RuntimeError("demo manifest must use schema_version 1 and a demos list")
-
-    inventory: dict[str, set[str]] = {}
-    claimed_outputs: set[str] = set()
-    for position, entry in enumerate(manifest["demos"]):
-        if not isinstance(entry, dict) or set(entry) != {"script", "outputs"}:
-            raise RuntimeError(f"demo manifest entry {position} has invalid fields")
-        script = _safe_demo_path(entry["script"], f"entry {position} script")
-        outputs = entry["outputs"]
-        if Path(script).suffix != ".py" or not isinstance(outputs, list):
-            raise RuntimeError(f"demo manifest entry {position} is not a Python demo")
-        if script in inventory:
-            raise RuntimeError(f"demo manifest repeats script {script}")
-        selected_outputs = {
-            _safe_demo_path(output, f"entry {position} output") for output in outputs
-        }
-        if len(selected_outputs) != len(outputs):
-            raise RuntimeError(f"demo manifest entry {position} repeats an output")
-        if any(
-            Path(output).parent != Path(script).parent
-            or Path(output).suffix not in {".png", ".pdf"}
-            for output in selected_outputs
-        ):
-            raise RuntimeError(
-                f"demo manifest outputs for {script} must be PNG/PDF siblings"
-            )
-        duplicate_outputs = claimed_outputs & selected_outputs
-        if duplicate_outputs:
-            raise RuntimeError(
-                "demo manifest assigns output more than once: "
-                + ", ".join(sorted(duplicate_outputs))
-            )
-        claimed_outputs.update(selected_outputs)
-        inventory[script] = selected_outputs
-    return inventory
-
-
-_DEMO_OUTPUTS = _load_demo_manifest(PROJECT_ROOT / "demo" / "manifest.json")
-
-
-def _file_state(root: Path) -> dict[str, tuple[int, int]]:
-    """Return file size and timestamp state under ``root``."""
-
-    return {
-        path.relative_to(PROJECT_ROOT).as_posix(): (
-            path.stat().st_size,
-            path.stat().st_mtime_ns,
-        )
-        for path in root.rglob("*")
-        if path.is_file()
-    }
-
-
-def _check_demo_outputs(
-    before: dict[str, tuple[int, int]], allowed: set[str], demo_name: str
-) -> None:
-    """Reject unexpected, missing, or stale outputs from one demo run."""
-
-    after = _file_state(PROJECT_ROOT / "demo")
-    _validate_demo_output_state(before, after, allowed, demo_name)
-
-
-def _validate_demo_output_state(
-    before: dict[str, tuple[int, int]],
-    after: dict[str, tuple[int, int]],
-    allowed: set[str],
-    demo_name: str,
-) -> None:
-    """Validate one demo's output snapshot without filesystem access."""
-
-    changed = {path for path, state in after.items() if before.get(path) != state}
-    changed.update(set(before) - set(after))
-    unexpected = sorted(changed - allowed)
-    if unexpected:
-        raise RuntimeError(
-            f"{demo_name} created, modified, or deleted files outside its "
-            "output allowlist: " + ", ".join(unexpected)
-        )
-    missing = sorted(path for path in allowed if path not in after)
-    if missing:
-        raise RuntimeError(
-            f"{demo_name} did not produce required output(s): " + ", ".join(missing)
-        )
-    stale = sorted(
-        path for path in allowed if path in before and before[path] == after[path]
-    )
-    if stale:
-        raise RuntimeError(
-            f"{demo_name} left required output(s) unchanged: " + ", ".join(stale)
-        )
-
-
-def generate_images() -> None:
-    """Run demo scripts so image assets match the checked-in examples.
-
-    Each demo runs in a fresh Python process and in its own directory. This
-    prevents a demo's working-directory or Matplotlib state from leaking into
-    the Sphinx process and makes a non-zero demo exit code fail the docs build.
-    Set ``GSPLOT_SKIP_DEMO_IMAGES=1`` when a build intentionally supplies its
-    own pre-generated assets.
-    """
-
-    demo_path = PROJECT_ROOT / "demo"
-    demo_files = sorted(demo_path.rglob("*.py"))
-    if not demo_files:
-        raise FileNotFoundError(f"No demo scripts found under {demo_path}")
-    actual_scripts = {
-        demo_file.relative_to(PROJECT_ROOT).as_posix() for demo_file in demo_files
-    }
-    declared_scripts = set(_DEMO_OUTPUTS)
-    if actual_scripts != declared_scripts:
-        missing = sorted(actual_scripts - declared_scripts)
-        extra = sorted(declared_scripts - actual_scripts)
-        raise RuntimeError(
-            "demo manifest does not match executable scripts; "
-            f"undeclared={missing}, missing={extra}"
-        )
-    if os.environ.get("GSPLOT_SKIP_DEMO_IMAGES") == "1":
-        return
-
-    for demo_file in demo_files:
-        before = _file_state(demo_path)
-        print(f"Running demo: {demo_file.relative_to(PROJECT_ROOT)}")
-        subprocess.run(
-            [sys.executable, "-B", str(demo_file)],
-            cwd=demo_file.parent,
-            env=_demo_environment(),
-            check=True,
-        )
-        demo_name = demo_file.relative_to(PROJECT_ROOT).as_posix()
-        _check_demo_outputs(before, _DEMO_OUTPUTS[demo_name], demo_name)
-
-
 def setup(app):
     """Register repository-specific Sphinx hooks."""
 
-    generate_images()
+    run_examples(
+        PROJECT_ROOT,
+        skip_execution=os.environ.get("GSPLOT_SKIP_EXAMPLE_IMAGES") == "1",
+    )
     app.connect("autodoc-skip-member", skip_members)
     app.connect("autodoc-process-docstring", document_type_alias)
+    app.connect("html-collect-pages", collect_redirect_pages)
 
 
 json_url = f"{site_base_url}/_meta/switcher.json"

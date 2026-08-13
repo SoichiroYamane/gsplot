@@ -24,7 +24,7 @@ LEGACY_PACKAGES = (
     "plot",
     "style",
 )
-RUNTIME_FORBIDDEN_ROOTS = ("tests", "demo", "tools")
+RUNTIME_FORBIDDEN_ROOTS = ("tests", "demo", "examples", "tools")
 
 
 def _module_name(path: Path, source_root: Path) -> str:

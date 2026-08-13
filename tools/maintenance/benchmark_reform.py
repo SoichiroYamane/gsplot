@@ -436,7 +436,7 @@ def _docs_build_ms(
     trial: int,
     environment: dict[str, str],
 ) -> float:
-    """Measure one clean Sphinx build including all declared demos."""
+    """Measure one clean Sphinx build including all declared examples."""
 
     source = temporary_root / f"docs-{revision.label}-{trial}"
     output = temporary_root / f"docs-output-{revision.label}-{trial}"

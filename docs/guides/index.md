@@ -6,5 +6,5 @@
 ./publication.md
 ./advanced.md
 ./migration.md
-./demo/index.md
+./examples/index.md
 ```

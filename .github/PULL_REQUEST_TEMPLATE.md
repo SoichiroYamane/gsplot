@@ -12,7 +12,7 @@ Keep the durable requirements and acceptance criteria in the linked Issue.
 
 - [ ] Public Python API or behavior
 - [ ] Configuration or global Matplotlib state
-- [ ] Tests or demos
+- [ ] Tests or executable examples
 - [ ] Documentation or examples
 - [ ] Dependencies, packaging, or generated artifacts
 - [ ] CI or repository guidance
@@ -27,7 +27,7 @@ List exact commands and results. Do not mark skipped checks as passing.
 - [ ] Focused tests
 - [ ] Full test suite
 - [ ] Formatting, types, and syntax
-- [ ] Documentation and demos
+- [ ] Documentation and examples
 - [ ] Packaging or lockfile checks
 
 ## Security and supply chain
@@ -49,7 +49,7 @@ validation section as the implementation changes.
 
 - [ ] The linked Issue contains scope and acceptance criteria.
 - [ ] The complete diff and generated files were manually reviewed.
-- [ ] Public imports, configuration precedence, docs, demos, and packaging are coherent.
+- [ ] Public imports, configuration precedence, docs, examples, and packaging are coherent.
 - [ ] No secrets or private operational details are present.
 - [ ] Auto-merge eligibility is documented; manual-only changes are not auto-merged.
 - [ ] If auto-merge is enabled, Review 1, Review 2, and all required checks are complete.

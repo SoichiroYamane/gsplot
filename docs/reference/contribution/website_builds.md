@@ -53,14 +53,14 @@ The final site has a small root entry, a custom `404.html`, `robots.txt`, and
 an immutable-release sitemap. Existing root HTML routes are generated as
 no-JavaScript compatibility pages pointing into `/dev/`. Root assets are
 copied from the selected stable release before channel cleanup, while source
-copies, demo media, build caches, and extension-generated runtime data are
+copies, example media, build caches, and extension-generated runtime data are
 removed from version directories. The small set of inventoried legacy asset
 paths is retained only at the root and is never used as a build input.
 
 The builder uses the pinned Poetry documentation environment and an explicit
 source-path compatibility strategy for historical packages. It never passes
 GitHub, Pages, PyPI, OIDC, or repository-write credentials to release source,
-demo, or Sphinx processes. Historical Mermaid directives are rendered to SVG
+example, or Sphinx processes. Historical Mermaid directives are rendered to SVG
 at build time with the pinned `mmdc` CLI; the published HTML does not load a
 Mermaid or other documentation runtime from a CDN. Historical source is still
 built with warnings as errors; only the documented legacy `docutils` warning

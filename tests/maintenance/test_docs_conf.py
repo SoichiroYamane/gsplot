@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import json
 import runpy
 from pathlib import Path
 
@@ -94,104 +93,29 @@ def test_conf_rejects_unsafe_site_base_url(
         _load_conf(monkeypatch, base_url=base_url)
 
 
-def test_demo_output_validation_requires_fresh_declared_outputs(
+def test_setup_validates_examples_and_registers_redirects(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    """Missing and unchanged allowlisted artifacts fail the docs gate."""
+    """Sphinx setup uses the shared runner even when generation is skipped."""
 
     values = _load_conf(monkeypatch)
-    validate = values["_validate_demo_output_state"]
-    before = {"demo/example/figure.png": (100, 10)}
+    monkeypatch.setenv("GSPLOT_SKIP_EXAMPLE_IMAGES", "1")
 
-    with pytest.raises(RuntimeError, match="left required output"):
-        validate(
-            before,
-            before.copy(),
-            {"demo/example/figure.png"},
-            "demo/example",
-        )
+    class App:
+        def __init__(self) -> None:
+            self.events: list[str] = []
 
-    with pytest.raises(RuntimeError, match="did not produce required output"):
-        validate({}, {}, {"demo/example/figure.png"}, "demo/example")
+        def connect(self, event: str, callback: object) -> None:
+            self.events.append(event)
 
-    with pytest.raises(RuntimeError, match="outside its output allowlist"):
-        validate(
-            {},
-            {
-                "demo/example/figure.png": (120, 12),
-                "demo/example/unexpected.txt": (1, 1),
-            },
-            {"demo/example/figure.png"},
-            "demo/example",
-        )
+    app = App()
+    values["setup"](app)
 
-    validate(
-        before,
-        {"demo/example/figure.png": (120, 12)},
-        {"demo/example/figure.png"},
-        "demo/example",
-    )
-
-
-def test_demo_manifest_covers_every_executable_script(
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
-    """The explicit inventory and current demo tree stay identical."""
-
-    values = _load_conf(monkeypatch)
-    declared = set(values["_DEMO_OUTPUTS"])
-    project_root = CONF_PATH.parents[1]
-    actual = {
-        script.relative_to(project_root).as_posix()
-        for script in (project_root / "demo").rglob("*.py")
-    }
-
-    assert declared == actual
-
-
-def test_skipping_generation_still_validates_demo_inventory(
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
-    """Pre-generated-image builds cannot bypass script registration."""
-
-    values = _load_conf(monkeypatch)
-    monkeypatch.setenv("GSPLOT_SKIP_DEMO_IMAGES", "1")
-    monkeypatch.setitem(values["generate_images"].__globals__, "_DEMO_OUTPUTS", {})
-
-    with pytest.raises(RuntimeError, match="does not match executable scripts"):
-        values["generate_images"]()
-
-
-@pytest.mark.parametrize(
-    "entry,match",
-    [
-        ({"script": "../private.py", "outputs": []}, "stay under demo"),
-        (
-            {"script": "demo/example.py", "outputs": ["demo/other/figure.png"]},
-            "PNG/PDF siblings",
-        ),
-        (
-            {"script": "demo/example.py", "outputs": ["demo/example/data.txt"]},
-            "PNG/PDF siblings",
-        ),
-    ],
-)
-def test_demo_manifest_rejects_unsafe_or_cross_demo_paths(
-    monkeypatch: pytest.MonkeyPatch,
-    tmp_path: Path,
-    entry: dict[str, object],
-    match: str,
-) -> None:
-    """Manifest paths cannot escape or write arbitrary file types."""
-
-    values = _load_conf(monkeypatch)
-    manifest = tmp_path / "manifest.json"
-    manifest.write_text(
-        json.dumps({"schema_version": 1, "demos": [entry]}), encoding="utf-8"
-    )
-
-    with pytest.raises(RuntimeError, match=match):
-        values["_load_demo_manifest"](manifest)
+    assert app.events == [
+        "autodoc-skip-member",
+        "autodoc-process-docstring",
+        "html-collect-pages",
+    ]
 
 
 def test_type_alias_pages_use_the_gsplot_contract(

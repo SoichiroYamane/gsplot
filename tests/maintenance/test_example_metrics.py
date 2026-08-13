@@ -23,7 +23,7 @@ MANIFEST_PATH = PROJECT_ROOT / "tools/maintenance/example-metrics.json"
 PROTOTYPE_PATH = (
     PROJECT_ROOT / "tools/maintenance/fixtures/publication_tuple_prototype.py"
 )
-FINAL_PATH = PROJECT_ROOT / "demo" / "4_paper_plot" / "paper_plot.py"
+FINAL_PATH = PROJECT_ROOT / "examples" / "publication" / "publication.py"
 STYLE_PATH = PROJECT_ROOT / "tests/fixtures/reform/publication-style-v1.json"
 
 

@@ -31,6 +31,35 @@ build-only extension output. The observed legacy Tippy entry is copied to its
 historical filename after its selector JSON is sorted, so the compatibility
 file remains both reachable and reproducible.
 
+## Semantic example redirects
+
+[Issue #206](https://github.com/SoichiroYamane/gsplot/issues/206) replaces the
+numbered development demonstration pages with semantic example routes. Each
+current or future channel that builds the new source emits these relative,
+same-channel redirects; already published immutable releases keep their own
+original pages.
+
+| Previous route | Current route |
+| --- | --- |
+| `/guides/demo/index.html` | `/guides/examples/index.html` |
+| `/guides/demo/1_axes.html` | `/guides/examples/layout-mosaic.html` |
+| `/guides/demo/2_line_and_label.html` | `/guides/examples/lines-and-labels.html` |
+| `/guides/demo/3_config.html` | `/guides/examples/configuration.html` |
+| `/guides/demo/4_paper_plot.html` | `/guides/examples/publication.html` |
+| `/guides/demo/5_scatter.html` | `/guides/examples/scatter.html` |
+| `/guides/demo/6_line_colormap.html` | `/guides/examples/colored-lines.html` |
+| `/guides/demo/7_graph_white.html` | `/guides/examples/white-theme.html` |
+| `/guides/demo/8_graph_transparent.html` | `/guides/examples/transparent-theme.html` |
+| `/guides/demo/9_compatibility.html` | `/guides/examples/legacy-v0.html` |
+| `/guides/demo/10_subplots.html` | `/guides/examples/matplotlib-interoperability.html` |
+| `/guides/demo/11_directory.html` | `/guides/examples/explicit-paths.html` |
+| `/guides/demo/12_reproducibility.html` | `/guides/examples/reproducibility.html` |
+| `/guides/demo/13_REPL.html` | `/guides/examples/repl.html` |
+
+The validated redirect map in `tools/maintenance/docs_redirects.py` is the
+single executable source for this table. Redirect pages use a meta refresh,
+relative canonical link, and visible fallback link without JavaScript.
+
 ## Observed pre-cutover root routes
 
 The following routes returned HTTP 200 from the published root during the

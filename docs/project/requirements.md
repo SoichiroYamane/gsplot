@@ -95,7 +95,7 @@ The frozen defaults, source-size budgets, complete compatibility inventory,
 and migration classifications are recorded in
 [`reform-baseline.md`](reform-baseline.md) and
 [`api-migration.md`](api-migration.md). Each behavioral slice must update
-runtime signatures, types, docstrings, tests, demos, API references, and those
+runtime signatures, types, docstrings, tests, examples, API references, and those
 matrices coherently.
 
 ## Users and primary use cases
@@ -233,22 +233,30 @@ function signature is unchanged.
 
 ### FR-8: Documentation and examples
 
-- README, guides, API reference pages, demos, and package behavior must agree.
-- Demos are executable documentation and must remain runnable from their
+- README, guides, API reference pages, examples, and package behavior must agree.
+- Examples are executable documentation and must remain runnable from their
   documented working directories.
-- Sphinx builds must execute representative demos in a failure-visible,
-  headless environment.
-- The Sphinx demo-output inventory must declare the exact files each demo is
-  expected to generate and must fail when a required artifact is missing or
-  unchanged from before the current run. Ignored stale PNG/PDF files must not
-  make a documentation build pass.
-- The publication demo must explicitly generate its PNG and PDF outputs from
+- Sphinx builds must execute every manifest-covered example in a
+  failure-visible, headless environment.
+- The example manifest must declare each script, documentation page, and exact
+  output list. The build must fail when a required artifact is missing or
+  unchanged from before the current run, when an executable script is
+  undeclared, when a manifest script or page is missing, or when an example
+  changes a file outside its output allowlist. Ignored stale or undeclared
+  PNG/PDF files must not make a documentation build pass.
+- Every example must run in a fresh isolated Python process with temporary user
+  and Matplotlib directories and without inherited credentials, package-index
+  configuration, or a checkout path injected into `PYTHONPATH`.
+- The publication example must explicitly generate its PNG and PDF outputs from
   one Figure with its reviewed publication export settings; generated outputs
   remain build products and are not committed.
 - Examples must use public APIs and must not rely on private paths, local
-  machine state, or hidden generated files.
+  machine state, hidden generated files, or network access.
+- Current executable examples live under the semantic top-level `examples/`
+  tree. Renamed `/guides/demo/` pages remain available as validated,
+  same-channel HTML redirects to `/guides/examples/`.
 - Renamed or removed documentation pages must update all toctrees, links, and
-  versioned documentation scripts.
+  versioned documentation tools.
 
 ### FR-9: Versioned documentation delivery
 
@@ -287,13 +295,14 @@ repository behavior:
   generated sources. The inventoried root `/_sources/index.md.txt` entry is a
   documented compatibility exception; channel source trees remain excluded.
 - Catalog, build, deployment, and post-deployment smoke checks use separate
-  least-privilege workflow boundaries. Release source code and demos never
-  receive GitHub, Pages, PyPI, OIDC, or repository-write credentials.
+  least-privilege workflow boundaries. Release source code and executable
+  examples never receive GitHub, Pages, PyPI, OIDC, or repository-write
+  credentials.
 - The catalog job compares the current immutable release set with the last
   public build manifest; removing a deployed release requires a reviewed
   policy entry. Pull requests use a local fixture, and workflow dispatch can
   run a non-deploying exact-tag release-candidate build.
-- Strict Sphinx, demo, metadata, link, artifact, dependency, workflow, and
+- Strict Sphinx, example, metadata, link, artifact, dependency, workflow, and
   accessibility checks are required; skipped checks are reported as skipped.
 - Historical Mermaid diagrams are rendered to self-contained SVG assets during
   the build; published documentation must not load Mermaid, tooltip, or other
@@ -427,9 +436,9 @@ explicit `MetadataSnapshot` and destination.
 
 Public functions and classes use NumPy-style docstrings. Sphinx uses
 autodoc/autosummary/napoleon with type-hint descriptions and does not expose
-undocumented canonical members. Existing demo URL paths and literal includes
-remain stable during the first cutover; new guides explain the canonical API
-and migration from legacy calls.
+undocumented canonical members. Historical benchmark source references remain
+pinned, while current numbered demonstration URLs redirect to semantic example
+pages. New guides explain the canonical API and migration from legacy calls.
 
 ### Import and security boundary
 
@@ -464,7 +473,7 @@ source, documentation, tests, Issues, PRs, or built distributions.
   remain valid on package indexes.
 - Each build produces one pure-Python wheel and one source distribution for
   the same version. The wheel contains the complete `gsplot` package,
-  `py.typed`, core metadata, and the MIT license; it excludes tests, demos,
+  `py.typed`, core metadata, and the MIT license; it excludes tests, examples,
   documentation, maintenance tools, caches, logs, and machine-specific files.
   The source distribution contains the corresponding package sources and the
   reviewed build, README, and license inputs.
@@ -478,7 +487,7 @@ source, documentation, tests, Issues, PRs, or built distributions.
 
 ### NFR-2: Determinism and state safety
 
-- Tests and demos must use deterministic inputs and fixed random seeds when
+- Tests and examples must use deterministic inputs and fixed random seeds when
   randomness is necessary.
 - Tests must restore or isolate process-global state, including Matplotlib
   `rcParams`, the current figure, gsplot configuration, singleton stores,
@@ -495,7 +504,7 @@ Relevant changes must pass focused tests and then the applicable broad checks:
 - Black and isort checks;
 - mypy, Pyright, and Python bytecode compilation;
 - strict Sphinx documentation builds;
-- demo and multiversion documentation builds when documentation paths change;
+- example and multiversion documentation builds when documentation paths change;
 - Poetry package builds with inspection of both artifacts;
 - local dependency auditing and available secret/workflow scanners; and
 - coverage reporting with at least 85 percent across canonical implementation
@@ -506,10 +515,10 @@ Relevant changes must pass focused tests and then the applicable broad checks:
 
 Performance comparisons for the concise reform use 20 fresh subprocesses for
 import time, 10 warmed repetitions for representative plotting, and three
-clean documentation/demo builds, comparing medians in the same isolated
+clean documentation/example builds, comparing medians in the same isolated
 environment. A regression requires investigation when it exceeds both 15
 percent and 10 ms for import, both 15 percent and 5 ms for plotting, or both
-15 percent and one second for documentation/demo generation. Public evidence
+15 percent and one second for documentation/example generation. Public evidence
 records toolchain and platform versions without private machine details.
 
 Skipped or unavailable checks must be reported as blocked or skipped, never as
@@ -603,7 +612,7 @@ fixed versions, impact, remediation, validation evidence, and residual risk.
 - A new contributor must be able to install the locked development environment,
   run the tests, build the docs, and build the package using the developer
   documentation.
-- Source organization, public API lists, tests, demos, docs, packaging, and CI
+- Source organization, public API lists, tests, examples, docs, packaging, and CI
   must be updated together when a contract changes.
 - Internal implementation classes may change freely when the public contract
   and migration behavior remain clear.
@@ -627,7 +636,7 @@ replace the following observable behavior:
 
 Import-time configuration, logging, and metadata behavior are currently part
 of the implementation. Any change to those side effects requires a migration
-note, tests for scripts and demos, and a clear user-facing explanation.
+note, tests for scripts and examples, and a clear user-facing explanation.
 
 ## Compatibility and reform policy
 
@@ -638,7 +647,7 @@ maintainability, or usability.
 
 Every substantial change must:
 
-1. identify affected imports, configuration keys, consumers, tests, demos,
+1. identify affected imports, configuration keys, consumers, tests, examples,
    docs, packaging, and workflows;
 2. classify each changed contract as compatible, deprecating, or breaking;
 3. provide a migration path for breaking behavior when practical;
@@ -666,7 +675,7 @@ met:
   criteria, compatibility position, security impact, and public references;
 - the linked PR describes status, changed surfaces, validation, blockers,
   residual risks, and the next action;
-- implementation, tests, demos, docs, API reference, packaging, and workflows
+- implementation, tests, examples, docs, API reference, packaging, and workflows
   agree with the new contract;
 - compatible paths are tested and breaking paths have migration guidance;
 - the relevant Python versions and headless environment pass the validation

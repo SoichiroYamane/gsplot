@@ -73,10 +73,10 @@ The frozen source baselines, implemented final example, and final budgets are:
 | --- | ---: | ---: | ---: | ---: | ---: |
 | Physical lines | 98 | 81 | 265 | 74 | 98 |
 | Comment-free lines | 74 | 71 | 230 | 64 | 74 |
-| Comment-free characters | 2487 | 2323 | 7182 | 2167 | 2400 |
+| Comment-free characters | 2487 | 2323 | 7182 | 2172 | 2400 |
 | Executable lines | 74 | 68 | 223 | 62 | 70 |
-| Executable characters | 2487 | 2135 | 6714 | 2033 | 2200 |
-| Lexical characters | 2099 | 1649 | 4628 | 1613 | 1700 |
+| Executable characters | 2487 | 2135 | 6714 | 2038 | 2200 |
+| Lexical characters | 2099 | 1649 | 4628 | 1618 | 1700 |
 | gsplot API calls | 19 | 12 | 19 | 11 | 15 |
 
 The final example must also reduce executable lines and executable characters
@@ -93,7 +93,7 @@ python tools/maintenance/check_example_metrics.py \
   --manifest tools/maintenance/example-metrics.json \
   --expect selected_tuple_prototype --check-budgets
 python tools/maintenance/check_example_metrics.py \
-  demo/4_paper_plot/paper_plot.py \
+  examples/publication/publication.py \
   --manifest tools/maintenance/example-metrics.json \
   --expect final_example --check-budgets
 git show v0.3.0:demo/4_paper_plot/paper_plot.py | \
@@ -126,32 +126,35 @@ Documentation and package-artifact validation remain required for the
 packaging and documentation slices; they are not inferred from the checks
 above.
 
-## Documentation/demo output manifest
+## Documentation/example output manifest
 
-The docs build runs every demo in an isolated headless subprocess. The only
-files a demo may create or modify are the declared image outputs below; source
-data, configuration, and Python files are inputs and must remain unchanged.
+Issue #206 replaced the numbered `demo/` source tree with semantic executable
+examples. The docs build runs every manifest-covered example in an isolated
+headless subprocess. The only files an example may create or modify are the
+declared image outputs below; source data, configuration, and Python files are
+inputs and must remain unchanged.
 
-| Demo | Allowed outputs |
+| Example | Allowed outputs |
 | --- | --- |
-| `0_hello_world`, `11_directory` | none |
-| `1_axes` | `axes.png` |
-| `2_line_and_label` | `line_and_label.png` |
-| `3_config` | `config.png`, `config.pdf` |
-| `4_paper_plot` | `SC_cal.png`, `SC_cal.pdf` |
-| `test_plot` | `SC_cal.png` |
-| `5_scatter` | `scatter.png` |
-| `6_line_colormap` | `line_colormap.png` |
-| `7_graph_white` | `graph_white.png` |
-| `8_graph_transparent` | `graph_transparent.png` |
-| `9_compatibility` | `compatibility.png`, `compatibility.pdf` |
-| `10_subplots` | `subplots.png` |
+| `paths/explicit_paths.py` | none |
+| `layouts/mosaic.py` | `axes.png` |
+| `plotting/lines_and_labels.py` | `line_and_label.png` |
+| `configuration/configuration.py` | `config.png`, `config.pdf` |
+| `publication/publication.py` | `SC_cal.png`, `SC_cal.pdf` |
+| `plotting/scatter.py` | `scatter.png` |
+| `plotting/colored_lines.py` | `line_colormap.png` |
+| `themes/white.py` | `graph_white.png` |
+| `themes/transparent.py` | `graph_transparent.png` |
+| `compatibility/legacy_v0.py` | `compatibility.png`, `compatibility.pdf` |
+| `layouts/matplotlib_interoperability.py` | `subplots.png` |
 
-`demo/manifest.json` is the source of truth and is enforced by `docs/conf.py`.
-An undeclared or missing script, unsafe or duplicate path, unexpected output,
-missing output, or stale declared output fails the Sphinx build. Demo
-subprocesses run with bytecode generation disabled, and the compatibility
-demo's non-interactive display warning is expected under the Agg backend.
+`examples/manifest.json` is the source of truth and is enforced through
+`tools/maintenance/example_runner.py` by both Sphinx and the standalone image
+builder. An undeclared or missing script/page, unsafe or duplicate path,
+unexpected output, missing output, or stale declared output fails the build.
+Subprocesses use Python isolated mode, bytecode suppression, temporary user and
+Matplotlib directories, and a credential-free environment. The compatibility
+example's non-interactive display warning is expected under the Agg backend.
 
 ## Reform validation snapshot
 
@@ -165,7 +168,7 @@ canonical implementation threshold.
 The revision-pair benchmark compares `782117f` with a committed candidate in
 the same isolated environment. It uses 20 fresh imports, one warm-up plus 10
 timed repetitions for each plotting workload, and three clean Sphinx builds
-including all declared demos. A result is material only when it exceeds both
+including all declared examples. A result is material only when it exceeds both
 the 15 percent relative threshold and the absolute threshold of 10 ms for
 import, 5 ms for plotting, or one second for documentation. The command is:
 
@@ -178,7 +181,7 @@ The Phase 10 candidate `f2dba80` used CPython 3.12.13, Matplotlib 3.10.9,
 NumPy 2.2.6, the Agg backend, and Linux x86-64. Baseline/candidate medians were
 42.917/43.310 ms for import, 2.636/5.735 ms for an ordinary line,
 2.962/6.557 ms for an ordinary scatter, 3.183/3.818 ms for a colored line,
-and 14.434/16.943 seconds for a clean documentation/demo build. Import and all
+and 14.434/16.943 seconds for a clean documentation/example build. Import and all
 plotting workloads remained below their material absolute thresholds after
 paper styling stopped materializing tick labels eagerly.
 

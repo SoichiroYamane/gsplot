@@ -17,7 +17,7 @@ machine-specific operational details here.
   resolution is part of the requested change.
 - `src/gsplot/__init__.py` and each module's `__all__` define the public import
   surface. Check both when adding, moving, or removing an API.
-- `README.md`, `docs/`, and `demo/` describe user-visible behavior. Demo
+- `README.md`, `docs/`, and `examples/` describe user-visible behavior. Example
   scripts are executable documentation and are also used to create images in
   the Sphinx site.
 - `.github/workflows/` is the source of truth for CI, documentation, release,
@@ -32,7 +32,7 @@ machine-specific operational details here.
   status is optional and is reserved for work that is genuinely incomplete.
 - `.agents/skills/gsplot-maintenance/SKILL.md` contains the repository-specific
   maintenance procedure for Python, Matplotlib, configuration, tests, docs,
-  demos, packaging, security, PRs, CI, and agent guidance.
+  examples, packaging, security, PRs, CI, and agent guidance.
 
 ## Architecture and invariants
 
@@ -57,8 +57,8 @@ machine-specific operational details here.
   stable unless a breaking change is explicitly intended.
 - Importing `gsplot` is side-effect-light: it must not configure logging,
   select a backend, change `rcParams`, create a Figure, or write application
-  files. Changes to import-time behavior require checking scripts, demos, and
-  docs.
+  files. Changes to import-time behavior require checking applications,
+  examples, and docs.
 
 ## Public-repository safety
 
@@ -164,7 +164,7 @@ For a fundamental change:
 2. Record the decision, alternatives, migration plan, and residual risks in
    the linked GitHub Issue and PR. Update stable repository requirements
    in `docs/project/requirements.md` when the contract changes.
-3. Map public imports, configuration keys, consumers, tests, demos, docs,
+3. Map public imports, configuration keys, consumers, tests, examples, docs,
    packaging, CI, and migration paths before editing.
 4. Classify each changed contract as compatible, deprecating, or breaking. For
    breaking behavior, provide a migration path when practical.
@@ -233,7 +233,7 @@ reproducible, and safe to quote.
    ```
 
 3. Locate the public entry point, implementation, decorators, aliases, stateful
-   collaborators, consumers, tests, demos, docs, and workflow that the change
+   collaborators, consumers, tests, examples, docs, and workflow that the change
    can affect.
 4. Make the smallest coherent implementation and test change, unless the
    requirements call for a fundamental redesign. Use
@@ -263,7 +263,7 @@ dependency churn.
    dependency change is intentional, and inspect all lockfile changes.
 5. Inspect dependency release scripts, build backends, install hooks, workflow
    actions, and generated files for supply-chain or unrelated changes.
-6. Run focused tests, the full relevant suite, type/syntax checks, docs/demos,
+6. Run focused tests, the full relevant suite, type/syntax checks, docs/examples,
    packaging, and available security scans. Verify the fixed version in the
    lockfile and built artifact.
 7. Record resolution, compatibility impact, residual risk, and follow-up work.
@@ -394,7 +394,7 @@ catalog and output to temporary paths, and serve the resulting site directory
 the same way. A complete versioned build may require the pinned Mermaid/Node
 toolchain and an explicit local Chrome or Chromium executable; report that
 limitation rather than bypassing the documented toolchain. Do not expose a
-development server publicly or pass credentials to Sphinx, demo, or browser
+development server publicly or pass credentials to Sphinx, example, or browser
 processes. Use `set -euo pipefail` for any multi-command preview shell so a
 catalog or site-build failure prevents the server from starting.
 
@@ -422,19 +422,20 @@ authorized the remote handoff; one response may satisfy both gates when it
 clearly authorizes `commit` and `push`. Security, CI/release, non-visual
 correctness, and generated-contract changes follow the ordinary workflow.
 
-## Documentation and demo rules
+## Documentation and example rules
 
 - Keep repository guidance and the repository skill in English. User-facing
   project documentation and code examples should also remain in clear English.
-- Follow the existing Sphinx/MyST structure and use `literalinclude` for demo
-  source when that gives the docs a single source of truth.
-- `docs/conf.py` is executable build code. It imports the package and runs demo
-  scripts to generate image assets. Use `MPLBACKEND=Agg` in headless builds,
+- Follow the existing Sphinx/MyST structure and use `literalinclude` for
+  example source when that gives the docs a single source of truth.
+- `docs/conf.py` is executable build code. It imports the package and runs
+  example scripts to generate image assets. Use `MPLBACKEND=Agg` in headless builds,
   make failures visible, and inspect `git status` after a build.
 - Keep relative paths correct from the document that contains them. Run a docs
   build after renaming a page or changing a toctree entry.
-- Do not commit generated demo PNGs, Sphinx build output, local `.gsplot`
-  metadata, credentials, private logs, or machine-specific environment data.
+- Do not commit generated example PNG/PDF files, Sphinx build output, local
+  `.gsplot` metadata, credentials, private logs, or machine-specific
+  environment data.
 - Keep Issues and PRs useful to contributors: describe decisions and evidence,
   not private infrastructure or raw authentication output.
 
@@ -447,13 +448,13 @@ Run the checks relevant to the changed surface:
 MPLBACKEND=Agg poetry run pytest -q
 
 # Formatting and imports
-poetry run black --check src/gsplot tests scripts tools/maintenance
-poetry run isort --check-only src/gsplot tests scripts tools/maintenance
+poetry run black --check src/gsplot tests examples tools/maintenance
+poetry run isort --check-only src/gsplot tests examples tools/maintenance
 
 # Types and syntax
 poetry run mypy --config-file .mypy.ini src/gsplot
 poetry run pyright src/gsplot
-python -m compileall -q src/gsplot tests scripts tools/maintenance
+python -m compileall -q src/gsplot tests examples tools/maintenance
 PYTHONPATH=src poetry run python tools/maintenance/check_architecture.py
 PYTHONPATH=src poetry run python tools/maintenance/check_docstrings.py
 
@@ -465,7 +466,7 @@ git diff --check
 ```
 
 For dependency or security work, also inspect the lockfile and built artifact,
-run affected demos, and use an available secret/dependency scanner. If the
+run affected examples, and use an available secret/dependency scanner. If the
 Poetry environment cannot be created on the host, use a compatible Python
 version or an equivalent isolated environment and record the exact command and
 limitation. Never report a skipped check as passing.
@@ -488,7 +489,7 @@ limitation. Never report a skipped check as passing.
 ## Skill routing
 
 Use `$gsplot-maintenance` for work involving gsplot Python code, Matplotlib
-behavior, configuration, stateful plotting, tests, demos, Sphinx docs, Poetry,
+behavior, configuration, stateful plotting, tests, examples, Sphinx docs, Poetry,
 packaging, dependency security, pull requests, CI, `AGENTS.md`, progress or
 security records, or repository-scoped skills. Do not apply it to unrelated
 general documentation or application work.

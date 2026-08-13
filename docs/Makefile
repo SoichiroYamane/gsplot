@@ -29,12 +29,12 @@ clear:
 
 # Autobuild target: run sphinx-autobuild with specific options
 autobuild:
-	sphinx-autobuild "$(SOURCEDIR)" "$(BUILDDIR)/html" --watch "../gsplot" --watch "reference" --watch "api_reference" --host 0.0.0.0 -d "$(BUILDDIR)/doctrees" --pre-build "make clean html" --ignore "$(BUILDDIR)/*" --re-ignore "^\..*" --re-ignore "__pycache__" --re-ignore "\.DS_Store" --re-ignore "./api_reference/apis" --re-ignore "./api_reference/apis.rst"
+	sphinx-autobuild "$(SOURCEDIR)" "$(BUILDDIR)/html" --watch "../src/gsplot" --watch "../examples" --watch "reference" --watch "api_reference" --host 127.0.0.1 -d "$(BUILDDIR)/doctrees" --pre-build "make clean html" --ignore "$(BUILDDIR)/*" --re-ignore "^\..*" --re-ignore "__pycache__" --re-ignore "\.DS_Store" --re-ignore "./api_reference/apis" --re-ignore "./api_reference/apis.rst"
 
-# Run all demo scripts explicitly. The Sphinx configuration also performs this
+# Run all example scripts explicitly. The Sphinx configuration also performs this
 # step for normal builds so that generated image assets are never stale.
 build-images:
-	MPLBACKEND=Agg $(PYTHON) ../scripts/docs/build_demo_images.py
+	cd .. && MPLBACKEND=Agg $(PYTHON) -m tools.maintenance.build_example_images
 
 # Multiversion target: thin compatibility wrapper around the repository tool.
 multiversion:

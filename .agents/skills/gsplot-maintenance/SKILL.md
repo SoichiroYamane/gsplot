@@ -1,6 +1,6 @@
 ---
 name: gsplot-maintenance
-description: Maintain, redesign, secure, and review the public gsplot Python scientific-plotting repository, including Matplotlib behavior, configuration precedence, public APIs, directory migrations, tests, demos, Sphinx documentation, local website previews, Playwright MCP UI checks, Poetry dependencies, security advisories, pull requests, GitHub Actions, packaging, and repository guidance. Use when Codex changes or validates this repository's code, architecture, dependencies, workflows, docs, demos, website previews, AGENTS.md, linked Issue/PR records, or repository-scoped skills.
+description: Maintain, redesign, secure, and review the public gsplot Python scientific-plotting repository, including Matplotlib behavior, configuration precedence, public APIs, directory migrations, tests, executable examples, Sphinx documentation, local website previews, Playwright MCP UI checks, Poetry dependencies, security advisories, pull requests, GitHub Actions, packaging, and repository guidance. Use when Codex changes or validates this repository's code, architecture, dependencies, workflows, docs, examples, website previews, AGENTS.md, linked Issue/PR records, or repository-scoped skills.
 ---
 
 # gsplot Maintenance
@@ -20,7 +20,7 @@ Read, in this order, before editing:
 2. `docs/project/requirements.md` and the linked GitHub Issue/PR when available
 3. `pyproject.toml` and the relevant sections of `poetry.lock`
 4. `README.md` and the relevant `docs/` guide or API page
-5. the target implementation, its imports/consumers, related tests, and related demo
+5. the target implementation, its imports/consumers, related tests, and related example
 6. the relevant `.github/workflows/*.yml` file when CI, release, security, or docs behavior is in scope
 
 Run the read-only triage before implementation:
@@ -166,7 +166,7 @@ materially improves the project. Do not preserve an unsafe or misleading
 structure merely to minimize the diff.
 
 1. Define the outcome and acceptance criteria in the linked Issue.
-2. Map public imports, configuration keys, consumers, tests, demos, docs,
+2. Map public imports, configuration keys, consumers, tests, examples, docs,
    packaging, CI, and migration impact.
 3. Classify each affected contract as compatible, deprecating, or breaking.
 4. Record alternatives, migration/deprecation behavior, and residual risks in
@@ -199,7 +199,7 @@ Follow these invariants when changing code:
   figure, and the current working directory remain process-wide state. Reset
   or restore shared state in tests and avoid leaking it between cases.
 - Prefer assertions about returned artists, labels, limits, colors, collections, and axis state. Add image comparisons only when a visual regression cannot be expressed structurally.
-- Keep scientific data and demo examples deterministic. Use small explicit arrays, fixed random seeds when randomness is necessary, and `MPLBACKEND=Agg` for headless checks.
+- Keep scientific data and executable examples deterministic. Use small explicit arrays, fixed random seeds when randomness is necessary, and `MPLBACKEND=Agg` for headless checks.
 
 ## Choose the task workflow
 
@@ -216,7 +216,7 @@ Follow these invariants when changing code:
 ### Configuration change
 
 1. Inspect `gsplot._config.Config`, the strict schema, the target canonical
-   signature, and a representative `demo/*/gsplot.json` compatibility fixture.
+   signature, and the representative `examples/configuration/gsplot.json` fixture.
 2. Confirm that explicit function arguments override values from the supplied
    immutable `Config`, and that unknown schema keys or plot properties fail at
    the validation boundary. Legacy schema-less files may be translated only
@@ -315,7 +315,7 @@ dependency churn:
 4. Choose the smallest safe fixed version. Update `poetry.lock` only when the
    dependency change is intentional and inspect every lockfile change.
 5. Inspect the dependency diff for unrelated or malicious changes.
-6. Run focused tests, the full relevant suite, types, syntax, docs/demos,
+6. Run focused tests, the full relevant suite, types, syntax, docs/examples,
    packaging, and available security scans. Verify the fixed version in the
    lockfile and built artifact.
 7. Record resolution, compatibility impact, residual risk, and follow-up work.
@@ -431,14 +431,14 @@ before push or merge and report the exact handoff state.
 
 1. Use `MPLBACKEND=Agg` for non-interactive validation and avoid forcing a backend in library code unless the feature explicitly requires it.
 2. Verify the returned Matplotlib artist type and important properties before relying on a screenshot.
-3. If a demo is the canonical example, run only that demo first and check for newly generated images, metadata files, and API documentation changes.
+3. If an executable example is canonical, run only that example first and check for newly generated images, metadata files, and API documentation changes.
 
-### Documentation or demo change
+### Documentation or example change
 
-1. Follow the existing MyST/Sphinx structure and use `literalinclude` for demo source when appropriate.
-2. Check relative paths from the document, demo working directory assumptions, and the static `docs/api_reference/apis.rst` module list.
-3. Treat `docs/conf.py` as executable build code: it runs every demo in a fresh headless subprocess. The standalone `scripts/docs/build_demo_images.py` helper can refresh demo assets without starting Sphinx.
-4. Inspect and revert unrelated generated changes after a build. Demo image files and `.gsplot` metadata are ignored local output, not documentation source.
+1. Follow the existing MyST/Sphinx structure and use `literalinclude` for example source when appropriate.
+2. Check relative paths from the document, example working-directory assumptions, `examples/manifest.json`, and the static `docs/api_reference/apis.rst` module list.
+3. Treat `docs/conf.py` as executable build code: through `tools.maintenance.example_runner`, it runs every manifest-covered example in a fresh isolated headless subprocess. `python -m tools.maintenance.build_example_images` uses the same runner without starting Sphinx.
+4. Inspect generated changes after a build. Example PNG/PDF files and `.gsplot` metadata are ignored local output, not documentation source; undeclared or stale outputs must fail validation.
 
 ### Packaging or CI change
 
@@ -455,13 +455,13 @@ Run the smallest relevant set, then expand for the affected surface:
 MPLBACKEND=Agg poetry run pytest -q
 
 # Formatting and imports
-poetry run black --check src/gsplot tests scripts tools/maintenance docs/conf.py
-poetry run isort --profile black --check-only src/gsplot tests scripts tools/maintenance docs/conf.py
+poetry run black --check src/gsplot tests examples tools/maintenance docs/conf.py
+poetry run isort --profile black --check-only src/gsplot tests examples tools/maintenance docs/conf.py
 
 # Types and syntax
 poetry run mypy --config-file .mypy.ini src/gsplot
 poetry run pyright src/gsplot
-python -m compileall -q src/gsplot tests scripts tools/maintenance
+python -m compileall -q src/gsplot tests examples tools/maintenance
 PYTHONPATH=src poetry run python tools/maintenance/check_architecture.py
 PYTHONPATH=src poetry run python tools/maintenance/check_docstrings.py
 
@@ -473,7 +473,7 @@ git diff --check
 ```
 
 For security or PR work, also inspect the dependency graph/lockfile, workflow
-permissions, built artifact, affected demos, and available scanners. If the
+permissions, built artifact, affected examples, and available scanners. If the
 Poetry environment is absent, use a compatible Python version or an equivalent
 isolated environment and record the exact limitation. Do not claim a check
 passed when a command was skipped because a tool or dependency was unavailable.
@@ -485,7 +485,7 @@ headless build.
 Re-check these conditions instead of hiding them:
 
 - Use Python 3.12 for the locked Poetry environment. On Python 3.14, some locked versions may fall back to source builds or fail their supported-Python checks even when the project itself supports Python 3.10+.
-- Documentation builds execute demos and may create ignored PNG files and user-level logs. Always use `MPLBACKEND=Agg` in CI or headless environments and review `git status` after the build.
+- Documentation builds execute examples and may create ignored PNG/PDF files. Always use `MPLBACKEND=Agg` in CI or headless environments, keep user/cache directories isolated, and review `git status` after the build.
 - `src/gsplot/version.py` is a compatibility metadata shim backed by installed
   distribution metadata. It is not generated by a workflow and must not gain
   embedded release literals or commit hashes.
