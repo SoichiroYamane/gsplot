@@ -31,6 +31,22 @@ jobs:
       - name: Build the package
         run: poetry build
 
+      - name: Inspect package distributions
+        run: python tools/maintenance/check_dist.py dist
+
+      - name: Smoke-test the installed wheel
+        env:
+          MPLBACKEND: Agg
+        run: |
+          python -m venv "$RUNNER_TEMP/gsplot-wheel-smoke"
+          "$RUNNER_TEMP/gsplot-wheel-smoke/bin/python" -m pip install \
+            --disable-pip-version-check --no-cache-dir --only-binary=:all: \
+            "$GITHUB_WORKSPACE"/dist/gsplot-*.whl
+          cd "$RUNNER_TEMP"
+          "$RUNNER_TEMP/gsplot-wheel-smoke/bin/python" \
+            "$GITHUB_WORKSPACE/tools/maintenance/smoke_dist.py" \
+            --forbid-source-root "$GITHUB_WORKSPACE"
+
       - name: Upload package distributions
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:

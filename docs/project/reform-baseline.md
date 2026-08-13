@@ -10,9 +10,10 @@ output.
 The baseline was measured from the clean `main` revision used to start the
 Issue #165 reform branch. At that revision the package was the flat-layout 0.3.x
 implementation with `gsplot/` at the repository root, `setup.py`, and a
-generated-version workflow. The exact public root names and signatures are
-available from `collect_public_api.py`; the reviewed mapping is in the
-[API migration matrix](api-migration.md).
+generated-version workflow. The exact public root names, signatures, defaults,
+annotations, lazy targets, and compatibility modules are frozen in
+`tests/fixtures/reform/public-api-v1.json`; the reviewed mapping and update
+procedure are in the [API migration matrix](api-migration.md).
 
 That historical snapshot remains useful evidence. The current concise
 publication reform starts from the accepted Issue #181 parity baseline at
@@ -154,20 +155,44 @@ demo's non-interactive display warning is expected under the Agg backend.
 
 ## Reform validation snapshot
 
-The canonical implementation now reports 86.41 percent coverage across the
+The canonical implementation now reports 88.51 percent coverage across the
 `_core`, `_config`, `_figure`, `_plot`, `_style`, and `_io` modules, while the
-pure `_core` modules report 98.68 percent. These are enforced as CI minimums
+pure `_core` modules report 98.97 percent. These are enforced as CI minimums
 of 85 percent and 95 percent respectively; historical compatibility modules
 remain covered by their characterization tests but are not part of the
 canonical implementation threshold.
 
-The reform benchmark uses 30 warmed iterations and closes each temporary
-Figure. Its recorded medians are approximately 45.65 ms for a fresh import,
-2.68 ms for an ordinary line, 2.93 ms for an ordinary scatter, and 3.20 ms
-for a colored line. The memory-retention integration test creates and closes
-repeated Figures and confirms that the canonical package owns no Figure/Axes
-registry or cache. Values are environment-dependent reference points, not
-machine-specific performance promises.
+The revision-pair benchmark compares `782117f` with a committed candidate in
+the same isolated environment. It uses 20 fresh imports, one warm-up plus 10
+timed repetitions for each plotting workload, and three clean Sphinx builds
+including all declared demos. A result is material only when it exceeds both
+the 15 percent relative threshold and the absolute threshold of 10 ms for
+import, 5 ms for plotting, or one second for documentation. The command is:
+
+```bash
+poetry run python tools/maintenance/benchmark_reform.py \
+  --baseline 782117f --candidate HEAD
+```
+
+The Phase 10 candidate `f2dba80` used CPython 3.12.13, Matplotlib 3.10.9,
+NumPy 2.2.6, the Agg backend, and Linux x86-64. Baseline/candidate medians were
+42.917/43.310 ms for import, 2.636/5.735 ms for an ordinary line,
+2.962/6.557 ms for an ordinary scatter, 3.183/3.818 ms for a colored line,
+and 14.434/16.943 seconds for a clean documentation/demo build. Import and all
+plotting workloads remained below their material absolute thresholds after
+paper styling stopped materializing tick labels eagerly.
+
+Documentation crossed the total-build investigation threshold. A separate
+clean build counted 98 baseline HTML pages and 124 candidate pages; total time
+rose 17.4 percent while time per HTML page improved from 147.3 to 136.6 ms.
+The additional canonical APIs, type aliases, migration material, and guides
+therefore explain the aggregate increase without showing a per-page slowdown.
+This expected content-growth cost is explicitly accepted for Issue #183;
+future unchanged-content comparisons must still investigate the same
+thresholds. The memory-retention integration test separately creates and
+closes repeated Figures and confirms that the canonical package owns no
+Figure/Axes registry or cache. Measurements are environment-dependent review
+evidence, not machine-specific performance promises.
 
 ## Import and state characterization
 
@@ -182,10 +207,10 @@ when importing the historical package:
   font caches in the user cache/config locations; and
 - no figure existed immediately after the import probe.
 
-The completed structural reform removed application file writes, eager pyplot import,
-implicit configuration loading, root-logger setup, backend selection, and
-`rcParams` mutation from ordinary package import. These are explicit
-acceptance items, not assumptions about the current implementation.
+The completed structural reform removed application file writes, eager
+`pyplot` imports, implicit configuration loading, root-logger setup, backend
+selection, and `rcParams` mutation from ordinary package imports. Their
+absence is validated by isolated-process tests.
 
 ## Performance reference points
 
@@ -196,11 +221,10 @@ The same pre-cutover isolated probes produced these reference points:
 - warmed ordinary `line` plotting call: median approximately 0.596 ms across
   30 calls, with each temporary figure closed after the call.
 
-These numbers are environment-dependent and are used only as relative
-references. Final performance validation must use the reform benchmark
-protocol: 30 warmed iterations, separate ordinary and colored plotting
-cases, and a documented Python/Matplotlib environment without publishing
-machine-specific paths or identifying details.
+These numbers are environment-dependent and are used only as historical
+references. Final performance validation uses the revision-pair protocol
+recorded above and publishes only aggregate medians, commit identifiers, and
+generic software/platform dimensions.
 
 ## Phase 0 acceptance
 

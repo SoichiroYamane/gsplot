@@ -40,8 +40,6 @@ def _set_typography(axis: Axes) -> None:
         axis.yaxis.label,
         axis.xaxis.get_offset_text(),
         axis.yaxis.get_offset_text(),
-        *axis.get_xticklabels(which="both"),
-        *axis.get_yticklabels(which="both"),
     )
     for text in text_objects:
         text.set_fontfamily("DejaVu Sans")
@@ -75,6 +73,7 @@ def _style_axis(axis: Axes, *, cycle: bool) -> None:
         width=0.8,
         pad=6,
         labelsize=10,
+        labelfontfamily="DejaVu Sans",
     )
     axis.tick_params(
         axis="both",
@@ -86,6 +85,8 @@ def _style_axis(axis: Axes, *, cycle: bool) -> None:
         right=True,
         length=2,
         width=0.6,
+        labelsize=10,
+        labelfontfamily="DejaVu Sans",
     )
     _set_typography(axis)
 

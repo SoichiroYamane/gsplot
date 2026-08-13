@@ -315,21 +315,25 @@ import either form.
 | `gsplot.style.title` | `gsplot.title`, `gsplot.suptitle` |
 | `gsplot.data.load_file` | `gsplot.read` or advanced `gsplot.read_array` |
 
-The complete current inventory can be regenerated with:
+Check the complete reviewed contract with:
 
 ```bash
-poetry run python tools/maintenance/collect_public_api.py
+poetry run python tools/maintenance/check_public_api_contract.py
 ```
 
-That command is intentionally read-only and prints JSON to standard output;
-it does not create an inventory file or alter the working tree. Its output
-separates root `__all__`, lazy canonical targets, lazy legacy targets,
-type-checker exports, API-index exports, typed kinds and signatures, direct
-metadata attributes, structured parameter/default/annotation contracts,
-docstring summaries and fingerprints, the frozen v0.3 baseline, and the actual
-exports of every compatibility path parsed from this page. This makes hidden
-lazy names such as `save_metadata` and `logger` reviewable without promoting
-them into the concise API.
+The command compares the runtime with the complete reviewed fixture in
+`tests/fixtures/reform/public-api-v1.json`. After an intentional API review,
+regenerate that fixture with the same command plus `--update` and inspect the
+JSON diff before committing it. For ad hoc inspection,
+`tools/maintenance/collect_public_api.py` remains read-only and prints the
+same current inventory to standard output. The inventory separates root
+`__all__`, lazy canonical targets, lazy legacy targets, type-checker exports,
+API-index exports, typed kinds and signatures, direct metadata attributes,
+structured parameter/default/annotation contracts, docstring summaries and
+fingerprints, the frozen v0.3 baseline, and the actual exports of every
+compatibility path parsed from this page. This makes hidden lazy names such as
+`save_metadata` and `logger` reviewable without promoting them into the
+concise API.
 
 ### Warning and exception migration
 

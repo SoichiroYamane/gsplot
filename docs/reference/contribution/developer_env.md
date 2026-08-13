@@ -104,13 +104,49 @@ MPLBACKEND=Agg poetry run sphinx-build -W -b html docs docs/_build/html
 Build distribution artifacts without publishing them:
 
 ```bash
+poetry check --lock
 poetry build
+python tools/maintenance/check_dist.py dist
 ```
+
+The artifact checker validates the exact wheel and source-distribution
+contents, metadata, record hashes, path safety, and size limits without
+extracting either archive. CI and the publishing workflow additionally install
+the wheel in a clean environment outside the checkout and run
+`tools/maintenance/smoke_dist.py` before accepting the artifact.
+
+Check that the complete reviewed API and compatibility fixture still matches
+the runtime:
+
+```bash
+PYTHONPATH=src poetry run python \
+  tools/maintenance/check_public_api_contract.py
+```
+
+An intentional API change requires the same command with `--update`, followed
+by review of the complete JSON diff.
+
+For a performance-sensitive reform, compare two already reviewed commits from
+a clean tracked working tree:
+
+```bash
+poetry run python tools/maintenance/benchmark_reform.py \
+  --baseline 782117f --candidate HEAD
+```
+
+The benchmark executes both revisions, including their demos, from isolated
+temporary exports with a credential-free process environment. Inspect any
+commit before selecting it: a benchmark is not a sandbox for untrusted code.
+The JSON contains aggregate medians and generic toolchain information only. A
+nonzero `investigate` result must be fixed or explicitly accepted in the
+linked Issue with its cause and residual impact.
 
 Before submitting a change, also run:
 
 ```bash
 python -m compileall -q src/gsplot tests scripts tools/maintenance
+PYTHONPATH=src poetry run python tools/maintenance/check_architecture.py
+PYTHONPATH=src poetry run python tools/maintenance/check_docstrings.py
 git diff --check
 git status --short
 ```

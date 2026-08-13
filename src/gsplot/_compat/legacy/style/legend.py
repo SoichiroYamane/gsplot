@@ -68,7 +68,7 @@ class Legend:
         labels: list[str] | None = None,
         handlers: dict | None = None,
         *args: Any,
-        **kwargs: Any
+        **kwargs: Any,
     ):
         self.ax: Axes = ax
         self.handles: list[Any] | None = handles
@@ -302,7 +302,7 @@ def legend_handlers(
     labels: list[str] | None = None,
     handlers: dict | None = None,
     *args: Any,
-    **kwargs: Any
+    **kwargs: Any,
 ) -> Lg:
     """
     Adds a legend with custom handles, labels, and handlers to the specified axis.
@@ -365,7 +365,7 @@ def legend_reverse(
     labels: list[str] | None = None,
     handlers: dict | None = None,
     *args: Any,
-    **kwargs: Any
+    **kwargs: Any,
 ) -> Lg:
     """
     Adds a legend to the specified axis with reversed order of handles and labels.

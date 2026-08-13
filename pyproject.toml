@@ -1,24 +1,29 @@
-[tool.poetry]
+[project]
 name = "gsplot"
-
 version = "0.4.0"
-
-description = "General-scientific plot based on matplotlib"
+description = "Concise publication-quality scientific plotting built on Matplotlib"
 authors = [
-  "Giordano Mattoni <mattoni@scphys.kyoto-u.ac.jp>",
-  "Soichiro Yamane <soichiro.yamane.19970619@gmail.com>",
+  { name = "Giordano Mattoni" },
 ]
+maintainers = [{ name = "Soichiro Yamane" }]
 readme = "README.md"
-packages = [{ include = "gsplot", from = "src" }]
+requires-python = ">=3.10"
+license = "MIT"
+license-files = ["LICENSE"]
+keywords = ["matplotlib", "plotting", "publication", "scientific"]
+dependencies = [
+  "matplotlib>=3.9.0",
+  "numpy>=1.26.4",
+]
 
-[tool.poetry.urls]
+[project.urls]
 Homepage = "https://soichiroyamane.github.io/gsplot/"
+Documentation = "https://soichiroyamane.github.io/gsplot/stable/"
+Repository = "https://github.com/SoichiroYamane/gsplot"
+Issues = "https://github.com/SoichiroYamane/gsplot/issues"
 
-[tool.poetry.dependencies]
-python = ">=3.10"
-matplotlib = ">=3.9.0"
-numpy = ">=1.26.4"
-
+[tool.poetry]
+packages = [{ include = "gsplot", from = "src" }]
 
 [tool.poetry.group.dev.dependencies]
 flake8 = "^7.0.0"
