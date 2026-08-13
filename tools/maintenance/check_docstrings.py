@@ -7,7 +7,7 @@ import sys
 from dataclasses import fields, is_dataclass
 from pathlib import Path
 from types import ModuleType
-from typing import Any
+from typing import Any, TypeAlias
 
 import gsplot
 from gsplot._compat.root import _CANONICAL_EXPORTS
@@ -264,6 +264,15 @@ def _check_class(name: str, value: type[Any]) -> list[str]:
     return errors
 
 
+def _is_explicit_type_alias(module: ModuleType, attribute_name: str) -> bool:
+    """Return whether a module attribute is explicitly annotated as a type alias."""
+
+    annotation = getattr(module, "__annotations__", {}).get(attribute_name)
+    return annotation is TypeAlias or (
+        isinstance(annotation, str) and annotation in {"TypeAlias", "typing.TypeAlias"}
+    )
+
+
 def _check_root(repository_root: Path) -> list[str]:
     """Check root exports, re-export fidelity, and stable metadata values."""
 
@@ -277,7 +286,10 @@ def _check_root(repository_root: Path) -> list[str]:
         except (AttributeError, ImportError) as exc:
             errors.append(f"{name}: cannot resolve canonical export ({exc})")
             continue
-        if inspect.isfunction(canonical_value) or inspect.isclass(canonical_value):
+        is_type_alias = _is_explicit_type_alias(module, attribute_name)
+        if not is_type_alias and (
+            inspect.isfunction(canonical_value) or inspect.isclass(canonical_value)
+        ):
             root_signature: inspect.Signature | None
             canonical_signature: inspect.Signature | None
             try:
@@ -291,12 +303,16 @@ def _check_root(repository_root: Path) -> list[str]:
                 )
         if inspect.getdoc(root_value) != inspect.getdoc(canonical_value):
             errors.append(f"{name}: root docstring differs from canonical docstring")
-        if inspect.isfunction(canonical_value):
+        if is_type_alias:
+            type_aliases.add(name)
+        elif inspect.isfunction(canonical_value):
             errors.extend(_check_callable(name, canonical_value))
         elif inspect.isclass(canonical_value):
             errors.extend(_check_class(name, canonical_value))
         else:
-            type_aliases.add(name)
+            errors.append(
+                f"{name}: non-callable export must be declared with TypeAlias"
+            )
 
     version_doc = (
         inspect.getdoc(__import__("gsplot.version", fromlist=["__version__"])) or ""

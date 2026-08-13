@@ -137,6 +137,23 @@ def test_public_type_alias_docs_cover_the_canonical_root() -> None:
     assert check_docstrings._check_root(repository_root) == []
 
 
+def test_type_alias_audit_precedes_runtime_class_introspection(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Explicit aliases stay aliases when an older Python reports them as classes."""
+
+    repository_root = check_docstrings.Path(__file__).resolve().parents[2]
+    alias_ids = {id(getattr(gsplot, name)) for name in _PUBLIC_TYPE_ALIAS_DOCS}
+    runtime_isclass = check_docstrings.inspect.isclass
+    monkeypatch.setattr(
+        check_docstrings.inspect,
+        "isclass",
+        lambda value: id(value) in alias_ids or runtime_isclass(value),
+    )
+
+    assert check_docstrings._check_root(repository_root) == []
+
+
 def test_public_exception_requires_an_example() -> None:
     """Exception classes cannot bypass the executable-example contract."""
 
@@ -166,6 +183,10 @@ def test_canonical_and_type_alias_examples_execute(
     monkeypatch.chdir(tmp_path)
     for name in _CANONICAL_EXPORTS:
         value = getattr(gsplot, name)
+        module_name, attribute_name = _CANONICAL_EXPORTS[name]
+        module = __import__(module_name, fromlist=[attribute_name])
+        if check_docstrings._is_explicit_type_alias(module, attribute_name):
+            continue
         if name == "use_backend" or not (
             inspect.isfunction(value) or inspect.isclass(value)
         ):
