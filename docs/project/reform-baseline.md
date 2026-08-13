@@ -70,13 +70,13 @@ The frozen source baselines, implemented final example, and final budgets are:
 
 | Measure | 0.3 reference | Selected prototype | Issue #181 repair | Implemented final | Final maximum |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| Physical lines | 98 | 81 | 265 | 82 | 98 |
-| Comment-free lines | 74 | 71 | 230 | 72 | 74 |
-| Comment-free characters | 2487 | 2323 | 7182 | 2374 | 2400 |
-| Executable lines | 74 | 68 | 223 | 69 | 70 |
-| Executable characters | 2487 | 2135 | 6714 | 2189 | 2200 |
-| Lexical characters | 2099 | 1649 | 4628 | 1695 | 1700 |
-| gsplot API calls | 19 | 12 | 19 | 12 | 15 |
+| Physical lines | 98 | 81 | 265 | 74 | 98 |
+| Comment-free lines | 74 | 71 | 230 | 64 | 74 |
+| Comment-free characters | 2487 | 2323 | 7182 | 2167 | 2400 |
+| Executable lines | 74 | 68 | 223 | 62 | 70 |
+| Executable characters | 2487 | 2135 | 6714 | 2033 | 2200 |
+| Lexical characters | 2099 | 1649 | 4628 | 1613 | 1700 |
+| gsplot API calls | 19 | 12 | 19 | 11 | 15 |
 
 The final example must also reduce executable lines and executable characters
 by at least 60 percent from the Issue #181 repair while preserving its

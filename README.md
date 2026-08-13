@@ -40,7 +40,7 @@ gs.save(fig, "quickstart", show=False)
 ```
 
 This creates a two-panel Matplotlib figure, saves `quickstart.png` and
-`quickstart.pdf`, and remains compatible with regular Matplotlib operations:
+`quickstart.pdf`, and remains compatible with regular Matplotlib operations.
 
 The canonical helpers always receive their Figure or Axes target explicitly.
 `save` writes PNG and PDF transactionally at 600 DPI with a tight crop and

@@ -1,9 +1,12 @@
 # 4. A publication-style plot
 
-This example combines concise data loading, deterministic series styles,
-inset axes, exact zoom connectors, labels, legends, and square panel geometry.
-It uses the public defaults directly rather than rebuilding the paper profile
-in application code.
+This example combines concise data loading, deterministic series styles, an
+inset axis, labels, legends, and square panel geometry.
+It uses the public paper and output defaults without rebuilding the profile in
+application code. The dense three-panel layout uses an explicit
+8.3-by-2.85-inch design canvas, producing an approximately 5000-pixel-wide PNG
+at the standard 600 DPI while keeping its labels and inset within the
+canvas. Ordinary multi-panel calls retain the 170 mm automatic default.
 
 ```{literalinclude} ../../../demo/4_paper_plot/paper_plot.py
 ```
@@ -18,12 +21,12 @@ after successful output; the script then closes its explicitly owned Figure.
 Sphinx regenerates both ignored build products in a fresh headless subprocess
 and rejects missing or stale outputs.
 
-The complete example is 82 physical lines, 69 executable lines, 2189
-executable characters, and 12 gsplot calls. It retains the reviewed scientific
+The complete example is 74 physical lines, 62 executable lines, 2033
+executable characters, and 11 gsplot calls. It retains the reviewed scientific
 content while staying within the tracked source budgets.
 
 ```{image} ../../../demo/4_paper_plot/SC_cal.png
-:alt: Three line-chart panels showing gap, heat-capacity, and Yosida data, with two heat-capacity insets and legends
+:alt: Three line-chart panels showing gap, heat-capacity, and Yosida data, with one labeled heat-capacity inset and legends
 :class: bg-primary
 :width: 1500px
 :align: center

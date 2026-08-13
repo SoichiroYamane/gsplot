@@ -40,7 +40,7 @@ gs.save(fig, "overview", show=False)
 ```
 
 ```{image} ../demo/4_paper_plot/SC_cal.png
-:alt: Three publication-style line-chart panels with two insets and legends
+:alt: Three publication-style line-chart panels with one labeled inset and legends
 :class: bg-primary
 :width: 100%
 :align: center

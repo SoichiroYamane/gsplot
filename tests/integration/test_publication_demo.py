@@ -9,9 +9,9 @@ from typing import Any
 
 import matplotlib as mpl
 import matplotlib.pyplot as plt
+import numpy as np
 import pytest
 from matplotlib.figure import Figure
-from mpl_toolkits.axes_grid1.inset_locator import BboxConnector, BboxPatch
 
 DEMO_PATH = (
     Path(__file__).resolve().parents[2] / "demo" / "4_paper_plot" / "paper_plot.py"
@@ -29,7 +29,7 @@ def _load_demo() -> ModuleType:
     return module
 
 
-def test_publication_demo_uses_concise_defaults_and_closes_figure(
+def test_publication_demo_uses_balanced_canvas_and_closes_figure(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:
     """The executable recipe preserves its science and explicit lifecycle."""
@@ -51,37 +51,142 @@ def test_publication_demo_uses_concise_defaults_and_closes_figure(
     figure = observed["target"]
     axes = observed["axes"]
     assert observed["output"] == tmp_path / "SC_cal"
-    assert tuple(figure.get_size_inches()) == pytest.approx(
-        (170 / 25.4, (170 / 3) / 25.4)
-    )
+    assert tuple(figure.get_size_inches()) == pytest.approx((8.3, 2.85))
     assert type(figure.get_layout_engine()).__name__ == "ConstrainedLayoutEngine"
+    assert figure.get_layout_engine().get()["wspace"] == pytest.approx(0.08)
     assert {name: len(axes[name].lines) for name in "ABC"} == {
         "A": 9,
         "B": 9,
         "C": 5,
     }
-    assert len(axes["B"].child_axes) == 2
-    assert sorted(len(axis.lines) for axis in axes["B"].child_axes) == [9, 9]
+    assert len(axes["B"].child_axes) == 1
+    square = axes["B"].child_axes[0]
+    assert len(square.lines) == 9
+    gap = [
+        np.genfromtxt(
+            demo.DATA / "gap" / f"Gapeq_{name}.dat",
+            delimiter="\t",
+            skip_header=1,
+            unpack=True,
+        )
+        for name in demo.NAMES
+    ]
+    capacity = [
+        np.genfromtxt(
+            demo.DATA / "c" / f"C_{name}.dat",
+            delimiter="\t",
+            skip_header=1,
+            unpack=True,
+        )
+        for name in demo.NAMES
+    ]
+    yosida = [
+        np.genfromtxt(
+            demo.DATA / "yosida" / f"Y(T)_{name}.dat",
+            delimiter="\t",
+            skip_header=1,
+            unpack=True,
+        )
+        for name in demo.EVEN
+    ]
+    for line, expected in zip(axes["A"].lines, gap):
+        np.testing.assert_array_equal(line.get_xdata(), expected[0])
+        np.testing.assert_array_equal(line.get_ydata(), expected[1])
+    for position, expected in enumerate(capacity):
+        temperature = np.append(expected[0], [1, 1.5])
+        normalized = np.append(expected[1], [1, 1])
+        np.testing.assert_array_equal(
+            axes["B"].lines[position].get_xdata(), temperature
+        )
+        np.testing.assert_array_equal(axes["B"].lines[position].get_ydata(), normalized)
+        np.testing.assert_array_equal(
+            square.lines[position].get_xdata(), temperature**2
+        )
+        np.testing.assert_array_equal(square.lines[position].get_ydata(), normalized)
+    for line, expected in zip(axes["C"].lines, yosida):
+        np.testing.assert_array_equal(line.get_xdata(), expected[0])
+        np.testing.assert_array_equal(line.get_ydata(), expected[1])
     assert all(
         line.get_markersize() == 0 for name in "ABC" for line in axes[name].lines
     )
     assert axes["A"].get_legend()._loc == 3
+    assert axes["A"].get_legend()._ncols == 2
+    assert axes["A"].get_legend().columnspacing == pytest.approx(0.4)
+    assert axes["A"].get_legend().handlelength == pytest.approx(1.4)
+    assert {text.get_fontsize() for text in axes["A"].get_legend().texts} == {7.0}
+    assert [text.get_text() for text in axes["A"].get_legend().texts] == list(
+        demo.LABELS
+    )
     assert axes["B"].get_legend() is None
-    assert axes["C"].get_legend()._loc == 4
+    assert axes["C"].get_legend()._loc == 2
+    assert axes["C"].get_legend().columnspacing == pytest.approx(0.4)
+    assert axes["C"].get_legend().handlelength == pytest.approx(1.4)
+    assert {text.get_fontsize() for text in axes["C"].get_legend().texts} == {7.0}
+    assert [text.get_text() for text in axes["C"].get_legend().texts] == [
+        demo.LABELS[demo.NAMES.index(name)] for name in demo.EVEN
+    ]
+    assert square.xaxis.label.get_fontsize() == 7
+    assert square.yaxis.label.get_fontsize() == 7
+    renderer = figure.canvas.get_renderer()
+    parent_labels = (
+        *axes["B"].get_xticklabels(),
+        *axes["B"].get_yticklabels(),
+        axes["B"].xaxis.label,
+        axes["B"].yaxis.label,
+    )
+    assert all(
+        not square.get_tightbbox(renderer).overlaps(label.get_window_extent(renderer))
+        for label in parent_labels
+        if label.get_visible() and label.get_text()
+    )
+    parent_ylabels = [
+        label for label in axes["B"].get_yticklabels() if label.get_visible()
+    ]
+    mm_per_pixel = 25.4 / figure.dpi
+    assert (
+        square.get_tightbbox(renderer).x0
+        - max(label.get_window_extent(renderer).x1 for label in parent_ylabels)
+    ) * mm_per_pixel >= 4
+    xlabels = [label for label in square.get_xticklabels() if label.get_visible()]
+    ylabels = [label for label in square.get_yticklabels() if label.get_visible()]
+    assert (
+        not xlabels[0]
+        .get_window_extent(renderer)
+        .overlaps(ylabels[0].get_window_extent(renderer))
+    )
     assert tuple(axes[name].get_xlabel() for name in "ABC") == (
         "$T/T_c$",
         "$T/T_c$",
         "$T/T_c$",
     )
     assert tuple(axes[name].get_box_aspect() for name in "ABC") == (1.0, 1.0, 1.0)
-    indicator = axes["B"].patches[-3:]
-    assert isinstance(indicator[0], BboxPatch)
-    assert all(isinstance(artist, BboxConnector) for artist in indicator[1:])
-    assert tuple((artist.loc2, artist.loc1) for artist in indicator[1:]) == (
-        (3, 2),
-        (4, 1),
+    assert tuple(axes[name].get_ylabel() for name in "ABC") == (
+        "$\\Delta_0(T)/k_BT_c$",
+        "$C_s/C_n$",
+        "$Y(T)$",
     )
-    assert all(artist.get_zorder() == pytest.approx(4.99) for artist in indicator)
+    assert tuple(axes[name].get_xlim() for name in "ABC") == (
+        (0.0, 1.2),
+        (0.0, 1.2),
+        (0.0, 1.0),
+    )
+    assert tuple(axes[name].get_ylim() for name in "ABC") == (
+        (0.0, 3.0),
+        (0.0, 3.0),
+        (0.0, 1.0),
+    )
+    assert (
+        square.get_xlabel(),
+        square.get_ylabel(),
+        square.get_xlim(),
+        square.get_ylim(),
+    ) == ("$(T/T_c)^2$", "$C_s/C_n$", (0.0, 0.25), (0.0, 1.0))
+    assert tuple(axes[name].texts[0].get_text() for name in "ABC") == (
+        "(a)",
+        "(b)",
+        "(c)",
+    )
+    assert len(axes["B"].patches) == 0
     assert not plt.fignum_exists(figure.number)
     assert mpl.rcParams == before
 
