@@ -367,6 +367,59 @@ merge are required parts of the workflow; do not stop after local edits merely
 because the implementation is large. Without that authorization, stop before
 push or merge and report the exact handoff state.
 
+## Website preview and sign-off gate
+
+For a website or documentation change whose rendered layout, navigation,
+typography, theme, copy, or interaction is still a product decision, keep the
+change local and uncommitted until the user approves the rendered direction.
+This is a pre-publication visual checkpoint, not a Draft PR and not browser or
+account authentication.
+
+Build the Sphinx output in a temporary directory outside the checkout and
+serve it only on the loopback interface. For a development-channel preview:
+
+```bash
+preview_dir="$(mktemp -d)"
+GSPLOT_DOCS_BASE_URL=http://localhost:8000 \
+GSPLOT_DOCS_VERSION=dev \
+MPLBACKEND=Agg \
+poetry run sphinx-build -W -b html docs "$preview_dir/dev"
+python -m http.server 8000 --bind 127.0.0.1 --directory "$preview_dir"
+```
+
+For a versioned-site change, use the repository-owned catalog and site
+builders from `docs/reference/contribution/website_builds.md`, write their
+catalog and output to temporary paths, and serve the resulting site directory
+the same way. A complete versioned build may require the pinned Mermaid/Node
+toolchain and an explicit local Chrome or Chromium executable; report that
+limitation rather than bypassing the documented toolchain. Do not expose a
+development server publicly or pass credentials to Sphinx, demo, or browser
+processes.
+
+When Playwright MCP is available, use its browser tools for the interactive
+checkpoint: navigate to the changed route (and `/dev/`, `/stable/`, and a
+representative release route when the versioned site is affected), take an
+accessibility snapshot before element actions, resize through wide, narrow,
+and phone viewports, exercise keyboard focus, and inspect warning/error
+console messages. Use screenshots only when concise visual evidence is useful.
+Prefer snapshots and targeted read-only actions; do not use an unsafe arbitrary
+code browser runner for routine checks. If MCP is unavailable, use an
+available local browser or the documented static checks and report the
+limitation instead of claiming a visual pass.
+
+Keep screenshots, recordings, console dumps, temporary site output, personal
+paths, and raw browser data out of the repository. Report only redacted route,
+viewport, theme, build mode, and pass/fail evidence.
+
+After presenting the local result, ask for explicit user visual sign-off. A
+successful build, browser snapshot, or account login is not sign-off. If the
+direction is rejected, iterate locally without committing or pushing. After
+sign-off, perform Review 1 and Review 2 and the relevant reproducible checks,
+then create the cohesive commit. Push only when the user has also explicitly
+authorized the remote handoff; one response may satisfy both gates when it
+clearly authorizes `commit` and `push`. Security, CI/release, non-visual
+correctness, and generated-contract changes follow the ordinary workflow.
+
 ## Documentation and demo rules
 
 - Keep repository guidance and the repository skill in English. User-facing
