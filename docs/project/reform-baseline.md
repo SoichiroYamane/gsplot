@@ -155,7 +155,7 @@ demo's non-interactive display warning is expected under the Agg backend.
 
 ## Reform validation snapshot
 
-The canonical implementation now reports 88.45 percent coverage across the
+The canonical implementation now reports 88.51 percent coverage across the
 `_core`, `_config`, `_figure`, `_plot`, `_style`, and `_io` modules, while the
 pure `_core` modules report 98.97 percent. These are enforced as CI minimums
 of 85 percent and 95 percent respectively; historical compatibility modules
@@ -174,17 +174,17 @@ poetry run python tools/maintenance/benchmark_reform.py \
   --baseline 782117f --candidate HEAD
 ```
 
-The Phase 10 candidate `1ca346e` used CPython 3.12.13, Matplotlib 3.10.9,
+The Phase 10 candidate `f2dba80` used CPython 3.12.13, Matplotlib 3.10.9,
 NumPy 2.2.6, the Agg backend, and Linux x86-64. Baseline/candidate medians were
-42.784/42.161 ms for import, 2.703/5.800 ms for an ordinary line,
-3.228/6.760 ms for an ordinary scatter, 3.120/3.847 ms for a colored line,
-and 14.257/16.917 seconds for a clean documentation/demo build. Import and all
+42.917/43.310 ms for import, 2.636/5.735 ms for an ordinary line,
+2.962/6.557 ms for an ordinary scatter, 3.183/3.818 ms for a colored line,
+and 14.434/16.943 seconds for a clean documentation/demo build. Import and all
 plotting workloads remained below their material absolute thresholds after
 paper styling stopped materializing tick labels eagerly.
 
 Documentation crossed the total-build investigation threshold. A separate
 clean build counted 98 baseline HTML pages and 124 candidate pages; total time
-rose 17.5 percent while time per HTML page improved from 145.8 to 135.4 ms.
+rose 17.4 percent while time per HTML page improved from 147.3 to 136.6 ms.
 The additional canonical APIs, type aliases, migration material, and guides
 therefore explain the aggregate increase without showing a per-page slowdown.
 This expected content-growth cost is explicitly accepted for Issue #183;
@@ -207,10 +207,10 @@ when importing the historical package:
   font caches in the user cache/config locations; and
 - no figure existed immediately after the import probe.
 
-The completed structural reform removed application file writes, eager pyplot import,
-implicit configuration loading, root-logger setup, backend selection, and
-`rcParams` mutation from ordinary package import. These are explicit
-acceptance items, not assumptions about the current implementation.
+The completed structural reform removed application file writes, eager
+`pyplot` imports, implicit configuration loading, root-logger setup, backend
+selection, and `rcParams` mutation from ordinary package imports. Their
+absence is validated by isolated-process tests.
 
 ## Performance reference points
 
