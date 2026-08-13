@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 import logging
 import os
 import re
@@ -208,27 +209,67 @@ def _demo_environment() -> dict[str, str]:
     return environment
 
 
-_DEMO_OUTPUTS = {
-    "demo/0_hello_world": set(),
-    "demo/1_axes": {"demo/1_axes/axes.png"},
-    "demo/2_line_and_label": {"demo/2_line_and_label/line_and_label.png"},
-    "demo/3_config": {"demo/3_config/config.png"},
-    "demo/4_paper_plot": {
-        "demo/4_paper_plot/SC_cal.png",
-        "demo/4_paper_plot/SC_cal.pdf",
-    },
-    "demo/5_scatter": {"demo/5_scatter/scatter.png"},
-    "demo/6_line_colormap": {"demo/6_line_colormap/line_colormap.png"},
-    "demo/7_graph_white": {"demo/7_graph_white/graph_white.png"},
-    "demo/8_graph_transparent": {"demo/8_graph_transparent/graph_transparent.png"},
-    "demo/9_compatibility": {
-        "demo/9_compatibility/compatibility.png",
-        "demo/9_compatibility/compatibility.pdf",
-    },
-    "demo/10_subplots": {"demo/10_subplots/subplots.png"},
-    "demo/11_directory": set(),
-    "demo/test_plot": {"demo/test_plot/SC_cal.png"},
-}
+def _safe_demo_path(value: object, field: str) -> str:
+    """Return one normalized repository-relative demo path."""
+
+    if not isinstance(value, str) or not value:
+        raise RuntimeError(f"demo manifest {field} must be a non-empty string")
+    selected = Path(value)
+    if selected.is_absolute() or ".." in selected.parts or selected.parts[0] != "demo":
+        raise RuntimeError(f"demo manifest {field} must stay under demo/")
+    if selected.as_posix() != value:
+        raise RuntimeError(f"demo manifest {field} must use normalized POSIX syntax")
+    return value
+
+
+def _load_demo_manifest(manifest_path: Path) -> dict[str, set[str]]:
+    """Load and validate the explicit demo script/output inventory."""
+
+    try:
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        raise RuntimeError("could not load the demo manifest") from exc
+    if not isinstance(manifest, dict) or set(manifest) != {"schema_version", "demos"}:
+        raise RuntimeError("demo manifest must contain schema_version and demos")
+    if manifest["schema_version"] != 1 or not isinstance(manifest["demos"], list):
+        raise RuntimeError("demo manifest must use schema_version 1 and a demos list")
+
+    inventory: dict[str, set[str]] = {}
+    claimed_outputs: set[str] = set()
+    for position, entry in enumerate(manifest["demos"]):
+        if not isinstance(entry, dict) or set(entry) != {"script", "outputs"}:
+            raise RuntimeError(f"demo manifest entry {position} has invalid fields")
+        script = _safe_demo_path(entry["script"], f"entry {position} script")
+        outputs = entry["outputs"]
+        if Path(script).suffix != ".py" or not isinstance(outputs, list):
+            raise RuntimeError(f"demo manifest entry {position} is not a Python demo")
+        if script in inventory:
+            raise RuntimeError(f"demo manifest repeats script {script}")
+        selected_outputs = {
+            _safe_demo_path(output, f"entry {position} output") for output in outputs
+        }
+        if len(selected_outputs) != len(outputs):
+            raise RuntimeError(f"demo manifest entry {position} repeats an output")
+        if any(
+            Path(output).parent != Path(script).parent
+            or Path(output).suffix not in {".png", ".pdf"}
+            for output in selected_outputs
+        ):
+            raise RuntimeError(
+                f"demo manifest outputs for {script} must be PNG/PDF siblings"
+            )
+        duplicate_outputs = claimed_outputs & selected_outputs
+        if duplicate_outputs:
+            raise RuntimeError(
+                "demo manifest assigns output more than once: "
+                + ", ".join(sorted(duplicate_outputs))
+            )
+        claimed_outputs.update(selected_outputs)
+        inventory[script] = selected_outputs
+    return inventory
+
+
+_DEMO_OUTPUTS = _load_demo_manifest(PROJECT_ROOT / "demo" / "manifest.json")
 
 
 def _file_state(root: Path) -> dict[str, tuple[int, int]]:
@@ -293,13 +334,23 @@ def generate_images() -> None:
     own pre-generated assets.
     """
 
-    if os.environ.get("GSPLOT_SKIP_DEMO_IMAGES") == "1":
-        return
-
     demo_path = PROJECT_ROOT / "demo"
     demo_files = sorted(demo_path.rglob("*.py"))
     if not demo_files:
         raise FileNotFoundError(f"No demo scripts found under {demo_path}")
+    actual_scripts = {
+        demo_file.relative_to(PROJECT_ROOT).as_posix() for demo_file in demo_files
+    }
+    declared_scripts = set(_DEMO_OUTPUTS)
+    if actual_scripts != declared_scripts:
+        missing = sorted(actual_scripts - declared_scripts)
+        extra = sorted(declared_scripts - actual_scripts)
+        raise RuntimeError(
+            "demo manifest does not match executable scripts; "
+            f"undeclared={missing}, missing={extra}"
+        )
+    if os.environ.get("GSPLOT_SKIP_DEMO_IMAGES") == "1":
+        return
 
     for demo_file in demo_files:
         before = _file_state(demo_path)
@@ -310,7 +361,7 @@ def generate_images() -> None:
             env=_demo_environment(),
             check=True,
         )
-        demo_name = demo_file.parent.relative_to(PROJECT_ROOT).as_posix()
+        demo_name = demo_file.relative_to(PROJECT_ROOT).as_posix()
         _check_demo_outputs(before, _DEMO_OUTPUTS[demo_name], demo_name)
 
 

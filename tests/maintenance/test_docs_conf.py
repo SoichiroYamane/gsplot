@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 import runpy
 from pathlib import Path
 
@@ -130,3 +131,64 @@ def test_demo_output_validation_requires_fresh_declared_outputs(
         {"demo/example/figure.png"},
         "demo/example",
     )
+
+
+def test_demo_manifest_covers_every_executable_script(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """The explicit inventory and current demo tree stay identical."""
+
+    values = _load_conf(monkeypatch)
+    declared = set(values["_DEMO_OUTPUTS"])
+    project_root = CONF_PATH.parents[1]
+    actual = {
+        script.relative_to(project_root).as_posix()
+        for script in (project_root / "demo").rglob("*.py")
+    }
+
+    assert declared == actual
+
+
+def test_skipping_generation_still_validates_demo_inventory(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Pre-generated-image builds cannot bypass script registration."""
+
+    values = _load_conf(monkeypatch)
+    monkeypatch.setenv("GSPLOT_SKIP_DEMO_IMAGES", "1")
+    monkeypatch.setitem(values["generate_images"].__globals__, "_DEMO_OUTPUTS", {})
+
+    with pytest.raises(RuntimeError, match="does not match executable scripts"):
+        values["generate_images"]()
+
+
+@pytest.mark.parametrize(
+    "entry,match",
+    [
+        ({"script": "../private.py", "outputs": []}, "stay under demo"),
+        (
+            {"script": "demo/example.py", "outputs": ["demo/other/figure.png"]},
+            "PNG/PDF siblings",
+        ),
+        (
+            {"script": "demo/example.py", "outputs": ["demo/example/data.txt"]},
+            "PNG/PDF siblings",
+        ),
+    ],
+)
+def test_demo_manifest_rejects_unsafe_or_cross_demo_paths(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+    entry: dict[str, object],
+    match: str,
+) -> None:
+    """Manifest paths cannot escape or write arbitrary file types."""
+
+    values = _load_conf(monkeypatch)
+    manifest = tmp_path / "manifest.json"
+    manifest.write_text(
+        json.dumps({"schema_version": 1, "demos": [entry]}), encoding="utf-8"
+    )
+
+    with pytest.raises(RuntimeError, match=match):
+        values["_load_demo_manifest"](manifest)
