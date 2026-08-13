@@ -6,7 +6,7 @@ uses Poetry for dependency resolution and targets Python 3.10 or newer. Python
 
 ```{important}
 Use a virtual environment and run plotting tests with `MPLBACKEND=Agg` on
-headless machines. Do not commit `.venv`, build output, demo images, or local
+headless machines. Do not commit `.venv`, build output, example images, or local
 `.gsplot` metadata.
 ```
 
@@ -37,8 +37,8 @@ activate a shell:
 
 ```bash
 MPLBACKEND=Agg poetry run pytest -q
-poetry run black --check src/gsplot tests scripts tools/maintenance
-poetry run isort --check-only src/gsplot tests scripts tools/maintenance
+poetry run black --check src/gsplot tests examples tools/maintenance
+poetry run isort --check-only src/gsplot tests examples tools/maintenance
 poetry run pyright src/gsplot
 poetry run pip-audit --local
 ```
@@ -73,22 +73,27 @@ MPLBACKEND=Agg poetry run pytest -q
 Interactive GUI plots require a host display configuration. For headless CI or
 documentation builds, use the `Agg` backend and do not rely on an X11 display.
 
-## 5. Run a demo
+## 5. Run an example
 
-Demo scripts use paths relative to their own directories. Run them from the
-matching demo directory:
+Example scripts use paths relative to their own directories. Run them from the
+matching semantic directory:
 
 ```bash
-cd demo/test_plot
-MPLBACKEND=Agg python gsplot_demo.py
+cd examples/publication
+MPLBACKEND=Agg python publication.py
 ```
 
-The demo writes its figure next to the script. PNG output is intentionally
-ignored by Git.
+The example writes its figures next to the script. PNG and PDF output are
+intentionally ignored by Git. From the repository root, validate the manifest
+and rebuild every example with:
+
+```bash
+MPLBACKEND=Agg poetry run python -m tools.maintenance.build_example_images
+```
 
 ## 6. Build documentation and the package
 
-The Sphinx configuration runs demo scripts to refresh image assets. Build the
+The Sphinx configuration runs example scripts to refresh image assets. Build the
 HTML site with:
 
 ```bash
@@ -134,7 +139,7 @@ poetry run python tools/maintenance/benchmark_reform.py \
   --baseline 782117f --candidate HEAD
 ```
 
-The benchmark executes both revisions, including their demos, from isolated
+The benchmark executes both revisions, including their examples, from isolated
 temporary exports with a credential-free process environment. Inspect any
 commit before selecting it: a benchmark is not a sandbox for untrusted code.
 The JSON contains aggregate medians and generic toolchain information only. A
@@ -144,7 +149,7 @@ linked Issue with its cause and residual impact.
 Before submitting a change, also run:
 
 ```bash
-python -m compileall -q src/gsplot tests scripts tools/maintenance
+python -m compileall -q src/gsplot tests examples tools/maintenance
 PYTHONPATH=src poetry run python tools/maintenance/check_architecture.py
 PYTHONPATH=src poetry run python tools/maintenance/check_docstrings.py
 git diff --check
