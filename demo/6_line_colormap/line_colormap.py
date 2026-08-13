@@ -9,7 +9,7 @@ v = np.cos(x)
 
 n = [0, 1, 2, 3, 4]
 l = [-1, 0, 1, 2, 3]
-fig, axes = gs.subplots(figsize=(10, 5), mosaic="AB")
+fig, axes = gs.subplots("AB", size=(10, 5))
 
 gs.cmap_line(axes["A"], x, u, x, props={"label": "sin(x)", "linewidths": 3})
 gs.cmap_dash(
@@ -34,6 +34,6 @@ gs.cmap_dash(
 )
 
 gs.legend(axes["A"])
-gs.legend(axes["B"], props={"loc": "upper left"})
+gs.legend(axes["B"], loc="upper left")
 gs.style_axes(axes, gs.AxisSpec(xlabel="x", ylabel="y"))
 gs.savefig(fig, "line_colormap", show=False, overwrite=True)

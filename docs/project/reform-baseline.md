@@ -66,24 +66,25 @@ include calls made through an imported `gsplot` module alias or a direct
 `from gsplot import ...` binding; explicit Matplotlib cleanup such as
 `plt.close(fig)` is required but is not counted as a plotting/output API call.
 
-The frozen source baselines and final budgets are:
+The frozen source baselines, implemented final example, and final budgets are:
 
-| Measure | 0.3 reference | Selected native-tuple prototype | Issue #181 repair | Final maximum |
-| --- | ---: | ---: | ---: | ---: |
-| Physical lines | 98 | 81 | 265 | 98 |
-| Comment-free lines | 74 | 71 | 230 | 74 |
-| Comment-free characters | 2487 | 2323 | 7182 | 2400 |
-| Executable lines | 74 | 68 | 223 | 70 |
-| Executable characters | 2487 | 2135 | 6714 | 2200 |
-| Lexical characters | 2099 | 1649 | 4628 | 1700 |
-| gsplot API calls | 19 | 12 | 19 | 15 |
+| Measure | 0.3 reference | Selected prototype | Issue #181 repair | Implemented final | Final maximum |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| Physical lines | 98 | 81 | 265 | 82 | 98 |
+| Comment-free lines | 74 | 71 | 230 | 72 | 74 |
+| Comment-free characters | 2487 | 2323 | 7182 | 2374 | 2400 |
+| Executable lines | 74 | 68 | 223 | 69 | 70 |
+| Executable characters | 2487 | 2135 | 6714 | 2189 | 2200 |
+| Lexical characters | 2099 | 1649 | 4628 | 1695 | 1700 |
+| gsplot API calls | 19 | 12 | 19 | 12 | 15 |
 
 The final example must also reduce executable lines and executable characters
 by at least 60 percent from the Issue #181 repair while preserving its
-scientific content and accepted visual meaning. The accepted prototype is a
-design fixture, not an executable claim that unmerged APIs already exist.
+scientific content and accepted visual meaning. The accepted prototype remains
+a design fixture; the final row is enforced against executable documentation.
 
-Reproduce all three tracked measurements without creating a repository file:
+Reproduce the tracked prototype, final, and historical measurements without
+creating a repository file:
 
 ```bash
 python tools/maintenance/check_example_metrics.py \
@@ -93,7 +94,7 @@ python tools/maintenance/check_example_metrics.py \
 python tools/maintenance/check_example_metrics.py \
   demo/4_paper_plot/paper_plot.py \
   --manifest tools/maintenance/example-metrics.json \
-  --expect issue_181_repair
+  --expect final_example --check-budgets
 git show v0.3.0:demo/4_paper_plot/paper_plot.py | \
   python tools/maintenance/check_example_metrics.py - \
     --manifest tools/maintenance/example-metrics.json \
@@ -124,7 +125,7 @@ Documentation and package-artifact validation remain required for the
 packaging and documentation slices; they are not inferred from the checks
 above.
 
-## Documentation/demo output allowlist
+## Documentation/demo output manifest
 
 The docs build runs every demo in an isolated headless subprocess. The only
 files a demo may create or modify are the declared image outputs below; source
@@ -135,7 +136,7 @@ data, configuration, and Python files are inputs and must remain unchanged.
 | `0_hello_world`, `11_directory` | none |
 | `1_axes` | `axes.png` |
 | `2_line_and_label` | `line_and_label.png` |
-| `3_config` | `config.png` |
+| `3_config` | `config.png`, `config.pdf` |
 | `4_paper_plot` | `SC_cal.png`, `SC_cal.pdf` |
 | `test_plot` | `SC_cal.png` |
 | `5_scatter` | `scatter.png` |
@@ -145,10 +146,11 @@ data, configuration, and Python files are inputs and must remain unchanged.
 | `9_compatibility` | `compatibility.png`, `compatibility.pdf` |
 | `10_subplots` | `subplots.png` |
 
-The allowlist is enforced by `docs/conf.py`; an unexpected, missing, or stale
-declared output fails the Sphinx build. Demo subprocesses run with bytecode
-generation disabled, and the compatibility demo's non-interactive display
-warning is expected under the Agg backend.
+`demo/manifest.json` is the source of truth and is enforced by `docs/conf.py`.
+An undeclared or missing script, unsafe or duplicate path, unexpected output,
+missing output, or stale declared output fails the Sphinx build. Demo
+subprocesses run with bytecode generation disabled, and the compatibility
+demo's non-interactive display warning is expected under the Agg backend.
 
 ## Reform validation snapshot
 

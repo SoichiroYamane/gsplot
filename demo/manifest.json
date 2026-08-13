@@ -15,7 +15,10 @@
     },
     {
       "script": "demo/3_config/config.py",
-      "outputs": ["demo/3_config/config.png"]
+      "outputs": [
+        "demo/3_config/config.png",
+        "demo/3_config/config.pdf"
+      ]
     },
     {
       "script": "demo/4_paper_plot/paper_plot.py",

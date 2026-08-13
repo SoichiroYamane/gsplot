@@ -40,5 +40,6 @@ minor ticks with 5-point label padding, and makes the panel square without
 executing a Figure layout engine. `legend` uses best placement with no frame,
 no rounded box, and compact 0.3 label spacing unless you pass direct options.
 
-Continue with the [demonstrations](../demo/index.md) to learn about layouts,
-configuration, styling, compatibility, and reproducibility.
+Continue with the [publication guide](../publication.md) for sizing and output
+decisions, the [advanced guide](../advanced.md) for explicit Matplotlib-level
+control, or the [demonstrations](../demo/index.md) for executable examples.
