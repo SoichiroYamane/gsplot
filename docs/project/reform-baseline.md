@@ -10,9 +10,10 @@ output.
 The baseline was measured from the clean `main` revision used to start the
 Issue #165 reform branch. At that revision the package was the flat-layout 0.3.x
 implementation with `gsplot/` at the repository root, `setup.py`, and a
-generated-version workflow. The exact public root names and signatures are
-available from `collect_public_api.py`; the reviewed mapping is in the
-[API migration matrix](api-migration.md).
+generated-version workflow. The exact public root names, signatures, defaults,
+annotations, lazy targets, and compatibility modules are frozen in
+`tests/fixtures/reform/public-api-v1.json`; the reviewed mapping and update
+procedure are in the [API migration matrix](api-migration.md).
 
 That historical snapshot remains useful evidence. The current concise
 publication reform starts from the accepted Issue #181 parity baseline at
@@ -161,13 +162,37 @@ of 85 percent and 95 percent respectively; historical compatibility modules
 remain covered by their characterization tests but are not part of the
 canonical implementation threshold.
 
-The reform benchmark uses 30 warmed iterations and closes each temporary
-Figure. Its recorded medians are approximately 45.65 ms for a fresh import,
-2.68 ms for an ordinary line, 2.93 ms for an ordinary scatter, and 3.20 ms
-for a colored line. The memory-retention integration test creates and closes
-repeated Figures and confirms that the canonical package owns no Figure/Axes
-registry or cache. Values are environment-dependent reference points, not
-machine-specific performance promises.
+The revision-pair benchmark compares `782117f` with a committed candidate in
+the same isolated environment. It uses 20 fresh imports, one warm-up plus 10
+timed repetitions for each plotting workload, and three clean Sphinx builds
+including all declared demos. A result is material only when it exceeds both
+the 15 percent relative threshold and the absolute threshold of 10 ms for
+import, 5 ms for plotting, or one second for documentation. The command is:
+
+```bash
+poetry run python tools/maintenance/benchmark_reform.py \
+  --baseline 782117f --candidate HEAD
+```
+
+The Phase 10 candidate `1ca346e` used CPython 3.12.13, Matplotlib 3.10.9,
+NumPy 2.2.6, the Agg backend, and Linux x86-64. Baseline/candidate medians were
+42.784/42.161 ms for import, 2.703/5.800 ms for an ordinary line,
+3.228/6.760 ms for an ordinary scatter, 3.120/3.847 ms for a colored line,
+and 14.257/16.917 seconds for a clean documentation/demo build. Import and all
+plotting workloads remained below their material absolute thresholds after
+paper styling stopped materializing tick labels eagerly.
+
+Documentation crossed the total-build investigation threshold. A separate
+clean build counted 98 baseline HTML pages and 124 candidate pages; total time
+rose 17.5 percent while time per HTML page improved from 145.8 to 135.4 ms.
+The additional canonical APIs, type aliases, migration material, and guides
+therefore explain the aggregate increase without showing a per-page slowdown.
+This expected content-growth cost is explicitly accepted for Issue #183;
+future unchanged-content comparisons must still investigate the same
+thresholds. The memory-retention integration test separately creates and
+closes repeated Figures and confirms that the canonical package owns no
+Figure/Axes registry or cache. Measurements are environment-dependent review
+evidence, not machine-specific performance promises.
 
 ## Import and state characterization
 
@@ -196,11 +221,10 @@ The same pre-cutover isolated probes produced these reference points:
 - warmed ordinary `line` plotting call: median approximately 0.596 ms across
   30 calls, with each temporary figure closed after the call.
 
-These numbers are environment-dependent and are used only as relative
-references. Final performance validation must use the reform benchmark
-protocol: 30 warmed iterations, separate ordinary and colored plotting
-cases, and a documented Python/Matplotlib environment without publishing
-machine-specific paths or identifying details.
+These numbers are environment-dependent and are used only as historical
+references. Final performance validation uses the revision-pair protocol
+recorded above and publishes only aggregate medians, commit identifiers, and
+generic software/platform dimensions.
 
 ## Phase 0 acceptance
 

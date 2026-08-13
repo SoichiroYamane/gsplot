@@ -455,6 +455,20 @@ source, documentation, tests, Issues, PRs, or built distributions.
 - `pyproject.toml` is authoritative for package metadata and dependency
   declarations. `poetry.lock` is the reproducibility record for development
   and validation.
+- Static distribution metadata uses the standard `[project]` table. Poetry
+  configuration is limited to build and development-tool concerns that do not
+  duplicate that metadata.
+- Each build produces one pure-Python wheel and one source distribution for
+  the same version. The wheel contains the complete `gsplot` package,
+  `py.typed`, core metadata, and the MIT license; it excludes tests, demos,
+  documentation, maintenance tools, caches, logs, and machine-specific files.
+  The source distribution contains the corresponding package sources and the
+  reviewed build, README, and license inputs.
+- CI and release builds inspect archive paths, hashes, metadata, dependency
+  declarations, and package contents before installation or publication. A
+  clean environment outside the checkout must install the wheel with only its
+  declared runtime dependencies and complete an import, plotting, PNG/PDF
+  output, and cleanup smoke test.
 - Dependency updates must be intentional, reviewable, and checked for
   compatibility and supply-chain risk.
 

@@ -94,6 +94,12 @@ def compare_metric(
     }
 
 
+def _result_status(material_regressions: Sequence[str]) -> str:
+    """Return the review state for the material-regression inventory."""
+
+    return "investigate" if material_regressions else "pass"
+
+
 def _resolve_commit(ref: str) -> str:
     """Resolve one non-option Git revision to a full commit identifier."""
 
@@ -577,7 +583,7 @@ def run_benchmark(baseline_ref: str, candidate_ref: str) -> dict[str, Any]:
             "candidate": {"commit": candidate_commit, "ref": candidate_ref},
         },
         "schema_version": 1,
-        "status": "fail" if material else "pass",
+        "status": _result_status(material),
     }
 
 

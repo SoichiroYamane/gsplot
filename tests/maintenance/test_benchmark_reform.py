@@ -54,6 +54,13 @@ def test_metric_comparison_rejects_invalid_values(
         benchmark.compare_metric(baseline, candidate, absolute)
 
 
+def test_material_regressions_require_investigation() -> None:
+    """A threshold crossing is a review gate rather than an unexplained pass."""
+
+    assert benchmark._result_status([]) == "pass"
+    assert benchmark._result_status(["docs_build"]) == "investigate"
+
+
 @pytest.mark.parametrize(
     "name",
     ["/absolute", "../escape", "nested/../escape", "nested\\escape", "", "a\x00b"],
