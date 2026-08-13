@@ -416,6 +416,15 @@ through 0.4.x and 1.x unless a separate Issue changes that decision. The
 candidate removal point is no earlier than 2.0 and requires downstream audit
 and migration documentation.
 
+Each documented historical module's declared functions resolve to the same
+finite adapters as the corresponding root names. Compatibility-only classes
+may remain reachable from historical modules, but canonical packages never
+import them. The frozen v0.3 root and module inventory, runtime lazy manifests,
+static exports, and canonical API index must agree under the maintenance audit.
+The historical `logger()` lookup is a warning no-op and must never recreate an
+application log; `save_metadata()` remains a warning rejection in favor of an
+explicit `MetadataSnapshot` and destination.
+
 Public functions and classes use NumPy-style docstrings. Sphinx uses
 autodoc/autosummary/napoleon with type-hint descriptions and does not expose
 undocumented canonical members. Existing demo URL paths and literal includes
