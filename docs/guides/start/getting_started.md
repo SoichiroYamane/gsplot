@@ -25,12 +25,15 @@ fig, ax = gs.subplots()
 gs.line(ax, [0, 1, 2, 3], [0, 1, 4, 9], label="y = x²")
 gs.label(ax, "x", "x²", square=True)
 gs.legend(ax)
-gs.savefig(fig, "first_figure", show=False)
+gs.save(fig, "first_figure", show=False)
 ```
 
-This creates a normal Matplotlib figure and saves `first_figure.png`. The
-canonical `savefig` operation defaults to `show=True`; pass `show=False` for
-batch or headless output.
+This creates a normal Matplotlib figure and saves `first_figure.png` and
+`first_figure.pdf`. Concise `save` defaults to 600 DPI, tight cropping with
+0.1-inch padding, transactional replacement, and `show=True`; pass
+`show=False` for batch or headless output. Pass `crop=False` when the exported
+media box must exactly match the Figure design canvas. Advanced `savefig`
+retains its conservative one-format default and `overwrite=False` policy.
 
 `label` keeps the Figure lifecycle explicit: it changes only `ax`, enables
 minor ticks with 5-point label padding, and makes the panel square without

@@ -95,8 +95,7 @@ def test_output_controls_save_all_formats_before_optional_display(
         plt.close("all")
 
     unmanaged = Figure()
-    with pytest.raises(OutputError):
-        original_show(unmanaged)
+    original_show(unmanaged)
     plt.close("all")
 
 

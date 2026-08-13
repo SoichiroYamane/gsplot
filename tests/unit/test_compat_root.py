@@ -11,6 +11,7 @@ import pytest
 from matplotlib.colors import to_rgba
 
 import gsplot as gs
+from gsplot._compat import root_api
 from gsplot._compat.legacy.figure.store import StoreSingleton
 from gsplot._compat.legacy.plot.line_base import NumLines
 
@@ -104,6 +105,28 @@ def test_legacy_axes_and_show_preserve_layout_and_store_defaults(
         plt.close("all")
 
 
+def test_legacy_show_restores_the_historical_tight_crop(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """The 0.3 save adapter supplies tight cropping unless overridden."""
+
+    calls: list[dict[str, object]] = []
+
+    def capture(*args: object, **kwargs: object) -> tuple[Path, ...]:
+        calls.append(dict(kwargs))
+        return ()
+
+    monkeypatch.setattr(root_api, "_savefig", capture)
+    StoreSingleton().store = True
+    try:
+        with pytest.warns(DeprecationWarning, match="legacy gsplot.show"):
+            gs.show(show=False)
+    finally:
+        StoreSingleton().store = False
+
+    assert calls[0]["props"] == {"bbox_inches": "tight"}
+
+
 def test_root_canonical_annotations_are_runtime_resolvable() -> None:
     """Lazy root adapters preserve evaluated canonical type annotations."""
 
@@ -114,9 +137,39 @@ def test_root_canonical_annotations_are_runtime_resolvable() -> None:
         for value in get_args(get_type_hints(gs.scatter)["return"])
     )
     assert get_type_hints(gs.show)["return"] is type(None)
+    assert "AxesTarget" in str(inspect.signature(gs.show))
     assert get_type_hints(gs.label)["xlabel"] != object
     assert "LabelRecords" in str(inspect.signature(gs.label))
     assert get_type_hints(gs.legend)["loc"] == str | int
+
+
+def test_root_show_dispatches_axes_targets_without_legacy_state(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Explicit Axes collections select canonical display-only behavior."""
+
+    figure, axes = plt.subplots(1, 2)
+    calls: list[object] = []
+    monkeypatch.setattr(root_api, "_show", calls.append)
+    try:
+        assert gs.show(axes) is None
+    finally:
+        plt.close(figure)
+
+    assert calls == [axes]
+
+
+def test_root_show_rejects_every_legacy_save_option_for_canonical_targets() -> None:
+    """Canonical Figure and Axes display cannot silently ignore save options."""
+
+    figure, axis = plt.subplots()
+    try:
+        with pytest.raises(TypeError, match="does not accept legacy save options"):
+            gs.show(figure, bbox_inches="tight")
+        with pytest.raises(TypeError, match="does not accept legacy save options"):
+            gs.show(axis, transparent=True)
+    finally:
+        plt.close(figure)
 
 
 def test_root_label_dispatches_without_current_figure_guessing() -> None:

@@ -20,6 +20,7 @@ from numpy.typing import ArrayLike
 
 from .._core.errors import OptionError, PlotError
 from .._core.targets import normalize_axes
+from .._core.types import AxesTarget
 from .._figure.output import savefig as _savefig
 from .._figure.output import show as _show
 from .._plot.basic import line as _line
@@ -182,6 +183,7 @@ def _legacy_show(options: Mapping[str, Any]) -> None:
     dpi = selected.pop("dpi", 600)
     display = selected.pop("show", True)
     if StoreSingleton().store:
+        selected.setdefault("bbox_inches", "tight")
         _savefig(
             plt.gcf(),
             fname,
@@ -851,7 +853,7 @@ def title(
 
 
 def show(
-    fig: Figure | str | PathLike[str] | None = None,
+    fig: Figure | AxesTarget | str | PathLike[str] | None = None,
     fname: str | PathLike[str] | object = _UNSET,
     ft_list: Sequence[str] | object = _UNSET,
     dpi: float | object = _UNSET,
@@ -870,10 +872,28 @@ def show(
 ) -> Any:
     """Dispatch explicit Figure display or finite legacy save-and-display syntax."""
 
-    if isinstance(fig, Figure):
-        if all(value is _UNSET for value in (fname, ft_list, dpi, display, show)):
+    legacy_values = (
+        fname,
+        ft_list,
+        dpi,
+        display,
+        show,
+        bbox_extra_artists,
+        bbox_inches,
+        edgecolor,
+        facecolor,
+        orientation,
+        papertype,
+        pad_inches,
+        pil_kwargs,
+        transparent,
+    )
+    if isinstance(fig, Figure) or (
+        fig is not None and not isinstance(fig, (str, PathLike))
+    ):
+        if all(value is _UNSET for value in legacy_values):
             return _show(fig)
-        raise TypeError("canonical show(fig) does not accept legacy save options")
+        raise TypeError("canonical show(target) does not accept legacy save options")
     legacy = _provided(
         {
             "bbox_extra_artists": bbox_extra_artists,
@@ -887,7 +907,7 @@ def show(
             "transparent": transparent,
         }
     )
-    if fig is not None and not isinstance(fig, Figure):
+    if fig is not None:
         if fname is not _UNSET:
             raise TypeError("show received a path twice")
         fname = fig

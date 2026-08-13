@@ -150,6 +150,9 @@ explicit compatibility classification.
   follow the child limits without triggering a Figure relayout.
 - `savefig` must save an explicit Figure in the requested formats and display
   it only after all successful writes when `show=True`.
+- `save` must resolve an explicit Figure or same-Figure Axes target, render
+  every requested format to unique sibling files before ordered final
+  replacement, and expose exact committed paths if a replacement fails.
 - `show` must be display-only and must never save or close a Figure.
 - Figure lifecycle behavior must remain explicit. A helper must not close or
   replace a user-owned figure unless that behavior is documented for the
@@ -335,15 +338,19 @@ subplots, inset, inset_axes, line, scatter, colors, cmap_line, cmap_dash,
 cmap_scatter, sample_cmap, label, square, index, style_axes, title, suptitle,
 minor_ticks, box_aspect, panel_labels, fig_facecolor, legend, legends,
 legend_entries,
-cmap_legend, set_theme, savefig, show, load_config, read, read_array, write_meta,
+cmap_legend, set_theme, save, savefig, show, load_config, read, read_array, write_meta,
 build_info, use_backend
 ```
 
-`savefig(fig, ..., show=True)` saves all requested formats before displaying
-the explicit figure. `show(fig)` is display-only and never saves or closes.
-`close=True` is explicit and cannot be combined with display. Output paths,
-parent-directory creation, overwrite behavior, supported formats, and output
-errors are validated before mutation.
+`save(target, ..., show=True)` restores the concise publication workflow: a
+suffix-free path writes PNG and PDF, raster output uses 600 DPI, tight crop
+uses deterministic 0.1-inch padding, PDF/PS uses Type 42 fonts, and all formats
+render before ordered final replacement. `crop=False` preserves the Figure
+design canvas. `savefig(fig, ..., show=True)` remains the conservative advanced
+operation. `show(target)` is display-only, resolves one Figure, and never saves
+or closes. `close=True` is explicit and cannot be combined with display.
+Output paths, parent-directory creation, overwrite behavior, supported
+formats, and output errors are validated before filesystem mutation.
 
 Plotting functions accept an explicit `Axes`, return ordinary Matplotlib
 artists, use closed typed property schemas, and reject unknown or duplicate
@@ -354,9 +361,11 @@ typed `AxisSpec`, `Theme`, and related values and never rely on a global
 
 The default-value contract is explicit:
 
-- `subplots()` defaults to one ordinary Matplotlib subplot, the Matplotlib
-  default figure size, `squeeze=True`, `clear=False`, and no layout engine
-  unless a direct argument or `Config` enables one.
+- `subplots()` defaults to one 85 mm publication subplot, `squeeze=True`,
+  `clear=False`, a persistent constrained-layout engine, and target-local
+  paper styling. Multi-column layouts use a 170 mm design canvas. An explicit
+  `size=None`, `layout="none"`, or `style=None` selects the corresponding
+  ambient Matplotlib behavior.
 - Canonical colored helpers use `cmap_line(..., linewidths=1.0)`,
   `cmap_dash(..., dash=(10.0, 10.0), linewidths=1.0)`, and
   `cmap_scatter(..., s=1.0, alpha=1.0)`.
@@ -379,9 +388,11 @@ properties.
 
 ### Configuration and dependencies
 
-- `Config` is an immutable value with schema version 1 and only `figure` and
-  `plotting` sections. `Config.from_file()`, `Config.from_mapping()`, and
-  `Config()` are explicit entry points.
+- `Config` is an immutable value with canonical schema version 2 and only
+  `figure` and `plotting` sections. Explicit schema-1 input is translated at
+  the compatibility boundary with one migration warning through 1.x.
+  `Config.from_file()`, `Config.from_mapping()`, and `Config()` are explicit
+  entry points.
 - JSON is the only canonical configuration format. Duplicate keys, trailing
   content, non-finite numbers, unknown keys, oversized files, and invalid
   values fail with typed configuration errors. Configuration discovery is
