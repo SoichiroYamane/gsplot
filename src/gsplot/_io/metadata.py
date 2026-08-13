@@ -42,14 +42,14 @@ def _parent(destination: Path, create_parent: bool) -> None:
 
     parent = destination.parent
     if parent.exists() and not parent.is_dir():
-        raise MetadataError(f"metadata parent is not a directory: {parent}")
+        raise MetadataError("metadata parent is not a directory")
     if not parent.exists():
         if not create_parent:
-            raise MetadataError(f"metadata parent does not exist: {parent}")
+            raise MetadataError("metadata parent does not exist")
         try:
             parent.mkdir(parents=True, exist_ok=True)
         except OSError as exc:
-            raise MetadataError(f"could not create metadata parent: {parent}") from exc
+            raise MetadataError("could not create metadata parent") from exc
 
 
 def _exclusive(destination: Path, encoded: bytes) -> None:
@@ -59,7 +59,7 @@ def _exclusive(destination: Path, encoded: bytes) -> None:
     try:
         descriptor = os.open(destination, flags, 0o644)
     except OSError as exc:
-        raise MetadataError(f"could not create metadata file: {destination}") from exc
+        raise MetadataError("could not create metadata file") from exc
     try:
         with os.fdopen(descriptor, "wb") as stream:
             stream.write(encoded)
@@ -70,7 +70,7 @@ def _exclusive(destination: Path, encoded: bytes) -> None:
             destination.unlink()
         except OSError:
             pass
-        raise MetadataError(f"could not write metadata file: {destination}") from exc
+        raise MetadataError("could not write metadata file") from exc
 
 
 def _replace(destination: Path, encoded: bytes) -> None:
@@ -89,9 +89,7 @@ def _replace(destination: Path, encoded: bytes) -> None:
         os.replace(temporary, destination)
         temporary = None
     except OSError as exc:
-        raise MetadataError(
-            f"could not atomically replace metadata file: {destination}"
-        ) from exc
+        raise MetadataError("could not atomically replace metadata file") from exc
     finally:
         if temporary is not None:
             try:
@@ -152,7 +150,7 @@ def write_meta(
         _replace(path, encoded)
     else:
         if path.exists():
-            raise MetadataError(f"metadata file already exists: {path}")
+            raise MetadataError("metadata file already exists")
         _exclusive(path, encoded)
     return path
 

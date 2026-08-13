@@ -187,15 +187,22 @@ def test_output_validation_happens_before_writes(tmp_path, monkeypatch) -> None:
         output.savefig(figure, tmp_path / "plot", formats=("png",), dpi=0, show=False)
     with pytest.raises(TypeError):
         output.savefig(figure, tmp_path / "plot", props={"show": False}, show=False)
-    with pytest.raises(gs.OutputError):
-        output.savefig(figure, tmp_path / "missing" / "plot", show=False)
+    missing_parent = tmp_path / "private" / "user" / "home" / "secret" / "out"
+    with pytest.raises(gs.OutputError) as missing_error:
+        output.savefig(figure, missing_parent / "plot", show=False)
+    assert str(missing_parent) not in str(missing_error.value)
 
     def fail(*args, **kwargs):
         raise RuntimeError("save failure")
 
     monkeypatch.setattr(figure, "savefig", fail)
-    with pytest.raises(gs.OutputError, match="written paths"):
-        output.savefig(figure, tmp_path / "plot.png", show=True, overwrite=True)
+    output_path = tmp_path / "private" / "user" / "home" / "secret" / "plot.png"
+    output_path.parent.mkdir(parents=True)
+    with pytest.raises(gs.OutputError) as save_error:
+        output.savefig(figure, output_path, show=True, overwrite=True)
+    assert str(output_path) not in str(save_error.value)
+    assert save_error.value.committed_paths == ()
+    assert isinstance(save_error.value.__cause__, RuntimeError)
     assert displayed == []
     plt.close(figure)
 

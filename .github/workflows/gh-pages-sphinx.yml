@@ -52,41 +52,45 @@ jobs:
           python -m pip install --disable-pip-version-check "poetry==2.4.1"
           poetry install --no-interaction
 
-      - name: Build validated catalog
+      - name: Prepare catalog directory
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/gsplot-catalog"
+
+      - name: Build pull-request fixture catalog
+        if: ${{ github.event_name == 'pull_request' }}
+        run: |
+          set -euo pipefail
+          poetry run python -m tools.maintenance.build_docs_catalog \
+            --repo-root "$GITHUB_WORKSPACE" \
+            --fixture tests/fixtures/docs_site/releases.json \
+            --base-url "https://example.test/gsplot" \
+            --output "$RUNNER_TEMP/gsplot-catalog/catalog.json" \
+            --switcher-output "$RUNNER_TEMP/gsplot-catalog/switcher.json"
+
+      - name: Build live catalog
+        if: ${{ github.event_name != 'pull_request' }}
         env:
           GITHUB_TOKEN: ${{ github.token }}
           GSPLOT_CANDIDATE_TAG: ${{ inputs.candidate_tag || '' }}
         run: |
           set -euo pipefail
-          catalog_dir="$RUNNER_TEMP/gsplot-catalog"
-          mkdir -p "$catalog_dir"
-          base_url="$GSPLOT_DOCS_BASE_URL"
-          if [[ "$GITHUB_EVENT_NAME" == "pull_request" ]]; then
-            base_url="https://example.test/gsplot"
-            poetry run python -m tools.maintenance.build_docs_catalog \
-              --repo-root "$GITHUB_WORKSPACE" \
-              --fixture tests/fixtures/docs_site/releases.json \
-              --base-url "$base_url" \
-              --output "$catalog_dir/catalog.json" \
-              --switcher-output "$catalog_dir/switcher.json"
+          catalog_args=(
+            --repo-root "$GITHUB_WORKSPACE"
+            --base-url "$GSPLOT_DOCS_BASE_URL"
+            --output "$RUNNER_TEMP/gsplot-catalog/catalog.json"
+            --switcher-output "$RUNNER_TEMP/gsplot-catalog/switcher.json"
+          )
+          if [[ -n "$GSPLOT_CANDIDATE_TAG" ]]; then
+            catalog_args+=(--candidate-tag "$GSPLOT_CANDIDATE_TAG")
           else
-            catalog_args=(
-              --repo-root "$GITHUB_WORKSPACE"
-              --base-url "$base_url"
-              --output "$catalog_dir/catalog.json"
-              --switcher-output "$catalog_dir/switcher.json"
+            catalog_args+=(
+              --previous-manifest-url
+              "$GSPLOT_DOCS_BASE_URL/_meta/build-manifest.json"
             )
-            if [[ -n "$GSPLOT_CANDIDATE_TAG" ]]; then
-              catalog_args+=(--candidate-tag "$GSPLOT_CANDIDATE_TAG")
-            else
-              catalog_args+=(
-                --previous-manifest-url
-                "$base_url/_meta/build-manifest.json"
-              )
-            fi
-            poetry run python -m tools.maintenance.build_docs_catalog \
-              "${catalog_args[@]}"
           fi
+          poetry run python -m tools.maintenance.build_docs_catalog \
+            "${catalog_args[@]}"
 
       - name: Upload catalog artifact
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1

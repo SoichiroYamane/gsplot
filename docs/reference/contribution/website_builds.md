@@ -77,9 +77,11 @@ explicit system Chrome or Chromium executable through
 jobs:
 
 1. `catalog` reads the public GitHub Releases API and uploads only the typed
-   catalog and switcher. Pull requests use the tracked fixture and do not need
-   GitHub API access. A workflow-dispatch `candidate_tag` may add an existing
-   unpublished tag for a build-only release-candidate check.
+   catalog and switcher. Pull requests use the tracked fixture in a separate
+   step without `GITHUB_TOKEN`; live main, release, and dispatch builds scope
+   that read-only token only to the authenticated catalog step. A
+   workflow-dispatch `candidate_tag` may add an existing unpublished tag for a
+   build-only release-candidate check.
 2. `build` downloads the catalog artifact, checks out `main` and all tags,
    installs the locked Poetry and npm toolchains, and builds outside the
    checkout. It receives no GitHub, Pages, PyPI, or OIDC credential.

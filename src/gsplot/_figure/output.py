@@ -671,13 +671,13 @@ def savefig(
     parents = {item.parent for item in destinations}
     for parent in parents:
         if parent.exists() and not parent.is_dir():
-            raise OutputError(f"output parent is not a directory: {parent}")
+            raise OutputError("output parent is not a directory")
         if not parent.exists() and not create_parent_value:
-            raise OutputError(f"output parent does not exist: {parent}")
+            raise OutputError("output parent does not exist")
     if not overwrite_value:
         existing = [item for item in destinations if item.exists()]
         if existing:
-            raise OutputError(f"output already exists: {existing[0]}")
+            raise OutputError("output already exists")
     if create_parent_value:
         try:
             for parent in parents:
@@ -694,10 +694,9 @@ def savefig(
                 **selected_props,
             )
         except Exception as exc:
-            written_text = ", ".join(str(item) for item in written) or "none"
             raise OutputError(
-                f"could not save {destination_path} as {selected_format}; "
-                f"written paths: {written_text}"
+                f"could not save output in {selected_format} format",
+                committed_paths=written,
             ) from exc
         written.append(destination_path)
     result = tuple(written)
@@ -706,9 +705,9 @@ def savefig(
             display = globals()["show"]
             display(fig)
         except OutputError as exc:
-            written_text = ", ".join(str(item) for item in result)
             raise OutputError(
-                f"saved paths but could not display the Figure: {written_text}"
+                "saved outputs but could not display the Figure",
+                committed_paths=result,
             ) from exc
     if close_value:
         try:

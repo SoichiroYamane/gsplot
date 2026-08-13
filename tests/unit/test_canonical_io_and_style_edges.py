@@ -12,13 +12,16 @@ import gsplot as gs
 from gsplot._core import DataError, LayoutError, OutputError, PlotError
 from gsplot._core.errors import OptionError
 from gsplot._figure import output
+from gsplot._io import metadata
 from gsplot._io.arrays import read_array
 from gsplot._io.metadata import write_meta
 from gsplot._io.paths import resolve_path
 from gsplot._plot.colormap import cmap_from_config, map_values
 
 
-def test_array_and_metadata_io_are_explicit_and_atomic(tmp_path: Path) -> None:
+def test_array_and_metadata_io_are_explicit_and_atomic(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     """Text and metadata operations validate controls and preserve files."""
 
     source = tmp_path / "values.txt"
@@ -36,13 +39,16 @@ def test_array_and_metadata_io_are_explicit_and_atomic(tmp_path: Path) -> None:
             read_array(**kwargs)  # type: ignore[arg-type]
     with pytest.raises(DataError):
         read_array(source, options={"fname": "other"})
-    with pytest.raises(DataError):
-        read_array(tmp_path / "missing.txt")
+    array_path = tmp_path / "private" / "user" / "home" / "secret" / "missing.txt"
+    with pytest.raises(DataError) as array_error:
+        read_array(array_path)
+    assert str(array_path) not in str(array_error.value)
 
     snapshot = gs.MetadataSnapshot("1.0", labels={"kind": "test"})
-    destination = tmp_path / "metadata" / "result.json"
-    with pytest.raises(gs.MetadataError):
+    destination = tmp_path / "private" / "user" / "home" / "secret" / "result.json"
+    with pytest.raises(gs.MetadataError) as parent_error:
         write_meta(snapshot, destination)
+    assert str(destination.parent) not in str(parent_error.value)
     written = write_meta(snapshot, destination, create_parent=True)
     assert written == destination.resolve()
     assert '"kind":"test"' in written.read_text(encoding="utf-8")
@@ -55,6 +61,16 @@ def test_array_and_metadata_io_are_explicit_and_atomic(tmp_path: Path) -> None:
         write_meta(object(), destination)  # type: ignore[arg-type]
     with pytest.raises(gs.MetadataError):
         write_meta(snapshot, destination, overwrite=1)  # type: ignore[arg-type]
+
+    def fail_open(*args, **kwargs):
+        raise OSError("synthetic metadata write failure")
+
+    failed_destination = destination.parent / "failed.json"
+    monkeypatch.setattr(metadata.os, "open", fail_open)
+    with pytest.raises(gs.MetadataError) as write_error:
+        write_meta(snapshot, failed_destination)
+    assert str(failed_destination) not in str(write_error.value)
+    assert isinstance(write_error.value.__cause__, OSError)
     assert resolve_path(destination) == destination.resolve()
     with pytest.raises(OutputError):
         resolve_path("")
