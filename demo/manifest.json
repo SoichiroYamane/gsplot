@@ -1,0 +1,66 @@
+{
+  "schema_version": 1,
+  "demos": [
+    {
+      "script": "demo/0_hello_world/hello_world.py",
+      "outputs": []
+    },
+    {
+      "script": "demo/1_axes/axes.py",
+      "outputs": ["demo/1_axes/axes.png"]
+    },
+    {
+      "script": "demo/2_line_and_label/line_and_label.py",
+      "outputs": ["demo/2_line_and_label/line_and_label.png"]
+    },
+    {
+      "script": "demo/3_config/config.py",
+      "outputs": [
+        "demo/3_config/config.png",
+        "demo/3_config/config.pdf"
+      ]
+    },
+    {
+      "script": "demo/4_paper_plot/paper_plot.py",
+      "outputs": [
+        "demo/4_paper_plot/SC_cal.png",
+        "demo/4_paper_plot/SC_cal.pdf"
+      ]
+    },
+    {
+      "script": "demo/5_scatter/scatter.py",
+      "outputs": ["demo/5_scatter/scatter.png"]
+    },
+    {
+      "script": "demo/6_line_colormap/line_colormap.py",
+      "outputs": ["demo/6_line_colormap/line_colormap.png"]
+    },
+    {
+      "script": "demo/7_graph_white/graph_white.py",
+      "outputs": ["demo/7_graph_white/graph_white.png"]
+    },
+    {
+      "script": "demo/8_graph_transparent/graph_transparent.py",
+      "outputs": ["demo/8_graph_transparent/graph_transparent.png"]
+    },
+    {
+      "script": "demo/9_compatibility/compatibility.py",
+      "outputs": [
+        "demo/9_compatibility/compatibility.png",
+        "demo/9_compatibility/compatibility.pdf"
+      ]
+    },
+    {
+      "script": "demo/10_subplots/subplots.py",
+      "outputs": ["demo/10_subplots/subplots.png"]
+    },
+    {
+      "script": "demo/11_directory/directory.py",
+      "outputs": []
+    },
+    {
+      "script": "demo/test_plot/gsplot_demo.py",
+      "outputs": ["demo/test_plot/SC_cal.png"]
+    }
+  ]
+}

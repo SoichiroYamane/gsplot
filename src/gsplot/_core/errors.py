@@ -7,15 +7,36 @@ from typing import Iterable
 
 
 class GsplotError(Exception):
-    """Base class for errors that are part of the canonical API contract."""
+    """Base class for errors that are part of the canonical API contract.
+
+    Examples
+    --------
+    >>> import gsplot as gs
+    >>> isinstance(gs.GsplotError("operation failed"), Exception)
+    True
+    """
 
 
 class ConfigError(GsplotError):
-    """Raised when configuration cannot be parsed or validated."""
+    """Raised when configuration cannot be parsed or validated.
+
+    Examples
+    --------
+    >>> import gsplot as gs
+    >>> isinstance(gs.ConfigError("invalid configuration"), gs.GsplotError)
+    True
+    """
 
 
 class DataError(GsplotError):
-    """Raised when plotting or numerical input violates the data contract."""
+    """Raised when plotting or numerical input violates the data contract.
+
+    Examples
+    --------
+    >>> import gsplot as gs
+    >>> isinstance(gs.DataError("non-finite data"), gs.GsplotError)
+    True
+    """
 
 
 class LayoutError(ConfigError):
@@ -23,11 +44,24 @@ class LayoutError(ConfigError):
 
     Layout failures are configuration failures as well, so callers may catch
     either the specific layout type or the broader :class:`ConfigError`.
+
+    Examples
+    --------
+    >>> import gsplot as gs
+    >>> isinstance(gs.LayoutError("invalid size"), gs.ConfigError)
+    True
     """
 
 
 class PlotError(GsplotError):
-    """Raised when a plotting operation cannot be completed safely."""
+    """Raised when a plotting operation cannot be completed safely.
+
+    Examples
+    --------
+    >>> import gsplot as gs
+    >>> isinstance(gs.PlotError("invalid target"), gs.GsplotError)
+    True
+    """
 
 
 class OptionError(PlotError, TypeError):
@@ -49,6 +83,14 @@ class OutputError(GsplotError):
     ----------
     committed_paths
         Immutable tuple of final paths already committed by the operation.
+
+    Examples
+    --------
+    >>> from pathlib import Path
+    >>> import gsplot as gs
+    >>> error = gs.OutputError("commit failed", committed_paths=(Path("figure.png"),))
+    >>> len(error.committed_paths)
+    1
     """
 
     def __init__(
@@ -64,7 +106,14 @@ class OutputError(GsplotError):
 
 
 class MetadataError(GsplotError):
-    """Raised when reproducibility metadata is invalid or cannot be written."""
+    """Raised when reproducibility metadata is invalid or cannot be written.
+
+    Examples
+    --------
+    >>> import gsplot as gs
+    >>> isinstance(gs.MetadataError("invalid metadata"), gs.GsplotError)
+    True
+    """
 
 
 __all__ = [

@@ -167,7 +167,7 @@ def inset_axes(parent: Axes, spec: InsetSpec) -> Axes:
     >>> import gsplot as gs
     >>> figure, axes = gs.subplots()
     >>> child = gs.inset_axes(axes, gs.InsetSpec(bounds=(0.6, 0.6, 0.3, 0.3)))
-    >>> child.set_title("inset")
+    >>> _ = child.set_title("inset")
     >>> figure.clear()
     """
 

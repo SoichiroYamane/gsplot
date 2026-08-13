@@ -1,4 +1,4 @@
-"""Integration tests for the publication-style executable documentation."""
+"""Integration tests for the concise publication-style documentation."""
 
 from __future__ import annotations
 
@@ -9,6 +9,7 @@ from typing import Any
 
 import matplotlib as mpl
 import matplotlib.pyplot as plt
+import numpy as np
 import pytest
 from matplotlib.figure import Figure
 
@@ -28,101 +29,184 @@ def _load_demo() -> ModuleType:
     return module
 
 
-def test_publication_demo_restores_native_visual_contract() -> None:
-    """The builder restores historical artists without leaking rcParams."""
-
-    demo = _load_demo()
-    before = {name: mpl.rcParams[name] for name in demo.PUBLICATION_RCPARAMS}
-    figure, axes, insets = demo.build_publication_figure()
-    try:
-        assert tuple(figure.get_size_inches()) == pytest.approx((15.0, 5.0))
-        assert type(figure.get_layout_engine()).__name__ == "TightLayoutEngine"
-        assert {name: len(axis.lines) for name, axis in axes.items()} == {
-            "A": 9,
-            "B": 9,
-            "C": 5,
-        }
-        assert {name: len(axis.lines) for name, axis in insets.items()} == {
-            "heat": 9,
-            "square": 9,
-        }
-        assert all(
-            line.get_markersize() == 0 for axis in axes.values() for line in axis.lines
-        )
-        assert tuple(line.get_linestyle() for line in axes["A"].lines[:4]) == (
-            "-",
-            "--",
-            "-.",
-            ":",
-        )
-        assert (
-            tuple(
-                getattr(line, "_unscaled_dash_pattern") for line in axes["A"].lines[4:]
-            )
-            == demo.LINE_STYLES[4:]
-        )
-        assert all(axis.get_box_aspect() == 1 for axis in axes.values())
-        assert axes["A"].get_legend() is not None
-        assert axes["B"].get_legend() is None
-        assert axes["C"].get_legend() is not None
-        assert tuple(text.get_text() for text in figure.texts) == (
-            "($\\,$a$\\,$)",
-            "($\\,$b$\\,$)",
-            "($\\,$c$\\,$)",
-        )
-        assert len(axes["B"].child_axes) == 2
-        assert any(
-            type(artist).__name__ == "InsetIndicator" for artist in axes["B"].artists
-        )
-
-        figure.canvas.draw()
-        first_tick = axes["A"].xaxis.get_major_ticks()[0]
-        assert first_tick.tick1line.get_marker() == 2
-        assert first_tick.tick2line.get_marker() == 3
-        assert first_tick.tick2line.get_visible()
-        assert insets["heat"].get_xlim() == pytest.approx((0.9, 1.01))
-        assert insets["heat"].get_ylim() == pytest.approx((1.5, 1.8))
-        assert insets["square"].get_xlabel() == "($T/T_{\\rm{c}})^2$"
-        assert all(mpl.rcParams[name] == value for name, value in before.items())
-    finally:
-        plt.close(figure)
-
-
-def test_publication_export_uses_one_explicit_figure(
+def test_publication_demo_uses_balanced_canvas_and_closes_figure(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:
-    """PNG and PDF export share one Figure and scoped Type 42 settings."""
+    """The executable recipe preserves its science and explicit lifecycle."""
 
     demo = _load_demo()
-    figure = Figure()
+    before = mpl.rcParams.copy()
     observed: dict[str, Any] = {}
 
-    def fake_savefig(target: Figure, path: Path, **options: Any) -> tuple[Path, ...]:
-        observed.update(target=target, path=path, options=options)
-        observed["fonttypes"] = (
-            mpl.rcParams["pdf.fonttype"],
-            mpl.rcParams["ps.fonttype"],
-        )
-        return (path.with_suffix(".png"), path.with_suffix(".pdf"))
+    def fake_save(target: Figure, output: Path) -> tuple[Path, ...]:
+        axes = {axis.get_label(): axis for axis in target.axes if axis.get_label()}
+        observed.update(target=target, output=output, axes=axes)
+        target.canvas.draw()
+        return (output.with_suffix(".png"), output.with_suffix(".pdf"))
 
-    before = (mpl.rcParams["pdf.fonttype"], mpl.rcParams["ps.fonttype"])
-    monkeypatch.setattr(demo.gs, "savefig", fake_savefig)
-    path = tmp_path / "SC_cal"
+    monkeypatch.setattr(demo, "ROOT", tmp_path)
+    monkeypatch.setattr(demo.gs, "save", fake_save)
+    demo.main()
 
-    assert demo.save_publication_figure(figure, path) == (
-        path.with_suffix(".png"),
-        path.with_suffix(".pdf"),
-    )
-    assert observed == {
-        "target": figure,
-        "path": path,
-        "options": {
-            "formats": ("png", "pdf"),
-            "dpi": 600,
-            "props": {"bbox_inches": "tight"},
-            "show": True,
-            "overwrite": True,
-        },
-        "fonttypes": (42, 42),
+    figure = observed["target"]
+    axes = observed["axes"]
+    assert observed["output"] == tmp_path / "SC_cal"
+    assert tuple(figure.get_size_inches()) == pytest.approx((8.3, 2.85))
+    assert type(figure.get_layout_engine()).__name__ == "ConstrainedLayoutEngine"
+    assert figure.get_layout_engine().get()["wspace"] == pytest.approx(0.08)
+    assert {name: len(axes[name].lines) for name in "ABC"} == {
+        "A": 9,
+        "B": 9,
+        "C": 5,
     }
-    assert (mpl.rcParams["pdf.fonttype"], mpl.rcParams["ps.fonttype"]) == before
+    assert len(axes["B"].child_axes) == 1
+    square = axes["B"].child_axes[0]
+    assert len(square.lines) == 9
+    gap = [
+        np.genfromtxt(
+            demo.DATA / "gap" / f"Gapeq_{name}.dat",
+            delimiter="\t",
+            skip_header=1,
+            unpack=True,
+        )
+        for name in demo.NAMES
+    ]
+    capacity = [
+        np.genfromtxt(
+            demo.DATA / "c" / f"C_{name}.dat",
+            delimiter="\t",
+            skip_header=1,
+            unpack=True,
+        )
+        for name in demo.NAMES
+    ]
+    yosida = [
+        np.genfromtxt(
+            demo.DATA / "yosida" / f"Y(T)_{name}.dat",
+            delimiter="\t",
+            skip_header=1,
+            unpack=True,
+        )
+        for name in demo.EVEN
+    ]
+    for line, expected in zip(axes["A"].lines, gap):
+        np.testing.assert_array_equal(line.get_xdata(), expected[0])
+        np.testing.assert_array_equal(line.get_ydata(), expected[1])
+    for position, expected in enumerate(capacity):
+        temperature = np.append(expected[0], [1, 1.5])
+        normalized = np.append(expected[1], [1, 1])
+        np.testing.assert_array_equal(
+            axes["B"].lines[position].get_xdata(), temperature
+        )
+        np.testing.assert_array_equal(axes["B"].lines[position].get_ydata(), normalized)
+        np.testing.assert_array_equal(
+            square.lines[position].get_xdata(), temperature**2
+        )
+        np.testing.assert_array_equal(square.lines[position].get_ydata(), normalized)
+    for line, expected in zip(axes["C"].lines, yosida):
+        np.testing.assert_array_equal(line.get_xdata(), expected[0])
+        np.testing.assert_array_equal(line.get_ydata(), expected[1])
+    assert all(
+        line.get_markersize() == 0 for name in "ABC" for line in axes[name].lines
+    )
+    assert axes["A"].get_legend()._loc == 3
+    assert axes["A"].get_legend()._ncols == 2
+    assert axes["A"].get_legend().columnspacing == pytest.approx(0.4)
+    assert axes["A"].get_legend().handlelength == pytest.approx(1.4)
+    assert {text.get_fontsize() for text in axes["A"].get_legend().texts} == {7.0}
+    assert [text.get_text() for text in axes["A"].get_legend().texts] == list(
+        demo.LABELS
+    )
+    assert axes["B"].get_legend() is None
+    assert axes["C"].get_legend()._loc == 2
+    assert axes["C"].get_legend().columnspacing == pytest.approx(0.4)
+    assert axes["C"].get_legend().handlelength == pytest.approx(1.4)
+    assert {text.get_fontsize() for text in axes["C"].get_legend().texts} == {7.0}
+    assert [text.get_text() for text in axes["C"].get_legend().texts] == [
+        demo.LABELS[demo.NAMES.index(name)] for name in demo.EVEN
+    ]
+    assert square.xaxis.label.get_fontsize() == 7
+    assert square.yaxis.label.get_fontsize() == 7
+    renderer = figure.canvas.get_renderer()
+    parent_labels = (
+        *axes["B"].get_xticklabels(),
+        *axes["B"].get_yticklabels(),
+        axes["B"].xaxis.label,
+        axes["B"].yaxis.label,
+    )
+    assert all(
+        not square.get_tightbbox(renderer).overlaps(label.get_window_extent(renderer))
+        for label in parent_labels
+        if label.get_visible() and label.get_text()
+    )
+    parent_ylabels = [
+        label for label in axes["B"].get_yticklabels() if label.get_visible()
+    ]
+    mm_per_pixel = 25.4 / figure.dpi
+    assert (
+        square.get_tightbbox(renderer).x0
+        - max(label.get_window_extent(renderer).x1 for label in parent_ylabels)
+    ) * mm_per_pixel >= 4
+    xlabels = [label for label in square.get_xticklabels() if label.get_visible()]
+    ylabels = [label for label in square.get_yticklabels() if label.get_visible()]
+    assert (
+        not xlabels[0]
+        .get_window_extent(renderer)
+        .overlaps(ylabels[0].get_window_extent(renderer))
+    )
+    assert tuple(axes[name].get_xlabel() for name in "ABC") == (
+        "$T/T_c$",
+        "$T/T_c$",
+        "$T/T_c$",
+    )
+    assert tuple(axes[name].get_box_aspect() for name in "ABC") == (1.0, 1.0, 1.0)
+    assert tuple(axes[name].get_ylabel() for name in "ABC") == (
+        "$\\Delta_0(T)/k_BT_c$",
+        "$C_s/C_n$",
+        "$Y(T)$",
+    )
+    assert tuple(axes[name].get_xlim() for name in "ABC") == (
+        (0.0, 1.2),
+        (0.0, 1.2),
+        (0.0, 1.0),
+    )
+    assert tuple(axes[name].get_ylim() for name in "ABC") == (
+        (0.0, 3.0),
+        (0.0, 3.0),
+        (0.0, 1.0),
+    )
+    assert (
+        square.get_xlabel(),
+        square.get_ylabel(),
+        square.get_xlim(),
+        square.get_ylim(),
+    ) == ("$(T/T_c)^2$", "$C_s/C_n$", (0.0, 0.25), (0.0, 1.0))
+    assert tuple(axes[name].texts[0].get_text() for name in "ABC") == (
+        "(a)",
+        "(b)",
+        "(c)",
+    )
+    assert len(axes["B"].patches) == 0
+    assert not plt.fignum_exists(figure.number)
+    assert mpl.rcParams == before
+
+
+def test_publication_demo_closes_figure_when_output_fails(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    """A failed export does not leak the Figure owned by the demo."""
+
+    demo = _load_demo()
+    observed: dict[str, Figure] = {}
+
+    def fail_save(target: Figure, output: Path) -> tuple[Path, ...]:
+        observed["target"] = target
+        raise OSError("simulated output failure")
+
+    monkeypatch.setattr(demo, "ROOT", tmp_path)
+    monkeypatch.setattr(demo.gs, "save", fail_save)
+
+    with pytest.raises(OSError, match="simulated output failure"):
+        demo.main()
+
+    assert not plt.fignum_exists(observed["target"].number)

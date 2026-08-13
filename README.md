@@ -9,10 +9,10 @@
 
 # gsplot
 
-`gsplot` is a small scientific-plotting toolkit built on Matplotlib. It adds
-explicit figure layouts, consistent styling helpers, validated JSON defaults,
-and lightweight build metadata while keeping ordinary Matplotlib `Figure`
-and `Axes` objects in the workflow.
+`gsplot` creates publication-quality scientific figures with a concise API on
+top of Matplotlib. It adds paper-aware layouts, deterministic plotting and
+styling helpers, validated JSON defaults, and lightweight build metadata while
+returning ordinary Matplotlib `Figure`, `Axes`, and Artist objects.
 
 The package is still evolving. Check the [documentation](https://soichiroyamane.github.io/gsplot/stable/)
 and the [issue tracker](https://github.com/SoichiroYamane/gsplot/issues) before
@@ -31,15 +31,16 @@ python -m pip install gsplot
 ```python
 import gsplot as gs
 
-fig, axes = gs.subplots(figsize=(8, 4), mosaic="AB")
-gs.line(axes["A"], [0, 1, 2], [0, 1, 4], props={"label": "quadratic"})
-gs.scatter(axes["B"], [0, 1, 2], [0, 1, 4], props={"label": "samples"})
-gs.legends(fig)
+fig, axes = gs.subplots("AB")
+gs.line(axes["A"], [0, 1, 2], [0, 1, 4], label="quadratic")
+gs.scatter(axes["B"], [0, 1, 2], [0, 1, 4], label="samples", s=15)
+gs.label(axes, "x", "value", square=True, index="in")
+gs.legend(axes)
 gs.save(fig, "quickstart", show=False)
 ```
 
 This creates a two-panel Matplotlib figure, saves `quickstart.png` and
-`quickstart.pdf`, and remains compatible with regular Matplotlib operations:
+`quickstart.pdf`, and remains compatible with regular Matplotlib operations.
 
 The canonical helpers always receive their Figure or Axes target explicitly.
 `save` writes PNG and PDF transactionally at 600 DPI with a tight crop and
@@ -53,9 +54,8 @@ For a complete scientific example, see the
 
 ## Configuration
 
-Place a `gsplot.json` file in the working directory, or in
-`~/.config/gsplot/gsplot.json`, to provide defaults for supported functions.
-The first matching location is used. A path can also be loaded explicitly:
+Configuration is optional and explicit. Load a schema-2 JSON file and pass the
+immutable value to supported functions:
 
 ```python
 import gsplot as gs
@@ -70,9 +70,9 @@ When a value is specified more than once, the precedence is:
 2. the supplied immutable `Config` value;
 3. the function's default value.
 
-See the [configuration guide](https://soichiroyamane.github.io/gsplot/stable/guides/demo/3_config.html)
-for the supported schema and backend notes. Configuration is immutable and is
-never discovered or applied by a plain `import gsplot`.
+Canonical code never searches the working directory or home directory for a
+configuration file. See the [configuration guide](https://soichiroyamane.github.io/gsplot/stable/guides/demo/3_config.html)
+for the supported schema, precedence, and backend notes.
 
 ## Development
 

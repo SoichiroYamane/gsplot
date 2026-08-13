@@ -1,6 +1,6 @@
 import gsplot as gs
 
-fig, axes = gs.subplots(figsize=(9, 3), mosaic="ABC")
+fig, axes = gs.subplots("ABC", size=(9, 3))
 gs.set_theme(
     fig,
     gs.Theme(
@@ -15,7 +15,7 @@ gs.set_theme(
 x = [1, 2, 3, 4, 5]
 y = [1, 4, 9, 16, 25]
 
-gs.line(axes["A"], x, y, props={"color": "red"})
+gs.line(axes["A"], x, y, c="red")
 gs.cmap_line(axes["B"], x, y, x, props={"linewidths": 2})
 gs.cmap_dash(axes["C"], x, y, x, dash=(5, 5), props={"linewidths": 2})
 gs.style_axes(axes, gs.AxisSpec(xlabel="x", ylabel="y"))

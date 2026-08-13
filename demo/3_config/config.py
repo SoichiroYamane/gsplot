@@ -9,8 +9,8 @@ print("configuration:")
 pprint(config.as_mapping())
 
 # Direct arguments override values from the configuration file.
-fig, axes = gs.subplots(config=config, mosaic="A")
+fig, axes = gs.subplots("A", config=config)
 axis = axes["A"]
-gs.line(axis, [0, 1, 2], [0, 1, 4], props={"label": "configured line"})
+gs.line(axis, [0, 1, 2], [0, 1, 4], label="configured line")
 gs.legend(axis)
-gs.savefig(fig, "config", show=False, overwrite=True)
+gs.save(fig, "config", show=False)

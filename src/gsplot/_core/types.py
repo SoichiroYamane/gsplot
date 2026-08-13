@@ -55,6 +55,142 @@ LabelRecord: TypeAlias = tuple[str, str] | tuple[str, str, Limit | None, Limit |
 # Public type alias: LabelRecords; ordered or exact-key per-target label records.
 LabelRecords: TypeAlias = Sequence[LabelRecord] | Mapping[object, LabelRecord]
 
+_PUBLIC_TYPE_ALIAS_DOCS = MappingProxyType(
+    {
+        "MosaicSpec": """A subplot-mosaic string or rectangular sequence of label rows.
+
+Examples
+--------
+>>> import gsplot as gs
+>>> mosaic: gs.MosaicSpec = "AB;CC"
+""",
+        "NormalizeSpec": """Finite color bounds or a Matplotlib-compatible normalizer.
+
+Examples
+--------
+>>> import gsplot as gs
+>>> normalizer: gs.NormalizeSpec = (0.0, 1.0)
+""",
+        "ColorSpec": """A Matplotlib color name or an RGB or RGBA channel tuple.
+
+Examples
+--------
+>>> import gsplot as gs
+>>> color: gs.ColorSpec = "tab:blue"
+""",
+        "AxesTarget": """One Axes or a deterministic finite collection of Axes.
+
+Examples
+--------
+>>> import gsplot as gs
+>>> figure, axes = gs.subplots("AB")
+>>> target: gs.AxesTarget = axes
+>>> import matplotlib.pyplot as plt
+>>> plt.close(figure)
+""",
+        "PerTarget": """An ordered sequence or exact-key mapping of per-target values.
+
+Examples
+--------
+>>> import gsplot as gs
+>>> values: gs.PerTarget = {"A": 1, "B": 2}
+""",
+        "LineStyle": """A Matplotlib named line style or finite dash-tuple form.
+
+Examples
+--------
+>>> import gsplot as gs
+>>> line_style: gs.LineStyle = "--"
+""",
+        "Marker": """An input accepted by Matplotlib's MarkerStyle.
+
+Examples
+--------
+>>> import gsplot as gs
+>>> marker: gs.Marker = "o"
+""",
+        "Unit": """A supported physical figure-size unit.
+
+Values are inches, centimetres, millimetres, or points.
+
+Examples
+--------
+>>> import gsplot as gs
+>>> unit: gs.Unit = "mm"
+""",
+        "SizePreset": """An automatic publication canvas choice.
+
+Examples
+--------
+>>> import gsplot as gs
+>>> preset: gs.SizePreset = "double"
+""",
+        "SizeSpec": """A publication preset, explicit dimensions, or ambient Figure size.
+
+Examples
+--------
+>>> import gsplot as gs
+>>> size: gs.SizeSpec = (85.0, 60.0)
+""",
+        "LayoutMode": """A supported Figure layout-engine selection.
+
+Examples
+--------
+>>> import gsplot as gs
+>>> layout: gs.LayoutMode = "constrained"
+""",
+        "StyleMode": """A concise target-local style selection.
+
+Examples
+--------
+>>> import gsplot as gs
+>>> style: gs.StyleMode = "paper"
+""",
+        "ZoomCorners": """Two explicit parent-to-inset connector-corner pairs.
+
+Examples
+--------
+>>> import gsplot as gs
+>>> corners: gs.ZoomCorners = ((3, 2), (4, 1))
+""",
+        "Limit": """A finite two-value axis limit whose order is preserved.
+
+Examples
+--------
+>>> import gsplot as gs
+>>> limits: gs.Limit = (0.0, 1.0)
+""",
+        "Scale": """A supported Cartesian axis scale name.
+
+Examples
+--------
+>>> import gsplot as gs
+>>> scale: gs.Scale = "log"
+""",
+        "TickSpec": """A finite sequence of numeric tick locations.
+
+Examples
+--------
+>>> import gsplot as gs
+>>> ticks: gs.TickSpec = (0.0, 0.5, 1.0)
+""",
+        "LabelRecord": """Concise x/y labels with optional x/y axis limits.
+
+Examples
+--------
+>>> import gsplot as gs
+>>> labels: gs.LabelRecord = ("x", "y", (0.0, 1.0), (0.0, 2.0))
+""",
+        "LabelRecords": """Ordered or exact-key per-target label records.
+
+Examples
+--------
+>>> import gsplot as gs
+>>> labels: gs.LabelRecords = (("x", "y"),)
+""",
+    }
+)
+
 
 class _NormalizeProtocol(Protocol):
     """Protocol for a Matplotlib-compatible color normalizer."""

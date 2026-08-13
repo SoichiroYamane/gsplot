@@ -4,18 +4,19 @@ import gsplot as gs
 
 config = gs.load_config("./gsplot.json")
 names = ["A1g", "A2u", "B1g", "B1u"]
-fig, axes = gs.subplots(config=config, mosaic="AB")
+fig, axes = gs.subplots("AB", config=config)
 colors = gs.sample_cmap("plasma", count=len(names))
 
 for index, name in enumerate(names):
-    data = gs.read_array(
+    data = gs.read(
         f"../data/gap/Gapeq_{name}.dat",
-        options={"skip_header": 1, "delimiter": "\t", "unpack": True},
+        skip_header=1,
+        delimiter="\t",
     )
-    props = {"color": colors[index], "label": name, "linewidth": 2}
-    gs.line(axes["A"], data[0], data[1], props=props)
-    gs.line(axes["B"], data[0], np.sqrt(data[1]), props=props)
+    options = {"c": colors[index], "label": name, "lw": 2}
+    gs.line(axes["A"], data[0], data[1], **options)
+    gs.line(axes["B"], data[0], np.sqrt(data[1]), **options)
 
-gs.legends(fig)
+gs.legend(axes)
 gs.style_axes(axes, gs.AxisSpec(xlabel="T/Tc", ylabel="value"))
 gs.savefig(fig, "SC_cal", show=False, overwrite=True)

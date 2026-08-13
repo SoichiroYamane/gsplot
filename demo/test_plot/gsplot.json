@@ -1,10 +1,10 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "figure": {
-    "figsize": [15, 5],
+    "size": [15, 5],
     "unit": "in",
     "squeeze": true,
-    "tight_layout": true
+    "layout": "tight"
   },
   "plotting": {
     "default_cmap": "plasma"

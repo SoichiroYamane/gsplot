@@ -4,11 +4,10 @@
 Loading is explicit, returns an immutable `Config`, and never changes
 Matplotlib global state.
 
-## Configuration-file lookup
+## Explicit loading
 
-When no path is supplied, `gsplot.load_config()` looks for `gsplot.json` in
-the current directory, `~/.config/gsplot/`, and the home directory, in that
-order. A specific path can always be supplied:
+Canonical gsplot never searches the current directory or a user directory.
+Supply the file explicitly:
 
 ```python
 import gsplot as gs
@@ -24,25 +23,32 @@ to inspect the immutable value.
 For a configurable function, explicit arguments take precedence over values in
 the configuration file, which take precedence over function defaults.
 
-## Schema example
+## Schema 2 example
 
 ```json
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "figure": {
-    "figsize": [10, 10],
+    "size": [5, 5],
     "unit": "in",
-    "tight_layout": true
+    "squeeze": true,
+    "layout": "tight"
+  },
+  "plotting": {
+    "default_color": "#3b5bdb",
+    "default_cmap": "viridis"
   }
 }
 ```
 
 ```python
-fig, axes = gs.subplots(config=config, mosaic="ABC")
+fig, axes = gs.subplots("ABC", config=config)
 ```
 
-The configured figure size is used, while the explicit mosaic wins over any
-omitted configuration value.
+The configured figure size is used, while an explicitly supplied function
+argument wins over the configured value. Schema-1 input is translated with a
+migration warning during the 1.x compatibility window; new files should use
+schema 2.
 
 ## Backend selection
 

@@ -7,37 +7,188 @@ import sys
 from dataclasses import fields, is_dataclass
 from pathlib import Path
 from types import ModuleType
-from typing import Any
+from typing import Any, TypeAlias
 
 import gsplot
 from gsplot._compat.root import _CANONICAL_EXPORTS
+from gsplot._core.types import _PUBLIC_TYPE_ALIAS_DOCS
 
-_TYPE_ALIAS_COMMENTS = {
-    "ColorSpec": "# Public type alias: ColorSpec",
-    "MosaicSpec": "# Public type alias: MosaicSpec",
-    "NormalizeSpec": "# Public type alias: NormalizeSpec",
-    "Limit": "# Public type alias: Limit",
-    "Scale": "# Public type alias: Scale",
-    "TickSpec": "# Public type alias: TickSpec",
-    "LabelRecord": "# Public type alias: LabelRecord",
-    "LabelRecords": "# Public type alias: LabelRecords",
-}
-_NO_EXAMPLES = {
-    "GsplotError",
-    "ConfigError",
-    "DataError",
-    "LayoutError",
-    "PlotError",
-    "OutputError",
-    "MetadataError",
-}
 _NO_RAISES = {"as_mapping", "build_info", "default", "transparent", "white"}
+_REVIEWED_DEFAULTS: dict[str, dict[str, object]] = {
+    "colors": {"n": 10, "cmap": "viridis", "reverse": False},
+    "index": {"labels": None, "loc": "out", "size": "large", "props": None},
+    "inset": {
+        "label": None,
+        "zoom": False,
+        "style": "paper",
+        "zorder": 5,
+        "zoom_zorder": None,
+    },
+    "label": {
+        "xlabel": "",
+        "ylabel": "",
+        "xlim": None,
+        "ylim": None,
+        "xscale": "linear",
+        "yscale": "linear",
+        "xticks": None,
+        "yticks": None,
+        "minor": True,
+        "xminor": None,
+        "yminor": None,
+        "pad": 5,
+        "xpad": None,
+        "ypad": None,
+        "square": False,
+        "index": False,
+    },
+    "legend": {
+        "handles": None,
+        "labels": None,
+        "handler_map": None,
+        "loc": "best",
+        "frameon": False,
+        "fancybox": False,
+        "labelspacing": 0.3,
+        "handlelength": None,
+        "reverse": False,
+        "replace": False,
+        "props": None,
+    },
+    "line": {
+        "series": None,
+        "label": None,
+        "c": None,
+        "marker": "o",
+        "ms": 7,
+        "mew": 1.5,
+        "mec": None,
+        "mfc": None,
+        "alpha_mfc": 0.2,
+        "ls": "--",
+        "lw": 1,
+        "alpha": 1,
+        "config": None,
+        "props": None,
+    },
+    "paper": {"cycle": True},
+    "read": {
+        "loader": "genfromtxt",
+        "delimiter": ",",
+        "comments": "#",
+        "skip_header": 0,
+        "usecols": None,
+        "unpack": True,
+        "ndmin": 1,
+        "dtype": float,
+    },
+    "save": {
+        "formats": None,
+        "dpi": 600,
+        "crop": True,
+        "pad": None,
+        "show": True,
+        "close": False,
+        "create_parent": False,
+        "overwrite": True,
+        "transparent": False,
+        "metadata": None,
+    },
+    "scatter": {
+        "series": None,
+        "label": None,
+        "c": None,
+        "marker": "o",
+        "s": 1,
+        "alpha": 1,
+        "config": None,
+        "props": None,
+    },
+    "square": {"aspect": 1},
+    "subplots": {
+        "nrows": None,
+        "ncols": None,
+        "mosaic": None,
+        "size": "auto",
+        "unit": "in",
+        "sharex": False,
+        "sharey": False,
+        "squeeze": True,
+        "width_ratios": None,
+        "height_ratios": None,
+        "subplot_kw": None,
+        "fig": None,
+        "clear": False,
+        "layout": "auto",
+        "style": "auto",
+        "config": None,
+        "figsize": None,
+        "tight_layout": None,
+        "constrained_layout": None,
+    },
+}
 
 
 def _has_section(doc: str, section: str) -> bool:
     """Return whether a NumPy-style section heading is present."""
 
     return any(line.strip() == section for line in doc.splitlines())
+
+
+def _section_lines(doc: str, section: str) -> tuple[str, ...]:
+    """Return the body of one NumPy-style section."""
+
+    lines = doc.splitlines()
+    for index in range(len(lines) - 1):
+        if lines[index].strip() != section or set(lines[index + 1].strip()) != {"-"}:
+            continue
+        body: list[str] = []
+        for position in range(index + 2, len(lines)):
+            if (
+                position + 1 < len(lines)
+                and lines[position].strip()
+                and set(lines[position + 1].strip()) == {"-"}
+            ):
+                break
+            body.append(lines[position])
+        return tuple(body)
+    return ()
+
+
+def _documented_parameters(doc: str) -> set[str]:
+    """Return normalized names declared by a NumPy Parameters section."""
+
+    names: set[str] = set()
+    for line in _section_lines(doc, "Parameters"):
+        if not line or line != line.lstrip():
+            continue
+        declaration = line.split(":", 1)[0]
+        for name in declaration.split(","):
+            normalized = name.strip().strip("`").lstrip("*")
+            if normalized:
+                names.add(normalized)
+    return names
+
+
+def _check_reviewed_defaults(name: str, signature: inspect.Signature) -> list[str]:
+    """Check user-visible concise defaults against the reviewed contract."""
+
+    errors: list[str] = []
+    for parameter_name, expected in _REVIEWED_DEFAULTS.get(name, {}).items():
+        parameter = signature.parameters.get(parameter_name)
+        if parameter is None:
+            errors.append(
+                f"{name}: reviewed default parameter {parameter_name!r} missing"
+            )
+        elif (
+            type(parameter.default) is not type(expected)
+            or parameter.default != expected
+        ):
+            errors.append(
+                f"{name}: {parameter_name} default must be {expected!r}, "
+                f"got {parameter.default!r}"
+            )
+    return errors
 
 
 def _check_callable(name: str, value: Any) -> list[str]:
@@ -60,15 +211,29 @@ def _check_callable(name: str, value: Any) -> list[str]:
     )
     if parameters and not _has_section(doc, "Parameters"):
         errors.append(f"{name}: parameters require a Parameters section")
+    elif parameters:
+        expected_names = {parameter.name for parameter in parameters}
+        documented_names = _documented_parameters(doc)
+        missing = sorted(expected_names - documented_names)
+        stale = sorted(documented_names - expected_names)
+        if missing:
+            errors.append(f"{name}: undocumented parameters: {', '.join(missing)}")
+        if stale:
+            errors.append(f"{name}: stale documented parameters: {', '.join(stale)}")
     if (
         not _has_section(doc, "Returns")
         and signature.return_annotation is not inspect.Signature.empty
     ):
         errors.append(f"{name}: return annotation requires a Returns section")
+    elif signature.return_annotation is not inspect.Signature.empty and not any(
+        line.strip() for line in _section_lines(doc, "Returns")
+    ):
+        errors.append(f"{name}: Returns section must document the returned value")
     if name.split(".")[-1] not in _NO_RAISES and not _has_section(doc, "Raises"):
         errors.append(f"{name}: validation/error contract requires a Raises section")
-    if name.split(".")[-1] not in _NO_EXAMPLES and not _has_section(doc, "Examples"):
+    if not _has_section(doc, "Examples"):
         errors.append(f"{name}: public callable requires an Examples section")
+    errors.extend(_check_reviewed_defaults(name.split(".")[-1], signature))
     return errors
 
 
@@ -80,8 +245,10 @@ def _check_class(name: str, value: type[Any]) -> list[str]:
     if not doc:
         return [f"{name}: missing class docstring"]
     if issubclass(value, BaseException):
+        if not _has_section(doc, "Examples"):
+            errors.append(f"{name}: public exception requires an Examples section")
         return errors
-    if name not in _NO_EXAMPLES and not _has_section(doc, "Examples"):
+    if not _has_section(doc, "Examples"):
         errors.append(f"{name}: public constructor requires an Examples section")
     if is_dataclass(value):
         if not _has_section(doc, "Parameters"):
@@ -97,10 +264,20 @@ def _check_class(name: str, value: type[Any]) -> list[str]:
     return errors
 
 
+def _is_explicit_type_alias(module: ModuleType, attribute_name: str) -> bool:
+    """Return whether a module attribute is explicitly annotated as a type alias."""
+
+    annotation = getattr(module, "__annotations__", {}).get(attribute_name)
+    return annotation is TypeAlias or (
+        isinstance(annotation, str) and annotation in {"TypeAlias", "typing.TypeAlias"}
+    )
+
+
 def _check_root(repository_root: Path) -> list[str]:
     """Check root exports, re-export fidelity, and stable metadata values."""
 
     errors: list[str] = []
+    type_aliases: set[str] = set()
     for name, (module_name, attribute_name) in _CANONICAL_EXPORTS.items():
         try:
             root_value = getattr(gsplot, name)
@@ -109,7 +286,12 @@ def _check_root(repository_root: Path) -> list[str]:
         except (AttributeError, ImportError) as exc:
             errors.append(f"{name}: cannot resolve canonical export ({exc})")
             continue
-        if inspect.isfunction(canonical_value) or inspect.isclass(canonical_value):
+        is_type_alias = _is_explicit_type_alias(module, attribute_name)
+        if not is_type_alias and (
+            inspect.isfunction(canonical_value) or inspect.isclass(canonical_value)
+        ):
+            root_signature: inspect.Signature | None
+            canonical_signature: inspect.Signature | None
             try:
                 root_signature = inspect.signature(root_value)
                 canonical_signature = inspect.signature(canonical_value)
@@ -121,10 +303,16 @@ def _check_root(repository_root: Path) -> list[str]:
                 )
         if inspect.getdoc(root_value) != inspect.getdoc(canonical_value):
             errors.append(f"{name}: root docstring differs from canonical docstring")
-        if inspect.isfunction(canonical_value):
+        if is_type_alias:
+            type_aliases.add(name)
+        elif inspect.isfunction(canonical_value):
             errors.extend(_check_callable(name, canonical_value))
         elif inspect.isclass(canonical_value):
             errors.extend(_check_class(name, canonical_value))
+        else:
+            errors.append(
+                f"{name}: non-callable export must be declared with TypeAlias"
+            )
 
     version_doc = (
         inspect.getdoc(__import__("gsplot.version", fromlist=["__version__"])) or ""
@@ -135,9 +323,21 @@ def _check_root(repository_root: Path) -> list[str]:
 
     type_source = repository_root / "src" / "gsplot" / "_core" / "types.py"
     source = type_source.read_text(encoding="utf-8")
-    for name, marker in _TYPE_ALIAS_COMMENTS.items():
+    documented_aliases = set(_PUBLIC_TYPE_ALIAS_DOCS)
+    missing_aliases = sorted(type_aliases - documented_aliases)
+    stale_aliases = sorted(documented_aliases - type_aliases)
+    if missing_aliases:
+        errors.append("undocumented public type aliases: " + ", ".join(missing_aliases))
+    if stale_aliases:
+        errors.append("stale public type alias docs: " + ", ".join(stale_aliases))
+    for name, description in _PUBLIC_TYPE_ALIAS_DOCS.items():
+        marker = f"# Public type alias: {name};"
         if marker not in source:
             errors.append(f"{type_source}: missing module comment for {name}")
+        if not description.strip():
+            errors.append(f"{name}: public type alias description is empty")
+        if not _has_section(description, "Examples") or ">>>" not in description:
+            errors.append(f"{name}: public type alias requires an executable example")
     return errors
 
 
