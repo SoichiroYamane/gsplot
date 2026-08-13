@@ -6,6 +6,7 @@ import posixpath
 from dataclasses import dataclass
 from pathlib import PurePosixPath
 from typing import Any, Iterator
+from urllib.parse import urlparse
 
 
 class RedirectError(ValueError):
@@ -82,6 +83,20 @@ def collect_redirect_pages(app: Any) -> Iterator[tuple[str, dict[str, str], str]
 
     if getattr(app.builder, "format", None) != "html":
         return
+    html_baseurl = getattr(getattr(app, "config", None), "html_baseurl", None)
+    if not isinstance(html_baseurl, str) or not html_baseurl:
+        raise RedirectError("HTML redirects require a configured html_baseurl")
+    base_parts = urlparse(html_baseurl)
+    if (
+        base_parts.scheme not in {"http", "https"}
+        or not base_parts.netloc
+        or base_parts.username is not None
+        or base_parts.password is not None
+        or base_parts.query
+        or base_parts.fragment
+    ):
+        raise RedirectError("HTML redirects require an absolute safe html_baseurl")
+    canonical_base = html_baseurl.rstrip("/")
     for redirect in REDIRECTS:
         source_parent = PurePosixPath(redirect.source).parent.as_posix()
         relative_target = posixpath.relpath(
@@ -90,6 +105,7 @@ def collect_redirect_pages(app: Any) -> Iterator[tuple[str, dict[str, str], str]
         yield (
             redirect.source,
             {
+                "redirect_canonical": (f"{canonical_base}/{redirect.destination}.html"),
                 "redirect_destination": redirect.destination,
                 "redirect_target": relative_target,
             },

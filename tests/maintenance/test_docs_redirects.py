@@ -40,12 +40,18 @@ def test_redirect_map_covers_every_numbered_demo_route() -> None:
 
 
 def test_redirect_pages_are_html_only_and_same_channel_relative() -> None:
-    html_app = SimpleNamespace(builder=SimpleNamespace(format="html"))
+    html_app = SimpleNamespace(
+        builder=SimpleNamespace(format="html"),
+        config=SimpleNamespace(html_baseurl="https://docs.example.test/project/dev/"),
+    )
     pages = list(collect_redirect_pages(html_app))
 
     assert pages[0] == (
         "guides/demo/index",
         {
+            "redirect_canonical": (
+                "https://docs.example.test/project/dev/guides/examples/index.html"
+            ),
             "redirect_destination": "guides/examples/index",
             "redirect_target": "../examples/index.html",
         },
@@ -57,6 +63,20 @@ def test_redirect_pages_are_html_only_and_same_channel_relative() -> None:
 
     latex_app = SimpleNamespace(builder=SimpleNamespace(format="latex"))
     assert list(collect_redirect_pages(latex_app)) == []
+
+
+@pytest.mark.parametrize(
+    "html_baseurl",
+    ["", "docs.example.test/project", "https://user:secret@example.test/docs"],
+)
+def test_html_redirects_require_an_absolute_site_base(html_baseurl: str) -> None:
+    html_app = SimpleNamespace(
+        builder=SimpleNamespace(format="html"),
+        config=SimpleNamespace(html_baseurl=html_baseurl),
+    )
+
+    with pytest.raises(RedirectError, match="html_baseurl"):
+        list(collect_redirect_pages(html_app))
 
 
 @pytest.mark.parametrize(

@@ -20,6 +20,7 @@ from tools.maintenance.docs_site.orchestrator import (
     _isolated_environment,
     _sanitize_and_validate_output,
     _strip_legacy_runtime_references,
+    _validate_page_metadata,
     build_site,
 )
 from tools.maintenance.docs_site.switcher import load_switcher, validate_switcher
@@ -258,6 +259,43 @@ def test_output_validation_rejects_missing_static_assets(tmp_path: Path) -> None
             "v0.3.0",
             "v0.3.0",
             "python -m sphinx -W -b html docs <output>",
+        )
+
+
+def test_metadata_validation_accepts_only_same_channel_redirects(
+    tmp_path: Path,
+) -> None:
+    output = tmp_path / "output"
+    page = output / "guides/demo/index.html"
+    destination = output / "guides/examples/index.html"
+    _write(destination, "<html></html>\n")
+    text = """<!doctype html>
+<html><head>
+<meta name="robots" content="noindex, follow">
+<meta http-equiv="refresh" content="0; url=../examples/index.html">
+<link rel="canonical" href="https://example.test/gsplot/dev/guides/examples/index.html">
+</head><body><a href="../examples/index.html">Examples</a></body></html>
+"""
+    _write(page, text)
+
+    _validate_page_metadata(
+        page,
+        output=output,
+        version="dev",
+        channel="dev",
+        base_url="https://example.test/gsplot",
+        text=text,
+    )
+
+    cross_channel = text.replace("/dev/guides/", "/stable/guides/")
+    with pytest.raises(BuildError, match="unsafe or inconsistent redirect"):
+        _validate_page_metadata(
+            page,
+            output=output,
+            version="dev",
+            channel="dev",
+            base_url="https://example.test/gsplot",
+            text=cross_channel,
         )
 
 
