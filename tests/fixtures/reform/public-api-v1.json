@@ -36,6 +36,7 @@
     "build_info",
     "use_backend",
     "Config",
+    "AxesDict",
     "AxisSpec",
     "Theme",
     "InsetSpec",
@@ -69,6 +70,10 @@
     "LabelRecords"
   ],
   "canonical_manifest": {
+    "AxesDict": {
+      "attribute": "AxesDict",
+      "module": "gsplot._core.types"
+    },
     "AxesTarget": {
       "attribute": "AxesTarget",
       "module": "gsplot._core.types"
@@ -2957,6 +2962,18 @@
     {
       "call_contract": null,
       "docstring": {
+        "sha256": "5e22f2176d15df83d3f0d6263a54fb359d52041ef88022689bdd5dc2dfe332af",
+        "summary": "A dictionary of mosaic Axes supporting both label and integer index access."
+      },
+      "kind": "class",
+      "module": "gsplot._core.types",
+      "name": "AxesDict",
+      "qualname": "AxesDict",
+      "signature": null
+    },
+    {
+      "call_contract": null,
+      "docstring": {
         "sha256": "6a2e4095a89de2369f4d426e76b3b5211acb3427ba3f8dd0f7ab254229a683b2",
         "summary": "Represent a PEP 604 union type"
       },
@@ -3532,6 +3549,7 @@
     "MosaicSpec",
     "NormalizeSpec",
     "ColorSpec",
+    "AxesDict",
     "AxesTarget",
     "PerTarget",
     "LineStyle",
@@ -3549,6 +3567,7 @@
     "LabelRecords"
   ],
   "type_checking_exports": [
+    "AxesDict",
     "AxesTarget",
     "AxisSpec",
     "BuildInfo",

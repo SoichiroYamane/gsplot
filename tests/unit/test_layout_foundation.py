@@ -248,3 +248,38 @@ def test_subplots_live_rejects_non_boolean() -> None:
 
     with pytest.raises(LayoutError, match="live"):
         subplots(live="yes")  # type: ignore[arg-type]
+
+
+def test_axes_dict_indexing_supports_labels_integers_and_slices() -> None:
+    """AxesDict allows accessing subplots by label name, integer index, and slice."""
+
+    figure, axes = subplots("AB;CD")
+    assert isinstance(axes, dict)
+    assert len(axes) == 4
+    assert tuple(axes.keys()) == ("A", "B", "C", "D")
+
+    # Access by label name
+    assert axes["A"] is axes[0]
+    assert axes["B"] is axes[1]
+    assert axes["C"] is axes[2]
+    assert axes["D"] is axes[3]
+
+    # Access by negative integer index
+    assert axes[-1] is axes["D"]
+    assert axes[-2] is axes["C"]
+
+    # Access by slice
+    sliced = axes[0:2]
+    assert len(sliced) == 2
+    assert sliced[0] is axes["A"]
+    assert sliced[1] is axes["B"]
+
+    # Out of range index raises IndexError
+    with pytest.raises(IndexError, match="out of range"):
+        _ = axes[10]
+
+    # Non-existent string key raises KeyError
+    with pytest.raises(KeyError):
+        _ = axes["UNKNOWN"]
+
+    plt.close(figure)

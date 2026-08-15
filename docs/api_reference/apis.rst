@@ -60,6 +60,7 @@ Value types and errors
    :toctree: ./apis
 
    gsplot.Config
+   gsplot.AxesDict
    gsplot.AxisSpec
    gsplot.Theme
    gsplot.InsetSpec

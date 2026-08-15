@@ -259,6 +259,8 @@ def _check_class(name: str, value: type[Any]) -> list[str]:
     for method_name, method in inspect.getmembers(value):
         if method_name.startswith("_"):
             continue
+        if method_name not in value.__dict__:
+            continue
         if inspect.isroutine(method):
             errors.extend(_check_callable(f"{name}.{method_name}", method))
     return errors

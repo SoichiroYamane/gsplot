@@ -46,6 +46,7 @@ def test_root_exposes_only_the_canonical_manifest_and_native_objects(tmp_path) -
         "build_info",
         "use_backend",
         "Config",
+        "AxesDict",
         "AxisSpec",
         "Theme",
         "InsetSpec",

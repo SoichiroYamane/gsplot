@@ -133,6 +133,7 @@ _CANONICAL_EXPORTS: Final[dict[str, tuple[str, str]]] = {
     "TickSpec": ("gsplot._core.types", "TickSpec"),
     "LabelRecord": ("gsplot._core.types", "LabelRecord"),
     "LabelRecords": ("gsplot._core.types", "LabelRecords"),
+    "AxesDict": ("gsplot._core.types", "AxesDict"),
 }
 
 LEGACY_ALL: Final[tuple[str, ...]] = (
