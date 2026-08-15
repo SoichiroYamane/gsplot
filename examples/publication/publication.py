@@ -41,8 +41,7 @@ def main() -> None:
     gap = read("gap", "Gapeq_", NAMES)
     hs = read("heat_capacity", "C_", NAMES)
     ys = read("yosida", "Y(T)_", EVEN)
-    fig, ax = gs.subplots("ABC", size=(8.3, 2.85))
-    fig.get_layout_engine().set(wspace=0.08)  # type: ignore[union-attr]
+    fig, ax = gs.subplots("ABC", size=(8.3, 2.85), xspace=0.08)
     sq = gs.inset(
         ax["B"],
         (0.22, 0.64, 0.36, 0.30),

@@ -21,14 +21,14 @@
       "source": "main commit 782117f:demo/4_paper_plot/paper_plot.py"
     },
     "final_example": {
-      "comment_free_chars": 2172,
-      "comment_free_lines": 64,
-      "executable_chars": 2038,
-      "executable_lines": 62,
+      "comment_free_chars": 2141,
+      "comment_free_lines": 63,
+      "executable_chars": 2007,
+      "executable_lines": 61,
       "gsplot_calls": 11,
-      "lexical_chars": 1618,
+      "lexical_chars": 1590,
       "path": "examples/publication/publication.py",
-      "physical_lines": 74
+      "physical_lines": 73
     },
     "selected_tuple_prototype": {
       "comment_free_chars": 2323,

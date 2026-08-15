@@ -21,7 +21,7 @@ after successful output; the script then closes its explicitly owned Figure.
 Sphinx regenerates both ignored build products in a fresh headless subprocess
 and rejects missing or stale outputs.
 
-The complete example is 74 physical lines, 62 executable lines, 2038
+The complete example is 73 physical lines, 61 executable lines, 2007
 executable characters, and 11 gsplot calls. It retains the reviewed scientific
 content while staying within the tracked source budgets.
 
