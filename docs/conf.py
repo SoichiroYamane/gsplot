@@ -232,6 +232,7 @@ channel_label = (
 )
 
 html_show_sphinx = False
+html_favicon = "_static/logo/logo_gsplot.svg"
 html_theme = "pydata_sphinx_theme"
 html_context = {
     "github_user": "SoichiroYamane",
