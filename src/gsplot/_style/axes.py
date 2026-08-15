@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import inspect
 from collections.abc import Mapping, Sequence
-from typing import Any, Literal, get_type_hints, overload
+from typing import Any, Literal, cast, get_type_hints, overload
 
 import numpy as np
 from matplotlib.axes import Axes
@@ -16,12 +16,14 @@ from .._core.options import MISSING
 from .._core.plans import TargetPlan
 from .._core.targets import normalize_axes, resolve_target_mapping
 from .._core.types import (
+    _SCALES,
     AxesTarget,
     AxisSpec,
     LabelRecords,
     Limit,
     Scale,
     TickSpec,
+    _limits,
 )
 from .._core.validation import ensure_bool, ensure_finite_real, ensure_positive
 
@@ -378,6 +380,36 @@ def box_aspect(target: AxesTarget, aspect: float | None) -> None:
         item.set_box_aspect(aspect)
 
 
+def _parse_limit_and_scale(
+    value: Any, default_scale: Scale, name: str
+) -> tuple[tuple[float, float] | None, Scale]:
+    """Parse a limit field which can be None, a scale string, a 2-tuple (min, max), or a 3-tuple (min, max, scale)."""
+
+    if value is None or value is MISSING:
+        return None, default_scale
+    if isinstance(value, str):
+        if value in _SCALES:
+            return None, cast(Scale, value)
+        if value == "*":
+            return None, default_scale
+        raise LayoutError(
+            f"{name} string must be a scale: {', '.join(sorted(_SCALES))}"
+        )
+    if isinstance(value, Sequence) and not isinstance(value, (str, bytes)):
+        items = tuple(value)
+        if len(items) == 2:
+            return _limits(items, name), default_scale
+        if len(items) == 3:
+            scale_val = items[2]
+            if not isinstance(scale_val, str) or scale_val not in _SCALES:
+                raise LayoutError(
+                    f"{name} scale must be one of: {', '.join(sorted(_SCALES))}"
+                )
+            return _limits((items[0], items[1]), name), cast(Scale, scale_val)
+        raise LayoutError(f"{name} must contain two limits or two limits with a scale")
+    raise LayoutError(f"{name} must be a limit sequence or scale string")
+
+
 def _record_spec(
     value: Any,
     *,
@@ -403,15 +435,21 @@ def _record_spec(
         raise LayoutError(f"label: {name} must be a two- or four-field record")
     if not isinstance(fields[0], str) or not isinstance(fields[1], str):
         raise LayoutError(f"label: {name} labels must be strings")
-    record_xlim = None if len(fields) == 2 else fields[2]
-    record_ylim = None if len(fields) == 2 else fields[3]
+    raw_xlim = None if len(fields) == 2 else fields[2]
+    raw_ylim = None if len(fields) == 2 else fields[3]
+    record_xlim, record_xscale = _parse_limit_and_scale(
+        raw_xlim, xscale, f"label: {name} xlim"
+    )
+    record_ylim, record_yscale = _parse_limit_and_scale(
+        raw_ylim, yscale, f"label: {name} ylim"
+    )
     return AxisSpec(
         xlabel=fields[0],
         ylabel=fields[1],
         xlim=record_xlim,
         ylim=record_ylim,
-        xscale=xscale,
-        yscale=yscale,
+        xscale=record_xscale,
+        yscale=record_yscale,
         xticks=None if xticks is None else tuple(xticks),
         yticks=None if yticks is None else tuple(yticks),
         xminor=xminor,
@@ -478,13 +516,15 @@ def _label_specs(
         selected_ylabel = "" if ylabel is MISSING else ylabel
         if not isinstance(selected_ylabel, str):
             raise LayoutError("label: ylabel must be a string")
+        direct_xlim, direct_xscale = _parse_limit_and_scale(xlim, xscale, "label: xlim")
+        direct_ylim, direct_yscale = _parse_limit_and_scale(ylim, yscale, "label: ylim")
         spec = AxisSpec(
             xlabel=xlabel,
             ylabel=selected_ylabel,
-            xlim=None if xlim is MISSING else xlim,
-            ylim=None if ylim is MISSING else ylim,
-            xscale=xscale,
-            yscale=yscale,
+            xlim=direct_xlim,
+            ylim=direct_ylim,
+            xscale=direct_xscale,
+            yscale=direct_yscale,
             xticks=xticks,
             yticks=yticks,
             xminor=selected_xminor,

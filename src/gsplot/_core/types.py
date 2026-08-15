@@ -279,6 +279,8 @@ def _limits(value: Any, name: str) -> tuple[float, float] | None:
     if value is None:
         return None
     if isinstance(value, (str, bytes)):
+        if value == "*":
+            return None
         raise LayoutError(f"{name} must contain exactly two finite values")
     try:
         values = tuple(value)
@@ -286,6 +288,8 @@ def _limits(value: Any, name: str) -> tuple[float, float] | None:
         raise LayoutError(f"{name} must contain exactly two finite values") from exc
     if len(values) != 2:
         raise LayoutError(f"{name} must contain exactly two finite values")
+    if values[0] in (None, "*") and values[1] in (None, "*"):
+        return None
     result = (
         _finite(values[0], f"{name}[0]", LayoutError),
         _finite(values[1], f"{name}[1]", LayoutError),
