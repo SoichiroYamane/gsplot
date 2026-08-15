@@ -220,6 +220,7 @@ def test_subplots_live_mode_reuses_and_clears_active_figure() -> None:
     fig1, ax1 = subplots(live=True)
     assert plt.isinteractive()
     assert len(fig1.axes) == 1
+    assert all(t._tickdir == "in" for t in ax1.xaxis.majorTicks)
     original_fignum = fig1.number
 
     # Second call reuses the active figure and clears it for the new mosaic layout
@@ -228,12 +229,16 @@ def test_subplots_live_mode_reuses_and_clears_active_figure() -> None:
     assert fig2.number == original_fignum
     assert len(fig2.axes) == 2
     assert tuple(axes2) == ("A", "B")
+    # Verified that paper styling (tick direction 'in') is reapplied on cleared reuse
+    assert all(t._tickdir == "in" for t in axes2["A"].xaxis.majorTicks)
+    assert all(t._tickdir == "in" for t in axes2["B"].xaxis.majorTicks)
 
     # Explicit fig combined with live=True reuses that explicit figure
     custom_fig = plt.figure()
     fig3, axes3 = subplots("A", fig=custom_fig, live=True)
     assert fig3 is custom_fig
     assert len(fig3.axes) == 1
+    assert all(t._tickdir == "in" for t in axes3["A"].xaxis.majorTicks)
 
     plt.close("all")
 

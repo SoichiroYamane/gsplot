@@ -690,13 +690,12 @@ def subplots(
     axes = _create_axes(target, shape_plan, options)
     if not new_figure and options["layout"] in {"tight", "constrained"}:
         target.set_layout_engine(options["layout"])
-    selected_style = (
-        "paper" if new_figure and options["style"] == "auto" else options["style"]
-    )
-    if selected_style == "paper":
+    apply_paper = (
+        (new_figure or selected_clear) and options["style"] == "auto"
+    ) or options["style"] == "paper"
+    if apply_paper:
         paper(cast(Any, axes))
-        if new_figure:
-            target.set_facecolor("white")
+        target.set_facecolor("white")
     if is_live:
         import matplotlib.pyplot as plt
 
