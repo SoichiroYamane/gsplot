@@ -221,3 +221,51 @@ def test_generated_index_labels_continue_bijectively_after_z() -> None:
         assert texts[27].get_text() == "(ab)"
     finally:
         plt.close(figure)
+
+
+def test_label_supports_three_item_limit_tuples_and_scale_strings() -> None:
+    """Label records accept 3-item tuples (min, max, scale) and scale strings."""
+
+    figure, axes = plt.subplots(1, 2)
+    try:
+        # Panel 0: linear limits, Panel 1: yscale="log" with (1e-2, 3, "log")
+        label(
+            axes,
+            (
+                (r"$T/T_c$", r"$\Delta_0(T)/k_BT_c$", (0, 1.2), (0, 3)),
+                (r"$T/T_c$", r"$C_s/C_n$", None, (1e-2, 3, "log")),
+            ),
+        )
+        assert axes[0].get_xlabel() == r"$T/T_c$"
+        assert axes[0].get_ylabel() == r"$\Delta_0(T)/k_BT_c$"
+        assert axes[0].get_xlim() == (0.0, 1.2)
+        assert axes[0].get_ylim() == (0.0, 3.0)
+        assert axes[0].get_xscale() == "linear"
+        assert axes[0].get_yscale() == "linear"
+
+        assert axes[1].get_xlabel() == r"$T/T_c$"
+        assert axes[1].get_ylabel() == r"$C_s/C_n$"
+        assert axes[1].get_ylim() == (0.01, 3.0)
+        assert axes[1].get_xscale() == "linear"
+        assert axes[1].get_yscale() == "log"
+
+        # Direct argument form with scale string or 3-item tuple
+        label(axes[0], "time", "count", xlim=(1, 100, "log"), ylim="log")
+        assert axes[0].get_xscale() == "log"
+        assert axes[0].get_xlim() == (1.0, 100.0)
+        assert axes[0].get_yscale() == "log"
+
+        # Wildcard limits with scale
+        label(axes[1], "x", "y", xlim=("*", "*", "linear"), ylim=(None, None, "linear"))
+        assert axes[1].get_xscale() == "linear"
+        assert axes[1].get_yscale() == "linear"
+
+        # Invalid scale raises LayoutError
+        with pytest.raises(LayoutError, match="scale"):
+            label(axes[0], [("x", "y", (0, 1), (0, 1, "invalid"))])
+
+        # Invalid length raises LayoutError
+        with pytest.raises(LayoutError, match="must contain two limits"):
+            label(axes[0], [("x", "y", (0, 1), (0, 1, 2, 3))])
+    finally:
+        plt.close(figure)
