@@ -698,7 +698,14 @@ def subplots(
         if new_figure:
             target.set_facecolor("white")
     if is_live:
+        import matplotlib.pyplot as plt
+
+        if not plt.isinteractive():
+            plt.ion()
         try:
+            manager = getattr(target.canvas, "manager", None)
+            if manager is not None:
+                manager.show()
             target.canvas.draw_idle()
         except Exception:
             pass

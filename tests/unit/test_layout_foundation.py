@@ -216,7 +216,9 @@ def test_subplots_live_mode_reuses_and_clears_active_figure() -> None:
     """live=True automatically reuses the active figure and clears axes."""
 
     plt.close("all")
+    plt.ioff()
     fig1, ax1 = subplots(live=True)
+    assert plt.isinteractive()
     assert len(fig1.axes) == 1
     original_fignum = fig1.number
 
