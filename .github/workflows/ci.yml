@@ -61,6 +61,7 @@ jobs:
         run: |
           poetry run mypy --config-file .mypy.ini src/gsplot
           poetry run pyright src/gsplot
+          poetry run pyright examples
 
   documentation:
     name: documentation

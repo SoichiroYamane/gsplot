@@ -461,6 +461,7 @@ poetry run isort --profile black --check-only src/gsplot tests examples tools/ma
 # Types and syntax
 poetry run mypy --config-file .mypy.ini src/gsplot
 poetry run pyright src/gsplot
+poetry run pyright examples
 python -m compileall -q src/gsplot tests examples tools/maintenance
 PYTHONPATH=src poetry run python tools/maintenance/check_architecture.py
 PYTHONPATH=src poetry run python tools/maintenance/check_docstrings.py
