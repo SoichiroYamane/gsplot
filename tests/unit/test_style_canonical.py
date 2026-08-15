@@ -31,7 +31,7 @@ def test_explicit_inset_and_axes_styling() -> None:
     minor_ticks(second, False, axis="both")
     box_aspect([first, second], 1)
     assert first.get_box_aspect() == 1
-    with pytest.raises(LayoutError):
+    with pytest.raises((LayoutError, PlotError)):
         style_axes([first, object()], AxisSpec(xlabel="must not apply"))  # type: ignore[list-item]
     assert first.get_xlabel() == "time"
     plt.close(figure)
@@ -71,7 +71,7 @@ def test_rendered_panel_label_locations_require_one_figure() -> None:
         assert all(text.get_transform() is figure.transFigure for text in outside)
         with pytest.raises(LayoutError, match="loc"):
             panel_labels(tuple(axes), loc="left")
-        with pytest.raises(LayoutError, match="one Figure"):
+        with pytest.raises((LayoutError, PlotError), match="one Figure"):
             panel_labels((axes[0], other_axis), loc="in")
     finally:
         plt.close(figure)
@@ -161,3 +161,57 @@ def test_paper_validates_every_axis_before_mutating_any_axis() -> None:
     with pytest.raises(PlotError, match="cycle"):
         paper(first, cycle=1)  # type: ignore[arg-type]
     plt.close(figure)
+
+
+def test_canonical_axes_collection_target_validation() -> None:
+    """Canonical Axes collection helpers reject invalid, duplicate, or cross-Figure targets."""
+
+    figure_a, ax_a = plt.subplots()
+    figure_b, ax_b = plt.subplots()
+    spec = AxisSpec(xlabel="x")
+
+    try:
+        # style_axes
+        with pytest.raises(PlotError, match="at least one Axes"):
+            style_axes((), spec)
+        with pytest.raises(PlotError, match="duplicate Axes"):
+            style_axes((ax_a, ax_a), spec)
+        with pytest.raises(PlotError, match="belong to one Figure"):
+            style_axes((ax_a, ax_b), spec)
+        with pytest.raises(PlotError, match="non-Axes value"):
+            style_axes((ax_a, 123), spec)  # type: ignore[arg-type]
+
+        # minor_ticks
+        with pytest.raises(PlotError, match="at least one Axes"):
+            minor_ticks((), True)
+        with pytest.raises(PlotError, match="duplicate Axes"):
+            minor_ticks((ax_a, ax_a), True)
+        with pytest.raises(PlotError, match="belong to one Figure"):
+            minor_ticks((ax_a, ax_b), True)
+
+        # box_aspect
+        with pytest.raises(PlotError, match="at least one Axes"):
+            box_aspect((), 1.0)
+        with pytest.raises(PlotError, match="duplicate Axes"):
+            box_aspect((ax_a, ax_a), 1.0)
+        with pytest.raises(PlotError, match="belong to one Figure"):
+            box_aspect((ax_a, ax_b), 1.0)
+
+        # panel_labels
+        with pytest.raises(PlotError, match="at least one Axes"):
+            panel_labels(())
+        with pytest.raises(PlotError, match="duplicate Axes"):
+            panel_labels((ax_a, ax_a))
+        with pytest.raises(PlotError, match="belong to one Figure"):
+            panel_labels((ax_a, ax_b))
+
+        # legends
+        with pytest.raises(PlotError, match="at least one Axes"):
+            legends(())
+        with pytest.raises(PlotError, match="duplicate Axes"):
+            legends((ax_a, ax_a))
+        with pytest.raises(PlotError, match="belong to one Figure"):
+            legends((ax_a, ax_b))
+    finally:
+        plt.close(figure_a)
+        plt.close(figure_b)
