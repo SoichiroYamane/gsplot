@@ -201,7 +201,7 @@ def _source_members(source_root: Path) -> tuple[dict[str, bytes], list[str]]:
         if path.is_symlink():
             errors.append(f"package source must not be a symlink: gsplot/{relative}")
             continue
-        if path.suffix != ".py" and relative != "py.typed":
+        if path.suffix not in {".py", ".pyi"} and relative != "py.typed":
             errors.append(f"unsupported package source file: gsplot/{relative}")
             continue
         result[f"gsplot/{relative}"] = path.read_bytes()

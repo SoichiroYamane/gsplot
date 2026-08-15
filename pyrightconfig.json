@@ -1,3 +1,4 @@
 {
+  "extraPaths": ["src"],
   "reportUnsupportedDunderAll": "none"
 }
