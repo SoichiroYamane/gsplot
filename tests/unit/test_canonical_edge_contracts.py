@@ -224,7 +224,8 @@ def test_legend_and_theme_operations_keep_state_local() -> None:
         assert created[0] in axis.get_children()
         with pytest.raises(PlotError):
             gs.legend(object())  # type: ignore[arg-type]
-        assert gs.legends([]) == ()
+        with pytest.raises(PlotError):
+            gs.legends([])
         entries = gs.legend_entries(axis)
         assert entries.labels == ("one",)
         gs.set_theme(figure, gs.Theme.transparent())

@@ -60,22 +60,6 @@ class _RendererCanvas(Protocol):
         ...
 
 
-def _panel_targets(target: Sequence[Axes] | Mapping[str, Axes]) -> tuple[Axes, ...]:
-    """Validate the ordered panel target required by the API."""
-
-    if isinstance(target, Mapping):
-        axes = tuple(target.values())
-    elif isinstance(target, np.ndarray):
-        axes = tuple(target.flat)
-    elif isinstance(target, Sequence) and not isinstance(target, (str, bytes)):
-        axes = tuple(target)
-    else:
-        raise LayoutError("target must be an Axes sequence or mapping")
-    if not axes or any(not isinstance(axis, Axes) for axis in axes):
-        raise LayoutError("target must contain at least one Matplotlib Axes")
-    return axes
-
-
 def _label_for_index(index: int) -> str:
     """Return A..Z, AA.. deterministic panel labels."""
 
@@ -286,7 +270,7 @@ index.__annotations__ = get_type_hints(_index_signature)
 
 
 def panel_labels(
-    target: Sequence[Axes] | Mapping[str, Axes],
+    target: AxesTarget,
     labels: Sequence[str] | None = None,
     *,
     loc: str = "corner",
@@ -328,7 +312,8 @@ def panel_labels(
     >>> figure.clear()
     """
 
-    axes = _panel_targets(target)
+    target_plan = normalize_axes(target, operation="panel_labels")
+    axes = target_plan.axes
     if loc not in {"corner", "in", "out"}:
         raise LayoutError("loc must be 'corner', 'in', or 'out'")
     if labels is None:
@@ -357,11 +342,7 @@ def panel_labels(
         ]
         return tuple(texts)
 
-    figure = axes[0].figure
-    if not isinstance(figure, Figure) or any(
-        axis.figure is not figure for axis in axes
-    ):
-        raise LayoutError("rendered panel labels require Axes from one Figure")
+    figure = target_plan.figure
     figure.canvas.draw()
     renderer = cast(_RendererCanvas, figure.canvas).get_renderer()
     width, height = figure.bbox.width, figure.bbox.height

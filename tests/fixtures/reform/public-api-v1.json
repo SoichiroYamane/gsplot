@@ -1649,7 +1649,7 @@
       "call_contract": {
         "parameters": [
           {
-            "annotation": "'Sequence[Axes] | Mapping[str, Axes]'",
+            "annotation": "'AxesTarget'",
             "default": null,
             "kind": "POSITIONAL_OR_KEYWORD",
             "name": "target",
@@ -1687,7 +1687,7 @@
       "module": "gsplot._style.panels",
       "name": "panel_labels",
       "qualname": "panel_labels",
-      "signature": "(target: 'Sequence[Axes] | Mapping[str, Axes]', labels: 'Sequence[str] | None' = None, *, loc: 'str' = 'corner', props: 'Mapping[str, Any] | None' = None) -> 'tuple[Text, ...]'"
+      "signature": "(target: 'AxesTarget', labels: 'Sequence[str] | None' = None, *, loc: 'str' = 'corner', props: 'Mapping[str, Any] | None' = None) -> 'tuple[Text, ...]'"
     },
     {
       "call_contract": {

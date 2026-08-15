@@ -22,7 +22,6 @@ from .._core.plans import TargetPlan
 from .._core.targets import normalize_axes, resolve_target_mapping
 from .._core.types import AxesTarget, LegendEntries, NormalizeSpec
 from .._core.validation import ensure_bool, ensure_nonnegative
-from .axes import axes_targets
 
 _LEGEND_PROPS = frozenset(
     {
@@ -449,9 +448,10 @@ def legends(
         raise LayoutError("replace must be a boolean")
     selected_props = _props(props, "legends")
     if isinstance(target, Figure):
-        axes = tuple(target.axes)
+        target_plan = normalize_axes(tuple(target.axes), operation="legends")
     else:
-        axes = axes_targets(target)
+        target_plan = normalize_axes(target, operation="legends")
+    axes = target_plan.axes
     entries: list[tuple[Axes, tuple[Any, ...], tuple[str, ...], tuple[Legend, ...]]] = (
         []
     )

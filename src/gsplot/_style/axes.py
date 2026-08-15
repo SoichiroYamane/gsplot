@@ -59,20 +59,7 @@ _TITLE_PROPS = _TEXT_PROPS | {"bbox", "fontdict", "loc", "pad", "y"}
 def axes_targets(target: AxesTarget) -> tuple[Axes, ...]:
     """Validate and normalize an explicit Axes target collection."""
 
-    values: tuple[Axes, ...]
-    if isinstance(target, Axes):
-        values = (target,)
-    elif isinstance(target, Mapping):
-        values = tuple(target.values())
-    elif isinstance(target, np.ndarray):
-        values = tuple(target.flat)
-    elif isinstance(target, Sequence) and not isinstance(target, (str, bytes)):
-        values = tuple(target)
-    else:
-        raise LayoutError("target must be an Axes or an Axes sequence/mapping")
-    if any(not isinstance(axis, Axes) for axis in values):
-        raise LayoutError("target contains a non-Matplotlib Axes")
-    return values
+    return normalize_axes(target, operation="style").axes
 
 
 def _validate_props(
@@ -160,10 +147,10 @@ def style_axes(target: AxesTarget, spec: AxisSpec) -> None:
 
     if not isinstance(spec, AxisSpec):
         raise LayoutError("spec must be a gsplot AxisSpec")
-    axes = axes_targets(target)
-    for axis in axes:
+    target_plan = normalize_axes(target, operation="style_axes")
+    for axis in target_plan.axes:
         _validate_scale_domain(axis, spec)
-    for axis in axes:
+    for axis in target_plan.axes:
         _apply_axis_spec(axis, spec)
 
 
@@ -329,8 +316,8 @@ def minor_ticks(
         raise LayoutError("enabled must be a boolean")
     if axis not in {"x", "y", "both"}:
         raise LayoutError("axis must be 'x', 'y', or 'both'")
-    axes = axes_targets(target)
-    for item in axes:
+    target_plan = normalize_axes(target, operation="minor_ticks")
+    for item in target_plan.axes:
         if axis in {"x", "both"}:
             _set_minor(item, enabled, "x")
         if axis in {"y", "both"}:
@@ -375,8 +362,8 @@ def box_aspect(target: AxesTarget, aspect: float | None) -> None:
         if not np.isfinite(value) or value <= 0:
             raise LayoutError("aspect must be positive or None")
         aspect = value
-    axes = axes_targets(target)
-    for item in axes:
+    target_plan = normalize_axes(target, operation="box_aspect")
+    for item in target_plan.axes:
         item.set_box_aspect(aspect)
 
 
