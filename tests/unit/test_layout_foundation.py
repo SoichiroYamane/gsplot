@@ -338,3 +338,25 @@ def test_subplots_padding_and_spacing_options() -> None:
     # 6. Conflicting alias values raise LayoutError
     with pytest.raises(LayoutError, match="cannot both be supplied"):
         subplots("AB", xpad=0.1, w_pad=0.2)
+
+
+def test_subplots_live_mode_resets_layout_engine_parameters() -> None:
+    """Reusing an active Figure in live mode resets layout engine parameters cleanly."""
+
+    plt.close("all")
+    plt.ioff()
+
+    # Call 1: Set custom xpad=1.0
+    fig1, _ = subplots("AB", live=True, size=(10, 5), xpad=1.0)
+    engine1 = fig1.get_layout_engine()
+    assert getattr(engine1, "_params", {})["w_pad"] == 1.0
+
+    # Call 2: Omit xpad; should reset to Matplotlib's default (~3/72 in) instead of 1.0
+    fig2, _ = subplots("AB", live=True, size=(10, 5))
+    assert fig2 is fig1
+    engine2 = fig2.get_layout_engine()
+    w_pad_default = getattr(engine2, "_params", {})["w_pad"]
+    assert w_pad_default == pytest.approx(3 / 72, rel=1e-2)
+    assert w_pad_default != 1.0
+
+    plt.close("all")
