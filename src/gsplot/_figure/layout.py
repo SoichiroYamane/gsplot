@@ -18,6 +18,7 @@ from .._core.errors import ConfigError, LayoutError
 from .._core.options import MISSING, OptionSpec, bind_options, supplied_options
 from .._core.plans import OptionPlan
 from .._core.types import (
+    AxesDict,
     LayoutMode,
     MosaicSpec,
     SizeSpec,
@@ -28,7 +29,7 @@ from .._core.validation import ensure_bool, ensure_finite_real, ensure_pair
 from .._style.paper import paper
 from .backend import use_backend
 
-AxesContainer = Axes | NDArray[Any] | dict[str, Axes]
+AxesContainer = Axes | NDArray[Any] | AxesDict | dict[str, Axes]
 ShareMode = bool | Literal["none", "all", "row", "col"]
 
 _UNIT_TO_INCH = {"in": 1.0, "cm": 1 / 2.54, "mm": 1 / 25.4, "pt": 1 / 72.0}
@@ -519,17 +520,15 @@ def _create_axes(
 
     kwargs = dict(options["subplot_kw"] or {})
     if shape.mosaic is not None:
-        return cast(
-            dict[str, Axes],
-            figure.subplot_mosaic(
-                cast(Any, shape.mosaic),
-                sharex=cast(bool, _matplotlib_share(options["sharex"], mosaic=True)),
-                sharey=cast(bool, _matplotlib_share(options["sharey"], mosaic=True)),
-                width_ratios=options["width_ratios"],
-                height_ratios=options["height_ratios"],
-                subplot_kw=kwargs,
-            ),
+        created = figure.subplot_mosaic(
+            cast(Any, shape.mosaic),
+            sharex=cast(bool, _matplotlib_share(options["sharex"], mosaic=True)),
+            sharey=cast(bool, _matplotlib_share(options["sharey"], mosaic=True)),
+            width_ratios=options["width_ratios"],
+            height_ratios=options["height_ratios"],
+            subplot_kw=kwargs,
         )
+        return AxesDict(created)
     return cast(
         AxesContainer,
         figure.subplots(
@@ -570,7 +569,7 @@ def subplots(
     figsize: tuple[float, float] | None = None,
     tight_layout: bool | None = None,
     constrained_layout: bool | None = None,
-) -> tuple[Figure, dict[str, Axes]]: ...
+) -> tuple[Figure, AxesDict]: ...
 
 
 @overload
@@ -596,7 +595,7 @@ def subplots(
     figsize: tuple[float, float] | None = None,
     tight_layout: bool | None = None,
     constrained_layout: bool | None = None,
-) -> tuple[Figure, dict[str, Axes]]: ...
+) -> tuple[Figure, AxesDict]: ...
 
 
 @overload

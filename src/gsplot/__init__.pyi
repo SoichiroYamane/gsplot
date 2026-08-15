@@ -11,6 +11,7 @@ from ._core.errors import LayoutError as LayoutError
 from ._core.errors import MetadataError as MetadataError
 from ._core.errors import OutputError as OutputError
 from ._core.errors import PlotError as PlotError
+from ._core.types import AxesDict as AxesDict
 from ._core.types import AxesTarget as AxesTarget
 from ._core.types import AxisSpec as AxisSpec
 from ._core.types import BuildInfo as BuildInfo
@@ -164,6 +165,7 @@ __all__ = [
     "MosaicSpec",
     "NormalizeSpec",
     "ColorSpec",
+    "AxesDict",
     "AxesTarget",
     "PerTarget",
     "LineStyle",

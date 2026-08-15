@@ -32,6 +32,7 @@ if TYPE_CHECKING:
         PlotError,
     )
     from ._core.types import (
+        AxesDict,
         AxesTarget,
         AxisSpec,
         BuildInfo,
@@ -174,6 +175,7 @@ __all__ = [
     "MosaicSpec",
     "NormalizeSpec",
     "ColorSpec",
+    "AxesDict",
     "AxesTarget",
     "PerTarget",
     "LineStyle",

@@ -7,7 +7,7 @@ import re
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
 from types import MappingProxyType
-from typing import Any, Literal, Protocol, TypeAlias, cast
+from typing import Any, Literal, Protocol, TypeAlias, cast, overload
 
 from matplotlib.artist import Artist
 from matplotlib.axes import Axes
@@ -834,7 +834,50 @@ class LegendEntries:
         object.__setattr__(self, "handler_map", MappingProxyType(handler_map))
 
 
+class AxesDict(dict[str, Axes]):
+    """A dictionary of mosaic Axes supporting both label and integer index access.
+
+    Parameters
+    ----------
+    *args, **kwargs
+        Dictionary initialization mapping label strings to Matplotlib Axes.
+
+    Examples
+    --------
+    >>> import gsplot as gs
+    >>> figure, axes = gs.subplots("AB")
+    >>> isinstance(axes, gs.AxesDict)
+    True
+    >>> axes["A"] is axes[0]
+    True
+    >>> figure.clear()
+    """
+
+    @overload
+    def __getitem__(self, key: str) -> Axes: ...
+
+    @overload
+    def __getitem__(self, key: int) -> Axes: ...
+
+    @overload
+    def __getitem__(self, key: slice) -> list[Axes]: ...
+
+    def __getitem__(self, key: str | int | slice) -> Any:
+        """Return an Axes by label key, integer position, or slice."""
+        if isinstance(key, int):
+            try:
+                return list(self.values())[key]
+            except IndexError as exc:
+                raise IndexError(
+                    f"AxesDict index {key} out of range (length {len(self)})"
+                ) from exc
+        if isinstance(key, slice):
+            return list(self.values())[key]
+        return super().__getitem__(key)
+
+
 __all__ = [
+    "AxesDict",
     "RGBColor",
     "ColorSpec",
     "MosaicSpec",
