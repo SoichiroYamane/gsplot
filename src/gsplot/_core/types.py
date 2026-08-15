@@ -25,9 +25,9 @@ ColorSpec: TypeAlias = str | RGBColor
 # Public type alias: MosaicSpec; a Matplotlib mosaic string or label rows.
 MosaicSpec: TypeAlias = str | Sequence[Sequence[str | None]]
 # Public type alias: AxesTarget; one Axes or a deterministic finite collection.
-AxesTarget: TypeAlias = Axes | Sequence[Axes] | Mapping[object, Axes] | NDArray[Any]
+AxesTarget: TypeAlias = Axes | Sequence[Axes] | Mapping[Any, Axes] | NDArray[Any]
 # Public type alias: PerTarget; ordered or exact-key per-target values.
-PerTarget: TypeAlias = Sequence[Any] | Mapping[object, Any]
+PerTarget: TypeAlias = Sequence[Any] | Mapping[Any, Any]
 # Public type alias: LineStyle; a named style or finite dash-tuple form.
 LineStyle: TypeAlias = LineStyleType
 # Public type alias: Marker; an input accepted by Matplotlib MarkerStyle.
@@ -51,9 +51,9 @@ Scale: TypeAlias = Literal["linear", "log", "symlog", "logit"]
 # Public type alias: TickSpec; finite numeric tick locations after validation.
 TickSpec: TypeAlias = Sequence[float]
 # Public type alias: LabelRecord; concise labels with optional axis limits.
-LabelRecord: TypeAlias = tuple[str, str] | tuple[str, str, Limit | None, Limit | None]
+LabelRecord: TypeAlias = tuple[str, str] | tuple[str, str, Any, Any] | Sequence[Any]
 # Public type alias: LabelRecords; ordered or exact-key per-target label records.
-LabelRecords: TypeAlias = Sequence[LabelRecord] | Mapping[object, LabelRecord]
+LabelRecords: TypeAlias = Sequence[LabelRecord] | Mapping[Any, LabelRecord]
 
 _PUBLIC_TYPE_ALIAS_DOCS = MappingProxyType(
     {

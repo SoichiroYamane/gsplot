@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from collections.abc import Mapping, Sequence
 from os import PathLike
-from typing import Any, Literal, cast
+from typing import Any, Literal, cast, overload
 
 import numpy as np
 from numpy.typing import DTypeLike, NDArray
@@ -152,6 +152,36 @@ def _usecols(value: Any) -> int | tuple[int, ...] | None:
     if not selected or any(type(item) is not int for item in selected):
         raise DataError("read: usecols must contain one or more integers")
     return cast(tuple[int, ...], selected)
+
+
+@overload
+def read(
+    path: str | PathLike[str],
+    *,
+    loader: Literal["genfromtxt", "loadtxt"] = "genfromtxt",
+    delimiter: str | None = ",",
+    comments: str | None = "#",
+    skip_header: int = 0,
+    usecols: int | Sequence[int] | None = None,
+    unpack: Literal[False],
+    ndmin: Literal[0, 1, 2] = 1,
+    dtype: DTypeLike = float,
+) -> NDArray[Any]: ...
+
+
+@overload
+def read(
+    path: str | PathLike[str],
+    *,
+    loader: Literal["genfromtxt", "loadtxt"] = "genfromtxt",
+    delimiter: str | None = ",",
+    comments: str | None = "#",
+    skip_header: int = 0,
+    usecols: int | Sequence[int] | None = None,
+    unpack: bool = True,
+    ndmin: Literal[0, 1, 2] = 1,
+    dtype: DTypeLike = float,
+) -> Any: ...
 
 
 def read(

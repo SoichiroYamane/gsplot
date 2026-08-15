@@ -42,7 +42,7 @@ def main() -> None:
     hs = read("heat_capacity", "C_", NAMES)
     ys = read("yosida", "Y(T)_", EVEN)
     fig, ax = gs.subplots("ABC", size=(8.3, 2.85))
-    fig.get_layout_engine().set(wspace=0.08)
+    fig.get_layout_engine().set(wspace=0.08)  # type: ignore[union-attr]
     sq = gs.inset(
         ax["B"],
         (0.22, 0.64, 0.36, 0.30),
