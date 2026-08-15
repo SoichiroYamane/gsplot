@@ -6,7 +6,7 @@ import inspect
 import warnings
 from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass
-from typing import Any, Literal, cast
+from typing import Any, Literal, cast, overload
 
 import numpy as np
 from matplotlib.axes import Axes
@@ -543,6 +543,86 @@ def _create_axes(
             subplot_kw=kwargs,
         ),
     )
+
+
+@overload
+def subplots(
+    shape: str | Sequence[Sequence[str | None]],
+    /,
+    *,
+    nrows: None = None,
+    ncols: None = None,
+    mosaic: None = None,
+    size: SizeSpec = "auto",
+    unit: Unit = "in",
+    sharex: ShareMode = False,
+    sharey: ShareMode = False,
+    squeeze: bool = True,
+    width_ratios: Sequence[float] | None = None,
+    height_ratios: Sequence[float] | None = None,
+    subplot_kw: Mapping[str, Any] | None = None,
+    fig: Figure | None = None,
+    clear: bool = False,
+    live: bool = False,
+    layout: LayoutMode = "auto",
+    style: StyleMode = "auto",
+    config: Config | None = None,
+    figsize: tuple[float, float] | None = None,
+    tight_layout: bool | None = None,
+    constrained_layout: bool | None = None,
+) -> tuple[Figure, dict[str, Axes]]: ...
+
+
+@overload
+def subplots(
+    *,
+    mosaic: MosaicSpec,
+    nrows: None = None,
+    ncols: None = None,
+    size: SizeSpec = "auto",
+    unit: Unit = "in",
+    sharex: ShareMode = False,
+    sharey: ShareMode = False,
+    squeeze: bool = True,
+    width_ratios: Sequence[float] | None = None,
+    height_ratios: Sequence[float] | None = None,
+    subplot_kw: Mapping[str, Any] | None = None,
+    fig: Figure | None = None,
+    clear: bool = False,
+    live: bool = False,
+    layout: LayoutMode = "auto",
+    style: StyleMode = "auto",
+    config: Config | None = None,
+    figsize: tuple[float, float] | None = None,
+    tight_layout: bool | None = None,
+    constrained_layout: bool | None = None,
+) -> tuple[Figure, dict[str, Axes]]: ...
+
+
+@overload
+def subplots(
+    *shape: int | MosaicSpec,
+    nrows: int | None = None,
+    ncols: int | None = None,
+    mosaic: MosaicSpec | None = None,
+    size: SizeSpec = "auto",
+    unit: Unit = "in",
+    sharex: ShareMode = False,
+    sharey: ShareMode = False,
+    squeeze: bool = True,
+    width_ratios: Sequence[float] | None = None,
+    height_ratios: Sequence[float] | None = None,
+    subplot_kw: Mapping[str, Any] | None = None,
+    fig: Figure | None = None,
+    clear: bool = False,
+    live: bool = False,
+    layout: LayoutMode = "auto",
+    style: StyleMode = "auto",
+    config: Config | None = None,
+    figsize: tuple[float, float] | None = None,
+    tight_layout: bool | None = None,
+    constrained_layout: bool | None = None,
+) -> tuple[Figure, AxesContainer]: ...
 
 
 def subplots(

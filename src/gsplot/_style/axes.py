@@ -542,7 +542,7 @@ def label(
 @overload
 def label(
     target: AxesTarget,
-    xlabel: LabelRecords,
+    xlabel: LabelRecords | Sequence[Any],
     *,
     xscale: Scale = "linear",
     yscale: Scale = "linear",

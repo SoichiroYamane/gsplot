@@ -20,7 +20,7 @@ plt.sca(axs[3])
 plt.plot(x, y)
 
 gs.legend(axs[0], loc="lower right")
-gs.label(
+gs.label(  # type: ignore[call-overload]
     [
         # add label without specifying limits
         ["$x_1$", "$y_1$"],
@@ -34,4 +34,4 @@ gs.label(
     minor_ticks_axes=False,
 )
 gs.label_add_index(loc="in")
-gs.show("compatibility")
+gs.show("compatibility")  # type: ignore[call-overload]
