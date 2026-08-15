@@ -14,5 +14,5 @@ t = np.cos(s)
 gs.cmap_scatter(axes["B"], s, t, s, props={"label": "cos(x)", "s": 5})
 
 gs.legend(axes)
-gs.style_axes(axes, gs.AxisSpec(xlabel="x", ylabel="value"))
+gs.label(axes, "x", "value")
 gs.savefig(fig, "scatter", show=False, overwrite=True)

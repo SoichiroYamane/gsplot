@@ -18,5 +18,5 @@ gs.cmap_dash(axs[1, 0], x, y + 1, x, dash=(5, 5))
 gs.scatter(axs[1, 1], x, y)
 gs.cmap_scatter(axs[1, 1], x, y + 1, x)
 
-gs.style_axes(tuple(axs.flat), gs.AxisSpec(xlabel="x", ylabel="y"))
+gs.label(tuple(axs.flat), "x", "y")
 gs.savefig(fig, "subplots", show=False, overwrite=True)

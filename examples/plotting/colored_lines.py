@@ -35,5 +35,5 @@ gs.cmap_dash(
 
 gs.legend(axes["A"])
 gs.legend(axes["B"], loc="upper left")
-gs.style_axes(axes, gs.AxisSpec(xlabel="x", ylabel="y"))
+gs.label(axes, "x", "y")
 gs.savefig(fig, "line_colormap", show=False, overwrite=True)
