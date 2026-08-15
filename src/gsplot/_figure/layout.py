@@ -293,6 +293,33 @@ def _option_spec(
     return OptionSpec(name, default, validator=validator)
 
 
+def _optional_nonnegative_float(value: Any, name: str) -> float | None:
+    """Validate an optional non-negative real scalar."""
+
+    if value is None or value is MISSING:
+        return None
+    val = ensure_finite_real(value, name, error=LayoutError)
+    if val < 0:
+        raise LayoutError(f"{name} must be non-negative")
+    return val
+
+
+def _resolve_alias(primary: Any, alias: Any, primary_name: str, alias_name: str) -> Any:
+    """Resolve an option and its alias while forbidding conflicting definitions."""
+
+    if (
+        primary is not MISSING
+        and alias is not MISSING
+        and primary is not None
+        and alias is not None
+    ):
+        if primary != alias:
+            raise LayoutError(
+                f"{primary_name} and {alias_name} cannot both be supplied with different values"
+            )
+    return primary if (primary is not MISSING and primary is not None) else alias
+
+
 def _resolve_options(
     shape: _ShapePlan,
     *,
@@ -308,6 +335,15 @@ def _resolve_options(
     live: Any,
     layout: Any,
     style: Any,
+    pad: Any = MISSING,
+    xpad: Any = MISSING,
+    ypad: Any = MISSING,
+    xspace: Any = MISSING,
+    yspace: Any = MISSING,
+    w_pad: Any = MISSING,
+    h_pad: Any = MISSING,
+    wspace: Any = MISSING,
+    hspace: Any = MISSING,
     config: Config | None,
     figsize: Any,
     tight_layout: Any,
@@ -328,6 +364,11 @@ def _resolve_options(
             "layout cannot be combined with tight_layout or constrained_layout"
         )
 
+    resolved_xpad = _resolve_alias(xpad, w_pad, "xpad", "w_pad")
+    resolved_ypad = _resolve_alias(ypad, h_pad, "ypad", "h_pad")
+    resolved_xspace = _resolve_alias(xspace, wspace, "xspace", "wspace")
+    resolved_yspace = _resolve_alias(yspace, hspace, "yspace", "hspace")
+
     direct = supplied_options(
         {
             "size": legacy_size if size is MISSING else size,
@@ -342,6 +383,11 @@ def _resolve_options(
             "live": live,
             "layout": legacy_mode if layout is MISSING else layout,
             "style": style,
+            "pad": pad,
+            "xpad": resolved_xpad,
+            "ypad": resolved_ypad,
+            "xspace": resolved_xspace,
+            "yspace": resolved_yspace,
         }
     )
     configured = None
@@ -385,6 +431,11 @@ def _resolve_options(
         ),
         _option_spec("layout", "auto", _layout),
         _option_spec("style", "auto", _style),
+        _option_spec("pad", None, _optional_nonnegative_float),
+        _option_spec("xpad", None, _optional_nonnegative_float),
+        _option_spec("ypad", None, _optional_nonnegative_float),
+        _option_spec("xspace", None, _optional_nonnegative_float),
+        _option_spec("yspace", None, _optional_nonnegative_float),
     )
     plan = bind_options("subplots", specs, explicit=direct, configured=configured)
     if (figsize is not MISSING) or any(
@@ -565,6 +616,15 @@ def subplots(
     live: bool = False,
     layout: LayoutMode = "auto",
     style: StyleMode = "auto",
+    pad: float | None = None,
+    xpad: float | None = None,
+    ypad: float | None = None,
+    xspace: float | None = None,
+    yspace: float | None = None,
+    w_pad: float | None = None,
+    h_pad: float | None = None,
+    wspace: float | None = None,
+    hspace: float | None = None,
     config: Config | None = None,
     figsize: tuple[float, float] | None = None,
     tight_layout: bool | None = None,
@@ -591,6 +651,15 @@ def subplots(
     live: bool = False,
     layout: LayoutMode = "auto",
     style: StyleMode = "auto",
+    pad: float | None = None,
+    xpad: float | None = None,
+    ypad: float | None = None,
+    xspace: float | None = None,
+    yspace: float | None = None,
+    w_pad: float | None = None,
+    h_pad: float | None = None,
+    wspace: float | None = None,
+    hspace: float | None = None,
     config: Config | None = None,
     figsize: tuple[float, float] | None = None,
     tight_layout: bool | None = None,
@@ -617,6 +686,15 @@ def subplots(
     live: bool = False,
     layout: LayoutMode = "auto",
     style: StyleMode = "auto",
+    pad: float | None = None,
+    xpad: float | None = None,
+    ypad: float | None = None,
+    xspace: float | None = None,
+    yspace: float | None = None,
+    w_pad: float | None = None,
+    h_pad: float | None = None,
+    wspace: float | None = None,
+    hspace: float | None = None,
     config: Config | None = None,
     figsize: tuple[float, float] | None = None,
     tight_layout: bool | None = None,
@@ -642,6 +720,15 @@ def subplots(
     live: bool = cast(bool, MISSING),
     layout: LayoutMode = cast(LayoutMode, MISSING),
     style: StyleMode = cast(StyleMode, MISSING),
+    pad: float | None = cast(Any, MISSING),
+    xpad: float | None = cast(Any, MISSING),
+    ypad: float | None = cast(Any, MISSING),
+    xspace: float | None = cast(Any, MISSING),
+    yspace: float | None = cast(Any, MISSING),
+    w_pad: float | None = cast(Any, MISSING),
+    h_pad: float | None = cast(Any, MISSING),
+    wspace: float | None = cast(Any, MISSING),
+    hspace: float | None = cast(Any, MISSING),
     config: Config | None = None,
     figsize: tuple[float, float] | None = cast(Any, MISSING),
     tight_layout: bool | None = cast(Any, MISSING),
@@ -676,6 +763,16 @@ def subplots(
     style
         ``"auto"`` or ``"paper"`` for target-local publication styling, or
         ``None`` to retain Matplotlib styling.
+    pad
+        Optional non-negative figure padding scalar.
+    xpad, ypad
+        Optional non-negative horizontal and vertical subplot padding scalars
+        (aliases for ``w_pad`` and ``h_pad``).
+    xspace, yspace
+        Optional non-negative horizontal and vertical spacing fractions
+        (aliases for ``wspace`` and ``hspace``).
+    w_pad, h_pad, wspace, hspace
+        Matplotlib layout-engine padding and spacing alternatives.
     config
         Explicit immutable configuration for omitted size, unit, squeeze, and
         layout values.
@@ -723,6 +820,15 @@ def subplots(
         live=live,
         layout=layout,
         style=style,
+        pad=pad,
+        xpad=xpad,
+        ypad=ypad,
+        xspace=xspace,
+        yspace=yspace,
+        w_pad=w_pad,
+        h_pad=h_pad,
+        wspace=wspace,
+        hspace=hspace,
         config=config,
         figsize=figsize,
         tight_layout=tight_layout,
@@ -769,6 +875,39 @@ def subplots(
     axes = _create_axes(target, shape_plan, options)
     if not new_figure and options["layout"] in {"tight", "constrained"}:
         target.set_layout_engine(options["layout"])
+
+    from matplotlib.layout_engine import ConstrainedLayoutEngine, TightLayoutEngine
+
+    engine = target.get_layout_engine()
+    if isinstance(engine, ConstrainedLayoutEngine):
+        engine_kwargs: dict[str, Any] = {}
+        if options["xpad"] is not None:
+            engine_kwargs["w_pad"] = options["xpad"]
+        elif options["pad"] is not None:
+            engine_kwargs["w_pad"] = options["pad"]
+
+        if options["ypad"] is not None:
+            engine_kwargs["h_pad"] = options["ypad"]
+        elif options["pad"] is not None:
+            engine_kwargs["h_pad"] = options["pad"]
+
+        if options["xspace"] is not None:
+            engine_kwargs["wspace"] = options["xspace"]
+        if options["yspace"] is not None:
+            engine_kwargs["hspace"] = options["yspace"]
+        if engine_kwargs:
+            engine.set(**engine_kwargs)
+    elif isinstance(engine, TightLayoutEngine):
+        tight_kwargs: dict[str, Any] = {}
+        if options["pad"] is not None:
+            tight_kwargs["pad"] = options["pad"]
+        if options["xpad"] is not None:
+            tight_kwargs["w_pad"] = options["xpad"]
+        if options["ypad"] is not None:
+            tight_kwargs["h_pad"] = options["ypad"]
+        if tight_kwargs:
+            engine.set(**tight_kwargs)
+
     apply_paper = (
         (new_figure or selected_clear) and options["style"] == "auto"
     ) or options["style"] == "paper"
@@ -808,6 +947,15 @@ def _public_subplots_signature(
     live: bool = False,
     layout: LayoutMode = "auto",
     style: StyleMode = "auto",
+    pad: float | None = None,
+    xpad: float | None = None,
+    ypad: float | None = None,
+    xspace: float | None = None,
+    yspace: float | None = None,
+    w_pad: float | None = None,
+    h_pad: float | None = None,
+    wspace: float | None = None,
+    hspace: float | None = None,
     config: Config | None = None,
     figsize: tuple[float, float] | None = None,
     tight_layout: bool | None = None,

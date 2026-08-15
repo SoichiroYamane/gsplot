@@ -572,6 +572,69 @@
             "required": false
           },
           {
+            "annotation": "'float | None'",
+            "default": "None",
+            "kind": "KEYWORD_ONLY",
+            "name": "pad",
+            "required": false
+          },
+          {
+            "annotation": "'float | None'",
+            "default": "None",
+            "kind": "KEYWORD_ONLY",
+            "name": "xpad",
+            "required": false
+          },
+          {
+            "annotation": "'float | None'",
+            "default": "None",
+            "kind": "KEYWORD_ONLY",
+            "name": "ypad",
+            "required": false
+          },
+          {
+            "annotation": "'float | None'",
+            "default": "None",
+            "kind": "KEYWORD_ONLY",
+            "name": "xspace",
+            "required": false
+          },
+          {
+            "annotation": "'float | None'",
+            "default": "None",
+            "kind": "KEYWORD_ONLY",
+            "name": "yspace",
+            "required": false
+          },
+          {
+            "annotation": "'float | None'",
+            "default": "None",
+            "kind": "KEYWORD_ONLY",
+            "name": "w_pad",
+            "required": false
+          },
+          {
+            "annotation": "'float | None'",
+            "default": "None",
+            "kind": "KEYWORD_ONLY",
+            "name": "h_pad",
+            "required": false
+          },
+          {
+            "annotation": "'float | None'",
+            "default": "None",
+            "kind": "KEYWORD_ONLY",
+            "name": "wspace",
+            "required": false
+          },
+          {
+            "annotation": "'float | None'",
+            "default": "None",
+            "kind": "KEYWORD_ONLY",
+            "name": "hspace",
+            "required": false
+          },
+          {
             "annotation": "'Config | None'",
             "default": "None",
             "kind": "KEYWORD_ONLY",
@@ -603,14 +666,14 @@
         "return_annotation": "'tuple[Figure, AxesContainer]'"
       },
       "docstring": {
-        "sha256": "863c27bba4c095b6519d7c4a4b4c4ec63d1950e083a1f45cb64f6d408368bdb2",
+        "sha256": "4562750fe792e2fef21daa8d19e2b2588b47a84e3e7f56e44121afab7d1aab8b",
         "summary": "Create or reuse a native Figure with concise publication defaults."
       },
       "kind": "function",
       "module": "gsplot._figure.layout",
       "name": "subplots",
       "qualname": "subplots",
-      "signature": "(*shape: 'int | MosaicSpec', nrows: 'int | None' = None, ncols: 'int | None' = None, mosaic: 'MosaicSpec | None' = None, size: 'SizeSpec' = 'auto', unit: 'Unit' = 'in', sharex: 'ShareMode' = False, sharey: 'ShareMode' = False, squeeze: 'bool' = True, width_ratios: 'Sequence[float] | None' = None, height_ratios: 'Sequence[float] | None' = None, subplot_kw: 'Mapping[str, Any] | None' = None, fig: 'Figure | None' = None, clear: 'bool' = False, live: 'bool' = False, layout: 'LayoutMode' = 'auto', style: 'StyleMode' = 'auto', config: 'Config | None' = None, figsize: 'tuple[float, float] | None' = None, tight_layout: 'bool | None' = None, constrained_layout: 'bool | None' = None) -> 'tuple[Figure, AxesContainer]'"
+      "signature": "(*shape: 'int | MosaicSpec', nrows: 'int | None' = None, ncols: 'int | None' = None, mosaic: 'MosaicSpec | None' = None, size: 'SizeSpec' = 'auto', unit: 'Unit' = 'in', sharex: 'ShareMode' = False, sharey: 'ShareMode' = False, squeeze: 'bool' = True, width_ratios: 'Sequence[float] | None' = None, height_ratios: 'Sequence[float] | None' = None, subplot_kw: 'Mapping[str, Any] | None' = None, fig: 'Figure | None' = None, clear: 'bool' = False, live: 'bool' = False, layout: 'LayoutMode' = 'auto', style: 'StyleMode' = 'auto', pad: 'float | None' = None, xpad: 'float | None' = None, ypad: 'float | None' = None, xspace: 'float | None' = None, yspace: 'float | None' = None, w_pad: 'float | None' = None, h_pad: 'float | None' = None, wspace: 'float | None' = None, hspace: 'float | None' = None, config: 'Config | None' = None, figsize: 'tuple[float, float] | None' = None, tight_layout: 'bool | None' = None, constrained_layout: 'bool | None' = None) -> 'tuple[Figure, AxesContainer]'"
     },
     {
       "call_contract": {

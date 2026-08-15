@@ -283,3 +283,58 @@ def test_axes_dict_indexing_supports_labels_integers_and_slices() -> None:
         _ = axes["UNKNOWN"]
 
     plt.close(figure)
+
+
+def test_subplots_padding_and_spacing_options() -> None:
+    """subplots configures padding and spacing on constrained and tight layout engines."""
+
+    from matplotlib.layout_engine import ConstrainedLayoutEngine, TightLayoutEngine
+
+    # 1. Constrained layout with xpad, ypad, xspace, yspace
+    fig1, _ = subplots("AB", xpad=0.1, ypad=0.2, xspace=0.3, yspace=0.4)
+    engine1 = fig1.get_layout_engine()
+    assert isinstance(engine1, ConstrainedLayoutEngine)
+    params1 = getattr(engine1, "_params", {})
+    assert params1["w_pad"] == 0.1
+    assert params1["h_pad"] == 0.2
+    assert params1["wspace"] == 0.3
+    assert params1["hspace"] == 0.4
+    plt.close(fig1)
+
+    # 2. General pad falls back to w_pad and h_pad in constrained layout
+    fig2, _ = subplots("AB", pad=0.05)
+    engine2 = fig2.get_layout_engine()
+    assert isinstance(engine2, ConstrainedLayoutEngine)
+    params2 = getattr(engine2, "_params", {})
+    assert params2["w_pad"] == 0.05
+    assert params2["h_pad"] == 0.05
+    plt.close(fig2)
+
+    # 3. Aliases w_pad, h_pad, wspace, hspace
+    fig3, _ = subplots("AB", w_pad=0.15, h_pad=0.25, wspace=0.35, hspace=0.45)
+    engine3 = fig3.get_layout_engine()
+    assert isinstance(engine3, ConstrainedLayoutEngine)
+    params3 = getattr(engine3, "_params", {})
+    assert params3["w_pad"] == 0.15
+    assert params3["h_pad"] == 0.25
+    assert params3["wspace"] == 0.35
+    assert params3["hspace"] == 0.45
+    plt.close(fig3)
+
+    # 4. Tight layout with pad, xpad, ypad
+    fig4, _ = subplots(1, 2, layout="tight", pad=1.5, xpad=1.0, ypad=2.0)
+    engine4 = fig4.get_layout_engine()
+    assert isinstance(engine4, TightLayoutEngine)
+    params4 = getattr(engine4, "_params", {})
+    assert params4["pad"] == 1.5
+    assert params4["w_pad"] == 1.0
+    assert params4["h_pad"] == 2.0
+    plt.close(fig4)
+
+    # 5. Negative values raise LayoutError
+    with pytest.raises(LayoutError, match="xpad"):
+        subplots("AB", xpad=-0.5)
+
+    # 6. Conflicting alias values raise LayoutError
+    with pytest.raises(LayoutError, match="cannot both be supplied"):
+        subplots("AB", xpad=0.1, w_pad=0.2)
