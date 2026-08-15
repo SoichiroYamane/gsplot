@@ -304,6 +304,7 @@ def _resolve_options(
     height_ratios: Any,
     subplot_kw: Any,
     clear: Any,
+    live: Any,
     layout: Any,
     style: Any,
     config: Config | None,
@@ -337,6 +338,7 @@ def _resolve_options(
             "height_ratios": height_ratios,
             "subplot_kw": subplot_kw,
             "clear": clear,
+            "live": live,
             "layout": legacy_mode if layout is MISSING else layout,
             "style": style,
         }
@@ -372,6 +374,11 @@ def _resolve_options(
         _option_spec("subplot_kw", None, _subplot_options),
         _option_spec(
             "clear",
+            False,
+            lambda value, name: ensure_bool(value, name, error=LayoutError),
+        ),
+        _option_spec(
+            "live",
             False,
             lambda value, name: ensure_bool(value, name, error=LayoutError),
         ),
@@ -553,6 +560,7 @@ def subplots(
     subplot_kw: Mapping[str, Any] | None = cast(Any, MISSING),
     fig: Figure | None = None,
     clear: bool = cast(bool, MISSING),
+    live: bool = cast(bool, MISSING),
     layout: LayoutMode = cast(LayoutMode, MISSING),
     style: StyleMode = cast(StyleMode, MISSING),
     config: Config | None = None,
@@ -580,6 +588,10 @@ def subplots(
         Finite options copied into each Matplotlib subplot constructor.
     fig, clear
         Optional existing Figure and whether to clear it after validation.
+    live
+        Whether to run in interactive live mode. When true, reuses the active
+        Figure (or creates one), automatically clears previous axes, and
+        requests an idle canvas draw.
     layout
         ``"auto"``, ``"constrained"``, ``"tight"``, or ``"none"``.
     style
@@ -629,6 +641,7 @@ def subplots(
         height_ratios=height_ratios,
         subplot_kw=subplot_kw,
         clear=clear,
+        live=live,
         layout=layout,
         style=style,
         config=config,
@@ -636,21 +649,32 @@ def subplots(
         tight_layout=tight_layout,
         constrained_layout=constrained_layout,
     )
-    if fig is not None and not isinstance(fig, Figure):
+    is_live = options["live"]
+    selected_clear = True if is_live else options["clear"]
+
+    resolved_fig = fig
+    if resolved_fig is None and is_live:
+        import matplotlib.pyplot as plt
+
+        fignums = plt.get_fignums()
+        if fignums:
+            resolved_fig = plt.figure(fignums[-1])
+
+    if resolved_fig is not None and not isinstance(resolved_fig, Figure):
         raise LayoutError("fig must be a Matplotlib Figure or None")
-    preserve_reused_size = fig is not None and (
+    preserve_reused_size = resolved_fig is not None and (
         options["size"] == "auto" or options["size"] is None
     )
     size_inches = None if preserve_reused_size else _size_inches(shape_plan, options)
-    if fig is not None:
+    if resolved_fig is not None:
         _validate_reuse(
-            fig,
+            resolved_fig,
             size=options["size"],
             size_inches=size_inches,
             layout=options["layout"],
         )
 
-    new_figure = fig is None
+    new_figure = resolved_fig is None
     if new_figure:
         import matplotlib.pyplot as plt
 
@@ -659,8 +683,8 @@ def subplots(
         )
         target = plt.figure(figsize=size_inches, layout=selected_layout)
     else:
-        target = cast(Figure, fig)
-        if options["clear"]:
+        target = cast(Figure, resolved_fig)
+        if selected_clear:
             target.clear()
 
     axes = _create_axes(target, shape_plan, options)
@@ -673,6 +697,11 @@ def subplots(
         paper(cast(Any, axes))
         if new_figure:
             target.set_facecolor("white")
+    if is_live:
+        try:
+            target.canvas.draw_idle()
+        except Exception:
+            pass
     return target, axes
 
 
@@ -691,6 +720,7 @@ def _public_subplots_signature(
     subplot_kw: Mapping[str, Any] | None = None,
     fig: Figure | None = None,
     clear: bool = False,
+    live: bool = False,
     layout: LayoutMode = "auto",
     style: StyleMode = "auto",
     config: Config | None = None,

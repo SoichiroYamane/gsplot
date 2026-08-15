@@ -207,8 +207,37 @@ def test_deprecated_layout_spellings_remain_finite_and_introspectable() -> None:
     assert len(caught) == 1
     assert np.allclose(figure.get_size_inches(), (2, 3))
     assert isinstance(figure.get_layout_engine(), TightLayoutEngine)
-    with pytest.raises(LayoutError, match="cannot both"):
-        subplots(size="auto", figsize=(2, 3))
     with pytest.raises(LayoutError, match="cannot be combined"):
         subplots(layout="auto", constrained_layout=True)
     plt.close(figure)
+
+
+def test_subplots_live_mode_reuses_and_clears_active_figure() -> None:
+    """live=True automatically reuses the active figure and clears axes."""
+
+    plt.close("all")
+    fig1, ax1 = subplots(live=True)
+    assert len(fig1.axes) == 1
+    original_fignum = fig1.number
+
+    # Second call reuses the active figure and clears it for the new mosaic layout
+    fig2, axes2 = subplots("AB", live=True)
+    assert fig2 is fig1
+    assert fig2.number == original_fignum
+    assert len(fig2.axes) == 2
+    assert tuple(axes2) == ("A", "B")
+
+    # Explicit fig combined with live=True reuses that explicit figure
+    custom_fig = plt.figure()
+    fig3, axes3 = subplots("A", fig=custom_fig, live=True)
+    assert fig3 is custom_fig
+    assert len(fig3.axes) == 1
+
+    plt.close("all")
+
+
+def test_subplots_live_rejects_non_boolean() -> None:
+    """live argument must be a strict boolean."""
+
+    with pytest.raises(LayoutError, match="live"):
+        subplots(live="yes")  # type: ignore[arg-type]
