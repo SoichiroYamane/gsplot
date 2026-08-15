@@ -860,21 +860,27 @@ def subplots(
         )
 
     new_figure = resolved_fig is None
+    selected_layout = (
+        "constrained" if options["layout"] == "auto" else options["layout"]
+    )
     if new_figure:
         import matplotlib.pyplot as plt
 
-        selected_layout = (
-            "constrained" if options["layout"] == "auto" else options["layout"]
+        target = plt.figure(
+            figsize=size_inches,
+            layout=None if selected_layout == "none" else selected_layout,
         )
-        target = plt.figure(figsize=size_inches, layout=selected_layout)
     else:
         target = cast(Figure, resolved_fig)
         if selected_clear:
             target.clear()
+            target.set_layout_engine(
+                cast(Any, None if selected_layout == "none" else selected_layout)
+            )
+        elif options["layout"] in {"tight", "constrained"}:
+            target.set_layout_engine(cast(Any, options["layout"]))
 
     axes = _create_axes(target, shape_plan, options)
-    if not new_figure and options["layout"] in {"tight", "constrained"}:
-        target.set_layout_engine(options["layout"])
 
     from matplotlib.layout_engine import ConstrainedLayoutEngine, TightLayoutEngine
 
