@@ -1,10 +1,10 @@
 {
   "artifact": {
-    "compressed_bytes": 51072516,
-    "file_count": 923,
-    "uncompressed_bytes": 104835733
+    "compressed_bytes": 54091282,
+    "file_count": 1273,
+    "uncompressed_bytes": 118742989
   },
-  "issue_url": "https://github.com/SoichiroYamane/gsplot/issues/174",
+  "issue_url": "https://github.com/SoichiroYamane/gsplot/issues/236",
   "schema_version": 1,
-  "source_commit": "f5a15a647974cdb4d55c6c8cbc354a861c94fd28"
+  "source_commit": "a3af7d237e63524c22eca61ad16116f19dca43f8"
 }
