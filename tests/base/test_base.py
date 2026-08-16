@@ -73,3 +73,22 @@ def test_configuration_precedence_is_passed_then_config_then_default(
 def test_params_getter_rejects_missing_wrapper_state() -> None:
     with pytest.raises(ValueError, match="Params is None"):
         ParamsGetter("missing").verify(None)
+
+
+def test_legacy_config_discovery_is_isolated_from_developer_home(
+    tmp_path: Any, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Legacy Config discovery respects the isolated HOME environment."""
+
+    import json
+    from pathlib import Path
+
+    home_config = Path(tmp_path) / "gsplot.json"
+    home_config.write_text(
+        json.dumps({"rcParams": {"figure.dpi": 142}}), encoding="utf-8"
+    )
+    monkeypatch.setenv("HOME", str(tmp_path))
+    Config._instance = None
+    config = Config()
+    assert config.config_dict.get("rcParams", {}).get("figure.dpi") == 142
+    Config._instance = None
