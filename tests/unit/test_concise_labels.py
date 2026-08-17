@@ -399,3 +399,41 @@ def test_label_smart_margins_edge_cases() -> None:
         assert np.isclose(ax_inv.get_xlim()[1], 10.0 - (300.0 - 10.0) * 0.05)
     finally:
         plt.close(fig_inv)
+
+
+def test_label_default_margins_when_limits_omitted() -> None:
+    """label applies default 5% margins around plotted data when limits are omitted."""
+
+    fig, ax = plt.subplots()
+    try:
+        ax.plot([0, 1, 2], [0, 1, 4])
+        label(ax, "x", "value")
+        # x range is [0, 2], 5% span is 0.1 -> (-0.1, 2.1)
+        assert np.isclose(ax.get_xlim()[0], -0.1)
+        assert np.isclose(ax.get_xlim()[1], 2.1)
+        # y range is [0, 4], 5% span is 0.2 -> (-0.2, 4.2)
+        assert np.isclose(ax.get_ylim()[0], -0.2)
+        assert np.isclose(ax.get_ylim()[1], 4.2)
+
+        # Explicit custom margin
+        label(ax, "x", "value", margin=0.1)
+        assert np.isclose(ax.get_xlim()[0], -0.2)
+        assert np.isclose(ax.get_xlim()[1], 2.2)
+        assert np.isclose(ax.get_ylim()[0], -0.4)
+        assert np.isclose(ax.get_ylim()[1], 4.4)
+
+        # Zero margin
+        label(ax, "x", "value", margin=0)
+        assert np.isclose(ax.get_xlim()[0], 0.0)
+        assert np.isclose(ax.get_xlim()[1], 2.0)
+        assert np.isclose(ax.get_ylim()[0], 0.0)
+        assert np.isclose(ax.get_ylim()[1], 4.0)
+
+        # Explicit (None, None)
+        label(ax, "x", "value", xlim=(None, None), ylim=(None, None))
+        assert np.isclose(ax.get_xlim()[0], -0.1)
+        assert np.isclose(ax.get_xlim()[1], 2.1)
+        assert np.isclose(ax.get_ylim()[0], -0.2)
+        assert np.isclose(ax.get_ylim()[1], 4.2)
+    finally:
+        plt.close(fig)

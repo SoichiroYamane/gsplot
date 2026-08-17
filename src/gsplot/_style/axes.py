@@ -129,8 +129,8 @@ def _validate_scale_domain(axis: Axes | _AxesBase, spec: AxisSpec) -> None:
 
 def _get_axis_data_bounds(
     axis: Axes | _AxesBase, coordinate: Literal["x", "y"], scale: Scale
-) -> tuple[float, float]:
-    """Return effective data bounds (min, max) for one coordinate."""
+) -> tuple[float, float] | None:
+    """Return effective data bounds (min, max) for one coordinate, or None if no data."""
 
     data_lim = getattr(axis, "dataLim", None)
     if data_lim is not None:
@@ -142,13 +142,7 @@ def _get_axis_data_bounds(
                     return (dmin, dmax)
             else:
                 return (dmin, dmax)
-    current = axis.get_xlim() if coordinate == "x" else axis.get_ylim()
-    cmin, cmax = float(min(current)), float(max(current))
-    if not math.isfinite(cmin) or not math.isfinite(cmax):
-        return (0.0, 1.0) if scale != "log" else (1.0, 10.0)
-    if scale == "log" and cmin <= 0:
-        return (1.0, 10.0)
-    return (cmin, cmax)
+    return None
 
 
 def _resolve_axis_limit(
@@ -167,7 +161,14 @@ def _resolve_axis_limit(
     if raw_low is not None and raw_high is not None:
         return (raw_low, raw_high)
 
-    dmin, dmax = _get_axis_data_bounds(axis, coordinate, scale)
+    bounds = _get_axis_data_bounds(axis, coordinate, scale)
+    if bounds is None:
+        if raw_low is not None or raw_high is not None:
+            dmin, dmax = (0.0, 1.0) if scale != "log" else (1.0, 10.0)
+        else:
+            return None
+    else:
+        dmin, dmax = bounds
 
     if scale == "log":
         log_dmin = math.log10(max(dmin, 1e-300))
@@ -318,9 +319,22 @@ def _apply_axis_spec(axis: Axes | _AxesBase, spec: AxisSpec) -> None:
         )
         if resolved_xlim is not None:
             axis.set_xlim(resolved_xlim)
+    elif getattr(axis, "has_data", lambda: False)():
+        resolved_xlim = _resolve_axis_limit(
+            axis, (None, None), "x", spec.xscale, spec.xmargin
+        )
+        if resolved_xlim is not None:
+            axis.set_xlim(resolved_xlim)
+
     if spec.ylim is not None:
         resolved_ylim = _resolve_axis_limit(
             axis, spec.ylim, "y", spec.yscale, spec.ymargin
+        )
+        if resolved_ylim is not None:
+            axis.set_ylim(resolved_ylim)
+    elif getattr(axis, "has_data", lambda: False)():
+        resolved_ylim = _resolve_axis_limit(
+            axis, (None, None), "y", spec.yscale, spec.ymargin
         )
         if resolved_ylim is not None:
             axis.set_ylim(resolved_ylim)

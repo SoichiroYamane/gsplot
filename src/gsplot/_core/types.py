@@ -296,8 +296,6 @@ def _limits(value: Any, name: str) -> tuple[float | None, float | None] | None:
         raise LayoutError(f"{name} must contain exactly two finite values") from exc
     if len(values) != 2:
         raise LayoutError(f"{name} must contain exactly two finite values")
-    if values[0] in (None, "", "*") and values[1] in (None, "", "*"):
-        return None
     low = (
         None
         if values[0] in (None, "", "*")
