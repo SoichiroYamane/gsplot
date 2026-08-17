@@ -172,12 +172,23 @@ def test_legend_attachment_failure_restores_replaced_legends(monkeypatch) -> Non
 
 
 def test_legend_direct_kwargs() -> None:
-    """legend accepts direct kwargs merged into props."""
+    """legend accepts direct kwargs merged into props, with kwargs taking precedence."""
 
     figure, axis = plt.subplots()
     try:
-        axis.plot([0, 1], [0, 1], label="signal")
-        created = legend(axis, title="MyLegend", fontsize=8)
+        axis.plot([0, 1], [0, 1], label="signal 1")
+        axis.plot([0, 1], [0, 2], label="signal 2")
+        created = legend(
+            axis,
+            title="MyLegend",
+            fontsize=8,
+            ncols=2,
+            framealpha=0.6,
+            props={"fontsize": 10},
+        )
         assert created.get_title().get_text() == "MyLegend"
+        assert created._ncols == 2
+        # kwargs (fontsize=8) overrides props (fontsize=10)
+        assert any(text.get_fontsize() == 8.0 for text in created.get_texts())
     finally:
         plt.close(figure)
