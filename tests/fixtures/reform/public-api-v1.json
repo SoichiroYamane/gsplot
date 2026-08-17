@@ -1772,7 +1772,7 @@
           },
           {
             "annotation": "'bool | None'",
-            "default": "None",
+            "default": "True",
             "kind": "KEYWORD_ONLY",
             "name": "minor",
             "required": false
@@ -1837,14 +1837,14 @@
         "return_annotation": "'None'"
       },
       "docstring": {
-        "sha256": "5746794370b52e1bc8da768337ea75f742b26bd0adf592f38defc8fd4f76b887",
+        "sha256": "b8e28dd2d5b47031c4bb5f84f634f28d195a8bb49617f6f5ddfc7a3780827fb8",
         "summary": "Configure tick visibility, minor ticks, direction, and parameters."
       },
       "kind": "function",
       "module": "gsplot._style.axes",
       "name": "ticks",
       "qualname": "ticks",
-      "signature": "(target: 'AxesTarget', *, minor: 'bool | None' = None, axis: \"Literal['x', 'y', 'both']\" = 'both', top: 'bool | None' = None, bottom: 'bool | None' = None, left: 'bool | None' = None, right: 'bool | None' = None, direction: \"Literal['in', 'out', 'inout'] | None\" = None, which: \"Literal['both', 'major', 'minor']\" = 'both', **kwargs: 'Any') -> 'None'"
+      "signature": "(target: 'AxesTarget', *, minor: 'bool | None' = True, axis: \"Literal['x', 'y', 'both']\" = 'both', top: 'bool | None' = None, bottom: 'bool | None' = None, left: 'bool | None' = None, right: 'bool | None' = None, direction: \"Literal['in', 'out', 'inout'] | None\" = None, which: \"Literal['both', 'major', 'minor']\" = 'both', **kwargs: 'Any') -> 'None'"
     },
     {
       "call_contract": {

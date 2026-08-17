@@ -609,7 +609,7 @@ def minor_ticks(
 def ticks(
     target: AxesTarget,
     *,
-    minor: bool | None = None,
+    minor: bool | None = True,
     axis: Literal["x", "y", "both"] = "both",
     top: bool | None = None,
     bottom: bool | None = None,
@@ -627,6 +627,7 @@ def ticks(
         One Axes, an ordered Axes sequence, or an Axes mapping.
     minor
         Optional flag to turn minor ticks on (``True``) or off (``False``).
+        Defaults to ``True``.
     axis
         Coordinate axis to configure: ``"x"``, ``"y"``, or ``"both"``.
     top, bottom, left, right

@@ -13,7 +13,7 @@ def test_ticks_signature_defaults() -> None:
     """Introspection publishes canonical parameter defaults."""
 
     sig = inspect.signature(ticks)
-    assert sig.parameters["minor"].default is None
+    assert sig.parameters["minor"].default is True
     assert sig.parameters["axis"].default == "both"
     assert sig.parameters["top"].default is None
     assert sig.parameters["bottom"].default is None
@@ -36,12 +36,29 @@ def test_ticks_signature_defaults() -> None:
     assert label_sig.parameters["direction"].default is None
 
 
+def test_ticks_default_enables_minor() -> None:
+    """ticks enables minor ticks by default when minor argument is omitted."""
+
+    figure, ax = plt.subplots()
+    try:
+        ticks(ax)
+        assert ax.xaxis.get_minor_locator().__class__.__name__ == "AutoMinorLocator"
+        assert ax.yaxis.get_minor_locator().__class__.__name__ == "AutoMinorLocator"
+
+        # Explicit minor=False disables minor ticks
+        ticks(ax, minor=False)
+        assert ax.xaxis.get_minor_locator().__class__.__name__ == "NullLocator"
+        assert ax.yaxis.get_minor_locator().__class__.__name__ == "NullLocator"
+    finally:
+        plt.close(figure)
+
+
 def test_ticks_basic_and_direction() -> None:
     """ticks enables minor ticks, applies direction, and configures edge visibility."""
 
     figure, ax = plt.subplots()
     try:
-        ticks(ax, minor=True, right=False, direction="in")
+        ticks(ax, right=False, direction="in")
 
         # Minor ticks locator is active
         assert ax.xaxis.get_minor_locator().__class__.__name__ == "AutoMinorLocator"
