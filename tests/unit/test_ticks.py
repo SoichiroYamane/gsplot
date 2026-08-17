@@ -138,3 +138,26 @@ def test_ticks_validation_errors() -> None:
             label(ax, direction="invalid")  # type: ignore[arg-type]
     finally:
         plt.close(figure)
+
+
+def test_secondary_axis_and_inset_support() -> None:
+    """ticks, minor_ticks, and label cleanly support SecondaryAxis and inset axes."""
+
+    figure, ax = plt.subplots()
+    try:
+        # SecondaryAxis (inherits directly from _AxesBase)
+        sec = ax.secondary_xaxis("top")
+        ticks(sec, minor=True, direction="in")
+        minor_ticks(sec, True)
+        label(sec, "Secondary X")
+        assert sec.get_xlabel() == "Secondary X"
+
+        # Inset axes
+        ins = ax.inset_axes([0.5, 0.5, 0.4, 0.4])
+        ticks(ins, minor=True, right=False)
+        minor_ticks(ins, True, top=False)
+        label(ins, "Inset X", "Inset Y")
+        assert ins.get_xlabel() == "Inset X"
+        assert ins.get_ylabel() == "Inset Y"
+    finally:
+        plt.close(figure)

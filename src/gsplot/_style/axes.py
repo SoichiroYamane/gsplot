@@ -59,7 +59,7 @@ _TEXT_PROPS = frozenset(
 _TITLE_PROPS = _TEXT_PROPS | {"bbox", "fontdict", "loc", "pad", "y"}
 
 
-def axes_targets(target: AxesTarget) -> tuple[Axes, ...]:
+def axes_targets(target: AxesTarget) -> tuple[Axes | _AxesBase, ...]:
     """Validate and normalize an explicit Axes target collection."""
 
     return normalize_axes(target, operation="style").axes

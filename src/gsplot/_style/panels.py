@@ -165,7 +165,7 @@ def _apply_index(
                     -_INDEX_INSIDE_GAP_POINTS / 72,
                     target.figure.dpi_scale_trans,
                 )
-                artist = axis.text(
+                artist = cast(Any, axis).text(
                     0,
                     1,
                     text,
@@ -173,7 +173,7 @@ def _apply_index(
                     **props,
                 )
             else:
-                artist = axis.annotate(
+                artist = cast(Any, axis).annotate(
                     text,
                     xy=(0, 1),
                     xycoords=(axis.yaxis.label, axis.transAxes),
@@ -361,7 +361,7 @@ def panel_labels(
     selected_props.setdefault("va", "top")
     if loc == "corner":
         texts = [
-            axis.text(
+            cast(Any, axis).text(
                 0.02,
                 0.98,
                 label,

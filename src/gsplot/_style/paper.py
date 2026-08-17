@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from typing import Any
+
 from matplotlib.axes import Axes
 from matplotlib.ticker import AutoLocator
 from matplotlib.transforms import nonsingular
@@ -46,7 +48,7 @@ def _set_typography(axis: Axes) -> None:
         text.set_fontsize(10)
 
 
-def _style_axis(axis: Axes, *, cycle: bool) -> None:
+def _style_axis(axis: Any, *, cycle: bool) -> None:
     """Apply one already-validated paper plan."""
 
     axis.set_facecolor("white")
