@@ -432,7 +432,7 @@ def _merge_props(
 
 
 def title(
-    ax: Axes,
+    ax: Axes | _AxesBase,
     text: str,
     *,
     props: Mapping[str, Any] | None = None,
@@ -473,11 +473,11 @@ def title(
     >>> figure.clear()
     """
 
-    if not isinstance(ax, Axes):
+    if not isinstance(ax, (Axes, _AxesBase)):
         raise PlotError("ax must be a Matplotlib Axes")
     merged_props = _merge_props(props, kwargs, "title")
     selected_props = _validate_props(merged_props, _TITLE_PROPS, "title")
-    return ax.set_title(_text(text, "text"), **selected_props)
+    return cast(Text, cast(Any, ax).set_title(_text(text, "text"), **selected_props))
 
 
 def suptitle(

@@ -43,8 +43,12 @@ def test_titles_panel_labels_and_explicit_themes() -> None:
 
     figure, axes = plt.subplots(1, 2)
     axes_array = tuple(axes)
-    assert title(axes_array[0], "Panel").get_text() == "Panel"
-    assert suptitle(figure, "Experiment").get_text() == "Experiment"
+    t = title(axes_array[0], "Panel", fontsize=14, pad=8, color="navy")
+    assert t.get_text() == "Panel"
+    assert t.get_fontsize() == 14.0
+    st = suptitle(figure, "Experiment", fontsize=16, y=0.98)
+    assert st.get_text() == "Experiment"
+    assert st.get_fontsize() == 16.0
     labels = panel_labels(axes_array)
     assert tuple(item.get_text() for item in labels) == ("A", "B")
     before = mpl.rcParams["axes.facecolor"]

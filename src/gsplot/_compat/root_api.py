@@ -702,11 +702,41 @@ def legend(
 ) -> Any:
     """Dispatch canonical ``legend`` or finite legacy options."""
 
-    legacy = _provided(
+    is_legacy = (
+        legacy_handles is not _UNSET
+        or legacy_labels is not _UNSET
+        or handlers is not _UNSET
+        or ncol is not _UNSET
+    )
+    if is_legacy:
+        if (legacy_handles is not _UNSET or legacy_labels is not _UNSET) and (
+            handles is not None or labels is not None
+        ):
+            raise OptionError("legend cannot combine positional and canonical entries")
+        if handlers is not _UNSET:
+            if handler_map is not None:
+                raise OptionError("legend cannot combine handlers and handler_map")
+            handler_map = handlers
+        if ncol is not _UNSET:
+            if ncols is not _UNSET:
+                raise OptionError(
+                    "legend: props cannot contain both 'ncol' and 'ncols'"
+                )
+            ncols = ncol
+        if legacy_handles is not _UNSET:
+            handles = legacy_handles
+        if legacy_labels is not _UNSET:
+            labels = legacy_labels
+        _warn("legend")
+
+    direct = _provided(
         {
-            "handlers": handlers,
+            "loc": loc,
+            "frameon": frameon,
+            "fancybox": fancybox,
+            "labelspacing": labelspacing,
+            "handlelength": handlelength,
             "ncols": ncols,
-            "ncol": ncol,
             "fontsize": fontsize,
             "title": title,
             "title_fontsize": title_fontsize,
@@ -727,59 +757,6 @@ def legend(
             "labelcolor": labelcolor,
         }
     )
-    if legacy_handles is not _UNSET:
-        legacy["_legacy_handles"] = legacy_handles
-    if legacy_labels is not _UNSET:
-        legacy["_legacy_labels"] = legacy_labels
-    if (legacy_handles is not _UNSET or legacy_labels is not _UNSET) and (
-        handles is not None or labels is not None
-    ):
-        raise OptionError("legend cannot combine positional and canonical entries")
-    if legacy and props is not None:
-        raise OptionError(
-            "gsplot.legend cannot combine canonical props with legacy options"
-        )
-    direct = _provided(
-        {
-            "loc": loc,
-            "frameon": frameon,
-            "fancybox": fancybox,
-            "labelspacing": labelspacing,
-            "handlelength": handlelength,
-        }
-    )
-    if not legacy:
-        return _legend(
-            target,
-            handles=handles,
-            labels=labels,
-            handler_map=handler_map,
-            reverse=reverse,
-            replace=replace,
-            props=props,
-            **direct,
-        )
-    positional_handles = legacy.pop("_legacy_handles", _UNSET)
-    positional_labels = legacy.pop("_legacy_labels", _UNSET)
-    if handlers is not _UNSET:
-        if handler_map is not None:
-            raise OptionError("legend cannot combine handlers and handler_map")
-        handler_map = handlers
-        legacy.pop("handlers", None)
-    translated = _translate_props(
-        "legend",
-        legacy,
-        {"ncol": "ncols"},
-    )
-    if positional_handles is not _UNSET:
-        if handles is not None:
-            raise OptionError("legend received handles twice")
-        handles = positional_handles
-    if positional_labels is not _UNSET:
-        if labels is not None:
-            raise OptionError("legend received labels twice")
-        labels = positional_labels
-    _warn("legend")
     return _legend(
         target,
         handles=handles,
@@ -787,7 +764,7 @@ def legend(
         handler_map=handler_map,
         reverse=reverse,
         replace=replace,
-        props=translated,
+        props=props,
         **direct,
     )
 
@@ -859,7 +836,7 @@ def title(
             "y": y,
         }
     )
-    if isinstance(ax, Axes):
+    if isinstance(ax, (Axes, _AxesBase)):
         if text is _UNSET or title is not _UNSET:
             raise OptionError("canonical title requires an explicit text value")
         return _title(ax, text, props=props, **legacy)

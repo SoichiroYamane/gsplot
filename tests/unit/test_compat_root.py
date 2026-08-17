@@ -214,21 +214,34 @@ def test_root_label_rejects_empty_or_unknown_forms_before_pyplot_state() -> None
 
 
 def test_root_legend_treats_publication_controls_as_canonical() -> None:
-    """Direct concise controls do not enter the deprecated legacy branch."""
+    """Direct concise controls and valid Matplotlib kwargs do not enter the deprecated legacy branch."""
 
     figure, axis = plt.subplots()
     try:
-        axis.plot([0, 1], [0, 1], label="signal")
+        lines = axis.plot([0, 1], [0, 1], label="signal 1")
+        axis.plot([0, 1], [0, 2], label="signal 2")
         with warnings.catch_warnings(record=True) as caught:
             warnings.simplefilter("always")
-            created = gs.legend(axis, loc="lower right", handlelength=3)
+            created = gs.legend(
+                axis,
+                loc="lower right",
+                handlelength=3,
+                fontsize=6,
+                ncols=2,
+                framealpha=0.8,
+            )
         assert not any(issubclass(item.category, DeprecationWarning) for item in caught)
         assert created._loc == 4
         assert created.handlelength == 3
+        assert created._ncols == 2
 
         with pytest.warns(DeprecationWarning, match="legacy gsplot.legend"):
-            replaced = gs.legend(axis, ncols=1, replace=True)
+            replaced = gs.legend(axis, ncol=1, replace=True)
         assert replaced.axes is axis
+
+        with pytest.warns(DeprecationWarning, match="legacy gsplot.legend"):
+            positional = gs.legend(axis, lines, ["custom label"], replace=True)
+        assert positional.axes is axis
     finally:
         plt.close(figure)
 

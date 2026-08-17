@@ -1611,7 +1611,7 @@
       "call_contract": {
         "parameters": [
           {
-            "annotation": "'Axes'",
+            "annotation": "'Axes | _AxesBase'",
             "default": null,
             "kind": "POSITIONAL_OR_KEYWORD",
             "name": "ax",
@@ -1649,7 +1649,7 @@
       "module": "gsplot._compat.root_api",
       "name": "title",
       "qualname": "title",
-      "signature": "(ax: 'Axes', text: 'str', *, props: 'Mapping[str, Any] | None' = None, **kwargs: 'Any') -> 'Text'"
+      "signature": "(ax: 'Axes | _AxesBase', text: 'str', *, props: 'Mapping[str, Any] | None' = None, **kwargs: 'Any') -> 'Text'"
     },
     {
       "call_contract": {
