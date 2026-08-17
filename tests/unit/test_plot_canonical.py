@@ -176,3 +176,17 @@ def test_colored_direct_kwargs() -> None:
         assert points.get_alpha() == 0.8
     finally:
         plt.close(figure)
+
+
+def test_series_modulo_and_direct_scatter_styling() -> None:
+    """Arbitrary integer series and direct kwargs work seamlessly."""
+
+    figure, ax = plt.subplots()
+    try:
+        pts = scatter(ax, [0, 1], [1, 2], series=15, s=25.0)
+        assert pts.get_sizes().tolist() == [25.0]
+
+        lines = line(ax, [0, 1], [1, 2], series=12, lw=3.0)
+        assert lines[0].get_linewidth() == 3.0
+    finally:
+        plt.close(figure)

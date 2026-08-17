@@ -52,14 +52,14 @@ SERIES_MARKERS: Final[tuple[MarkerType, ...]] = (
 
 
 def series_index(value: object) -> int:
-    """Return an exact publication-series index from zero through nine."""
+    """Return a publication-series index cycling through the palette."""
 
-    if isinstance(value, bool) or not isinstance(value, int) or not 0 <= value <= 9:
+    if isinstance(value, bool) or not isinstance(value, int):
         raise PlotError(
-            "series must be an integer from 0 through 9; "
+            "series must be an integer; "
             "provide explicit style values for other identities"
         )
-    return value
+    return value % len(SERIES_COLORS)
 
 
 def line_series(value: object) -> tuple[ColorSpec, LineStyleType]:
