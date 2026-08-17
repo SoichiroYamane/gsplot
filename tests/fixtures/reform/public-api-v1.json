@@ -1056,19 +1056,26 @@
             "kind": "KEYWORD_ONLY",
             "name": "config",
             "required": false
+          },
+          {
+            "annotation": "'Any'",
+            "default": null,
+            "kind": "VAR_KEYWORD",
+            "name": "kwargs",
+            "required": true
           }
         ],
         "return_annotation": "'LineCollection'"
       },
       "docstring": {
-        "sha256": "2c449ee1d08db5f33d6dc6ef23e1cb28480fe1f5d065338120e8dda88a184946",
+        "sha256": "cc294a828fc0ac9ef3ac436af26661325dc050469fe41da7e74545337fa90782",
         "summary": "Draw a finite polyline whose segments are mapped through a colormap."
       },
       "kind": "function",
       "module": "gsplot._plot.colored",
       "name": "cmap_line",
       "qualname": "cmap_line",
-      "signature": "(ax: 'Axes', x: 'ArrayLike', y: 'ArrayLike', values: 'ArrayLike', *, cmap: 'str | Colormap | None' = None, norm: 'NormalizeSpec | None' = None, props: 'Mapping[str, Any] | None' = None, config: 'Config | None' = None) -> 'LineCollection'"
+      "signature": "(ax: 'Axes', x: 'ArrayLike', y: 'ArrayLike', values: 'ArrayLike', *, cmap: 'str | Colormap | None' = None, norm: 'NormalizeSpec | None' = None, props: 'Mapping[str, Any] | None' = None, config: 'Config | None' = None, **kwargs: 'Any') -> 'LineCollection'"
     },
     {
       "call_contract": {
@@ -1135,19 +1142,26 @@
             "kind": "KEYWORD_ONLY",
             "name": "config",
             "required": false
+          },
+          {
+            "annotation": "'Any'",
+            "default": null,
+            "kind": "VAR_KEYWORD",
+            "name": "kwargs",
+            "required": true
           }
         ],
         "return_annotation": "'tuple[LineCollection, ...]'"
       },
       "docstring": {
-        "sha256": "8eb06c7fd0bf0a99e14e13894756389acfe68b7eccbbf8c5e3f1212c224c18b7",
+        "sha256": "d2dcde056d29d18056122be196676fd8d0d4ad37f189c42ba451c0c9efbff44b",
         "summary": "Draw a colormapped line with a local Matplotlib dash pattern."
       },
       "kind": "function",
       "module": "gsplot._plot.colored",
       "name": "cmap_dash",
       "qualname": "cmap_dash",
-      "signature": "(ax: 'Axes', x: 'ArrayLike', y: 'ArrayLike', values: 'ArrayLike', *, dash: 'tuple[float, float]' = (10.0, 10.0), cmap: 'str | Colormap | None' = None, norm: 'NormalizeSpec | None' = None, props: 'Mapping[str, Any] | None' = None, config: 'Config | None' = None) -> 'tuple[LineCollection, ...]'"
+      "signature": "(ax: 'Axes', x: 'ArrayLike', y: 'ArrayLike', values: 'ArrayLike', *, dash: 'tuple[float, float]' = (10.0, 10.0), cmap: 'str | Colormap | None' = None, norm: 'NormalizeSpec | None' = None, props: 'Mapping[str, Any] | None' = None, config: 'Config | None' = None, **kwargs: 'Any') -> 'tuple[LineCollection, ...]'"
     },
     {
       "call_contract": {
@@ -1207,19 +1221,26 @@
             "kind": "KEYWORD_ONLY",
             "name": "config",
             "required": false
+          },
+          {
+            "annotation": "'Any'",
+            "default": null,
+            "kind": "VAR_KEYWORD",
+            "name": "kwargs",
+            "required": true
           }
         ],
         "return_annotation": "'PathCollection'"
       },
       "docstring": {
-        "sha256": "d7b0d3073245cd5bfd30849a0aea619058c9aec03e28a45c145db2440f02ed74",
+        "sha256": "eb299cc064dcbc622b3b9fe70844ec6c5938677b4b9ac81a9431d60760167fe9",
         "summary": "Create a scalar-colored native scatter collection."
       },
       "kind": "function",
       "module": "gsplot._plot.colored",
       "name": "cmap_scatter",
       "qualname": "cmap_scatter",
-      "signature": "(ax: 'Axes', x: 'ArrayLike', y: 'ArrayLike', values: 'ArrayLike', *, cmap: 'str | Colormap | None' = None, norm: 'NormalizeSpec | None' = None, props: 'Mapping[str, Any] | None' = None, config: 'Config | None' = None) -> 'PathCollection'"
+      "signature": "(ax: 'Axes', x: 'ArrayLike', y: 'ArrayLike', values: 'ArrayLike', *, cmap: 'str | Colormap | None' = None, norm: 'NormalizeSpec | None' = None, props: 'Mapping[str, Any] | None' = None, config: 'Config | None' = None, **kwargs: 'Any') -> 'PathCollection'"
     },
     {
       "call_contract": {
@@ -1527,19 +1548,26 @@
             "kind": "KEYWORD_ONLY",
             "name": "props",
             "required": false
+          },
+          {
+            "annotation": "'Any'",
+            "default": null,
+            "kind": "VAR_KEYWORD",
+            "name": "kwargs",
+            "required": true
           }
         ],
         "return_annotation": "'Text'"
       },
       "docstring": {
-        "sha256": "4080a7fe093b747c0dedc19318ecb995e19f5f4fd6cc6d1b090862efacea57ca",
+        "sha256": "74166d1b09703cdd6fca2da650a877813517349ec6ad11dc611f19fef3c98fdf",
         "summary": "Set an explicit Axes title and return its native Text artist."
       },
       "kind": "function",
       "module": "gsplot._compat.root_api",
       "name": "title",
       "qualname": "title",
-      "signature": "(ax: 'Axes', text: 'str', *, props: 'Mapping[str, Any] | None' = None) -> 'Text'"
+      "signature": "(ax: 'Axes', text: 'str', *, props: 'Mapping[str, Any] | None' = None, **kwargs: 'Any') -> 'Text'"
     },
     {
       "call_contract": {
@@ -1564,19 +1592,26 @@
             "kind": "KEYWORD_ONLY",
             "name": "props",
             "required": false
+          },
+          {
+            "annotation": "'Any'",
+            "default": null,
+            "kind": "VAR_KEYWORD",
+            "name": "kwargs",
+            "required": true
           }
         ],
         "return_annotation": "'Text'"
       },
       "docstring": {
-        "sha256": "2d368501451ba95408946241e143be2b5e444939bb180bbb69e4d6087c997c16",
+        "sha256": "079a68d91067c84868ba44c258c41d7bb8a8112ff1ba8f3137b5f7569fecb754",
         "summary": "Set an explicit Figure suptitle and return its native Text artist."
       },
       "kind": "function",
       "module": "gsplot._style.axes",
       "name": "suptitle",
       "qualname": "suptitle",
-      "signature": "(fig: 'Figure', text: 'str', *, props: 'Mapping[str, Any] | None' = None) -> 'Text'"
+      "signature": "(fig: 'Figure', text: 'str', *, props: 'Mapping[str, Any] | None' = None, **kwargs: 'Any') -> 'Text'"
     },
     {
       "call_contract": {
@@ -1675,19 +1710,26 @@
             "kind": "KEYWORD_ONLY",
             "name": "props",
             "required": false
+          },
+          {
+            "annotation": "'Any'",
+            "default": null,
+            "kind": "VAR_KEYWORD",
+            "name": "kwargs",
+            "required": true
           }
         ],
         "return_annotation": "'tuple[Text, ...]'"
       },
       "docstring": {
-        "sha256": "6708739a39364375d14dba195c105125c57ebf265c8210b78cafb4c257e4998a",
+        "sha256": "6ff4ee8668e0659b55a12edccce8bf6a8ce8a0b02bea0004a5b56176cb4a8d0f",
         "summary": "Add deterministic labels to an explicit ordered panel collection."
       },
       "kind": "function",
       "module": "gsplot._style.panels",
       "name": "panel_labels",
       "qualname": "panel_labels",
-      "signature": "(target: 'AxesTarget', labels: 'Sequence[str] | None' = None, *, loc: 'str' = 'corner', props: 'Mapping[str, Any] | None' = None) -> 'tuple[Text, ...]'"
+      "signature": "(target: 'AxesTarget', labels: 'Sequence[str] | None' = None, *, loc: 'str' = 'corner', props: 'Mapping[str, Any] | None' = None, **kwargs: 'Any') -> 'tuple[Text, ...]'"
     },
     {
       "call_contract": {
@@ -1726,19 +1768,26 @@
             "kind": "KEYWORD_ONLY",
             "name": "props",
             "required": false
+          },
+          {
+            "annotation": "'Any'",
+            "default": null,
+            "kind": "VAR_KEYWORD",
+            "name": "kwargs",
+            "required": true
           }
         ],
         "return_annotation": "'Text | tuple[Text, ...]'"
       },
       "docstring": {
-        "sha256": "b7042ceceb673e423b422c5457c9988c8aad6f5086c183a04d8dbb046a7217d8",
+        "sha256": "5abd60ae5e22929154d38fd1c7ca20ddcb103ff8fabf99d9a933a072235770ce",
         "summary": "Add deterministic lowercase panel indexes to explicit Axes."
       },
       "kind": "function",
       "module": "gsplot._style.panels",
       "name": "index",
       "qualname": "index",
-      "signature": "(target: 'AxesTarget', labels: 'Sequence[str] | Mapping[object, str] | None' = None, *, loc: \"Literal['in', 'out']\" = 'out', size: 'float | str' = 'large', props: 'Mapping[str, object] | None' = None) -> 'Text | tuple[Text, ...]'"
+      "signature": "(target: 'AxesTarget', labels: 'Sequence[str] | Mapping[object, str] | None' = None, *, loc: \"Literal['in', 'out']\" = 'out', size: 'float | str' = 'large', props: 'Mapping[str, object] | None' = None, **kwargs: 'Any') -> 'Text | tuple[Text, ...]'"
     },
     {
       "call_contract": {
@@ -1856,19 +1905,26 @@
             "kind": "KEYWORD_ONLY",
             "name": "props",
             "required": false
+          },
+          {
+            "annotation": "'Any'",
+            "default": null,
+            "kind": "VAR_KEYWORD",
+            "name": "kwargs",
+            "required": true
           }
         ],
         "return_annotation": "'Legend | tuple[Legend, ...]'"
       },
       "docstring": {
-        "sha256": "25bb1c05d00dba3b8d1eb6164ba6006701e071c6a793be37177567287d49bfd4",
+        "sha256": "2b98e39fe0a51f0b3593aff2571ed9a9d5c0a29b53ce2e01c7c7a0b0adf3c21f",
         "summary": "Create publication legends on one or more explicit Axes."
       },
       "kind": "function",
       "module": "gsplot._compat.root_api",
       "name": "legend",
       "qualname": "legend",
-      "signature": "(target: 'AxesTarget', *, handles: 'Sequence[Artist] | Mapping[object, Sequence[Artist]] | None' = None, labels: 'Sequence[str] | Mapping[object, Sequence[str]] | None' = None, handler_map: 'Mapping[object, HandlerBase] | None' = None, loc: 'str | int' = 'best', frameon: 'bool' = False, fancybox: 'bool' = False, labelspacing: 'float' = 0.3, handlelength: 'float | None' = None, reverse: 'bool' = False, replace: 'bool' = False, props: 'Mapping[str, object] | None' = None) -> 'Legend | tuple[Legend, ...]'"
+      "signature": "(target: 'AxesTarget', *, handles: 'Sequence[Artist] | Mapping[object, Sequence[Artist]] | None' = None, labels: 'Sequence[str] | Mapping[object, Sequence[str]] | None' = None, handler_map: 'Mapping[object, HandlerBase] | None' = None, loc: 'str | int' = 'best', frameon: 'bool' = False, fancybox: 'bool' = False, labelspacing: 'float' = 0.3, handlelength: 'float | None' = None, reverse: 'bool' = False, replace: 'bool' = False, props: 'Mapping[str, object] | None' = None, **kwargs: 'Any') -> 'Legend | tuple[Legend, ...]'"
     },
     {
       "call_contract": {
@@ -1893,19 +1949,26 @@
             "kind": "KEYWORD_ONLY",
             "name": "props",
             "required": false
+          },
+          {
+            "annotation": "'Any'",
+            "default": null,
+            "kind": "VAR_KEYWORD",
+            "name": "kwargs",
+            "required": true
           }
         ],
         "return_annotation": "'tuple[Legend, ...]'"
       },
       "docstring": {
-        "sha256": "0808abe46ce0e234d697761b76128cfe83024f58444c9058440bfadfa5341cdd",
+        "sha256": "39f2afcd5ea922f39fc3a082316387ea5ce3a4db1e5a4bb75b70480273dd3c5f",
         "summary": "Create legends for explicit axes with discoverable entries."
       },
       "kind": "function",
       "module": "gsplot._style.legends",
       "name": "legends",
       "qualname": "legends",
-      "signature": "(target: 'Figure | Sequence[Axes] | Mapping[object, Axes]', *, replace: 'bool' = False, props: 'Mapping[str, Any] | None' = None) -> 'tuple[Legend, ...]'"
+      "signature": "(target: 'Figure | Sequence[Axes] | Mapping[object, Axes]', *, replace: 'bool' = False, props: 'Mapping[str, Any] | None' = None, **kwargs: 'Any') -> 'tuple[Legend, ...]'"
     },
     {
       "call_contract": {
@@ -1995,19 +2058,26 @@
             "kind": "KEYWORD_ONLY",
             "name": "props",
             "required": false
+          },
+          {
+            "annotation": "'Any'",
+            "default": null,
+            "kind": "VAR_KEYWORD",
+            "name": "kwargs",
+            "required": true
           }
         ],
         "return_annotation": "'Legend'"
       },
       "docstring": {
-        "sha256": "4672f07f70977d5a6e889b11cf428bd6204791d778932de88dcb5ab58fc3100c",
+        "sha256": "63d060ccf6c386f158c910235c0539b086547a896cf3c201489c94c1a647b388",
         "summary": "Create a local legend composed of finite colormap stripe proxies."
       },
       "kind": "function",
       "module": "gsplot._style.legends",
       "name": "cmap_legend",
       "qualname": "cmap_legend",
-      "signature": "(ax: 'Axes', *, cmap: 'str | Colormap' = 'viridis', label: 'str | None' = None, stripes: 'int' = 8, norm: 'NormalizeSpec | None' = None, reverse: 'bool' = False, replace: 'bool' = False, props: 'Mapping[str, Any] | None' = None) -> 'Legend'"
+      "signature": "(ax: 'Axes', *, cmap: 'str | Colormap' = 'viridis', label: 'str | None' = None, stripes: 'int' = 8, norm: 'NormalizeSpec | None' = None, reverse: 'bool' = False, replace: 'bool' = False, props: 'Mapping[str, Any] | None' = None, **kwargs: 'Any') -> 'Legend'"
     },
     {
       "call_contract": {
@@ -2234,19 +2304,26 @@
             "kind": "KEYWORD_ONLY",
             "name": "props",
             "required": false
+          },
+          {
+            "annotation": "'Any'",
+            "default": null,
+            "kind": "VAR_KEYWORD",
+            "name": "kwargs",
+            "required": true
           }
         ],
         "return_annotation": "'tuple[Path, ...]'"
       },
       "docstring": {
-        "sha256": "be63b0cb2cd9077563211df2b8c8aa6f5e0bd3f22282262c08f91f540341286a",
+        "sha256": "aeceb16db3080f761ca12cc673cea26ce3c754cd1ee92f536b1818f5b84abf27",
         "summary": "Save an explicit Figure and optionally display it after all writes."
       },
       "kind": "function",
       "module": "gsplot._figure.output",
       "name": "savefig",
       "qualname": "savefig",
-      "signature": "(fig: 'Figure', path: 'str | PathLike[str]', *, formats: 'str | Sequence[str] | None' = None, dpi: 'float | None' = None, close: 'bool' = False, create_parent: 'bool' = False, overwrite: 'bool' = False, show: 'bool' = True, props: 'Mapping[str, Any] | None' = None) -> 'tuple[Path, ...]'"
+      "signature": "(fig: 'Figure', path: 'str | PathLike[str]', *, formats: 'str | Sequence[str] | None' = None, dpi: 'float | None' = None, close: 'bool' = False, create_parent: 'bool' = False, overwrite: 'bool' = False, show: 'bool' = True, props: 'Mapping[str, Any] | None' = None, **kwargs: 'Any') -> 'tuple[Path, ...]'"
     },
     {
       "call_contract": {

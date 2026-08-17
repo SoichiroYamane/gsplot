@@ -383,3 +383,21 @@ def test_save_close_affects_only_the_resolved_figure(tmp_path: Path) -> None:
         assert plt.fignum_exists(unrelated.number)
     finally:
         plt.close("all")
+
+
+def test_savefig_direct_kwargs(tmp_path: Path) -> None:
+    """savefig accepts direct kwargs alongside props."""
+
+    figure, ax = plt.subplots()
+    try:
+        paths = output.savefig(
+            figure,
+            tmp_path / "custom.png",
+            show=False,
+            transparent=True,
+            facecolor="white",
+        )
+        assert len(paths) == 1
+        assert paths[0].exists()
+    finally:
+        plt.close(figure)

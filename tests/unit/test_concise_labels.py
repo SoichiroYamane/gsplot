@@ -273,3 +273,15 @@ def test_label_supports_three_item_limit_tuples_and_scale_strings() -> None:
             label(axes[0], [("x", "y", (0, 1), (0, 1, 2, 3))])
     finally:
         plt.close(figure)
+
+
+def test_index_direct_kwargs() -> None:
+    """index accepts direct kwargs alongside props."""
+
+    figure, axes = plt.subplots(1, 2)
+    try:
+        t = index(axes[0], color="green", fontweight="bold")
+        assert t.get_color() == "green"
+        assert t.get_weight() == "bold"
+    finally:
+        plt.close(figure)

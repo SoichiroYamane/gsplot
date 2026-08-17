@@ -101,13 +101,29 @@ def _segment_data(
     return segments[nonzero], midpoint_values[nonzero]
 
 
+def _merge_props(
+    props: Mapping[str, Any] | None,
+    kwargs: Mapping[str, Any],
+    context: str,
+) -> dict[str, Any]:
+    """Merge an explicit props mapping and direct keyword arguments."""
+
+    if props is not None and not isinstance(props, Mapping):
+        raise PlotError(f"{context} props must be a mapping")
+    merged = dict(props or {})
+    merged.update(kwargs)
+    return merged
+
+
 def _collection_props(
     props: Mapping[str, Any] | None,
     context: str,
+    kwargs: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Reject duplicate color controls and copy collection properties."""
 
-    selected = validate_props(props, _COLLECTION_PROPS, context)
+    merged = _merge_props(props, kwargs or {}, context)
+    selected = validate_props(merged, _COLLECTION_PROPS, context)
     return selected
 
 
@@ -121,6 +137,7 @@ def cmap_line(
     norm: NormalizeSpec | None = None,
     props: Mapping[str, Any] | None = None,
     config: Config | None = None,
+    **kwargs: Any,
 ) -> LineCollection:
     """Draw a finite polyline whose segments are mapped through a colormap.
 
@@ -137,6 +154,10 @@ def cmap_line(
         to 1.0 when omitted.
     config
         Optional immutable configuration for the default colormap.
+    **kwargs
+        Optional direct LineCollection properties (e.g. ``linewidths``,
+        ``alpha``, ``zorder``). Direct keyword arguments are merged with and
+        take precedence over ``props``.
 
     Returns
     -------
@@ -161,7 +182,7 @@ def cmap_line(
     target = validate_axes(ax)
     segments, segment_values = _segment_data(x, y, values)
     selected_cmap, selected_norm = _validate_cmap_args(cmap, norm, config)
-    selected_props = _collection_props(props, "cmap_line")
+    selected_props = _collection_props(props, "cmap_line", kwargs)
     for name, default in _COLORED_LINE_DEFAULTS.items():
         selected_props.setdefault(name, default)
     colors = map_values(segment_values, cmap=selected_cmap, norm=selected_norm)
@@ -184,6 +205,7 @@ def cmap_dash(
     norm: NormalizeSpec | None = None,
     props: Mapping[str, Any] | None = None,
     config: Config | None = None,
+    **kwargs: Any,
 ) -> tuple[LineCollection, ...]:
     """Draw a colormapped line with a local Matplotlib dash pattern.
 
@@ -199,6 +221,9 @@ def cmap_dash(
     dash
         Two positive display-point lengths for the on and off portions,
         defaulting to (10.0, 10.0).
+    **kwargs
+        Optional direct LineCollection properties. Direct keyword arguments
+        are merged with and take precedence over ``props``.
 
     Returns
     -------
@@ -237,7 +262,7 @@ def cmap_dash(
         raise PlotError("dash must contain two positive finite values")
     segments, segment_values = _segment_data(x, y, values)
     selected_cmap, selected_norm = _validate_cmap_args(cmap, norm, config)
-    selected_props = _collection_props(props, "cmap_dash")
+    selected_props = _collection_props(props, "cmap_dash", kwargs)
     for name, default in _COLORED_LINE_DEFAULTS.items():
         selected_props.setdefault(name, default)
     if "linestyles" in selected_props:
@@ -262,6 +287,7 @@ def cmap_scatter(
     norm: NormalizeSpec | None = None,
     props: Mapping[str, Any] | None = None,
     config: Config | None = None,
+    **kwargs: Any,
 ) -> PathCollection:
     """Create a scalar-colored native scatter collection.
 
@@ -278,6 +304,9 @@ def cmap_scatter(
         to 1.0 when omitted.
     config
         Optional immutable configuration for the default colormap.
+    **kwargs
+        Optional direct PathCollection properties. Direct keyword arguments
+        are merged with and take precedence over ``props``.
 
     Returns
     -------
@@ -305,7 +334,8 @@ def cmap_scatter(
     if color_values.shape != x_values.shape:
         raise DataError("values must have the same one-dimensional shape as x and y")
     selected_cmap, selected_norm = _validate_cmap_args(cmap, norm, config)
-    selected_props = validate_props(props, _COLORED_SCATTER_PROPS, "cmap_scatter")
+    merged = _merge_props(props, kwargs, "cmap_scatter")
+    selected_props = validate_props(merged, _COLORED_SCATTER_PROPS, "cmap_scatter")
     for name, default in _COLORED_SCATTER_DEFAULTS.items():
         selected_props.setdefault(name, default)
     colors = map_values(color_values, cmap=selected_cmap, norm=selected_norm)

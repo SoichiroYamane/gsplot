@@ -77,6 +77,20 @@ def _concise_label_for_index(index: int) -> str:
     return f"({_label_for_index(index).lower()})"
 
 
+def _merge_props(
+    props: Mapping[str, Any] | None,
+    kwargs: Mapping[str, Any],
+    name: str,
+) -> dict[str, Any]:
+    """Merge an explicit props mapping and direct keyword arguments."""
+
+    if props is not None and not isinstance(props, Mapping):
+        raise PlotError(f"{name} props must be a mapping")
+    merged = dict(props or {})
+    merged.update(kwargs)
+    return merged
+
+
 def _prepare_index(
     target: TargetPlan,
     labels: Sequence[str] | Mapping[object, str] | None,
@@ -84,6 +98,7 @@ def _prepare_index(
     loc: Any,
     size: Any = MISSING,
     props: Mapping[str, object] | None = None,
+    **kwargs: Any,
 ) -> tuple[tuple[str, ...], dict[str, Any], Literal["in", "out"]]:
     """Validate every concise panel-index input without adding Text artists."""
 
@@ -105,7 +120,8 @@ def _prepare_index(
     if any(not isinstance(label, str) for label in selected_labels):
         raise LayoutError("index: labels must be strings")
 
-    selected_props = _validate_props(props, _PANEL_PROPS, "index")
+    merged_props = _merge_props(props, kwargs, "index")
+    selected_props = _validate_props(merged_props, _PANEL_PROPS, "index")
     if "fontsize" in selected_props and "size" in selected_props:
         raise LayoutError("index: props cannot contain both 'fontsize' and 'size'")
     if size is not MISSING:
@@ -182,6 +198,7 @@ def index(
     loc: Literal["in", "out"] = "out",
     size: float | str = "large",
     props: Mapping[str, object] | None = None,
+    **kwargs: Any,
 ) -> Text: ...
 
 
@@ -193,6 +210,7 @@ def index(
     loc: Literal["in", "out"] = "out",
     size: float | str = "large",
     props: Mapping[str, object] | None = None,
+    **kwargs: Any,
 ) -> Text | tuple[Text, ...]: ...
 
 
@@ -203,6 +221,7 @@ def index(
     loc: Any = "out",
     size: Any = MISSING,
     props: Mapping[str, object] | None = None,
+    **kwargs: Any,
 ) -> Text | tuple[Text, ...]:
     """Add deterministic lowercase panel indexes to explicit Axes.
 
@@ -222,6 +241,10 @@ def index(
     props
         Optional closed Text property mapping. A font-size field conflicts
         with a separately supplied ``size``.
+    **kwargs
+        Optional direct Matplotlib Text properties (e.g. ``color``,
+        ``fontweight``, ``alpha``). Direct keyword arguments are merged with
+        and take precedence over ``props``.
 
     Returns
     -------
@@ -250,6 +273,7 @@ def index(
         loc=loc,
         size=size,
         props=props,
+        **kwargs,
     )
     return _apply_index(target_plan, *prepared)
 
@@ -261,6 +285,7 @@ def _index_signature(
     loc: Literal["in", "out"] = "out",
     size: float | str = "large",
     props: Mapping[str, object] | None = None,
+    **kwargs: Any,
 ) -> Text | tuple[Text, ...]:
     raise AssertionError("signature-only function")
 
@@ -275,6 +300,7 @@ def panel_labels(
     *,
     loc: str = "corner",
     props: Mapping[str, Any] | None = None,
+    **kwargs: Any,
 ) -> tuple[Text, ...]:
     """Add deterministic labels to an explicit ordered panel collection.
 
@@ -290,7 +316,10 @@ def panel_labels(
         corner, while ``"in"`` and ``"out"`` use the rendered Axes bounds to
         reproduce publication-style placement.
     props
-        Finite Matplotlib Text property mapping.
+        Optional finite Matplotlib Text property mapping.
+    **kwargs
+        Optional direct Matplotlib Text properties. Direct keyword arguments
+        are merged with and take precedence over ``props``.
 
     Returns
     -------
@@ -326,7 +355,8 @@ def panel_labels(
             raise LayoutError("labels must have the same length as target")
         if any(not isinstance(label, str) for label in selected_labels):
             raise LayoutError("panel labels must be strings")
-    selected_props = _validate_props(props, _PANEL_PROPS, "panel_labels")
+    merged_props = _merge_props(props, kwargs, "panel_labels")
+    selected_props = _validate_props(merged_props, _PANEL_PROPS, "panel_labels")
     selected_props.setdefault("ha", "left")
     selected_props.setdefault("va", "top")
     if loc == "corner":

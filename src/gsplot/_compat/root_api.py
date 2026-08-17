@@ -836,9 +836,9 @@ def title(
         }
     )
     if isinstance(ax, Axes):
-        if text is _UNSET or title is not _UNSET or legacy:
-            raise OptionError("canonical title requires text and props")
-        return _title(ax, text, props=props)
+        if text is _UNSET or title is not _UNSET:
+            raise OptionError("canonical title requires an explicit text value")
+        return _title(ax, text, props=props, **legacy)
     if text is not _UNSET:
         raise TypeError("legacy Figure title accepts one text value")
     if title is not _UNSET:

@@ -63,14 +63,28 @@ def test_inventory_exports_have_reproducible_signatures() -> None:
     assert exports["MosaicSpec"]["kind"] == "type_alias"
     assert exports["MosaicSpec"]["signature"] is None
 
+    kwargs_functions = {
+        "title",
+        "suptitle",
+        "index",
+        "panel_labels",
+        "legend",
+        "legends",
+        "cmap_legend",
+        "cmap_line",
+        "cmap_dash",
+        "cmap_scatter",
+        "savefig",
+    }
     for name, record in exports.items():
         if record["kind"] != "function":
             continue
         signature = inspect.signature(getattr(gsplot, name))
-        assert all(
-            parameter.kind is not inspect.Parameter.VAR_KEYWORD
-            for parameter in signature.parameters.values()
-        )
+        if name not in kwargs_functions:
+            assert all(
+                parameter.kind is not inspect.Parameter.VAR_KEYWORD
+                for parameter in signature.parameters.values()
+            )
         assert "<object object at" not in str(signature)
         assert signature.return_annotation is not inspect.Signature.empty
         assert all(

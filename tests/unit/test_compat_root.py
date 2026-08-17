@@ -320,3 +320,16 @@ def test_legacy_label_supports_empty_string_limits() -> None:
         assert ax.get_xlim() == (0.0, 300.0)
     finally:
         plt.close(figure)
+
+
+def test_root_title_supports_direct_kwargs() -> None:
+    """Root gs.title supports explicit axes target with direct kwargs."""
+
+    figure, ax = plt.subplots()
+    try:
+        t = gs.title(ax, "Explicit Title", fontsize=11, color="red")
+        assert t.get_text() == "Explicit Title"
+        assert t.get_fontsize() == 11
+        assert t.get_color() == "red"
+    finally:
+        plt.close(figure)
