@@ -158,3 +158,21 @@ def test_colored_plotters_have_explicit_compatible_defaults() -> None:
         assert points.get_alpha() == 1.0
     finally:
         plt.close(figure)
+
+
+def test_colored_direct_kwargs() -> None:
+    """Colored helpers accept direct kwargs."""
+
+    figure, ax = plt.subplots()
+    try:
+        solid = cmap_line(ax, [0, 1], [0, 1], [0, 1], linewidths=3.0)
+        assert solid.get_linewidths().tolist() == [3.0]
+
+        dashed = cmap_dash(ax, [0, 1], [1, 0], [0, 1], linewidths=2.5)
+        assert dashed[0].get_linewidths().tolist() == [2.5]
+
+        points = cmap_scatter(ax, [0, 1], [1, 2], [0, 1], s=50.0, alpha=0.8)
+        assert points.get_sizes().tolist() == [50.0]
+        assert points.get_alpha() == 0.8
+    finally:
+        plt.close(figure)

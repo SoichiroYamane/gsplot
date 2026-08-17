@@ -169,3 +169,15 @@ def test_legend_attachment_failure_restores_replaced_legends(monkeypatch) -> Non
         assert all(item in axis.get_children() for item, axis in zip(previous, axes))
     finally:
         plt.close(figure)
+
+
+def test_legend_direct_kwargs() -> None:
+    """legend accepts direct kwargs merged into props."""
+
+    figure, axis = plt.subplots()
+    try:
+        axis.plot([0, 1], [0, 1], label="signal")
+        created = legend(axis, title="MyLegend", fontsize=8)
+        assert created.get_title().get_text() == "MyLegend"
+    finally:
+        plt.close(figure)

@@ -6,6 +6,7 @@ import pytest
 from matplotlib.legend import Legend
 
 from gsplot._core import AxisSpec, InsetSpec, LayoutError, PlotError, Theme
+from gsplot._core.errors import OptionError
 from gsplot._figure.inset import inset_axes
 from gsplot._plot.basic import line
 from gsplot._style.axes import box_aspect, minor_ticks, style_axes, suptitle, title
@@ -227,5 +228,29 @@ def test_minor_ticks_supports_secondary_axis() -> None:
         )
         minor_ticks(ax_right, True, axis="y")
         minor_ticks(ax_right, False, axis="y")
+    finally:
+        plt.close(figure)
+
+
+def test_title_and_suptitle_direct_kwargs() -> None:
+    """title and suptitle accept direct kwargs alongside props."""
+
+    figure, ax = plt.subplots()
+    try:
+        t1 = title(ax, "Axis Title", fontsize=14, color="blue")
+        assert t1.get_text() == "Axis Title"
+        assert t1.get_fontsize() == 14
+        assert t1.get_color() == "blue"
+
+        t2 = suptitle(figure, "Fig Title", fontsize=16, y=0.98)
+        assert t2.get_text() == "Fig Title"
+        assert t2.get_fontsize() == 16
+
+        # invalid kwargs raise OptionError
+        with pytest.raises(OptionError, match="unknown key"):
+            title(ax, "Bad", invalid_opt=123)
+
+        with pytest.raises(OptionError, match="unknown key"):
+            suptitle(figure, "Bad", invalid_opt=123)
     finally:
         plt.close(figure)

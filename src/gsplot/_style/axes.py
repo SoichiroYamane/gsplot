@@ -204,7 +204,27 @@ def _text(value: Any, name: str) -> str:
     return value
 
 
-def title(ax: Axes, text: str, *, props: Mapping[str, Any] | None = None) -> Text:
+def _merge_props(
+    props: Mapping[str, Any] | None,
+    kwargs: Mapping[str, Any],
+    name: str,
+) -> dict[str, Any]:
+    """Merge an explicit props mapping and direct keyword arguments."""
+
+    if props is not None and not isinstance(props, Mapping):
+        raise PlotError(f"{name} props must be a mapping")
+    merged = dict(props or {})
+    merged.update(kwargs)
+    return merged
+
+
+def title(
+    ax: Axes,
+    text: str,
+    *,
+    props: Mapping[str, Any] | None = None,
+    **kwargs: Any,
+) -> Text:
     """Set an explicit Axes title and return its native Text artist.
 
     Parameters
@@ -214,7 +234,11 @@ def title(ax: Axes, text: str, *, props: Mapping[str, Any] | None = None) -> Tex
     text
         Title text.
     props
-        Finite Matplotlib Text property mapping.
+        Optional finite Matplotlib Text property mapping.
+    **kwargs
+        Optional direct Matplotlib Text properties (e.g. ``fontsize``,
+        ``color``, ``loc``, ``pad``). Direct keyword arguments are merged with
+        and take precedence over ``props``.
 
     Returns
     -------
@@ -238,11 +262,18 @@ def title(ax: Axes, text: str, *, props: Mapping[str, Any] | None = None) -> Tex
 
     if not isinstance(ax, Axes):
         raise PlotError("ax must be a Matplotlib Axes")
-    selected_props = _validate_props(props, _TITLE_PROPS, "title")
+    merged_props = _merge_props(props, kwargs, "title")
+    selected_props = _validate_props(merged_props, _TITLE_PROPS, "title")
     return ax.set_title(_text(text, "text"), **selected_props)
 
 
-def suptitle(fig: Figure, text: str, *, props: Mapping[str, Any] | None = None) -> Text:
+def suptitle(
+    fig: Figure,
+    text: str,
+    *,
+    props: Mapping[str, Any] | None = None,
+    **kwargs: Any,
+) -> Text:
     """Set an explicit Figure suptitle and return its native Text artist.
 
     Parameters
@@ -252,7 +283,11 @@ def suptitle(fig: Figure, text: str, *, props: Mapping[str, Any] | None = None) 
     text
         Suptitle text.
     props
-        Finite Matplotlib Text property mapping.
+        Optional finite Matplotlib Text property mapping.
+    **kwargs
+        Optional direct Matplotlib Text properties (e.g. ``fontsize``,
+        ``color``, ``y``, ``va``). Direct keyword arguments are merged with and
+        take precedence over ``props``.
 
     Returns
     -------
@@ -276,7 +311,8 @@ def suptitle(fig: Figure, text: str, *, props: Mapping[str, Any] | None = None) 
 
     if not isinstance(fig, Figure):
         raise PlotError("fig must be a Matplotlib Figure")
-    selected_props = _validate_props(props, _TITLE_PROPS, "suptitle")
+    merged_props = _merge_props(props, kwargs, "suptitle")
+    selected_props = _validate_props(merged_props, _TITLE_PROPS, "suptitle")
     return fig.suptitle(_text(text, "text"), **selected_props)
 
 

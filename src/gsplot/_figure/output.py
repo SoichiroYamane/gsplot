@@ -524,24 +524,28 @@ def _formats(
     return selected, destinations
 
 
-def _save_props(props: Mapping[str, Any] | None) -> dict[str, Any]:
+def _save_props(
+    props: Mapping[str, Any] | None,
+    kwargs: Mapping[str, Any] | None = None,
+) -> dict[str, Any]:
     """Validate a closed Matplotlib savefig property mapping."""
 
-    if props is None:
-        return {}
-    if not isinstance(props, Mapping):
+    if props is not None and not isinstance(props, Mapping):
         raise OutputError("props must be a mapping")
-    if any(not isinstance(key, str) for key in props):
+    merged = dict(props or {})
+    if kwargs:
+        merged.update(kwargs)
+    if any(not isinstance(key, str) for key in merged):
         raise OutputError("props keys must be strings")
-    duplicate = sorted(set(props) & _CONTROLLED_PROPS)
+    duplicate = sorted(set(merged) & _CONTROLLED_PROPS)
     if duplicate:
         joined = ", ".join(repr(key) for key in duplicate)
         raise TypeError(f"props cannot contain gsplot-controlled key(s): {joined}")
-    unknown = sorted(set(props) - _SAVEFIG_PROPS)
+    unknown = sorted(set(merged) - _SAVEFIG_PROPS)
     if unknown:
         joined = ", ".join(repr(key) for key in unknown)
         raise OptionError(f"savefig props contains unknown key(s): {joined}")
-    return dict(props)
+    return merged
 
 
 def _is_interactive_figure(figure: Figure) -> bool:
@@ -606,6 +610,7 @@ def savefig(
     overwrite: bool = False,
     show: bool = True,
     props: Mapping[str, Any] | None = None,
+    **kwargs: Any,
 ) -> tuple[Path, ...]:
     """Save an explicit Figure and optionally display it after all writes.
 
@@ -626,6 +631,10 @@ def savefig(
     props
         A finite mapping of Matplotlib save properties; gsplot controls may
         not be supplied through this mapping.
+    **kwargs
+        Optional direct Matplotlib save properties (e.g. ``transparent``,
+        ``facecolor``, ``edgecolor``). Direct keyword arguments are merged with
+        and take precedence over ``props``.
 
     Returns
     -------
@@ -665,7 +674,7 @@ def savefig(
         if not math.isfinite(dpi_value) or dpi_value <= 0:
             raise OutputError("dpi must be a positive finite number")
         dpi = dpi_value
-    selected_props = _save_props(props)
+    selected_props = _save_props(props, kwargs)
     destination = _resolved_path(path, "path")
     selected_formats, destinations = _formats(destination, formats)
     parents = {item.parent for item in destinations}

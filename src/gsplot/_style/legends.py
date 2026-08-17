@@ -54,22 +54,27 @@ _LEGEND_PROPS = frozenset(
 )
 
 
-def _props(props: Mapping[str, Any] | None, context: str) -> dict[str, Any]:
+def _props(
+    props: Mapping[str, Any] | None,
+    context: str,
+    kwargs: Mapping[str, Any] | None = None,
+) -> dict[str, Any]:
     """Validate and copy legend constructor properties."""
 
-    if props is None:
-        return {}
-    if not isinstance(props, Mapping):
+    if props is not None and not isinstance(props, Mapping):
         raise PlotError(f"{context} props must be a mapping")
-    if any(not isinstance(key, str) for key in props):
+    merged = dict(props or {})
+    if kwargs:
+        merged.update(kwargs)
+    if any(not isinstance(key, str) for key in merged):
         raise PlotError(f"{context} props keys must be strings")
-    unknown = sorted(set(props) - _LEGEND_PROPS)
+    unknown = sorted(set(merged) - _LEGEND_PROPS)
     if unknown:
         joined = ", ".join(repr(key) for key in unknown)
         raise OptionError(f"{context} props contains unknown key(s): {joined}")
-    if "ncol" in props and "ncols" in props:
+    if "ncol" in merged and "ncols" in merged:
         raise OptionError(f"{context} props cannot contain both 'ncol' and 'ncols'")
-    return dict(props)
+    return merged
 
 
 def _existing(ax: Axes) -> tuple[Legend, ...]:
@@ -140,10 +145,11 @@ def _legend_props(
     fancybox: Any,
     labelspacing: Any,
     handlelength: Any,
+    kwargs: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Resolve direct concise legend options against the advanced mapping."""
 
-    selected = _props(props, "legend")
+    selected = _props(props, "legend", kwargs)
     controls = (
         ("loc", loc, "best"),
         ("frameon", frameon, False),
@@ -242,6 +248,7 @@ def legend(
     reverse: bool = False,
     replace: bool = False,
     props: Mapping[str, object] | None = None,
+    **kwargs: Any,
 ) -> Legend: ...
 
 
@@ -260,6 +267,7 @@ def legend(
     reverse: bool = False,
     replace: bool = False,
     props: Mapping[str, object] | None = None,
+    **kwargs: Any,
 ) -> Legend | tuple[Legend, ...]: ...
 
 
@@ -277,6 +285,7 @@ def legend(
     reverse: Any = False,
     replace: Any = False,
     props: Mapping[str, object] | None = None,
+    **kwargs: Any,
 ) -> Legend | tuple[Legend, ...]:
     """Create publication legends on one or more explicit Axes.
 
@@ -298,6 +307,10 @@ def legend(
         Remove existing legends only when explicitly set to ``True``.
     props
         Finite Matplotlib Legend constructor properties.
+    **kwargs
+        Optional direct Matplotlib Legend constructor properties (e.g.
+        ``fontsize``, ``title``, ``framealpha``). Direct keyword arguments are
+        merged with and take precedence over ``props``.
 
     Returns
     -------
@@ -333,6 +346,7 @@ def legend(
         fancybox=fancybox,
         labelspacing=labelspacing,
         handlelength=handlelength,
+        kwargs=kwargs,
     )
     entry_sets = _entry_sets(target_plan, handles, labels)
 
@@ -395,6 +409,7 @@ def _legend_signature(
     reverse: bool = False,
     replace: bool = False,
     props: Mapping[str, object] | None = None,
+    **kwargs: Any,
 ) -> Legend | tuple[Legend, ...]:
     raise AssertionError("signature-only function")
 
@@ -408,6 +423,7 @@ def legends(
     *,
     replace: bool = False,
     props: Mapping[str, Any] | None = None,
+    **kwargs: Any,
 ) -> tuple[Legend, ...]:
     """Create legends for explicit axes with discoverable entries.
 
@@ -418,7 +434,10 @@ def legends(
     replace
         Remove existing legends only when explicitly set to ``True``.
     props
-        Finite Matplotlib Legend constructor properties.
+        Optional finite Matplotlib Legend constructor properties.
+    **kwargs
+        Optional direct Matplotlib Legend constructor properties. Direct
+        keyword arguments are merged with and take precedence over ``props``.
 
     Returns
     -------
@@ -598,6 +617,7 @@ def cmap_legend(
     reverse: bool = False,
     replace: bool = False,
     props: Mapping[str, Any] | None = None,
+    **kwargs: Any,
 ) -> Legend:
     """Create a local legend composed of finite colormap stripe proxies.
 
@@ -616,7 +636,10 @@ def cmap_legend(
     replace
         Remove an existing legend only when explicitly set to ``True``.
     props
-        Finite Matplotlib Legend constructor properties.
+        Optional finite Matplotlib Legend constructor properties.
+    **kwargs
+        Optional direct Matplotlib Legend constructor properties. Direct
+        keyword arguments are merged with and take precedence over ``props``.
 
     Returns
     -------
@@ -648,13 +671,17 @@ def cmap_legend(
     labels = tuple("" for _ in colors)
     if label is not None:
         labels = (label,) + labels[1:]
-    return legend(
-        ax,
-        handles=handles,
-        labels=labels,
-        reverse=False,
-        replace=replace,
-        props=props,
+    return cast(
+        Legend,
+        legend(
+            ax,
+            handles=handles,
+            labels=labels,
+            reverse=False,
+            replace=replace,
+            props=props,
+            **kwargs,
+        ),
     )
 
 
