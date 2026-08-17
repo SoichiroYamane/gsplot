@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import inspect
+import math
 from collections.abc import Mapping, Sequence
 from typing import Any, Literal, Protocol, cast, get_type_hints, overload
 
@@ -91,20 +92,94 @@ def _merge_props(
     return merged
 
 
+def _resolve_offsets(offset: Any, xoffset: Any, yoffset: Any) -> tuple[float, float]:
+    """Validate and resolve effective (xoffset, yoffset) point shifts."""
+
+    base_x = 0.0
+    base_y = 0.0
+    if offset is not None:
+        if isinstance(offset, bool):
+            raise LayoutError(
+                "index: offset must be a finite number or 2-tuple of numbers"
+            )
+        if isinstance(offset, (int, float, np.floating, np.integer)):
+            val = float(offset)
+            if not math.isfinite(val):
+                raise LayoutError(
+                    "index: offset must be a finite number or 2-tuple of numbers"
+                )
+            base_x = val
+            base_y = val
+        elif isinstance(offset, Sequence) and not isinstance(offset, (str, bytes)):
+            items = tuple(offset)
+            if len(items) != 2 or any(isinstance(item, bool) for item in items):
+                raise LayoutError(
+                    "index: offset must be a finite number or 2-tuple of numbers"
+                )
+            try:
+                base_x = float(items[0])
+                base_y = float(items[1])
+            except (TypeError, ValueError) as exc:
+                raise LayoutError(
+                    "index: offset must be a finite number or 2-tuple of numbers"
+                ) from exc
+            if not math.isfinite(base_x) or not math.isfinite(base_y):
+                raise LayoutError(
+                    "index: offset must be a finite number or 2-tuple of numbers"
+                )
+        else:
+            raise LayoutError(
+                "index: offset must be a finite number or 2-tuple of numbers"
+            )
+
+    if xoffset is not None:
+        if isinstance(xoffset, bool):
+            raise LayoutError("index: xoffset must be a finite number")
+        try:
+            val_x = float(xoffset)
+        except (TypeError, ValueError) as exc:
+            raise LayoutError("index: xoffset must be a finite number") from exc
+        if not math.isfinite(val_x):
+            raise LayoutError("index: xoffset must be a finite number")
+        base_x = val_x
+
+    if yoffset is not None:
+        if isinstance(yoffset, bool):
+            raise LayoutError("index: yoffset must be a finite number")
+        try:
+            val_y = float(yoffset)
+        except (TypeError, ValueError) as exc:
+            raise LayoutError("index: yoffset must be a finite number") from exc
+        if not math.isfinite(val_y):
+            raise LayoutError("index: yoffset must be a finite number")
+        base_y = val_y
+
+    return (base_x, base_y)
+
+
 def _prepare_index(
     target: TargetPlan,
     labels: Sequence[str] | Mapping[object, str] | None,
     *,
     loc: Any,
+    offset: Any = None,
+    xoffset: Any = None,
+    yoffset: Any = None,
     size: Any = MISSING,
     props: Mapping[str, object] | None = None,
     **kwargs: Any,
-) -> tuple[tuple[str, ...], dict[str, Any], Literal["in", "out"]]:
+) -> tuple[
+    tuple[str, ...],
+    dict[str, Any],
+    Literal["in", "out"],
+    tuple[float, float],
+]:
     """Validate every concise panel-index input without adding Text artists."""
 
     if not isinstance(loc, str) or loc not in {"in", "out"}:
         raise LayoutError("index: loc must be 'in' or 'out'")
     selected_loc = cast(Literal["in", "out"], loc)
+    eff_offset = _resolve_offsets(offset, xoffset, yoffset)
     if labels is None:
         selected_labels = tuple(
             _concise_label_for_index(position) for position in range(len(target.axes))
@@ -145,7 +220,7 @@ def _prepare_index(
             Text(0, 1, text, **selected_props)
     except (TypeError, ValueError) as exc:
         raise PlotError("index: invalid text options") from exc
-    return selected_labels, selected_props, selected_loc
+    return selected_labels, selected_props, selected_loc, eff_offset
 
 
 def _apply_index(
@@ -153,16 +228,18 @@ def _apply_index(
     labels: tuple[str, ...],
     props: Mapping[str, Any],
     loc: Literal["in", "out"],
+    offset: tuple[float, float] = (0.0, 0.0),
 ) -> Text | tuple[Text, ...]:
     """Attach one completely preflighted panel index per target Axes."""
 
+    ox, oy = offset
     created: list[Text] = []
     try:
         for axis, text in zip(target.axes, labels):
             if loc == "in":
                 transform = axis.transAxes + ScaledTranslation(
-                    _INDEX_INSIDE_GAP_POINTS / 72,
-                    -_INDEX_INSIDE_GAP_POINTS / 72,
+                    (_INDEX_INSIDE_GAP_POINTS + ox) / 72,
+                    (-_INDEX_INSIDE_GAP_POINTS + oy) / 72,
                     target.figure.dpi_scale_trans,
                 )
                 artist = cast(Any, axis).text(
@@ -177,7 +254,7 @@ def _apply_index(
                     text,
                     xy=(0, 1),
                     xycoords=(axis.yaxis.label, axis.transAxes),
-                    xytext=(0, _INDEX_OUTSIDE_GAP_POINTS),
+                    xytext=(ox, _INDEX_OUTSIDE_GAP_POINTS + oy),
                     textcoords="offset points",
                     **props,
                 )
@@ -196,6 +273,9 @@ def index(
     labels: Sequence[str] | Mapping[object, str] | None = None,
     *,
     loc: Literal["in", "out"] = "out",
+    offset: tuple[float, float] | float | None = None,
+    xoffset: float | None = None,
+    yoffset: float | None = None,
     size: float | str = "large",
     props: Mapping[str, object] | None = None,
     **kwargs: Any,
@@ -208,6 +288,9 @@ def index(
     labels: Sequence[str] | Mapping[object, str] | None = None,
     *,
     loc: Literal["in", "out"] = "out",
+    offset: tuple[float, float] | float | None = None,
+    xoffset: float | None = None,
+    yoffset: float | None = None,
     size: float | str = "large",
     props: Mapping[str, object] | None = None,
     **kwargs: Any,
@@ -219,6 +302,9 @@ def index(
     labels: Sequence[str] | Mapping[object, str] | None = None,
     *,
     loc: Any = "out",
+    offset: Any = None,
+    xoffset: Any = None,
+    yoffset: Any = None,
     size: Any = MISSING,
     props: Mapping[str, object] | None = None,
     **kwargs: Any,
@@ -236,6 +322,15 @@ def index(
         ``"in"`` places text four points right/down from the upper-left Axes
         corner. ``"out"`` aligns the text's left edge with the rendered left
         edge of the y-axis label and places it six points above the Axes.
+    offset
+        Optional point shift relative to baseline placement. Accepts a
+        scalar for equal shift in x/y or a 2-tuple ``(dx, dy)`` in points.
+    xoffset
+        Optional direct point shift along the x-axis. Overrides the x
+        component of ``offset``.
+    yoffset
+        Optional direct point shift along the y-axis. Overrides the y
+        component of ``offset``.
     size
         Matplotlib font size. The default is the historical ``"large"``.
     props
@@ -260,7 +355,7 @@ def index(
     --------
     >>> import gsplot as gs
     >>> figure, axes = gs.subplots(1, 2)
-    >>> labels = gs.index(axes, loc="in")
+    >>> labels = gs.index(axes, loc="in", offset=(2, -2))
     >>> tuple(item.get_text() for item in labels)
     ('(a)', '(b)')
     >>> figure.clear()
@@ -271,6 +366,9 @@ def index(
         target_plan,
         labels,
         loc=loc,
+        offset=offset,
+        xoffset=xoffset,
+        yoffset=yoffset,
         size=size,
         props=props,
         **kwargs,
@@ -283,6 +381,9 @@ def _index_signature(
     labels: Sequence[str] | Mapping[object, str] | None = None,
     *,
     loc: Literal["in", "out"] = "out",
+    offset: tuple[float, float] | float | None = None,
+    xoffset: float | None = None,
+    yoffset: float | None = None,
     size: float | str = "large",
     props: Mapping[str, object] | None = None,
     **kwargs: Any,
