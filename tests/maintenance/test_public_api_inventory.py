@@ -66,6 +66,7 @@ def test_inventory_exports_have_reproducible_signatures() -> None:
     kwargs_functions = {
         "title",
         "suptitle",
+        "ticks",
         "index",
         "panel_labels",
         "legend",

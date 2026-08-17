@@ -75,6 +75,7 @@ if TYPE_CHECKING:
         square,
         style_axes,
         suptitle,
+        ticks,
         title,
     )
     from ._style.legends import cmap_legend, legend, legend_entries, legends
@@ -139,6 +140,7 @@ __all__ = [
     "title",
     "suptitle",
     "minor_ticks",
+    "ticks",
     "box_aspect",
     "panel_labels",
     "index",

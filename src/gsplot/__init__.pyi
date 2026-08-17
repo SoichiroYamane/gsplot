@@ -60,6 +60,7 @@ from ._style.axes import minor_ticks as minor_ticks
 from ._style.axes import square as square
 from ._style.axes import style_axes as style_axes
 from ._style.axes import suptitle as suptitle
+from ._style.axes import ticks as ticks
 from ._style.axes import title as title
 from ._style.legends import cmap_legend as cmap_legend
 from ._style.legends import legend as legend
@@ -129,6 +130,7 @@ __all__ = [
     "title",
     "suptitle",
     "minor_ticks",
+    "ticks",
     "box_aspect",
     "panel_labels",
     "index",

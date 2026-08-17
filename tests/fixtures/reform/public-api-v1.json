@@ -17,6 +17,7 @@
     "title",
     "suptitle",
     "minor_ticks",
+    "ticks",
     "box_aspect",
     "panel_labels",
     "paper",
@@ -328,6 +329,10 @@
     },
     "suptitle": {
       "attribute": "suptitle",
+      "module": "gsplot._style.axes"
+    },
+    "ticks": {
+      "attribute": "ticks",
       "module": "gsplot._style.axes"
     },
     "title": {
@@ -1490,6 +1495,41 @@
             "required": false
           },
           {
+            "annotation": "'bool | None'",
+            "default": "None",
+            "kind": "KEYWORD_ONLY",
+            "name": "top",
+            "required": false
+          },
+          {
+            "annotation": "'bool | None'",
+            "default": "None",
+            "kind": "KEYWORD_ONLY",
+            "name": "bottom",
+            "required": false
+          },
+          {
+            "annotation": "'bool | None'",
+            "default": "None",
+            "kind": "KEYWORD_ONLY",
+            "name": "left",
+            "required": false
+          },
+          {
+            "annotation": "'bool | None'",
+            "default": "None",
+            "kind": "KEYWORD_ONLY",
+            "name": "right",
+            "required": false
+          },
+          {
+            "annotation": "\"Literal['in', 'out', 'inout'] | None\"",
+            "default": "None",
+            "kind": "KEYWORD_ONLY",
+            "name": "direction",
+            "required": false
+          },
+          {
             "annotation": "'bool'",
             "default": "False",
             "kind": "KEYWORD_ONLY",
@@ -1507,14 +1547,14 @@
         "return_annotation": "'None'"
       },
       "docstring": {
-        "sha256": "c1a736703d19a97a6a3f9de00f04a856c4b2cff5c7f267b6336ce595166d77a0",
+        "sha256": "fc71b3f61965a0656b8a91055f5cb4d3ca16e5e1206e3277af327f008a5e0277",
         "summary": "Set publication labels and optional panel geometry on explicit Axes."
       },
       "kind": "function",
       "module": "gsplot._compat.root_api",
       "name": "label",
       "qualname": "label",
-      "signature": "(target: 'AxesTarget', xlabel: 'str | LabelRecords' = '', ylabel: 'str' = '', xlim: 'Limit | None' = None, ylim: 'Limit | None' = None, *, xscale: 'Scale' = 'linear', yscale: 'Scale' = 'linear', xticks: 'TickSpec | None' = None, yticks: 'TickSpec | None' = None, minor: 'bool' = True, xminor: 'bool | None' = None, yminor: 'bool | None' = None, pad: 'float' = 5, xpad: 'float | None' = None, ypad: 'float | None' = None, margin: 'float | tuple[float, float] | None' = None, xmargin: 'float | None' = None, ymargin: 'float | None' = None, square: 'bool' = False, index: \"bool | Literal['in', 'out']\" = False) -> 'None'"
+      "signature": "(target: 'AxesTarget', xlabel: 'str | LabelRecords' = '', ylabel: 'str' = '', xlim: 'Limit | None' = None, ylim: 'Limit | None' = None, *, xscale: 'Scale' = 'linear', yscale: 'Scale' = 'linear', xticks: 'TickSpec | None' = None, yticks: 'TickSpec | None' = None, minor: 'bool' = True, xminor: 'bool | None' = None, yminor: 'bool | None' = None, pad: 'float' = 5, xpad: 'float | None' = None, ypad: 'float | None' = None, margin: 'float | tuple[float, float] | None' = None, xmargin: 'float | None' = None, ymargin: 'float | None' = None, top: 'bool | None' = None, bottom: 'bool | None' = None, left: 'bool | None' = None, right: 'bool | None' = None, direction: \"Literal['in', 'out', 'inout'] | None\" = None, square: 'bool' = False, index: \"bool | Literal['in', 'out']\" = False) -> 'None'"
     },
     {
       "call_contract": {
@@ -1657,19 +1697,133 @@
             "kind": "KEYWORD_ONLY",
             "name": "axis",
             "required": false
+          },
+          {
+            "annotation": "'bool | None'",
+            "default": "None",
+            "kind": "KEYWORD_ONLY",
+            "name": "top",
+            "required": false
+          },
+          {
+            "annotation": "'bool | None'",
+            "default": "None",
+            "kind": "KEYWORD_ONLY",
+            "name": "bottom",
+            "required": false
+          },
+          {
+            "annotation": "'bool | None'",
+            "default": "None",
+            "kind": "KEYWORD_ONLY",
+            "name": "left",
+            "required": false
+          },
+          {
+            "annotation": "'bool | None'",
+            "default": "None",
+            "kind": "KEYWORD_ONLY",
+            "name": "right",
+            "required": false
           }
         ],
         "return_annotation": "'None'"
       },
       "docstring": {
-        "sha256": "7a21739dba36ac44b744c000a34a18d8802c27d0ffb0710313945755589eb71c",
+        "sha256": "1c662aa1799584469b6fe7f195560da0c7f3988c81bd6bab9ad28e37ae77f9f8",
         "summary": "Enable or disable minor ticks on explicit Axes targets."
       },
       "kind": "function",
       "module": "gsplot._style.axes",
       "name": "minor_ticks",
       "qualname": "minor_ticks",
-      "signature": "(target: 'AxesTarget', enabled: 'bool', *, axis: \"Literal['x', 'y', 'both']\" = 'both') -> 'None'"
+      "signature": "(target: 'AxesTarget', enabled: 'bool', *, axis: \"Literal['x', 'y', 'both']\" = 'both', top: 'bool | None' = None, bottom: 'bool | None' = None, left: 'bool | None' = None, right: 'bool | None' = None) -> 'None'"
+    },
+    {
+      "call_contract": {
+        "parameters": [
+          {
+            "annotation": "'AxesTarget'",
+            "default": null,
+            "kind": "POSITIONAL_OR_KEYWORD",
+            "name": "target",
+            "required": true
+          },
+          {
+            "annotation": "'bool | None'",
+            "default": "None",
+            "kind": "KEYWORD_ONLY",
+            "name": "minor",
+            "required": false
+          },
+          {
+            "annotation": "\"Literal['x', 'y', 'both']\"",
+            "default": "'both'",
+            "kind": "KEYWORD_ONLY",
+            "name": "axis",
+            "required": false
+          },
+          {
+            "annotation": "'bool | None'",
+            "default": "None",
+            "kind": "KEYWORD_ONLY",
+            "name": "top",
+            "required": false
+          },
+          {
+            "annotation": "'bool | None'",
+            "default": "None",
+            "kind": "KEYWORD_ONLY",
+            "name": "bottom",
+            "required": false
+          },
+          {
+            "annotation": "'bool | None'",
+            "default": "None",
+            "kind": "KEYWORD_ONLY",
+            "name": "left",
+            "required": false
+          },
+          {
+            "annotation": "'bool | None'",
+            "default": "None",
+            "kind": "KEYWORD_ONLY",
+            "name": "right",
+            "required": false
+          },
+          {
+            "annotation": "\"Literal['in', 'out', 'inout'] | None\"",
+            "default": "None",
+            "kind": "KEYWORD_ONLY",
+            "name": "direction",
+            "required": false
+          },
+          {
+            "annotation": "\"Literal['both', 'major', 'minor']\"",
+            "default": "'both'",
+            "kind": "KEYWORD_ONLY",
+            "name": "which",
+            "required": false
+          },
+          {
+            "annotation": "'Any'",
+            "default": null,
+            "kind": "VAR_KEYWORD",
+            "name": "kwargs",
+            "required": true
+          }
+        ],
+        "return_annotation": "'None'"
+      },
+      "docstring": {
+        "sha256": "5746794370b52e1bc8da768337ea75f742b26bd0adf592f38defc8fd4f76b887",
+        "summary": "Configure tick visibility, minor ticks, direction, and parameters."
+      },
+      "kind": "function",
+      "module": "gsplot._style.axes",
+      "name": "ticks",
+      "qualname": "ticks",
+      "signature": "(target: 'AxesTarget', *, minor: 'bool | None' = None, axis: \"Literal['x', 'y', 'both']\" = 'both', top: 'bool | None' = None, bottom: 'bool | None' = None, left: 'bool | None' = None, right: 'bool | None' = None, direction: \"Literal['in', 'out', 'inout'] | None\" = None, which: \"Literal['both', 'major', 'minor']\" = 'both', **kwargs: 'Any') -> 'None'"
     },
     {
       "call_contract": {
@@ -2734,19 +2888,54 @@
             "kind": "KEYWORD_ONLY",
             "name": "ymargin",
             "required": false
+          },
+          {
+            "annotation": "'bool | None'",
+            "default": "None",
+            "kind": "KEYWORD_ONLY",
+            "name": "top",
+            "required": false
+          },
+          {
+            "annotation": "'bool | None'",
+            "default": "None",
+            "kind": "KEYWORD_ONLY",
+            "name": "bottom",
+            "required": false
+          },
+          {
+            "annotation": "'bool | None'",
+            "default": "None",
+            "kind": "KEYWORD_ONLY",
+            "name": "left",
+            "required": false
+          },
+          {
+            "annotation": "'bool | None'",
+            "default": "None",
+            "kind": "KEYWORD_ONLY",
+            "name": "right",
+            "required": false
+          },
+          {
+            "annotation": "\"Literal['in', 'out', 'inout'] | None\"",
+            "default": "None",
+            "kind": "KEYWORD_ONLY",
+            "name": "direction",
+            "required": false
           }
         ],
         "return_annotation": "None"
       },
       "docstring": {
-        "sha256": "fc055479e9e37c55a564e00a79810615bd849f2aa00f9dbecd4b79786f377668",
+        "sha256": "cbbba7a8552a883ca0c0593e6f030df4f3389954b7e99323ae3675304ab97c4b",
         "summary": "Immutable Cartesian labels, limits, scales, ticks, and padding."
       },
       "kind": "class",
       "module": "gsplot._core.types",
       "name": "AxisSpec",
       "qualname": "AxisSpec",
-      "signature": "(*, xlabel: 'str | None' = None, ylabel: 'str | None' = None, xlim: 'tuple[float | None, float | None] | None' = None, ylim: 'tuple[float | None, float | None] | None' = None, xscale: \"Literal['linear', 'log', 'symlog', 'logit']\" = 'linear', yscale: \"Literal['linear', 'log', 'symlog', 'logit']\" = 'linear', xticks: 'tuple[float, ...] | None' = None, yticks: 'tuple[float, ...] | None' = None, xminor: 'bool | None' = None, yminor: 'bool | None' = None, xlabelpad: 'float | None' = None, ylabelpad: 'float | None' = None, xmargin: 'float' = 0.05, ymargin: 'float' = 0.05) -> None"
+      "signature": "(*, xlabel: 'str | None' = None, ylabel: 'str | None' = None, xlim: 'tuple[float | None, float | None] | None' = None, ylim: 'tuple[float | None, float | None] | None' = None, xscale: \"Literal['linear', 'log', 'symlog', 'logit']\" = 'linear', yscale: \"Literal['linear', 'log', 'symlog', 'logit']\" = 'linear', xticks: 'tuple[float, ...] | None' = None, yticks: 'tuple[float, ...] | None' = None, xminor: 'bool | None' = None, yminor: 'bool | None' = None, xlabelpad: 'float | None' = None, ylabelpad: 'float | None' = None, xmargin: 'float' = 0.05, ymargin: 'float' = 0.05, top: 'bool | None' = None, bottom: 'bool | None' = None, left: 'bool | None' = None, right: 'bool | None' = None, direction: \"Literal['in', 'out', 'inout'] | None\" = None) -> None"
     },
     {
       "call_contract": {
@@ -3688,6 +3877,7 @@
     "title",
     "suptitle",
     "minor_ticks",
+    "ticks",
     "box_aspect",
     "panel_labels",
     "index",
@@ -3840,6 +4030,7 @@
     "style_axes",
     "subplots",
     "suptitle",
+    "ticks",
     "ticks_off",
     "ticks_on",
     "ticks_on_axes",

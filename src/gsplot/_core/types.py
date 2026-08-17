@@ -204,6 +204,7 @@ NormalizeSpec: TypeAlias = tuple[float, float] | _NormalizeProtocol
 
 
 _SCALES = {"linear", "log", "symlog", "logit"}
+_DIRECTIONS = {"in", "out", "inout"}
 _LOCATIONS = {
     "upper right",
     "upper left",
@@ -364,6 +365,10 @@ class AxisSpec:
         Optional finite label padding values.
     xmargin, ymargin
         Optional non-negative margin ratios for automatic endpoints.
+    top, bottom, left, right
+        Optional boolean flags for edge tick and label visibility.
+    direction
+        Optional tick direction: ``"in"``, ``"out"``, or ``"inout"``.
 
     Notes
     -----
@@ -373,11 +378,11 @@ class AxisSpec:
     Examples
     --------
     >>> import gsplot as gs
-    >>> spec = gs.AxisSpec(xlabel="time", xscale="linear")
+    >>> spec = gs.AxisSpec(xlabel="time", xscale="linear", right=False)
     >>> spec.xlabel
     'time'
-    >>> spec.xmargin
-    0.05
+    >>> spec.right
+    False
     """
 
     xlabel: str | None = None
@@ -394,6 +399,11 @@ class AxisSpec:
     ylabelpad: float | None = None
     xmargin: float = 0.05
     ymargin: float = 0.05
+    top: bool | None = None
+    bottom: bool | None = None
+    left: bool | None = None
+    right: bool | None = None
+    direction: Literal["in", "out", "inout"] | None = None
 
     def __post_init__(self) -> None:
         """Validate every field and normalize sequence-like inputs."""
@@ -428,6 +438,19 @@ class AxisSpec:
         object.__setattr__(
             self, "ymargin", _nonnegative_finite(self.ymargin, "ymargin")
         )
+        for edge_name, edge_val in (
+            ("top", self.top),
+            ("bottom", self.bottom),
+            ("left", self.left),
+            ("right", self.right),
+        ):
+            if edge_val is not None and not isinstance(edge_val, bool):
+                raise LayoutError(f"{edge_name} must be a boolean or None")
+        if self.direction is not None:
+            if not isinstance(self.direction, str) or self.direction not in _DIRECTIONS:
+                raise LayoutError(
+                    f"direction must be one of: {', '.join(sorted(_DIRECTIONS))}"
+                )
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)

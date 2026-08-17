@@ -86,6 +86,7 @@ _CANONICAL_EXPORTS: Final[dict[str, tuple[str, str]]] = {
     "title": ("gsplot._compat.root_api", "title"),
     "suptitle": ("gsplot._style.axes", "suptitle"),
     "minor_ticks": ("gsplot._style.axes", "minor_ticks"),
+    "ticks": ("gsplot._style.axes", "ticks"),
     "box_aspect": ("gsplot._style.axes", "box_aspect"),
     "panel_labels": ("gsplot._style.panels", "panel_labels"),
     "index": ("gsplot._style.panels", "index"),
