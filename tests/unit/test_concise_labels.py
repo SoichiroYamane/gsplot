@@ -494,3 +494,20 @@ def test_index_offset_and_coordinate_shifts() -> None:
             index(ax, yoffset="invalid")
     finally:
         plt.close(fig)
+
+
+def test_label_with_string_and_none_limits() -> None:
+    """label accepts empty strings, asterisks, and None in xlim/ylim tuples/sequences."""
+
+    fig, ax = plt.subplots()
+    try:
+        # Tuple with empty string and None
+        label(ax, "$T$ (K)", r"$\chi_{\rm V}$", xlim=(0, ""), ylim=(0, None))
+        assert ax.get_xlim()[0] == 0.0
+        assert ax.get_ylim()[0] == 0.0
+
+        # List/sequence with asterisks
+        label(ax, "x", "y", xlim=["*", 10], ylim=["", "*"])
+        assert ax.get_xlim()[1] == 10.0
+    finally:
+        plt.close(fig)

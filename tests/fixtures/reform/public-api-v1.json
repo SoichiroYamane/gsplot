@@ -2848,14 +2848,14 @@
             "required": false
           },
           {
-            "annotation": "'tuple[float | None, float | None] | None'",
+            "annotation": "'Limit | None'",
             "default": "None",
             "kind": "KEYWORD_ONLY",
             "name": "xlim",
             "required": false
           },
           {
-            "annotation": "'tuple[float | None, float | None] | None'",
+            "annotation": "'Limit | None'",
             "default": "None",
             "kind": "KEYWORD_ONLY",
             "name": "ylim",
@@ -2977,7 +2977,7 @@
       "module": "gsplot._core.types",
       "name": "AxisSpec",
       "qualname": "AxisSpec",
-      "signature": "(*, xlabel: 'str | None' = None, ylabel: 'str | None' = None, xlim: 'tuple[float | None, float | None] | None' = None, ylim: 'tuple[float | None, float | None] | None' = None, xscale: \"Literal['linear', 'log', 'symlog', 'logit']\" = 'linear', yscale: \"Literal['linear', 'log', 'symlog', 'logit']\" = 'linear', xticks: 'tuple[float, ...] | None' = None, yticks: 'tuple[float, ...] | None' = None, xminor: 'bool | None' = None, yminor: 'bool | None' = None, xlabelpad: 'float | None' = None, ylabelpad: 'float | None' = None, xmargin: 'float' = 0.05, ymargin: 'float' = 0.05, top: 'bool | None' = None, bottom: 'bool | None' = None, left: 'bool | None' = None, right: 'bool | None' = None, direction: \"Literal['in', 'out', 'inout'] | None\" = None) -> None"
+      "signature": "(*, xlabel: 'str | None' = None, ylabel: 'str | None' = None, xlim: 'Limit | None' = None, ylim: 'Limit | None' = None, xscale: \"Literal['linear', 'log', 'symlog', 'logit']\" = 'linear', yscale: \"Literal['linear', 'log', 'symlog', 'logit']\" = 'linear', xticks: 'tuple[float, ...] | None' = None, yticks: 'tuple[float, ...] | None' = None, xminor: 'bool | None' = None, yminor: 'bool | None' = None, xlabelpad: 'float | None' = None, ylabelpad: 'float | None' = None, xmargin: 'float' = 0.05, ymargin: 'float' = 0.05, top: 'bool | None' = None, bottom: 'bool | None' = None, left: 'bool | None' = None, right: 'bool | None' = None, direction: \"Literal['in', 'out', 'inout'] | None\" = None) -> None"
     },
     {
       "call_contract": {

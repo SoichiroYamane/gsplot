@@ -52,7 +52,9 @@ StyleMode: TypeAlias = Literal["auto", "paper"] | None
 # Public type alias: ZoomCorners; two explicit parent/inset connector pairs.
 ZoomCorners: TypeAlias = tuple[tuple[int, int], tuple[int, int]]
 # Public type alias: Limit; finite two-value axis limits after validation.
-Limit: TypeAlias = tuple[float | None, float | None] | tuple[float, float]
+Limit: TypeAlias = (
+    tuple[float | str | None, float | str | None] | Sequence[float | str | None]
+)
 # Public type alias: Scale; supported Cartesian scale names.
 Scale: TypeAlias = Literal["linear", "log", "symlog", "logit"]
 # Public type alias: TickSpec; finite numeric tick locations after validation.
@@ -392,8 +394,8 @@ class AxisSpec:
 
     xlabel: str | None = None
     ylabel: str | None = None
-    xlim: tuple[float | None, float | None] | None = None
-    ylim: tuple[float | None, float | None] | None = None
+    xlim: Limit | None = None
+    ylim: Limit | None = None
     xscale: Literal["linear", "log", "symlog", "logit"] = "linear"
     yscale: Literal["linear", "log", "symlog", "logit"] = "linear"
     xticks: tuple[float, ...] | None = None
