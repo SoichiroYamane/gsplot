@@ -531,21 +531,12 @@ def _layout_kind(figure: Figure) -> str:
 def _validate_reuse(
     figure: Figure,
     *,
-    size: SizeSpec,
-    size_inches: tuple[float, float] | None,
     layout: LayoutMode,
+    clear: bool = False,
 ) -> None:
     """Reject incompatible Figure reuse before clearing or adding Axes."""
 
-    if (
-        size not in {"auto", None}
-        and size_inches is not None
-        and not np.allclose(figure.get_size_inches(), size_inches, rtol=0, atol=1e-9)
-    ):
-        raise LayoutError(
-            "requested size does not match the reused Figure; omit size to preserve it"
-        )
-    if layout == "auto":
+    if layout == "auto" or clear:
         return
     current = _layout_kind(figure)
     if current != layout and not (
@@ -854,9 +845,8 @@ def subplots(
     if resolved_fig is not None:
         _validate_reuse(
             resolved_fig,
-            size=options["size"],
-            size_inches=size_inches,
             layout=options["layout"],
+            clear=selected_clear,
         )
 
     new_figure = resolved_fig is None
@@ -872,6 +862,8 @@ def subplots(
         )
     else:
         target = cast(Figure, resolved_fig)
+        if size_inches is not None:
+            target.set_size_inches(size_inches, forward=True)
         if selected_clear:
             target.clear()
             target.set_layout_engine(
