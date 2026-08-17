@@ -45,7 +45,7 @@ StyleMode: TypeAlias = Literal["auto", "paper"] | None
 # Public type alias: ZoomCorners; two explicit parent/inset connector pairs.
 ZoomCorners: TypeAlias = tuple[tuple[int, int], tuple[int, int]]
 # Public type alias: Limit; finite two-value axis limits after validation.
-Limit: TypeAlias = tuple[float, float]
+Limit: TypeAlias = tuple[float | None, float | None] | tuple[float, float]
 # Public type alias: Scale; supported Cartesian scale names.
 Scale: TypeAlias = Literal["linear", "log", "symlog", "logit"]
 # Public type alias: TickSpec; finite numeric tick locations after validation.
@@ -273,8 +273,8 @@ def _color(value: Any, name: str) -> ColorSpec:
     return cast(tuple[float, float, float, float], channels)
 
 
-def _limits(value: Any, name: str) -> tuple[float, float] | None:
-    """Validate finite, non-equal limits while preserving their order."""
+def _limits(value: Any, name: str) -> tuple[float | None, float | None] | None:
+    """Validate finite limits or partial limits while preserving their order."""
 
     if value is None:
         return None
@@ -290,13 +290,19 @@ def _limits(value: Any, name: str) -> tuple[float, float] | None:
         raise LayoutError(f"{name} must contain exactly two finite values")
     if values[0] in (None, "", "*") and values[1] in (None, "", "*"):
         return None
-    result = (
-        _finite(values[0], f"{name}[0]", LayoutError),
-        _finite(values[1], f"{name}[1]", LayoutError),
+    low = (
+        None
+        if values[0] in (None, "", "*")
+        else _finite(values[0], f"{name}[0]", LayoutError)
     )
-    if result[0] == result[1]:
+    high = (
+        None
+        if values[1] in (None, "", "*")
+        else _finite(values[1], f"{name}[1]", LayoutError)
+    )
+    if low is not None and high is not None and low == high:
         raise LayoutError(f"{name} values must not be equal")
-    return result
+    return (low, high)
 
 
 def _ticks(value: Any, name: str) -> tuple[float, ...] | None:
@@ -322,6 +328,22 @@ def _optional_finite(value: Any, name: str) -> float | None:
     return None if value is None else _finite(value, name, LayoutError)
 
 
+def _nonnegative_finite(value: Any, name: str, default: float = 0.05) -> float:
+    """Validate a non-negative finite margin value."""
+
+    if value is None:
+        return default
+    if isinstance(value, bool):
+        raise LayoutError(f"{name} must be non-negative")
+    try:
+        num = float(value)
+    except (TypeError, ValueError) as exc:
+        raise LayoutError(f"{name} must be non-negative") from exc
+    if not math.isfinite(num) or num < 0:
+        raise LayoutError(f"{name} must be non-negative")
+    return num
+
+
 @dataclass(frozen=True, slots=True, kw_only=True)
 class AxisSpec:
     """Immutable Cartesian labels, limits, scales, ticks, and padding.
@@ -340,6 +362,8 @@ class AxisSpec:
         Optional minor-tick enable flags.
     xlabelpad, ylabelpad
         Optional finite label padding values.
+    xmargin, ymargin
+        Optional non-negative margin ratios for automatic endpoints.
 
     Notes
     -----
@@ -352,12 +376,14 @@ class AxisSpec:
     >>> spec = gs.AxisSpec(xlabel="time", xscale="linear")
     >>> spec.xlabel
     'time'
+    >>> spec.xmargin
+    0.05
     """
 
     xlabel: str | None = None
     ylabel: str | None = None
-    xlim: tuple[float, float] | None = None
-    ylim: tuple[float, float] | None = None
+    xlim: tuple[float | None, float | None] | None = None
+    ylim: tuple[float | None, float | None] | None = None
     xscale: Literal["linear", "log", "symlog", "logit"] = "linear"
     yscale: Literal["linear", "log", "symlog", "logit"] = "linear"
     xticks: tuple[float, ...] | None = None
@@ -366,6 +392,8 @@ class AxisSpec:
     yminor: bool | None = None
     xlabelpad: float | None = None
     ylabelpad: float | None = None
+    xmargin: float = 0.05
+    ymargin: float = 0.05
 
     def __post_init__(self) -> None:
         """Validate every field and normalize sequence-like inputs."""
@@ -393,6 +421,12 @@ class AxisSpec:
         )
         object.__setattr__(
             self, "ylabelpad", _optional_finite(self.ylabelpad, "ylabelpad")
+        )
+        object.__setattr__(
+            self, "xmargin", _nonnegative_finite(self.xmargin, "xmargin")
+        )
+        object.__setattr__(
+            self, "ymargin", _nonnegative_finite(self.ymargin, "ymargin")
         )
 
 

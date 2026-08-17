@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import inspect
+import math
 from collections.abc import Mapping, Sequence
 from typing import Any, Literal, cast, get_type_hints, overload
 
@@ -91,7 +92,16 @@ def _validate_scale_domain(axis: Axes | _AxesBase, spec: AxisSpec) -> None:
         if scale == "linear" or scale == "symlog":
             continue
         if limits is not None:
-            domain_values: tuple[float, ...] = limits
+            domain_values: tuple[float, ...] = tuple(
+                float(val) for val in limits if val is not None
+            )
+            if not domain_values and axis.has_data():
+                bounds = (
+                    axis.dataLim.intervalx
+                    if coordinate == "x"
+                    else axis.dataLim.intervaly
+                )
+                domain_values = tuple(float(item) for item in bounds)
         elif axis.has_data():
             bounds = (
                 axis.dataLim.intervalx if coordinate == "x" else axis.dataLim.intervaly
@@ -114,6 +124,137 @@ def _validate_scale_domain(axis: Axes | _AxesBase, spec: AxisSpec) -> None:
                 raise LayoutError(f"{coordinate}scale='log' requires positive ticks")
             if scale == "logit" and any(value <= 0 or value >= 1 for value in ticks):
                 raise LayoutError(f"{coordinate}scale='logit' requires ticks in (0, 1)")
+
+
+def _get_axis_data_bounds(
+    axis: Axes | _AxesBase, coordinate: Literal["x", "y"], scale: Scale
+) -> tuple[float, float]:
+    """Return effective data bounds (min, max) for one coordinate."""
+
+    data_lim = getattr(axis, "dataLim", None)
+    if data_lim is not None:
+        interval = data_lim.intervalx if coordinate == "x" else data_lim.intervaly
+        dmin, dmax = float(interval[0]), float(interval[1])
+        if math.isfinite(dmin) and math.isfinite(dmax) and dmin <= dmax:
+            if scale == "log":
+                if dmin > 0:
+                    return (dmin, dmax)
+            else:
+                return (dmin, dmax)
+    current = axis.get_xlim() if coordinate == "x" else axis.get_ylim()
+    cmin, cmax = float(min(current)), float(max(current))
+    if not math.isfinite(cmin) or not math.isfinite(cmax):
+        return (0.0, 1.0) if scale != "log" else (1.0, 10.0)
+    if scale == "log" and cmin <= 0:
+        return (1.0, 10.0)
+    return (cmin, cmax)
+
+
+def _resolve_axis_limit(
+    axis: Axes | _AxesBase,
+    limit: tuple[float | None, float | None] | None,
+    coordinate: Literal["x", "y"],
+    scale: Scale,
+    margin_ratio: float,
+) -> tuple[float, float] | None:
+    """Resolve a limit tuple with automatic smart margins for None endpoints."""
+
+    if limit is None:
+        return None
+
+    raw_low, raw_high = limit
+    if raw_low is not None and raw_high is not None:
+        return (raw_low, raw_high)
+
+    dmin, dmax = _get_axis_data_bounds(axis, coordinate, scale)
+
+    if scale == "log":
+        log_dmin = math.log10(max(dmin, 1e-300))
+        log_dmax = math.log10(max(dmax, 1e-300))
+        if log_dmax < log_dmin:
+            log_dmin, log_dmax = log_dmax, log_dmin
+
+        if raw_low is not None and raw_high is None:
+            log_low = math.log10(max(raw_low, 1e-300))
+            if log_low < log_dmax:
+                span = log_dmax - log_low
+                if span <= 0:
+                    span = (log_dmax - log_dmin) if (log_dmax > log_dmin) else 1.0
+                log_high = log_dmax + span * margin_ratio
+            else:
+                span = log_low - log_dmin
+                if span <= 0:
+                    span = (log_dmax - log_dmin) if (log_dmax > log_dmin) else 1.0
+                log_high = log_dmin - span * margin_ratio
+            return (raw_low, 10.0**log_high)
+        elif raw_low is None and raw_high is not None:
+            log_high = math.log10(max(raw_high, 1e-300))
+            if log_high > log_dmin:
+                span = log_high - log_dmin
+                if span <= 0:
+                    span = (log_dmax - log_dmin) if (log_dmax > log_dmin) else 1.0
+                log_low = log_dmin - span * margin_ratio
+            else:
+                span = log_dmax - log_high
+                if span <= 0:
+                    span = (log_dmax - log_dmin) if (log_dmax > log_dmin) else 1.0
+                log_low = log_dmax + span * margin_ratio
+            return (10.0**log_low, raw_high)
+        else:
+            span = log_dmax - log_dmin
+            if span <= 0:
+                span = 1.0
+            log_low = log_dmin - span * margin_ratio
+            log_high = log_dmax + span * margin_ratio
+            return (10.0**log_low, 10.0**log_high)
+    else:
+        if raw_low is not None and raw_high is None:
+            if raw_low < dmax:
+                span = dmax - raw_low
+                if span <= 0:
+                    span = (
+                        (dmax - dmin)
+                        if (dmax > dmin)
+                        else (abs(dmax) * 0.1 if dmax != 0 else 1.0)
+                    )
+                high = dmax + span * margin_ratio
+            else:
+                span = raw_low - dmin
+                if span <= 0:
+                    span = (
+                        (dmax - dmin)
+                        if (dmax > dmin)
+                        else (abs(dmin) * 0.1 if dmin != 0 else 1.0)
+                    )
+                high = dmin - span * margin_ratio
+            return (raw_low, high)
+        elif raw_low is None and raw_high is not None:
+            if raw_high > dmin:
+                span = raw_high - dmin
+                if span <= 0:
+                    span = (
+                        (dmax - dmin)
+                        if (dmax > dmin)
+                        else (abs(dmin) * 0.1 if dmin != 0 else 1.0)
+                    )
+                low = dmin - span * margin_ratio
+            else:
+                span = dmax - raw_high
+                if span <= 0:
+                    span = (
+                        (dmax - dmin)
+                        if (dmax > dmin)
+                        else (abs(dmax) * 0.1 if dmax != 0 else 1.0)
+                    )
+                low = dmax + span * margin_ratio
+            return (low, raw_high)
+        else:
+            span = dmax - dmin
+            if span <= 0:
+                span = abs(dmax) * 0.1 if dmax != 0 else 1.0
+            low = dmin - span * margin_ratio
+            high = dmax + span * margin_ratio
+            return (low, high)
 
 
 def style_axes(target: AxesTarget, spec: AxisSpec) -> None:
@@ -171,9 +312,17 @@ def _apply_axis_spec(axis: Axes | _AxesBase, spec: AxisSpec) -> None:
     axis.set_xscale(spec.xscale)
     axis.set_yscale(spec.yscale)
     if spec.xlim is not None:
-        axis.set_xlim(spec.xlim)
+        resolved_xlim = _resolve_axis_limit(
+            axis, spec.xlim, "x", spec.xscale, spec.xmargin
+        )
+        if resolved_xlim is not None:
+            axis.set_xlim(resolved_xlim)
     if spec.ylim is not None:
-        axis.set_ylim(spec.ylim)
+        resolved_ylim = _resolve_axis_limit(
+            axis, spec.ylim, "y", spec.yscale, spec.ymargin
+        )
+        if resolved_ylim is not None:
+            axis.set_ylim(resolved_ylim)
     if spec.xticks is not None:
         axis.set_xticks(spec.xticks)
     if spec.yticks is not None:
@@ -408,7 +557,7 @@ def box_aspect(target: AxesTarget, aspect: float | None) -> None:
 
 def _parse_limit_and_scale(
     value: Any, default_scale: Scale, name: str
-) -> tuple[tuple[float, float] | None, Scale]:
+) -> tuple[tuple[float | None, float | None] | None, Scale]:
     """Parse a limit field which can be None, a scale string, a 2-tuple (min, max), or a 3-tuple (min, max, scale)."""
 
     if value is None or value is MISSING:
@@ -416,7 +565,7 @@ def _parse_limit_and_scale(
     if isinstance(value, str):
         if value in _SCALES:
             return None, cast(Scale, value)
-        if value == "*":
+        if value in ("", "*"):
             return None, default_scale
         raise LayoutError(
             f"{name} string must be a scale: {', '.join(sorted(_SCALES))}"
@@ -436,6 +585,44 @@ def _parse_limit_and_scale(
     raise LayoutError(f"{name} must be a limit sequence or scale string")
 
 
+def _resolve_margins(margin: Any, xmargin: Any, ymargin: Any) -> tuple[float, float]:
+    """Validate and resolve effective (xmargin, ymargin) ratios."""
+
+    def _validate_single(val: Any, name: str) -> float:
+        if isinstance(val, bool):
+            raise LayoutError(f"label: {name} must be a non-negative number")
+        try:
+            num = float(val)
+        except (TypeError, ValueError) as exc:
+            raise LayoutError(f"label: {name} must be a non-negative number") from exc
+        if not math.isfinite(num) or num < 0:
+            raise LayoutError(f"label: {name} must be a non-negative number")
+        return num
+
+    default_margin = 0.05
+
+    if margin is None:
+        base_x = default_margin
+        base_y = default_margin
+    elif isinstance(margin, Sequence) and not isinstance(margin, (str, bytes)):
+        items = tuple(margin)
+        if len(items) != 2:
+            raise LayoutError(
+                "label: margin tuple must contain exactly two values (xmargin, ymargin)"
+            )
+        base_x = _validate_single(items[0], "margin[0]")
+        base_y = _validate_single(items[1], "margin[1]")
+    else:
+        single = _validate_single(margin, "margin")
+        base_x = single
+        base_y = single
+
+    eff_x = _validate_single(xmargin, "xmargin") if xmargin is not None else base_x
+    eff_y = _validate_single(ymargin, "ymargin") if ymargin is not None else base_y
+
+    return eff_x, eff_y
+
+
 def _record_spec(
     value: Any,
     *,
@@ -448,6 +635,8 @@ def _record_spec(
     yminor: bool,
     xpad: float,
     ypad: float,
+    xmargin: float,
+    ymargin: float,
 ) -> AxisSpec:
     """Normalize one concise two- or four-field label record."""
 
@@ -482,6 +671,8 @@ def _record_spec(
         yminor=yminor,
         xlabelpad=xpad,
         ylabelpad=ypad,
+        xmargin=xmargin,
+        ymargin=ymargin,
     )
 
 
@@ -502,6 +693,9 @@ def _label_specs(
     pad: Any,
     xpad: Any,
     ypad: Any,
+    margin: Any = None,
+    xmargin: Any = None,
+    ymargin: Any = None,
 ) -> tuple[AxisSpec, ...]:
     """Resolve all concise label values before any Axes is changed."""
 
@@ -527,6 +721,7 @@ def _label_specs(
         if ypad is None
         else ensure_finite_real(ypad, "label: ypad", error=LayoutError)
     )
+    eff_xmargin, eff_ymargin = _resolve_margins(margin, xmargin, ymargin)
 
     common = {
         "xscale": xscale,
@@ -537,6 +732,8 @@ def _label_specs(
         "yminor": selected_yminor,
         "xpad": selected_xpad,
         "ypad": selected_ypad,
+        "xmargin": eff_xmargin,
+        "ymargin": eff_ymargin,
     }
     if isinstance(xlabel, str):
         selected_ylabel = "" if ylabel is MISSING else ylabel
@@ -557,6 +754,8 @@ def _label_specs(
             yminor=selected_yminor,
             xlabelpad=selected_xpad,
             ylabelpad=selected_ypad,
+            xmargin=eff_xmargin,
+            ymargin=eff_ymargin,
         )
         return tuple(spec for _ in target.axes)
 
@@ -600,6 +799,9 @@ def label(
     pad: float = 5,
     xpad: float | None = None,
     ypad: float | None = None,
+    margin: float | tuple[float, float] | None = None,
+    xmargin: float | None = None,
+    ymargin: float | None = None,
     square: bool = False,
     index: bool | Literal["in", "out"] = False,
 ) -> None: ...
@@ -620,6 +822,9 @@ def label(
     pad: float = 5,
     xpad: float | None = None,
     ypad: float | None = None,
+    margin: float | tuple[float, float] | None = None,
+    xmargin: float | None = None,
+    ymargin: float | None = None,
     square: bool = False,
     index: bool | Literal["in", "out"] = False,
 ) -> None: ...
@@ -642,6 +847,9 @@ def label(
     pad: Any = 5,
     xpad: Any = None,
     ypad: Any = None,
+    margin: Any = None,
+    xmargin: Any = None,
+    ymargin: Any = None,
     square: Any = False,
     index: Any = False,
 ) -> None:
@@ -656,6 +864,8 @@ def label(
         exact-key two- or four-field label records.
     xlim, ylim
         Optional finite, unequal limits; inverted limits are preserved.
+        Endpoints set to ``None`` or wildcard placeholders use automatic
+        smart margins.
     xscale, yscale
         Shared ``linear``, ``log``, ``symlog``, or ``logit`` scales.
     xticks, yticks
@@ -664,6 +874,9 @@ def label(
         Minor-tick controls. Coordinate-specific ``None`` inherits ``minor``.
     pad, xpad, ypad
         Label padding in points. Coordinate-specific ``None`` inherits ``pad``.
+    margin, xmargin, ymargin
+        Margin ratios for auto-determined limits (defaults to ``0.05`` / 5%).
+        Coordinate-specific ``None`` inherits ``margin``.
     square
         Apply the same unit box aspect as :func:`square` when true.
     index
@@ -690,6 +903,8 @@ def label(
     --------
     >>> import gsplot as gs
     >>> figure, ax = gs.subplots()
+    >>> gs.line(ax, [0, 1], [0, 1])
+    [<matplotlib.lines.Line2D object ...>]
     >>> gs.label(ax, "time", "signal", xlim=(0, 1), square=True)
     >>> ax.get_xlabel()
     'time'
@@ -714,6 +929,9 @@ def label(
             pad=pad,
             xpad=xpad,
             ypad=ypad,
+            margin=margin,
+            xmargin=xmargin,
+            ymargin=ymargin,
         )
     except LayoutError as exc:
         if str(exc).startswith("label:"):
@@ -809,6 +1027,9 @@ def _label_signature(
     pad: float = 5,
     xpad: float | None = None,
     ypad: float | None = None,
+    margin: float | tuple[float, float] | None = None,
+    xmargin: float | None = None,
+    ymargin: float | None = None,
     square: bool = False,
     index: bool | Literal["in", "out"] = False,
 ) -> None:

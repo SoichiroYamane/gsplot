@@ -1469,6 +1469,27 @@
             "required": false
           },
           {
+            "annotation": "'float | tuple[float, float] | None'",
+            "default": "None",
+            "kind": "KEYWORD_ONLY",
+            "name": "margin",
+            "required": false
+          },
+          {
+            "annotation": "'float | None'",
+            "default": "None",
+            "kind": "KEYWORD_ONLY",
+            "name": "xmargin",
+            "required": false
+          },
+          {
+            "annotation": "'float | None'",
+            "default": "None",
+            "kind": "KEYWORD_ONLY",
+            "name": "ymargin",
+            "required": false
+          },
+          {
             "annotation": "'bool'",
             "default": "False",
             "kind": "KEYWORD_ONLY",
@@ -1486,14 +1507,14 @@
         "return_annotation": "'None'"
       },
       "docstring": {
-        "sha256": "8962b8d3aadbf26b4679cc40e8da3a9e5e906110d0ced99a9116f97d7ab952d0",
+        "sha256": "c1a736703d19a97a6a3f9de00f04a856c4b2cff5c7f267b6336ce595166d77a0",
         "summary": "Set publication labels and optional panel geometry on explicit Axes."
       },
       "kind": "function",
       "module": "gsplot._compat.root_api",
       "name": "label",
       "qualname": "label",
-      "signature": "(target: 'AxesTarget', xlabel: 'str | LabelRecords' = '', ylabel: 'str' = '', xlim: 'Limit | None' = None, ylim: 'Limit | None' = None, *, xscale: 'Scale' = 'linear', yscale: 'Scale' = 'linear', xticks: 'TickSpec | None' = None, yticks: 'TickSpec | None' = None, minor: 'bool' = True, xminor: 'bool | None' = None, yminor: 'bool | None' = None, pad: 'float' = 5, xpad: 'float | None' = None, ypad: 'float | None' = None, square: 'bool' = False, index: \"bool | Literal['in', 'out']\" = False) -> 'None'"
+      "signature": "(target: 'AxesTarget', xlabel: 'str | LabelRecords' = '', ylabel: 'str' = '', xlim: 'Limit | None' = None, ylim: 'Limit | None' = None, *, xscale: 'Scale' = 'linear', yscale: 'Scale' = 'linear', xticks: 'TickSpec | None' = None, yticks: 'TickSpec | None' = None, minor: 'bool' = True, xminor: 'bool | None' = None, yminor: 'bool | None' = None, pad: 'float' = 5, xpad: 'float | None' = None, ypad: 'float | None' = None, margin: 'float | tuple[float, float] | None' = None, xmargin: 'float | None' = None, ymargin: 'float | None' = None, square: 'bool' = False, index: \"bool | Literal['in', 'out']\" = False) -> 'None'"
     },
     {
       "call_contract": {
@@ -2631,14 +2652,14 @@
             "required": false
           },
           {
-            "annotation": "'tuple[float, float] | None'",
+            "annotation": "'tuple[float | None, float | None] | None'",
             "default": "None",
             "kind": "KEYWORD_ONLY",
             "name": "xlim",
             "required": false
           },
           {
-            "annotation": "'tuple[float, float] | None'",
+            "annotation": "'tuple[float | None, float | None] | None'",
             "default": "None",
             "kind": "KEYWORD_ONLY",
             "name": "ylim",
@@ -2699,19 +2720,33 @@
             "kind": "KEYWORD_ONLY",
             "name": "ylabelpad",
             "required": false
+          },
+          {
+            "annotation": "'float'",
+            "default": "0.05",
+            "kind": "KEYWORD_ONLY",
+            "name": "xmargin",
+            "required": false
+          },
+          {
+            "annotation": "'float'",
+            "default": "0.05",
+            "kind": "KEYWORD_ONLY",
+            "name": "ymargin",
+            "required": false
           }
         ],
         "return_annotation": "None"
       },
       "docstring": {
-        "sha256": "a71579efed42ae9e5e3ec78d8ebff03328b859ad2db714fd78850cce3c1940bd",
+        "sha256": "fc055479e9e37c55a564e00a79810615bd849f2aa00f9dbecd4b79786f377668",
         "summary": "Immutable Cartesian labels, limits, scales, ticks, and padding."
       },
       "kind": "class",
       "module": "gsplot._core.types",
       "name": "AxisSpec",
       "qualname": "AxisSpec",
-      "signature": "(*, xlabel: 'str | None' = None, ylabel: 'str | None' = None, xlim: 'tuple[float, float] | None' = None, ylim: 'tuple[float, float] | None' = None, xscale: \"Literal['linear', 'log', 'symlog', 'logit']\" = 'linear', yscale: \"Literal['linear', 'log', 'symlog', 'logit']\" = 'linear', xticks: 'tuple[float, ...] | None' = None, yticks: 'tuple[float, ...] | None' = None, xminor: 'bool | None' = None, yminor: 'bool | None' = None, xlabelpad: 'float | None' = None, ylabelpad: 'float | None' = None) -> None"
+      "signature": "(*, xlabel: 'str | None' = None, ylabel: 'str | None' = None, xlim: 'tuple[float | None, float | None] | None' = None, ylim: 'tuple[float | None, float | None] | None' = None, xscale: \"Literal['linear', 'log', 'symlog', 'logit']\" = 'linear', yscale: \"Literal['linear', 'log', 'symlog', 'logit']\" = 'linear', xticks: 'tuple[float, ...] | None' = None, yticks: 'tuple[float, ...] | None' = None, xminor: 'bool | None' = None, yminor: 'bool | None' = None, xlabelpad: 'float | None' = None, ylabelpad: 'float | None' = None, xmargin: 'float' = 0.05, ymargin: 'float' = 0.05) -> None"
     },
     {
       "call_contract": {
@@ -3219,13 +3254,13 @@
     {
       "call_contract": null,
       "docstring": {
-        "sha256": "2bcdb9d2c5855cee481592f6fd4670a538a7a4b5b006543d99bebf6d7e36e1ae",
-        "summary": "Built-in immutable sequence."
+        "sha256": "6a2e4095a89de2369f4d426e76b3b5211acb3427ba3f8dd0f7ab254229a683b2",
+        "summary": "Represent a PEP 604 union type"
       },
       "kind": "type_alias",
-      "module": "builtins",
+      "module": "types",
       "name": "Limit",
-      "qualname": "tuple",
+      "qualname": null,
       "signature": null
     },
     {
