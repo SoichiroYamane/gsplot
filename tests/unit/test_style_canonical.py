@@ -215,3 +215,17 @@ def test_canonical_axes_collection_target_validation() -> None:
     finally:
         plt.close(figure_a)
         plt.close(figure_b)
+
+
+def test_minor_ticks_supports_secondary_axis() -> None:
+    """SecondaryAxis targets are styled by minor_ticks."""
+
+    figure, ax = plt.subplots()
+    try:
+        ax_right = ax.secondary_yaxis(
+            "right", functions=(lambda x: x * 2, lambda x: x / 2)
+        )
+        minor_ticks(ax_right, True, axis="y")
+        minor_ticks(ax_right, False, axis="y")
+    finally:
+        plt.close(figure)

@@ -7,6 +7,7 @@ from dataclasses import dataclass
 from typing import Any, Generic, Literal, TypeVar
 
 from matplotlib.axes import Axes
+from matplotlib.axes._base import _AxesBase
 from matplotlib.figure import Figure
 
 from .errors import PlotError
@@ -24,7 +25,7 @@ def _operation_name(value: str) -> str:
     return value
 
 
-def _axis_root_figure(axis: Axes) -> Figure | None:
+def _axis_root_figure(axis: Any) -> Figure | None:
     """Return an Axes root Figure without requiring ``root=True`` support."""
 
     owner: Any = axis.get_figure()
@@ -61,7 +62,7 @@ class TargetPlan:
             raise PlotError(f"{self.operation}: target plan is empty or incomplete")
         if self.kind not in {"single", "sequence", "array", "mapping"}:
             raise PlotError(f"{self.operation}: target kind is invalid")
-        if any(not isinstance(axis, Axes) for axis in self.axes):
+        if any(not isinstance(axis, (Axes, _AxesBase)) for axis in self.axes):
             raise PlotError(f"{self.operation}: target contains a non-Axes value")
         if len({id(axis) for axis in self.axes}) != len(self.axes):
             raise PlotError(f"{self.operation}: target contains a duplicate Axes")

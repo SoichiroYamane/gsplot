@@ -20,6 +20,7 @@ from typing import Any, Literal, cast
 import numpy as np
 from matplotlib import ticker
 from matplotlib.axes import Axes
+from matplotlib.axes._base import _AxesBase
 from matplotlib.figure import Figure
 from mpl_toolkits.axes_grid1.inset_locator import inset_axes as _mpl_inset_axes
 from numpy.typing import ArrayLike, NDArray
@@ -310,16 +311,21 @@ def _legacy_limits(
     if value is None:
         return None, "linear", None, None
     if isinstance(value, (str, bytes)):
+        if value in ("", "*"):
+            return None, "linear", None, None
         raise LayoutError("legacy limits must be a finite sequence")
     values = tuple(value)
     if len(values) < 2:
         raise LayoutError("legacy limits must contain two values")
-    try:
-        limits = (float(values[0]), float(values[1]))
-    except (TypeError, ValueError) as exc:
-        raise LayoutError("legacy limits must contain finite values") from exc
-    if not np.all(np.isfinite(limits)) or limits[0] == limits[1]:
-        raise LayoutError("legacy limits must contain finite unequal values")
+    if values[0] in (None, "", "*") and values[1] in (None, "", "*"):
+        limits = None
+    else:
+        try:
+            limits = (float(cast(Any, values[0])), float(cast(Any, values[1])))
+        except (TypeError, ValueError) as exc:
+            raise LayoutError("legacy limits must contain finite values") from exc
+        if not np.all(np.isfinite(limits)) or limits[0] == limits[1]:
+            raise LayoutError("legacy limits must contain finite unequal values")
     scale = values[2] if len(values) > 2 and isinstance(values[2], str) else "linear"
     if scale not in {"linear", "log", "symlog", "logit"}:
         raise LayoutError(f"unsupported legacy scale: {scale!r}")
@@ -835,25 +841,25 @@ def legend_colormap(
     )
 
 
-def ticks_off(ax: Axes, mode: str = "xy") -> None:
+def ticks_off(ax: Axes | _AxesBase, mode: str = "xy") -> None:
     """Adapt legacy minor-tick disabling to the canonical selector."""
 
     _warn("ticks_off", "minor_ticks")
     selected = {"xy": "both"}.get(mode, mode)
     _minor_ticks(
-        ax,
+        cast(Any, ax),
         False,
         axis=cast(Literal["x", "y", "both"], selected),
     )
 
 
-def ticks_on(ax: Axes, mode: str = "xy") -> None:
+def ticks_on(ax: Axes | _AxesBase, mode: str = "xy") -> None:
     """Adapt legacy minor-tick enabling to the canonical selector."""
 
     _warn("ticks_on", "minor_ticks")
     selected = {"xy": "both"}.get(mode, mode)
     _minor_ticks(
-        ax,
+        cast(Any, ax),
         True,
         axis=cast(Literal["x", "y", "both"], selected),
     )

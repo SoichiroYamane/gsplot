@@ -8,6 +8,7 @@ from typing import Any, Literal, cast, get_type_hints, overload
 
 import numpy as np
 from matplotlib.axes import Axes
+from matplotlib.axes._base import _AxesBase
 from matplotlib.figure import Figure
 from matplotlib.text import Text
 
@@ -80,7 +81,7 @@ def _validate_props(
     return dict(props)
 
 
-def _validate_scale_domain(axis: Axes, spec: AxisSpec) -> None:
+def _validate_scale_domain(axis: Axes | _AxesBase, spec: AxisSpec) -> None:
     """Reject impossible log/logit domains before a target is mutated."""
 
     for coordinate, scale, limits, ticks in (
@@ -154,7 +155,7 @@ def style_axes(target: AxesTarget, spec: AxisSpec) -> None:
         _apply_axis_spec(axis, spec)
 
 
-def _apply_axis_spec(axis: Axes, spec: AxisSpec) -> None:
+def _apply_axis_spec(axis: Axes | _AxesBase, spec: AxisSpec) -> None:
     """Apply one already validated axis specification."""
 
     if spec.xlabel is not None or spec.xlabelpad is not None:
@@ -183,7 +184,9 @@ def _apply_axis_spec(axis: Axes, spec: AxisSpec) -> None:
         _set_minor(axis, spec.yminor, "y")
 
 
-def _set_minor(axis: Axes, enabled: bool, coordinate: Literal["x", "y"]) -> None:
+def _set_minor(
+    axis: Axes | _AxesBase, enabled: bool, coordinate: Literal["x", "y"]
+) -> None:
     """Set one scale-aware minor locator without consulting pyplot."""
 
     selected = axis.xaxis if coordinate == "x" else axis.yaxis
@@ -711,7 +714,7 @@ def label(
         _apply_index(target_plan, *index_plan)
 
 
-def _apply_square(axes: Sequence[Axes], aspect: float) -> None:
+def _apply_square(axes: Sequence[Axes | _AxesBase], aspect: float) -> None:
     """Apply one validated positive box aspect."""
 
     for axis in axes:
