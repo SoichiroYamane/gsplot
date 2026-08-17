@@ -11,6 +11,7 @@ from typing import Any, Literal, Protocol, TypeAlias, cast, overload
 
 from matplotlib.artist import Artist
 from matplotlib.axes import Axes
+from matplotlib.axes._base import _AxesBase
 from matplotlib.colors import is_color_like
 from matplotlib.legend_handler import HandlerBase
 from matplotlib.typing import LineStyleType, MarkerType
@@ -25,7 +26,13 @@ ColorSpec: TypeAlias = str | RGBColor
 # Public type alias: MosaicSpec; a Matplotlib mosaic string or label rows.
 MosaicSpec: TypeAlias = str | Sequence[Sequence[str | None]]
 # Public type alias: AxesTarget; one Axes or a deterministic finite collection.
-AxesTarget: TypeAlias = Axes | Sequence[Axes] | Mapping[Any, Axes] | NDArray[Any]
+AxesTarget: TypeAlias = (
+    Axes
+    | _AxesBase
+    | Sequence[Axes | _AxesBase]
+    | Mapping[Any, Axes | _AxesBase]
+    | NDArray[Any]
+)
 # Public type alias: PerTarget; ordered or exact-key per-target values.
 PerTarget: TypeAlias = Sequence[Any] | Mapping[Any, Any]
 # Public type alias: LineStyle; a named style or finite dash-tuple form.

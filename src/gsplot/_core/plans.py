@@ -48,7 +48,7 @@ class TargetPlan:
 
     operation: str
     figure: Figure
-    axes: tuple[Axes, ...]
+    axes: tuple[Axes | _AxesBase, ...]
     keys: tuple[object, ...]
     kind: TargetKind
 

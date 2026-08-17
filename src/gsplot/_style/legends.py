@@ -10,6 +10,7 @@ import matplotlib as mpl
 import numpy as np
 from matplotlib.artist import Artist
 from matplotlib.axes import Axes
+from matplotlib.axes._base import _AxesBase
 from matplotlib.colors import Colormap, Normalize
 from matplotlib.figure import Figure
 from matplotlib.legend import Legend
@@ -77,7 +78,7 @@ def _props(
     return merged
 
 
-def _existing(ax: Axes) -> tuple[Legend, ...]:
+def _existing(ax: Any) -> tuple[Legend, ...]:
     """Return legends attached to one Axes without creating anything."""
 
     found: list[Legend] = []
@@ -91,18 +92,21 @@ def _existing(ax: Axes) -> tuple[Legend, ...]:
 
 
 def _entries(
-    ax: Axes,
-    handles: Sequence[Any] | None,
-    labels: Sequence[str] | None,
+    ax: Any,
+    handles: Sequence[Artist] | None = None,
+    labels: Sequence[str] | None = None,
 ) -> tuple[tuple[Any, ...], tuple[str, ...]]:
-    """Validate explicit or automatically discovered legend entries."""
+    """Resolve normalized handles and string labels for one target Axes."""
 
     if (handles is None) != (labels is None):
         raise TypeError("handles and labels must be supplied together")
     selected_handles: tuple[Any, ...]
     selected_labels: tuple[str, ...]
     if handles is None:
-        discovered_handles, discovered_labels = ax.get_legend_handles_labels()
+        getter = getattr(ax, "get_legend_handles_labels", None)
+        if getter is None:
+            return (), ()
+        discovered_handles, discovered_labels = getter()
         selected_handles = tuple(discovered_handles)
         selected_labels = tuple(discovered_labels)
     else:
@@ -182,15 +186,18 @@ def _entry_sets(
     target: TargetPlan,
     handles: Sequence[Artist] | Mapping[object, Sequence[Artist]] | None,
     labels: Sequence[str] | Mapping[object, Sequence[str]] | None,
-) -> tuple[tuple[Axes, tuple[Any, ...], tuple[str, ...]], ...]:
+) -> tuple[tuple[Axes | _AxesBase, tuple[Any, ...], tuple[str, ...]], ...]:
     """Resolve explicit or discovered entries for every target Axes."""
 
     if (handles is None) != (labels is None):
         raise TypeError("handles and labels must be supplied together")
     if handles is None:
-        entries: list[tuple[Axes, tuple[Any, ...], tuple[str, ...]]] = []
+        entries: list[tuple[Axes | _AxesBase, tuple[Any, ...], tuple[str, ...]]] = []
         for axis in target.axes:
-            discovered_handles, discovered_labels = axis.get_legend_handles_labels()
+            getter = getattr(axis, "get_legend_handles_labels", None)
+            if getter is None:
+                continue
+            discovered_handles, discovered_labels = getter()
             if not discovered_handles:
                 continue
             discovered_entry_handles, discovered_entry_labels = _entries(
@@ -350,7 +357,9 @@ def legend(
     )
     entry_sets = _entry_sets(target_plan, handles, labels)
 
-    planned: list[tuple[Axes, Legend, tuple[Legend, ...], Legend | None]] = []
+    planned: list[
+        tuple[Axes | _AxesBase, Legend, tuple[Legend, ...], Legend | None]
+    ] = []
     for axis, selected_handles, selected_labels in entry_sets:
         if selected_reverse:
             selected_handles = selected_handles[::-1]
@@ -360,7 +369,7 @@ def legend(
             raise LayoutError("legend: an existing legend requires replace=True")
         try:
             created = Legend(
-                axis,
+                cast(Any, axis),
                 selected_handles,
                 selected_labels,
                 handler_map=cast(Any, selected_handlers),
@@ -373,7 +382,9 @@ def legend(
             (axis, created, existing, current if isinstance(current, Legend) else None)
         )
 
-    attempted: list[tuple[Axes, Legend, tuple[Legend, ...], Legend | None]] = []
+    attempted: list[
+        tuple[Axes | _AxesBase, Legend, tuple[Legend, ...], Legend | None]
+    ] = []
     try:
         for axis, created, existing, current in planned:
             attempted.append((axis, created, existing, current))
@@ -471,20 +482,23 @@ def legends(
     else:
         target_plan = normalize_axes(target, operation="legends")
     axes = target_plan.axes
-    entries: list[tuple[Axes, tuple[Any, ...], tuple[str, ...], tuple[Legend, ...]]] = (
-        []
-    )
+    entries: list[
+        tuple[Axes | _AxesBase, tuple[Any, ...], tuple[str, ...], tuple[Legend, ...]]
+    ] = []
     for axis in axes:
-        handles, labels = axis.get_legend_handles_labels()
+        getter = getattr(axis, "get_legend_handles_labels", None)
+        if getter is None:
+            continue
+        handles, labels = getter()
         if not handles:
             continue
         existing = _existing(axis)
         if existing and not replace:
             raise LayoutError("an existing legend requires replace=True")
         entries.append((axis, tuple(handles), tuple(labels), existing))
-    planned: list[tuple[Axes, Legend, tuple[Legend, ...]]] = []
+    planned: list[tuple[Axes | _AxesBase, Legend, tuple[Legend, ...]]] = []
     for axis, stored_handles, stored_labels, existing in entries:
-        item = Legend(axis, stored_handles, stored_labels, **selected_props)
+        item = Legend(cast(Any, axis), stored_handles, stored_labels, **selected_props)
         planned.append((axis, item, existing))
     created: list[Legend] = []
     for axis, item, existing in planned:

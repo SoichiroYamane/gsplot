@@ -841,7 +841,7 @@ def line(
             target_plan.axes, datasets, plans, prepared
         ):
             values, default_edge, default_face = item
-            artists = list(axis.plot(x_values, y_values, **values))
+            artists = list(cast(Any, axis).plot(x_values, y_values, **values))
             for artist in artists:
                 artist.set_alpha(None)
                 artist.set_color(_color_with_alpha(artist.get_color(), plan["alpha"]))
@@ -1047,7 +1047,7 @@ def scatter(
         for axis, (x_values, y_values), values in zip(
             target_plan.axes, datasets, prepared
         ):
-            results.append(axis.scatter(x_values, y_values, **values))
+            results.append(cast(Any, axis).scatter(x_values, y_values, **values))
     except Exception:
         for collection in reversed(results):
             collection.remove()
