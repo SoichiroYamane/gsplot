@@ -290,7 +290,7 @@ def test_all_multi_target_failures_are_atomic() -> None:
     second_figure, other = gs.subplots(style=None)
     cases = (
         lambda: gs.line(axes, [0, 1], [0, 1], lw=[1, np.nan]),
-        lambda: gs.line(axes, [0, 1], [0, 1], series=[0, 10]),
+        lambda: gs.line(axes, [0, 1], [0, 1], series=[0, "invalid"]),
         lambda: gs.line(
             {"a": axes[0], "b": axes[1]},
             {"a": [0, 1]},
