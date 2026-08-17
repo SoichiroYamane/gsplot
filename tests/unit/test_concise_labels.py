@@ -3,6 +3,7 @@
 import inspect
 
 import matplotlib.pyplot as plt
+import numpy as np
 import pytest
 from matplotlib.ticker import AutoMinorLocator, LogLocator
 
@@ -21,6 +22,9 @@ def test_concise_label_and_index_signatures_publish_frozen_defaults() -> None:
     assert label_signature.parameters["ylabel"].default == ""
     assert label_signature.parameters["minor"].default is True
     assert label_signature.parameters["pad"].default == 5
+    assert label_signature.parameters["margin"].default is None
+    assert label_signature.parameters["xmargin"].default is None
+    assert label_signature.parameters["ymargin"].default is None
     assert label_signature.parameters["square"].default is False
     assert label_signature.parameters["index"].default is False
     assert index_signature.parameters["loc"].default == "out"
@@ -285,3 +289,113 @@ def test_index_direct_kwargs() -> None:
         assert t.get_weight() == "bold"
     finally:
         plt.close(figure)
+
+
+def test_label_smart_margins() -> None:
+    """label automatically applies smart margins on None endpoints."""
+
+    figure, ax = plt.subplots()
+    try:
+        ax.plot([10, 300], [0.05, 1.85])
+
+        # 1. Partial limit with default 5% margin on None
+        label(ax, "$T$ (K)", r"$\chi_{\rm V}$", xlim=(0, 300), ylim=(0, None))
+        assert ax.get_xlim() == (0.0, 300.0)
+        assert ax.get_ylim()[0] == 0.0
+        assert np.isclose(ax.get_ylim()[1], 1.85 + 1.85 * 0.05)
+
+        # 2. Both endpoints explicitly specified (0% margin)
+        label(ax, "$T$ (K)", r"$\chi_{\rm V}$", xlim=(0, 300), ylim=(0, 2.0))
+        assert ax.get_xlim() == (0.0, 300.0)
+        assert ax.get_ylim() == (0.0, 2.0)
+
+        # 3. Custom margin=0 (no margin on None)
+        label(ax, "$T$ (K)", r"$\chi_{\rm V}$", xlim=(0, 300), ylim=(0, None), margin=0)
+        assert ax.get_ylim() == (0.0, 1.85)
+
+        # 4. Custom margin=0.1 (10% margin on None)
+        label(
+            ax, "$T$ (K)", r"$\chi_{\rm V}$", xlim=(0, 300), ylim=(0, None), margin=0.1
+        )
+        assert ax.get_ylim()[0] == 0.0
+        assert np.isclose(ax.get_ylim()[1], 1.85 + 1.85 * 0.1)
+
+        # 5. ymargin override
+        label(
+            ax,
+            "$T$ (K)",
+            r"$\chi_{\rm V}$",
+            xlim=(0, 300),
+            ylim=(0, None),
+            ymargin=0.08,
+        )
+        assert np.isclose(ax.get_ylim()[1], 1.85 + 1.85 * 0.08)
+
+        # 6. Lower bound auto (xlim=(None, 300))
+        label(ax, "$T$ (K)", r"$\chi_{\rm V}$", xlim=(None, 300), ylim=(0, 2.0))
+        assert ax.get_xlim()[1] == 300.0
+        assert np.isclose(ax.get_xlim()[0], 10.0 - (300.0 - 10.0) * 0.05)
+
+        # 7. Log scale smart margin
+        label(
+            ax,
+            "$T$ (K)",
+            r"$\chi_{\rm V}$",
+            xlim=(0, 300),
+            ylim=(1.0, None),
+            yscale="log",
+        )
+        assert ax.get_yscale() == "log"
+        assert ax.get_ylim()[0] == 1.0
+        expected_log_high = np.log10(1.85) + (np.log10(1.85) - np.log10(1.0)) * 0.05
+        assert np.isclose(ax.get_ylim()[1], 10.0**expected_log_high)
+
+        # 8. Tuple margin (xmargin, ymargin)
+        label(
+            ax,
+            "$T$ (K)",
+            r"$\chi_{\rm V}$",
+            xlim=(0, None),
+            ylim=(0, None),
+            yscale="linear",
+            margin=(0.02, 0.08),
+        )
+        assert np.isclose(ax.get_xlim()[1], 300.0 + 300.0 * 0.02)
+        assert np.isclose(ax.get_ylim()[1], 1.85 + 1.85 * 0.08)
+
+        # 9. Error validation for invalid margin values
+        with pytest.raises(LayoutError, match="margin"):
+            label(ax, margin=-0.1)
+        with pytest.raises(LayoutError, match="margin"):
+            label(ax, margin=True)
+        with pytest.raises(LayoutError, match="margin"):
+            label(ax, margin=(0.1, 0.2, 0.3))
+    finally:
+        plt.close(figure)
+
+
+def test_label_smart_margins_edge_cases() -> None:
+    """label handles empty Axes, single data points, and inverted ranges."""
+
+    # Empty axes
+    fig_empty, ax_empty = plt.subplots()
+    try:
+        label(ax_empty, "x", "y", xlim=(0, None), ylim=(0, None))
+        assert ax_empty.get_xlim()[0] == 0.0
+        assert ax_empty.get_xlim()[1] > 0.0
+        assert ax_empty.get_ylim()[0] == 0.0
+        assert ax_empty.get_ylim()[1] > 0.0
+    finally:
+        plt.close(fig_empty)
+
+    # Inverted axis: xlim=(300, None) with x in [10, 300]
+    fig_inv, ax_inv = plt.subplots()
+    try:
+        ax_inv.plot([10, 300], [0, 1])
+        label(ax_inv, "x", "y", xlim=(300, None), ylim=(0, 1))
+        assert ax_inv.get_xlim()[0] == 300.0
+        # Inverted: upper end is beyond 10, so < 10
+        assert ax_inv.get_xlim()[1] < 10.0
+        assert np.isclose(ax_inv.get_xlim()[1], 10.0 - (300.0 - 10.0) * 0.05)
+    finally:
+        plt.close(fig_inv)
