@@ -147,7 +147,7 @@ def _get_axis_data_bounds(
 
 def _resolve_axis_limit(
     axis: Axes | _AxesBase,
-    limit: tuple[float | None, float | None] | None,
+    limit: Limit | None,
     coordinate: Literal["x", "y"],
     scale: Scale,
     margin_ratio: float,
@@ -157,7 +157,9 @@ def _resolve_axis_limit(
     if limit is None:
         return None
 
-    raw_low, raw_high = limit
+    first, second = limit[0], limit[1]
+    raw_low = None if first in (None, "", "*") else float(first)
+    raw_high = None if second in (None, "", "*") else float(second)
     if raw_low is not None and raw_high is not None:
         return (raw_low, raw_high)
 
