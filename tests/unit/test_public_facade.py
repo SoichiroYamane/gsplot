@@ -26,6 +26,7 @@ def test_root_exposes_only_the_canonical_manifest_and_native_objects(tmp_path) -
         "title",
         "suptitle",
         "minor_ticks",
+        "ticks",
         "box_aspect",
         "panel_labels",
         "index",

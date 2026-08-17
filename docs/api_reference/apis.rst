@@ -34,6 +34,7 @@ Functions
    gsplot.title
    gsplot.suptitle
    gsplot.minor_ticks
+   gsplot.ticks
    gsplot.box_aspect
    gsplot.panel_labels
    gsplot.paper

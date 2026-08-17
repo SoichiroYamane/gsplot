@@ -18,6 +18,7 @@ from .._core.options import MISSING
 from .._core.plans import TargetPlan
 from .._core.targets import normalize_axes, resolve_target_mapping
 from .._core.types import (
+    _DIRECTIONS,
     _SCALES,
     AxesTarget,
     AxisSpec,
@@ -331,6 +332,55 @@ def _apply_axis_spec(axis: Axes | _AxesBase, spec: AxisSpec) -> None:
         _set_minor(axis, spec.xminor, "x")
     if spec.yminor is not None:
         _set_minor(axis, spec.yminor, "y")
+    if (
+        spec.top is not None
+        or spec.bottom is not None
+        or spec.left is not None
+        or spec.right is not None
+        or spec.direction is not None
+    ):
+        _apply_tick_controls(
+            axis,
+            top=spec.top,
+            bottom=spec.bottom,
+            left=spec.left,
+            right=spec.right,
+            direction=spec.direction,
+        )
+
+
+def _apply_tick_controls(
+    axis_obj: Axes | _AxesBase,
+    *,
+    axis: Literal["x", "y", "both"] = "both",
+    which: Literal["both", "major", "minor"] = "both",
+    top: bool | None = None,
+    bottom: bool | None = None,
+    left: bool | None = None,
+    right: bool | None = None,
+    direction: Literal["in", "out", "inout"] | None = None,
+    **kwargs: Any,
+) -> None:
+    """Apply tick visibility, direction, and parameters to an Axes."""
+
+    params: dict[str, Any] = {}
+    if top is not None:
+        params["top"] = top
+        params["labeltop"] = top
+    if bottom is not None:
+        params["bottom"] = bottom
+        params["labelbottom"] = bottom
+    if left is not None:
+        params["left"] = left
+        params["labelleft"] = left
+    if right is not None:
+        params["right"] = right
+        params["labelright"] = right
+    if direction is not None:
+        params["direction"] = direction
+    params.update(kwargs)
+    if params:
+        axis_obj.tick_params(axis=axis, which=which, **params)
 
 
 def _set_minor(
@@ -470,6 +520,10 @@ def minor_ticks(
     enabled: bool,
     *,
     axis: Literal["x", "y", "both"] = "both",
+    top: bool | None = None,
+    bottom: bool | None = None,
+    left: bool | None = None,
+    right: bool | None = None,
 ) -> None:
     """Enable or disable minor ticks on explicit Axes targets.
 
@@ -481,6 +535,8 @@ def minor_ticks(
         Whether minor ticks should be visible.
     axis
         Coordinate axis to update: ``"x"``, ``"y"``, or ``"both"``.
+    top, bottom, left, right
+        Optional boolean flags for minor tick visibility on each edge.
 
     Returns
     -------
@@ -490,13 +546,13 @@ def minor_ticks(
     Raises
     ------
     LayoutError
-        If the target, enabled flag, or axis selector is invalid.
+        If the target, enabled flag, axis selector, or edge options are invalid.
 
     Examples
     --------
     >>> import gsplot as gs
     >>> figure, ax = gs.subplots()
-    >>> gs.minor_ticks(ax, True, axis="x")
+    >>> gs.minor_ticks(ax, True, axis="x", right=False)
     >>> figure.clear()
     """
 
@@ -504,12 +560,126 @@ def minor_ticks(
         raise LayoutError("enabled must be a boolean")
     if axis not in {"x", "y", "both"}:
         raise LayoutError("axis must be 'x', 'y', or 'both'")
+    for edge_name, edge_val in (
+        ("top", top),
+        ("bottom", bottom),
+        ("left", left),
+        ("right", right),
+    ):
+        if edge_val is not None and not isinstance(edge_val, bool):
+            raise LayoutError(f"{edge_name} must be a boolean or None")
+
     target_plan = normalize_axes(target, operation="minor_ticks")
     for item in target_plan.axes:
         if axis in {"x", "both"}:
             _set_minor(item, enabled, "x")
         if axis in {"y", "both"}:
             _set_minor(item, enabled, "y")
+        if (
+            top is not None
+            or bottom is not None
+            or left is not None
+            or right is not None
+        ):
+            _apply_tick_controls(
+                item,
+                axis=axis,
+                which="minor",
+                top=top,
+                bottom=bottom,
+                left=left,
+                right=right,
+            )
+
+
+def ticks(
+    target: AxesTarget,
+    *,
+    minor: bool | None = None,
+    axis: Literal["x", "y", "both"] = "both",
+    top: bool | None = None,
+    bottom: bool | None = None,
+    left: bool | None = None,
+    right: bool | None = None,
+    direction: Literal["in", "out", "inout"] | None = None,
+    which: Literal["both", "major", "minor"] = "both",
+    **kwargs: Any,
+) -> None:
+    """Configure tick visibility, minor ticks, direction, and parameters.
+
+    Parameters
+    ----------
+    target
+        One Axes, an ordered Axes sequence, or an Axes mapping.
+    minor
+        Optional flag to turn minor ticks on (``True``) or off (``False``).
+    axis
+        Coordinate axis to configure: ``"x"``, ``"y"``, or ``"both"``.
+    top, bottom, left, right
+        Optional booleans controlling tick (and tick label) visibility on each edge.
+    direction
+        Tick direction: ``"in"``, ``"out"``, or ``"inout"``.
+    which
+        Which ticks to style: ``"both"``, ``"major"``, or ``"minor"``.
+    **kwargs
+        Additional Matplotlib tick properties passed to ``tick_params`` (e.g.
+        ``length``, ``width``, ``color``, ``pad``).
+
+    Returns
+    -------
+    None
+        The supplied Axes objects are updated in place.
+
+    Raises
+    ------
+    LayoutError
+        If target or options are invalid.
+
+    Examples
+    --------
+    >>> import gsplot as gs
+    >>> figure, ax = gs.subplots()
+    >>> gs.ticks(ax, minor=True, right=False, direction="in")
+    >>> figure.clear()
+    """
+
+    if axis not in {"x", "y", "both"}:
+        raise LayoutError("axis must be 'x', 'y', or 'both'")
+    if which not in {"both", "major", "minor"}:
+        raise LayoutError("which must be 'both', 'major', or 'minor'")
+    for edge_name, edge_val in (
+        ("top", top),
+        ("bottom", bottom),
+        ("left", left),
+        ("right", right),
+    ):
+        if edge_val is not None and not isinstance(edge_val, bool):
+            raise LayoutError(f"{edge_name} must be a boolean or None")
+    if direction is not None and (
+        not isinstance(direction, str) or direction not in _DIRECTIONS
+    ):
+        raise LayoutError(f"direction must be one of: {', '.join(sorted(_DIRECTIONS))}")
+    if minor is not None and not isinstance(minor, bool):
+        raise LayoutError("minor must be a boolean or None")
+
+    target_plan = normalize_axes(target, operation="ticks")
+    for item in target_plan.axes:
+        if minor is not None:
+            if axis in {"x", "both"}:
+                _set_minor(item, minor, "x")
+            if axis in {"y", "both"}:
+                _set_minor(item, minor, "y")
+        _apply_tick_controls(
+            item,
+            axis=axis,
+            which=which,
+            top=top,
+            bottom=bottom,
+            left=left,
+            right=right,
+            direction=direction,
+            **kwargs,
+        )
 
 
 def box_aspect(target: AxesTarget, aspect: float | None) -> None:
@@ -637,6 +807,11 @@ def _record_spec(
     ypad: float,
     xmargin: float,
     ymargin: float,
+    top: bool | None = None,
+    bottom: bool | None = None,
+    left: bool | None = None,
+    right: bool | None = None,
+    direction: Literal["in", "out", "inout"] | None = None,
 ) -> AxisSpec:
     """Normalize one concise two- or four-field label record."""
 
@@ -673,6 +848,11 @@ def _record_spec(
         ylabelpad=ypad,
         xmargin=xmargin,
         ymargin=ymargin,
+        top=top,
+        bottom=bottom,
+        left=left,
+        right=right,
+        direction=direction,
     )
 
 
@@ -696,6 +876,11 @@ def _label_specs(
     margin: Any = None,
     xmargin: Any = None,
     ymargin: Any = None,
+    top: Any = None,
+    bottom: Any = None,
+    left: Any = None,
+    right: Any = None,
+    direction: Any = None,
 ) -> tuple[AxisSpec, ...]:
     """Resolve all concise label values before any Axes is changed."""
 
@@ -723,6 +908,22 @@ def _label_specs(
     )
     eff_xmargin, eff_ymargin = _resolve_margins(margin, xmargin, ymargin)
 
+    for edge_name, edge_val in (
+        ("top", top),
+        ("bottom", bottom),
+        ("left", left),
+        ("right", right),
+    ):
+        if edge_val is not None and not isinstance(edge_val, bool):
+            raise LayoutError(f"label: {edge_name} must be a boolean or None")
+    selected_direction: Literal["in", "out", "inout"] | None = None
+    if direction is not None:
+        if not isinstance(direction, str) or direction not in _DIRECTIONS:
+            raise LayoutError(
+                f"label: direction must be one of: {', '.join(sorted(_DIRECTIONS))}"
+            )
+        selected_direction = cast(Literal["in", "out", "inout"], direction)
+
     common = {
         "xscale": xscale,
         "yscale": yscale,
@@ -734,6 +935,11 @@ def _label_specs(
         "ypad": selected_ypad,
         "xmargin": eff_xmargin,
         "ymargin": eff_ymargin,
+        "top": top,
+        "bottom": bottom,
+        "left": left,
+        "right": right,
+        "direction": selected_direction,
     }
     if isinstance(xlabel, str):
         selected_ylabel = "" if ylabel is MISSING else ylabel
@@ -756,6 +962,11 @@ def _label_specs(
             ylabelpad=selected_ypad,
             xmargin=eff_xmargin,
             ymargin=eff_ymargin,
+            top=top,
+            bottom=bottom,
+            left=left,
+            right=right,
+            direction=selected_direction,
         )
         return tuple(spec for _ in target.axes)
 
@@ -802,6 +1013,11 @@ def label(
     margin: float | tuple[float, float] | None = None,
     xmargin: float | None = None,
     ymargin: float | None = None,
+    top: bool | None = None,
+    bottom: bool | None = None,
+    left: bool | None = None,
+    right: bool | None = None,
+    direction: Literal["in", "out", "inout"] | None = None,
     square: bool = False,
     index: bool | Literal["in", "out"] = False,
 ) -> None: ...
@@ -825,6 +1041,11 @@ def label(
     margin: float | tuple[float, float] | None = None,
     xmargin: float | None = None,
     ymargin: float | None = None,
+    top: bool | None = None,
+    bottom: bool | None = None,
+    left: bool | None = None,
+    right: bool | None = None,
+    direction: Literal["in", "out", "inout"] | None = None,
     square: bool = False,
     index: bool | Literal["in", "out"] = False,
 ) -> None: ...
@@ -850,6 +1071,11 @@ def label(
     margin: Any = None,
     xmargin: Any = None,
     ymargin: Any = None,
+    top: Any = None,
+    bottom: Any = None,
+    left: Any = None,
+    right: Any = None,
+    direction: Any = None,
     square: Any = False,
     index: Any = False,
 ) -> None:
@@ -877,6 +1103,10 @@ def label(
     margin, xmargin, ymargin
         Margin ratios for auto-determined limits (defaults to ``0.05`` / 5%).
         Coordinate-specific ``None`` inherits ``margin``.
+    top, bottom, left, right
+        Optional boolean flags for edge tick and label visibility.
+    direction
+        Optional tick direction: ``"in"``, ``"out"``, or ``"inout"``.
     square
         Apply the same unit box aspect as :func:`square` when true.
     index
@@ -932,6 +1162,11 @@ def label(
             margin=margin,
             xmargin=xmargin,
             ymargin=ymargin,
+            top=top,
+            bottom=bottom,
+            left=left,
+            right=right,
+            direction=direction,
         )
     except LayoutError as exc:
         if str(exc).startswith("label:"):
@@ -1030,6 +1265,11 @@ def _label_signature(
     margin: float | tuple[float, float] | None = None,
     xmargin: float | None = None,
     ymargin: float | None = None,
+    top: bool | None = None,
+    bottom: bool | None = None,
+    left: bool | None = None,
+    right: bool | None = None,
+    direction: Literal["in", "out", "inout"] | None = None,
     square: bool = False,
     index: bool | Literal["in", "out"] = False,
 ) -> None:
@@ -1047,6 +1287,7 @@ __all__ = [
     "title",
     "suptitle",
     "minor_ticks",
+    "ticks",
     "box_aspect",
     "label",
     "square",
