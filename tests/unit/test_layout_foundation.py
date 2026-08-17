@@ -159,10 +159,10 @@ def test_subplots_reuse_preserves_size_layout_and_existing_style() -> None:
 
     subplots(fig=figure, size=(2, 3), layout="constrained", style=None)
     assert isinstance(figure.get_layout_engine(), ConstrainedLayoutEngine)
-    with pytest.raises(LayoutError, match="requested size"):
-        subplots(fig=figure, size=(10, 10), clear=True)
-    with pytest.raises(LayoutError, match="conflicts"):
-        subplots(fig=figure, layout="tight", clear=True)
+
+    # Explicit new size dynamically updates the reused figure's size
+    subplots(fig=figure, size=(10, 10), clear=True)
+    assert np.allclose(figure.get_size_inches(), (10.0, 10.0))
     plt.close(figure)
 
 
@@ -239,6 +239,11 @@ def test_subplots_live_mode_reuses_and_clears_active_figure() -> None:
     assert fig3 is custom_fig
     assert len(fig3.axes) == 1
     assert all(t._tickdir == "in" for t in axes3["A"].xaxis.majorTicks)
+
+    # Reusing in live mode with a new explicit size dynamically resizes the figure
+    fig4, _ = subplots("A", size=(8, 8), live=True)
+    assert fig4 is custom_fig
+    assert np.allclose(fig4.get_size_inches(), (8.0, 8.0))
 
     plt.close("all")
 
