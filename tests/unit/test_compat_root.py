@@ -292,3 +292,31 @@ def test_root_load_config_translates_only_schema_less_legacy_files(tmp_path) -> 
     strict.write_text('{"figure": {"figsize": [2, 3]}}', encoding="utf-8")
     with pytest.raises(gs.ConfigError, match="schema_version"):
         gs.Config.from_file(strict)
+
+
+def test_legacy_ticks_on_and_off_support_secondary_axis() -> None:
+    """Legacy ticks_on and ticks_off support SecondaryAxis targets."""
+
+    figure, ax = plt.subplots()
+    try:
+        ax_right = ax.secondary_yaxis(
+            "right", functions=(lambda x: x * 2, lambda x: x / 2)
+        )
+        with pytest.warns(DeprecationWarning, match="ticks_on"):
+            gs.ticks_on(ax_right, "y")
+        with pytest.warns(DeprecationWarning, match="ticks_off"):
+            gs.ticks_off(ax_right, "y")
+    finally:
+        plt.close(figure)
+
+
+def test_legacy_label_supports_empty_string_limits() -> None:
+    """Legacy label supports empty string and wildcard limit placeholders."""
+
+    figure, ax = plt.subplots()
+    try:
+        with pytest.warns(DeprecationWarning, match="legacy gsplot.label"):
+            gs.label([["$T$ (K)", r"$\chi_{\rm V}$", [0, 300], ["", ""]]])
+        assert ax.get_xlim() == (0.0, 300.0)
+    finally:
+        plt.close(figure)

@@ -7,6 +7,7 @@ from typing import Any, TypeVar
 
 import numpy as np
 from matplotlib.axes import Axes
+from matplotlib.axes._base import _AxesBase
 from matplotlib.figure import Figure
 
 from .errors import PlotError
@@ -16,7 +17,7 @@ from .types import AxesTarget
 T = TypeVar("T")
 
 
-def _root_figure(axis: Axes, operation: str) -> Figure:
+def _root_figure(axis: Axes | _AxesBase, operation: str) -> Figure:
     """Resolve an Axes root Figure without version-specific root arguments."""
 
     owner = _axis_root_figure(axis)
@@ -30,7 +31,7 @@ def _snapshot_target(
 ) -> tuple[TargetKind, tuple[object, ...], tuple[Any, ...]]:
     """Snapshot one supported target shape without retaining its container."""
 
-    if isinstance(target, Axes):
+    if isinstance(target, (Axes, _AxesBase)):
         return "single", (target,), (target,)
     if isinstance(target, Mapping):
         items = tuple(target.items())
@@ -67,7 +68,7 @@ def normalize_axes(target: AxesTarget, *, operation: str) -> TargetPlan:
     kind, keys, values = _snapshot_target(target, operation)
     if not values:
         raise PlotError(f"{operation}: target must contain at least one Axes")
-    if any(not isinstance(value, Axes) for value in values):
+    if any(not isinstance(value, (Axes, _AxesBase)) for value in values):
         raise PlotError(f"{operation}: target contains a non-Axes value")
     axes = tuple(values)
     if len({id(axis) for axis in axes}) != len(axes):

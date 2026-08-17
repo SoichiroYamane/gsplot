@@ -346,3 +346,17 @@ def test_exact_target_mapping_wraps_hostile_membership_errors() -> None:
     target = normalize_axes(axes[0], operation="line")
     with pytest.raises(PlotError, match="normalized target keys"):
         resolve_target_mapping(target, BrokenMapping({axes[0]: 1}), name="series")
+
+
+def test_target_normalization_supports_secondary_axis() -> None:
+    """SecondaryAxis instances are normalized and retain their root Figure."""
+
+    figure, axes = _figure_axes(1)
+    ax_right = axes[0].secondary_yaxis(
+        "right", functions=(lambda x: x * 2, lambda x: x / 2)
+    )
+    plan = normalize_axes(ax_right, operation="minor_ticks")
+    assert plan.figure is figure
+    assert plan.axes == (ax_right,)
+    assert plan.kind == "single"
+    assert plan.single

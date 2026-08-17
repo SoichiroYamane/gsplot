@@ -15,6 +15,7 @@ from typing import Any, get_type_hints
 from weakref import WeakKeyDictionary
 
 from matplotlib.axes import Axes
+from matplotlib.axes._base import _AxesBase
 from matplotlib.figure import Figure
 from numpy.typing import ArrayLike
 
@@ -32,7 +33,7 @@ from .._style.legends import legend as _legend
 from .._style.paper import PAPER_CYCLE_RGBA as _LEGACY_COLORS
 
 _UNSET = object()
-_LEGACY_PLOT_COUNTS: WeakKeyDictionary[Axes, int] = WeakKeyDictionary()
+_LEGACY_PLOT_COUNTS: WeakKeyDictionary[Axes | _AxesBase, int] = WeakKeyDictionary()
 
 _LEGACY_LEGEND_KEYS = {
     "handlers",
@@ -389,7 +390,7 @@ def scatter(
 def _legacy_label_records(value: Any) -> tuple[Any, ...] | None:
     """Recognize non-empty historical records without reading pyplot state."""
 
-    if isinstance(value, (str, bytes, Mapping, Axes)):
+    if isinstance(value, (str, bytes, Mapping, Axes, _AxesBase)):
         return None
     try:
         records = tuple(value)

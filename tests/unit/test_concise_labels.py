@@ -260,6 +260,10 @@ def test_label_supports_three_item_limit_tuples_and_scale_strings() -> None:
         assert axes[1].get_xscale() == "linear"
         assert axes[1].get_yscale() == "linear"
 
+        # Empty string limits
+        label(axes[1], "x", "y", xlim=("", "", "linear"), ylim=("", ""))
+        assert axes[1].get_xscale() == "linear"
+
         # Invalid scale raises LayoutError
         with pytest.raises(LayoutError, match="scale"):
             label(axes[0], [("x", "y", (0, 1), (0, 1, "invalid"))])
