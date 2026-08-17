@@ -1542,19 +1542,40 @@
             "kind": "KEYWORD_ONLY",
             "name": "index",
             "required": false
+          },
+          {
+            "annotation": "'tuple[float, float] | float | None'",
+            "default": "None",
+            "kind": "KEYWORD_ONLY",
+            "name": "index_offset",
+            "required": false
+          },
+          {
+            "annotation": "'float | None'",
+            "default": "None",
+            "kind": "KEYWORD_ONLY",
+            "name": "index_xoffset",
+            "required": false
+          },
+          {
+            "annotation": "'float | None'",
+            "default": "None",
+            "kind": "KEYWORD_ONLY",
+            "name": "index_yoffset",
+            "required": false
           }
         ],
         "return_annotation": "'None'"
       },
       "docstring": {
-        "sha256": "fc71b3f61965a0656b8a91055f5cb4d3ca16e5e1206e3277af327f008a5e0277",
+        "sha256": "9b7d9e6756ce077c8a55b8ab6b9fbfc8b5e79ea0cd1fd1459489436b04de887f",
         "summary": "Set publication labels and optional panel geometry on explicit Axes."
       },
       "kind": "function",
       "module": "gsplot._compat.root_api",
       "name": "label",
       "qualname": "label",
-      "signature": "(target: 'AxesTarget', xlabel: 'str | LabelRecords' = '', ylabel: 'str' = '', xlim: 'Limit | None' = None, ylim: 'Limit | None' = None, *, xscale: 'Scale' = 'linear', yscale: 'Scale' = 'linear', xticks: 'TickSpec | None' = None, yticks: 'TickSpec | None' = None, minor: 'bool' = True, xminor: 'bool | None' = None, yminor: 'bool | None' = None, pad: 'float' = 5, xpad: 'float | None' = None, ypad: 'float | None' = None, margin: 'float | tuple[float, float] | None' = None, xmargin: 'float | None' = None, ymargin: 'float | None' = None, top: 'bool | None' = None, bottom: 'bool | None' = None, left: 'bool | None' = None, right: 'bool | None' = None, direction: \"Literal['in', 'out', 'inout'] | None\" = None, square: 'bool' = False, index: \"bool | Literal['in', 'out']\" = False) -> 'None'"
+      "signature": "(target: 'AxesTarget', xlabel: 'str | LabelRecords' = '', ylabel: 'str' = '', xlim: 'Limit | None' = None, ylim: 'Limit | None' = None, *, xscale: 'Scale' = 'linear', yscale: 'Scale' = 'linear', xticks: 'TickSpec | None' = None, yticks: 'TickSpec | None' = None, minor: 'bool' = True, xminor: 'bool | None' = None, yminor: 'bool | None' = None, pad: 'float' = 5, xpad: 'float | None' = None, ypad: 'float | None' = None, margin: 'float | tuple[float, float] | None' = None, xmargin: 'float | None' = None, ymargin: 'float | None' = None, top: 'bool | None' = None, bottom: 'bool | None' = None, left: 'bool | None' = None, right: 'bool | None' = None, direction: \"Literal['in', 'out', 'inout'] | None\" = None, square: 'bool' = False, index: \"bool | Literal['in', 'out']\" = False, index_offset: 'tuple[float, float] | float | None' = None, index_xoffset: 'float | None' = None, index_yoffset: 'float | None' = None) -> 'None'"
     },
     {
       "call_contract": {
@@ -1931,6 +1952,27 @@
             "required": false
           },
           {
+            "annotation": "'tuple[float, float] | float | None'",
+            "default": "None",
+            "kind": "KEYWORD_ONLY",
+            "name": "offset",
+            "required": false
+          },
+          {
+            "annotation": "'float | None'",
+            "default": "None",
+            "kind": "KEYWORD_ONLY",
+            "name": "xoffset",
+            "required": false
+          },
+          {
+            "annotation": "'float | None'",
+            "default": "None",
+            "kind": "KEYWORD_ONLY",
+            "name": "yoffset",
+            "required": false
+          },
+          {
             "annotation": "'float | str'",
             "default": "'large'",
             "kind": "KEYWORD_ONLY",
@@ -1955,14 +1997,14 @@
         "return_annotation": "'Text | tuple[Text, ...]'"
       },
       "docstring": {
-        "sha256": "5abd60ae5e22929154d38fd1c7ca20ddcb103ff8fabf99d9a933a072235770ce",
+        "sha256": "f9fe82ee4c34747abbc507e2b97446e1067794cc4023ed209c609d20fafbee97",
         "summary": "Add deterministic lowercase panel indexes to explicit Axes."
       },
       "kind": "function",
       "module": "gsplot._style.panels",
       "name": "index",
       "qualname": "index",
-      "signature": "(target: 'AxesTarget', labels: 'Sequence[str] | Mapping[object, str] | None' = None, *, loc: \"Literal['in', 'out']\" = 'out', size: 'float | str' = 'large', props: 'Mapping[str, object] | None' = None, **kwargs: 'Any') -> 'Text | tuple[Text, ...]'"
+      "signature": "(target: 'AxesTarget', labels: 'Sequence[str] | Mapping[object, str] | None' = None, *, loc: \"Literal['in', 'out']\" = 'out', offset: 'tuple[float, float] | float | None' = None, xoffset: 'float | None' = None, yoffset: 'float | None' = None, size: 'float | str' = 'large', props: 'Mapping[str, object] | None' = None, **kwargs: 'Any') -> 'Text | tuple[Text, ...]'"
     },
     {
       "call_contract": {

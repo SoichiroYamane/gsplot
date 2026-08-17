@@ -5,6 +5,7 @@ import inspect
 import matplotlib.pyplot as plt
 import numpy as np
 import pytest
+from matplotlib.text import Text
 from matplotlib.ticker import AutoMinorLocator, LogLocator
 
 from gsplot._core import LayoutError, PlotError
@@ -27,7 +28,13 @@ def test_concise_label_and_index_signatures_publish_frozen_defaults() -> None:
     assert label_signature.parameters["ymargin"].default is None
     assert label_signature.parameters["square"].default is False
     assert label_signature.parameters["index"].default is False
+    assert label_signature.parameters["index_offset"].default is None
+    assert label_signature.parameters["index_xoffset"].default is None
+    assert label_signature.parameters["index_yoffset"].default is None
     assert index_signature.parameters["loc"].default == "out"
+    assert index_signature.parameters["offset"].default is None
+    assert index_signature.parameters["xoffset"].default is None
+    assert index_signature.parameters["yoffset"].default is None
     assert index_signature.parameters["size"].default == "large"
 
 
@@ -435,5 +442,55 @@ def test_label_default_margins_when_limits_omitted() -> None:
         assert np.isclose(ax.get_xlim()[1], 2.1)
         assert np.isclose(ax.get_ylim()[0], -0.2)
         assert np.isclose(ax.get_ylim()[1], 4.2)
+    finally:
+        plt.close(fig)
+
+
+def test_index_offset_and_coordinate_shifts() -> None:
+    """index and label support point offsets via offset, xoffset, and yoffset."""
+
+    fig, ax = plt.subplots()
+    try:
+        # 1. index with loc='in' and offset=(5, -5)
+        text_in = index(ax, loc="in", offset=(5, -5))
+        assert isinstance(text_in, Text)
+        assert text_in.get_text() == "(a)"
+
+        # 2. index with loc='out' and scalar offset
+        text_out = index(ax, loc="out", offset=10)
+        assert isinstance(text_out, Text)
+
+        # 3. index with individual xoffset and yoffset
+        text_custom = index(ax, loc="out", xoffset=4, yoffset=2)
+        assert isinstance(text_custom, Text)
+
+        # 4. label forwarding index_offset
+        fig2, ax2 = plt.subplots()
+        try:
+            label(ax2, "x", "y", index="out", index_offset=(3, 6))
+            assert len(ax2.texts) == 1
+            assert ax2.texts[0].get_text() == "(a)"
+
+            fig3, ax3 = plt.subplots()
+            try:
+                label(ax3, "x", "y", index="in", index_xoffset=2, index_yoffset=-3)
+                assert len(ax3.texts) == 1
+                assert ax3.texts[0].get_text() == "(a)"
+            finally:
+                plt.close(fig3)
+        finally:
+            plt.close(fig2)
+
+        # 5. Error handling for invalid offsets
+        with pytest.raises(LayoutError, match="index: offset"):
+            index(ax, offset=True)
+        with pytest.raises(LayoutError, match="index: offset"):
+            index(ax, offset=(1, 2, 3))
+        with pytest.raises(LayoutError, match="index: offset"):
+            index(ax, offset=(float("nan"), 1.0))
+        with pytest.raises(LayoutError, match="index: xoffset"):
+            index(ax, xoffset=True)
+        with pytest.raises(LayoutError, match="index: yoffset"):
+            index(ax, yoffset="invalid")
     finally:
         plt.close(fig)

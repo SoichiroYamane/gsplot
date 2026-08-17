@@ -1062,6 +1062,9 @@ def label(
     direction: Literal["in", "out", "inout"] | None = None,
     square: bool = False,
     index: bool | Literal["in", "out"] = False,
+    index_offset: tuple[float, float] | float | None = None,
+    index_xoffset: float | None = None,
+    index_yoffset: float | None = None,
 ) -> None: ...
 
 
@@ -1092,6 +1095,9 @@ def label(
     direction: Any = None,
     square: Any = False,
     index: Any = False,
+    index_offset: Any = None,
+    index_xoffset: Any = None,
+    index_yoffset: Any = None,
 ) -> None:
     """Set publication labels and optional panel geometry on explicit Axes.
 
@@ -1126,6 +1132,13 @@ def label(
     index
         Add generated panel indexes outside, or at the selected ``in``/``out``
         location.
+    index_offset
+        Optional point shift relative to baseline panel index placement.
+        Accepts a scalar for equal shift in x/y or a 2-tuple ``(dx, dy)`` in points.
+    index_xoffset
+        Optional direct point shift along the x-axis for panel indexes.
+    index_yoffset
+        Optional direct point shift along the y-axis for panel indexes.
 
     Returns
     -------
@@ -1198,7 +1211,14 @@ def label(
     if index_loc is not None:
         from .panels import _prepare_index
 
-        index_plan = _prepare_index(target_plan, None, loc=index_loc)
+        index_plan = _prepare_index(
+            target_plan,
+            None,
+            loc=index_loc,
+            offset=index_offset,
+            xoffset=index_xoffset,
+            yoffset=index_yoffset,
+        )
     for axis, spec in zip(target_plan.axes, specs):
         _validate_scale_domain(axis, spec)
     aspect = (
@@ -1286,6 +1306,9 @@ def _label_signature(
     direction: Literal["in", "out", "inout"] | None = None,
     square: bool = False,
     index: bool | Literal["in", "out"] = False,
+    index_offset: tuple[float, float] | float | None = None,
+    index_xoffset: float | None = None,
+    index_yoffset: float | None = None,
 ) -> None:
     raise AssertionError("signature-only function")
 
