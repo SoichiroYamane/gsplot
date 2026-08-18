@@ -778,10 +778,22 @@ def _probe_package(
     """Import the source-path package and verify its file location."""
 
     probe = (
-        "import json, gsplot; "
-        "print('GSPLOT_PROVENANCE=' + json.dumps({"
-        "'file': getattr(gsplot, '__file__', None), "
-        "'version': getattr(gsplot, '__version__', None)}, sort_keys=True))"
+        "import json\n"
+        "import pathlib\n"
+        "import re\n"
+        "import gsplot\n"
+        "def _read_package_version():\n"
+        "    for rel in ('pyproject.toml', 'src/gsplot/__init__.py', 'gsplot/__init__.py'):\n"
+        "        p = pathlib.Path(rel)\n"
+        "        if p.is_file():\n"
+        "            m = re.search(r'(?m)^(?:version\\s*=\\s*|__version__\\s*=\\s*)[\"\\']([^\"\\']+)[\"\\']', p.read_text('utf-8'))\n"
+        "            if m:\n"
+        "                return m.group(1)\n"
+        "    return getattr(gsplot, '__version__', None)\n"
+        "print('GSPLOT_PROVENANCE=' + json.dumps({\n"
+        "    'file': getattr(gsplot, '__file__', None),\n"
+        "    'version': _read_package_version()\n"
+        "}, sort_keys=True))\n"
     )
     try:
         result = subprocess.run(
