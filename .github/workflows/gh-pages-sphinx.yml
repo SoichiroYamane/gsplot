@@ -232,6 +232,6 @@ jobs:
             --base-url "$GSPLOT_DOCS_BASE_URL" \
             --catalog "$RUNNER_TEMP/gsplot-docs-metadata/catalog.json" \
             --manifest "$RUNNER_TEMP/gsplot-docs-metadata/build-manifest.json" \
-            --attempts 12 \
+            --attempts 30 \
             --delay 10 \
             --timeout 15
