@@ -44,6 +44,8 @@ def _fetch_url(url: str, *, timeout: float) -> tuple[int, bytes]:
         headers={
             "Accept": "text/html,application/json,text/plain,*/*",
             "User-Agent": "gsplot-docs-smoke",
+            "Cache-Control": "no-cache",
+            "Pragma": "no-cache",
         },
         method="GET",
     )
