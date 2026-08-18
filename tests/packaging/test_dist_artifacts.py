@@ -14,10 +14,10 @@ from tools.maintenance import check_dist
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 SOURCE_ROOT = PROJECT_ROOT / "src" / "gsplot"
-VERSION = "0.4.0"
+VERSION = "0.4.1"
 METADATA = b"""Metadata-Version: 2.4
 Name: gsplot
-Version: 0.4.0
+Version: 0.4.1
 Summary: Concise publication-quality scientific plotting built on Matplotlib
 License-Expression: MIT
 License-File: LICENSE
