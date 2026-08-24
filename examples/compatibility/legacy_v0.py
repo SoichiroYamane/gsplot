@@ -20,8 +20,8 @@ plt.sca(axs[3])
 plt.plot(x, y)
 
 gs.legend(axs[0], loc="lower right")
-gs.label(  # type: ignore[call-overload]
-    [
+gs.label(
+    [  # type: ignore
         # add label without specifying limits
         ["$x_1$", "$y_1$"],
         # add label with limits
