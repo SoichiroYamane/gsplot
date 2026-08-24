@@ -473,6 +473,7 @@ def label(
     fontdict: Any = _UNSET,
     labelpad: Any = _UNSET,
     loc: Any = _UNSET,
+    props: Any = _UNSET,
 ) -> Any:
     """Dispatch explicit concise labels or historical current-Figure records."""
 
@@ -488,6 +489,34 @@ def label(
         records = _legacy_label_records(target)
     else:
         records = None
+        text_props = {
+            name: value
+            for name, value in (
+                ("alpha", alpha),
+                ("color", color),
+                ("fontfamily", fontfamily),
+                ("fontproperties", fontproperties),
+                ("fontsize", fontsize),
+                ("fontstretch", fontstretch),
+                ("fontstyle", fontstyle),
+                ("fontvariant", fontvariant),
+                ("fontweight", fontweight),
+                ("ha", ha),
+                ("horizontalalignment", horizontalalignment),
+                ("label", label),
+                ("linespacing", linespacing),
+                ("math_fontfamily", math_fontfamily),
+                ("multialignment", multialignment),
+                ("parse_math", parse_math),
+                ("rotation", rotation),
+                ("rotation_mode", rotation_mode),
+                ("va", va),
+                ("verticalalignment", verticalalignment),
+                ("visible", visible),
+                ("zorder", zorder),
+            )
+            if value is not _UNSET
+        }
         legacy_controls = _provided(
             {
                 "legacy_xpad_layout": legacy_xpad_layout,
@@ -498,28 +527,6 @@ def label(
                 "tight_layout": tight_layout,
                 "xpad_layout": xpad_layout,
                 "ypad_layout": ypad_layout,
-                "alpha": alpha,
-                "color": color,
-                "fontfamily": fontfamily,
-                "fontproperties": fontproperties,
-                "fontsize": fontsize,
-                "fontstretch": fontstretch,
-                "fontstyle": fontstyle,
-                "fontvariant": fontvariant,
-                "fontweight": fontweight,
-                "ha": ha,
-                "horizontalalignment": horizontalalignment,
-                "label": label,
-                "linespacing": linespacing,
-                "math_fontfamily": math_fontfamily,
-                "multialignment": multialignment,
-                "parse_math": parse_math,
-                "rotation": rotation,
-                "rotation_mode": rotation_mode,
-                "va": va,
-                "verticalalignment": verticalalignment,
-                "visible": visible,
-                "zorder": zorder,
                 "fontdict": fontdict,
                 "labelpad": labelpad,
                 "loc": loc,
@@ -557,6 +564,10 @@ def label(
                 "index": index,
             }
         )
+        if props is not _UNSET:
+            canonical["props"] = props
+        elif text_props:
+            canonical["props"] = text_props
         return _label(target, **canonical)
 
     if records is None:
