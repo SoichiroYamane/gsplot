@@ -92,7 +92,9 @@ def _merge_props(
     return merged
 
 
-def _resolve_offsets(offset: Any, xoffset: Any, yoffset: Any) -> tuple[float, float]:
+def _resolve_offsets(
+    offset: Any, xoffset: Any, yoffset: Any, *, name: str = "index"
+) -> tuple[float, float] | tuple[tuple[float, float], ...]:
     """Validate and resolve effective (xoffset, yoffset) point shifts."""
 
     base_x = 0.0
@@ -100,13 +102,13 @@ def _resolve_offsets(offset: Any, xoffset: Any, yoffset: Any) -> tuple[float, fl
     if offset is not None:
         if isinstance(offset, bool):
             raise LayoutError(
-                "index: offset must be a finite number or 2-tuple of numbers"
+                f"{name}: offset must be a finite number or 2-tuple of numbers"
             )
         if isinstance(offset, (int, float, np.floating, np.integer)):
             val = float(offset)
             if not math.isfinite(val):
                 raise LayoutError(
-                    "index: offset must be a finite number or 2-tuple of numbers"
+                    f"{name}: offset must be a finite number or 2-tuple of numbers"
                 )
             base_x = val
             base_y = val
@@ -114,47 +116,137 @@ def _resolve_offsets(offset: Any, xoffset: Any, yoffset: Any) -> tuple[float, fl
             items = tuple(offset)
             if len(items) != 2 or any(isinstance(item, bool) for item in items):
                 raise LayoutError(
-                    "index: offset must be a finite number or 2-tuple of numbers"
+                    f"{name}: offset must be a finite number or 2-tuple of numbers"
                 )
             try:
                 base_x = float(items[0])
                 base_y = float(items[1])
             except (TypeError, ValueError) as exc:
                 raise LayoutError(
-                    "index: offset must be a finite number or 2-tuple of numbers"
+                    f"{name}: offset must be a finite number or 2-tuple of numbers"
                 ) from exc
             if not math.isfinite(base_x) or not math.isfinite(base_y):
                 raise LayoutError(
-                    "index: offset must be a finite number or 2-tuple of numbers"
+                    f"{name}: offset must be a finite number or 2-tuple of numbers"
                 )
         else:
             raise LayoutError(
-                "index: offset must be a finite number or 2-tuple of numbers"
+                f"{name}: offset must be a finite number or 2-tuple of numbers"
             )
 
     if xoffset is not None:
         if isinstance(xoffset, bool):
-            raise LayoutError("index: xoffset must be a finite number")
+            raise LayoutError(f"{name}: xoffset must be a finite number")
         try:
             val_x = float(xoffset)
         except (TypeError, ValueError) as exc:
-            raise LayoutError("index: xoffset must be a finite number") from exc
+            raise LayoutError(f"{name}: xoffset must be a finite number") from exc
         if not math.isfinite(val_x):
-            raise LayoutError("index: xoffset must be a finite number")
+            raise LayoutError(f"{name}: xoffset must be a finite number")
         base_x = val_x
 
     if yoffset is not None:
         if isinstance(yoffset, bool):
-            raise LayoutError("index: yoffset must be a finite number")
+            raise LayoutError(f"{name}: yoffset must be a finite number")
         try:
             val_y = float(yoffset)
         except (TypeError, ValueError) as exc:
-            raise LayoutError("index: yoffset must be a finite number") from exc
+            raise LayoutError(f"{name}: yoffset must be a finite number") from exc
         if not math.isfinite(val_y):
-            raise LayoutError("index: yoffset must be a finite number")
+            raise LayoutError(f"{name}: yoffset must be a finite number")
         base_y = val_y
 
     return (base_x, base_y)
+
+
+def _resolve_per_target_offsets(
+    target: TargetPlan,
+    offset: Any,
+    xoffset: Any,
+    yoffset: Any,
+) -> tuple[tuple[float, float], ...]:
+    """Resolve one shared or per-target offset into one shift per target Axes."""
+
+    def _shared() -> tuple[float, float]:
+        return cast(
+            tuple[float, float],
+            _resolve_offsets(offset, xoffset, yoffset),
+        )
+
+    count = len(target.axes)
+
+    def _per_axis(value: Any, label: str) -> tuple[float, float]:
+        resolved = _resolve_offsets(value, None, None, name=f"index {label}")
+        return cast(tuple[float, float], resolved)
+
+    def _per_target(values: Any, label: str) -> tuple[tuple[float, float], ...]:
+        if isinstance(values, Mapping):
+            resolved = list((0.0, 0.0) for _ in target.axes)
+            for position, key in enumerate(target.keys):
+                if key in values:
+                    resolved[position] = _per_axis(values[key], label)
+            return tuple(resolved)
+        if isinstance(values, Sequence) and not isinstance(values, (str, bytes)):
+            items = tuple(values)
+            if len(items) != count:
+                raise LayoutError(
+                    f"index: {label} offsets must match the target length"
+                )
+            return tuple(_per_axis(item, label) for item in items)
+        raise LayoutError(
+            f"index: {label} offsets must be an ordered sequence or exact-key mapping"
+        )
+
+    has_offset = offset is not None
+    has_coord = xoffset is not None or yoffset is not None
+
+    if isinstance(offset, Mapping) or (
+        isinstance(offset, Sequence)
+        and not isinstance(offset, (str, bytes))
+        and any(
+            not isinstance(item, (int, float, np.floating, np.integer))
+            or isinstance(item, bool)
+            for item in (tuple(offset) if isinstance(offset, Sequence) else ())
+        )
+    ):
+        per_offset = _per_target(offset, "offset")
+    else:
+        per_offset = None
+
+    def _is_coord_container(value: Any) -> bool:
+        return (
+            value is not None
+            and isinstance(value, (Mapping, Sequence))
+            and not (
+                isinstance(
+                    value, (str, bytes, bool, int, float, np.floating, np.integer)
+                )
+            )
+        )
+
+    per_x: tuple[tuple[float, float], ...] | None = None
+    per_y: tuple[tuple[float, float], ...] | None = None
+    if _is_coord_container(xoffset):
+        per_x = _per_target(xoffset, "xoffset")
+    if _is_coord_container(yoffset):
+        per_y = _per_target(yoffset, "yoffset")
+
+    if per_offset is None and per_x is None and per_y is None:
+        return (_shared(),) * count
+
+    results: list[tuple[float, float]] = []
+    for position in range(count):
+        base = (0.0, 0.0)
+        ox = base[0]
+        oy = base[1]
+        if per_offset is not None:
+            ox, oy = per_offset[position]
+        if per_x is not None:
+            ox = per_x[position][0]
+        if per_y is not None:
+            oy = per_y[position][1]
+        results.append((ox, oy))
+    return tuple(results)
 
 
 def _prepare_index(
@@ -172,14 +264,14 @@ def _prepare_index(
     tuple[str, ...],
     dict[str, Any],
     Literal["in", "out", "corner"],
-    tuple[float, float],
+    tuple[tuple[float, float], ...],
 ]:
     """Validate every concise panel-index input without adding Text artists."""
 
     if not isinstance(loc, str) or loc not in {"in", "out", "corner"}:
         raise LayoutError("index: loc must be 'in', 'out', or 'corner'")
     selected_loc = cast(Literal["in", "out", "corner"], loc)
-    eff_offset = _resolve_offsets(offset, xoffset, yoffset)
+    eff_offset = _resolve_per_target_offsets(target, offset, xoffset, yoffset)
     if labels is None:
         selected_labels = tuple(
             _concise_label_for_index(position) for position in range(len(target.axes))
@@ -233,14 +325,13 @@ def _apply_index(
     labels: tuple[str, ...],
     props: Mapping[str, Any],
     loc: Literal["in", "out", "corner"],
-    offset: tuple[float, float] = (0.0, 0.0),
+    offsets: tuple[tuple[float, float], ...] = ((0.0, 0.0),),
 ) -> Text | tuple[Text, ...]:
     """Attach one completely preflighted panel index per target Axes."""
 
-    ox, oy = offset
     created: list[Text] = []
     try:
-        for axis, text in zip(target.axes, labels):
+        for axis, text, (ox, oy) in zip(target.axes, labels, offsets):
             if loc == "in":
                 transform = axis.transAxes + ScaledTranslation(
                     (_INDEX_INSIDE_GAP_POINTS + ox) / 72,
@@ -291,9 +382,15 @@ def index(
     labels: Sequence[str] | Mapping[object, str] | None = None,
     *,
     loc: Literal["in", "out", "corner"] = "out",
-    offset: tuple[float, float] | float | None = None,
-    xoffset: float | None = None,
-    yoffset: float | None = None,
+    offset: (
+        float
+        | tuple[float, float]
+        | Sequence[float | tuple[float, float]]
+        | Mapping[Any, float | tuple[float, float]]
+        | None
+    ) = None,
+    xoffset: float | Mapping[Any, float] | Sequence[float] | None = None,
+    yoffset: float | Mapping[Any, float] | Sequence[float] | None = None,
     size: float | str = "large",
     props: Mapping[str, object] | None = None,
     **kwargs: Any,
@@ -306,9 +403,15 @@ def index(
     labels: Sequence[str] | Mapping[object, str] | None = None,
     *,
     loc: Literal["in", "out", "corner"] = "out",
-    offset: tuple[float, float] | float | None = None,
-    xoffset: float | None = None,
-    yoffset: float | None = None,
+    offset: (
+        float
+        | tuple[float, float]
+        | Sequence[float | tuple[float, float]]
+        | Mapping[Any, float | tuple[float, float]]
+        | None
+    ) = None,
+    xoffset: float | Mapping[Any, float] | Sequence[float] | None = None,
+    yoffset: float | Mapping[Any, float] | Sequence[float] | None = None,
     size: float | str = "large",
     props: Mapping[str, object] | None = None,
     **kwargs: Any,
@@ -348,13 +451,17 @@ def index(
         placement with the historical ``center``/``center`` alignment.
     offset
         Optional point shift relative to baseline placement. Accepts a
-        scalar for equal shift in x/y or a 2-tuple ``(dx, dy)`` in points.
+        scalar for equal shift in x/y, a 2-tuple ``(dx, dy)`` in points,
+        an ordered sequence of scalars or 2-tuples matching the target
+        length, or an exact-key mapping for per-Axes shifts.
     xoffset
         Optional direct point shift along the x-axis. Overrides the x
-        component of ``offset``.
+        component of ``offset``. Accepts the same shared and per-target
+        forms as ``offset`` (scalars or exact-key mappings).
     yoffset
         Optional direct point shift along the y-axis. Overrides the y
-        component of ``offset``.
+        component of ``offset``. Accepts the same shared and per-target
+        forms as ``offset`` (scalars or exact-key mappings).
     size
         Matplotlib font size. The default is the historical ``"large"``.
     props
@@ -415,9 +522,15 @@ def _index_signature(
     labels: Sequence[str] | Mapping[object, str] | None = None,
     *,
     loc: Literal["in", "out", "corner"] = "out",
-    offset: tuple[float, float] | float | None = None,
-    xoffset: float | None = None,
-    yoffset: float | None = None,
+    offset: (
+        float
+        | tuple[float, float]
+        | Sequence[float | tuple[float, float]]
+        | Mapping[Any, float | tuple[float, float]]
+        | None
+    ) = None,
+    xoffset: float | Mapping[Any, float] | Sequence[float] | None = None,
+    yoffset: float | Mapping[Any, float] | Sequence[float] | None = None,
     size: float | str = "large",
     props: Mapping[str, object] | None = None,
     **kwargs: Any,
