@@ -10,6 +10,7 @@ from matplotlib.layout_engine import ConstrainedLayoutEngine, TightLayoutEngine
 from gsplot import subplots
 from gsplot._config import Config
 from gsplot._core import LayoutError
+from gsplot._core.errors import OptionError
 from gsplot._style.axes import label
 from gsplot._style.panels import _label_for_index, index
 
@@ -381,6 +382,35 @@ def test_index_labels_follow_panel_name_order() -> None:
         by_axis = {id(text.axes): text.get_text() for text in ordered}
         for position, key in enumerate(("A", "B", "C", "D", "E")):
             assert by_axis[id(axes[key])] == f"({position + 1})"
+    finally:
+        plt.close(figure)
+
+
+def test_label_applies_text_props_to_axis_labels() -> None:
+    """props and direct kwargs style both axis labels of every target Axes."""
+
+    figure, axes = subplots("AB")
+    try:
+        label(
+            axes,
+            {
+                "A": ("ax", "ay"),
+                "B": ("bx", "by"),
+            },
+            xpad=1,
+            ypad=1,
+            fontsize=9,
+        )
+        for key in ("A", "B"):
+            assert axes[key].get_xlabel() == f"{key.lower()}x"
+            assert axes[key].xaxis.label.get_fontsize() == 9.0
+            assert axes[key].yaxis.label.get_fontsize() == 9.0
+
+        label(axes, {"A": ("ax", "ay"), "B": ("bx", "by")}, props={"fontsize": 11})
+        assert all(axis.xaxis.label.get_fontsize() == 11.0 for axis in axes.values())
+
+        with pytest.raises(OptionError, match="unknown key"):
+            label(axes, {"A": ("a", "b"), "B": ("c", "d")}, not_a_prop=3)
     finally:
         plt.close(figure)
 

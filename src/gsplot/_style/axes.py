@@ -1068,6 +1068,7 @@ def label(
     index_offset: tuple[float, float] | float | None = None,
     index_xoffset: float | None = None,
     index_yoffset: float | None = None,
+    props: Mapping[str, Any] | None = None,
 ) -> None: ...
 
 
@@ -1101,6 +1102,8 @@ def label(
     index_offset: Any = None,
     index_xoffset: Any = None,
     index_yoffset: Any = None,
+    props: Mapping[str, Any] | None = None,
+    **kwargs: Any,
 ) -> None:
     """Set publication labels and optional panel geometry on explicit Axes.
 
@@ -1136,6 +1139,11 @@ def label(
         Add generated panel indexes outside, at the selected ``in``/``out``
         location, or ``"corner"`` centered on the upper-left Axes corner
         (historical v0.2 placement).
+    props
+        Optional closed Matplotlib Text property mapping applied to both axis
+        labels of every target Axes (e.g. ``{"fontsize": 9}``). Direct
+        keyword spellings such as ``fontsize`` are accepted through this
+        mapping by the public ``gsplot.label`` dispatcher.
     index_offset
         Optional point shift relative to baseline panel index placement.
         Accepts a scalar for equal shift in x/y or a 2-tuple ``(dx, dy)`` in points.
@@ -1225,6 +1233,7 @@ def label(
         )
     for axis, spec in zip(target_plan.axes, specs):
         _validate_scale_domain(axis, spec)
+    selected_props = _validate_label_text_props(props, kwargs)
     aspect = (
         ensure_positive(1, "label: aspect", error=LayoutError)
         if selected_square
@@ -1233,12 +1242,33 @@ def label(
 
     for axis, spec in zip(target_plan.axes, specs):
         _apply_axis_spec(axis, spec)
+    if selected_props:
+        _apply_label_text_props(target_plan.axes, selected_props)
     if aspect is not None:
         _apply_square(target_plan.axes, aspect)
     if index_plan is not None:
         from .panels import _apply_index
 
         _apply_index(target_plan, *index_plan)
+
+
+def _validate_label_text_props(
+    props: Mapping[str, Any] | None, kwargs: Mapping[str, Any]
+) -> dict[str, Any]:
+    """Merge and validate one closed Text property mapping for axis labels."""
+
+    merged = _merge_props(props, kwargs, "label")
+    return _validate_props(merged, _TEXT_PROPS, "label") if merged else {}
+
+
+def _apply_label_text_props(
+    axes: Sequence[Axes | _AxesBase], selected_props: Mapping[str, Any]
+) -> None:
+    """Apply validated Text properties to both axis labels of each target."""
+
+    for axis in axes:
+        axis.xaxis.label.update(dict(selected_props))
+        axis.yaxis.label.update(dict(selected_props))
 
 
 def _apply_square(axes: Sequence[Axes | _AxesBase], aspect: float) -> None:
@@ -1309,10 +1339,11 @@ def _label_signature(
     right: bool | None = None,
     direction: Literal["in", "out", "inout"] | None = None,
     square: bool = False,
-    index: bool | Literal["in", "out"] = False,
+    index: bool | Literal["in", "out", "corner"] = False,
     index_offset: tuple[float, float] | float | None = None,
     index_xoffset: float | None = None,
     index_yoffset: float | None = None,
+    props: Mapping[str, Any] | None = None,
 ) -> None:
     raise AssertionError("signature-only function")
 
