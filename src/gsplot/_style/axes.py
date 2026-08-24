@@ -25,6 +25,7 @@ from .._core.types import (
     LabelRecords,
     Limit,
     Scale,
+    TextProps,
     TickSpec,
     _limits,
 )
@@ -1037,6 +1038,8 @@ def label(
     direction: Literal["in", "out", "inout"] | None = None,
     square: bool = False,
     index: bool | Literal["in", "out", "corner"] = False,
+    props: TextProps | None = None,
+    **text_kwargs: Any,
 ) -> None: ...
 
 
@@ -1068,7 +1071,8 @@ def label(
     index_offset: tuple[float, float] | float | None = None,
     index_xoffset: float | None = None,
     index_yoffset: float | None = None,
-    props: Mapping[str, Any] | None = None,
+    props: TextProps | None = None,
+    **text_kwargs: Any,
 ) -> None: ...
 
 
