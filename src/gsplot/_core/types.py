@@ -63,6 +63,8 @@ TickSpec: TypeAlias = Sequence[float]
 LabelRecord: TypeAlias = tuple[str, str] | tuple[str, str, Any, Any] | Sequence[Any]
 # Public type alias: LabelRecords; ordered or exact-key per-target label records.
 LabelRecords: TypeAlias = Sequence[LabelRecord] | Mapping[Any, LabelRecord]
+# Public type alias: TextProps; closed Matplotlib Text property mapping.
+TextProps: TypeAlias = Mapping[str, Any]
 
 _PUBLIC_TYPE_ALIAS_DOCS = MappingProxyType(
     {
