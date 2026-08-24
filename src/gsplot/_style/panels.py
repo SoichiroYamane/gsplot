@@ -171,14 +171,14 @@ def _prepare_index(
 ) -> tuple[
     tuple[str, ...],
     dict[str, Any],
-    Literal["in", "out"],
+    Literal["in", "out", "corner"],
     tuple[float, float],
 ]:
     """Validate every concise panel-index input without adding Text artists."""
 
-    if not isinstance(loc, str) or loc not in {"in", "out"}:
-        raise LayoutError("index: loc must be 'in' or 'out'")
-    selected_loc = cast(Literal["in", "out"], loc)
+    if not isinstance(loc, str) or loc not in {"in", "out", "corner"}:
+        raise LayoutError("index: loc must be 'in', 'out', or 'corner'")
+    selected_loc = cast(Literal["in", "out", "corner"], loc)
     eff_offset = _resolve_offsets(offset, xoffset, yoffset)
     if labels is None:
         selected_labels = tuple(
@@ -212,9 +212,14 @@ def _prepare_index(
             selected_size, f"index: {size_key}", error=LayoutError
         )
     if "ha" not in selected_props and "horizontalalignment" not in selected_props:
-        selected_props["ha"] = "left"
+        selected_props["ha"] = "left" if selected_loc != "corner" else "center"
     if "va" not in selected_props and "verticalalignment" not in selected_props:
-        selected_props["va"] = "top" if selected_loc == "in" else "bottom"
+        if selected_loc == "in":
+            selected_props["va"] = "top"
+        elif selected_loc == "corner":
+            selected_props["va"] = "center"
+        else:
+            selected_props["va"] = "bottom"
     try:
         for text in selected_labels:
             Text(0, 1, text, **selected_props)
@@ -227,7 +232,7 @@ def _apply_index(
     target: TargetPlan,
     labels: tuple[str, ...],
     props: Mapping[str, Any],
-    loc: Literal["in", "out"],
+    loc: Literal["in", "out", "corner"],
     offset: tuple[float, float] = (0.0, 0.0),
 ) -> Text | tuple[Text, ...]:
     """Attach one completely preflighted panel index per target Axes."""
@@ -240,6 +245,19 @@ def _apply_index(
                 transform = axis.transAxes + ScaledTranslation(
                     (_INDEX_INSIDE_GAP_POINTS + ox) / 72,
                     (-_INDEX_INSIDE_GAP_POINTS + oy) / 72,
+                    target.figure.dpi_scale_trans,
+                )
+                artist = cast(Any, axis).text(
+                    0,
+                    1,
+                    text,
+                    transform=transform,
+                    **props,
+                )
+            elif loc == "corner":
+                transform = axis.transAxes + ScaledTranslation(
+                    ox / 72,
+                    oy / 72,
                     target.figure.dpi_scale_trans,
                 )
                 artist = cast(Any, axis).text(
@@ -272,7 +290,7 @@ def index(
     target: Axes,
     labels: Sequence[str] | Mapping[object, str] | None = None,
     *,
-    loc: Literal["in", "out"] = "out",
+    loc: Literal["in", "out", "corner"] = "out",
     offset: tuple[float, float] | float | None = None,
     xoffset: float | None = None,
     yoffset: float | None = None,
@@ -287,7 +305,7 @@ def index(
     target: AxesTarget,
     labels: Sequence[str] | Mapping[object, str] | None = None,
     *,
-    loc: Literal["in", "out"] = "out",
+    loc: Literal["in", "out", "corner"] = "out",
     offset: tuple[float, float] | float | None = None,
     xoffset: float | None = None,
     yoffset: float | None = None,
@@ -325,6 +343,9 @@ def index(
         ``"in"`` places text four points right/down from the upper-left Axes
         corner. ``"out"`` aligns the text's left edge with the rendered left
         edge of the y-axis label and places it six points above the Axes.
+        ``"corner"`` centers the text on the upper-left Axes corner,
+        reproducing the historical v0.2 ``label_add_index(loc="corner")``
+        placement with the historical ``center``/``center`` alignment.
     offset
         Optional point shift relative to baseline placement. Accepts a
         scalar for equal shift in x/y or a 2-tuple ``(dx, dy)`` in points.
@@ -393,7 +414,7 @@ def _index_signature(
     target: AxesTarget,
     labels: Sequence[str] | Mapping[object, str] | None = None,
     *,
-    loc: Literal["in", "out"] = "out",
+    loc: Literal["in", "out", "corner"] = "out",
     offset: tuple[float, float] | float | None = None,
     xoffset: float | None = None,
     yoffset: float | None = None,
