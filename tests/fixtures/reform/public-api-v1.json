@@ -1568,7 +1568,7 @@
         "return_annotation": "'None'"
       },
       "docstring": {
-        "sha256": "9b7d9e6756ce077c8a55b8ab6b9fbfc8b5e79ea0cd1fd1459489436b04de887f",
+        "sha256": "3f14dc5f5154d6c59520d145cf594a268427dc3322dca0d1c7d3e75858f2edbe",
         "summary": "Set publication labels and optional panel geometry on explicit Axes."
       },
       "kind": "function",
@@ -1945,7 +1945,7 @@
             "required": false
           },
           {
-            "annotation": "\"Literal['in', 'out']\"",
+            "annotation": "\"Literal['in', 'out', 'corner']\"",
             "default": "'out'",
             "kind": "KEYWORD_ONLY",
             "name": "loc",
@@ -1997,14 +1997,14 @@
         "return_annotation": "'Text | tuple[Text, ...]'"
       },
       "docstring": {
-        "sha256": "31372765dbdccdf81ce90602699f2d8f03e85a0e4e0c1c37544a317fd57575fb",
+        "sha256": "9f4310a5cf94ffde549102261bbe29646f25012f2f86ee9749fb98a93ac356d0",
         "summary": "Add deterministic lowercase panel indexes to explicit Axes."
       },
       "kind": "function",
       "module": "gsplot._style.panels",
       "name": "index",
       "qualname": "index",
-      "signature": "(target: 'AxesTarget', labels: 'Sequence[str] | Mapping[object, str] | None' = None, *, loc: \"Literal['in', 'out']\" = 'out', offset: 'tuple[float, float] | float | None' = None, xoffset: 'float | None' = None, yoffset: 'float | None' = None, size: 'float | str' = 'large', props: 'Mapping[str, object] | None' = None, **kwargs: 'Any') -> 'Text | tuple[Text, ...]'"
+      "signature": "(target: 'AxesTarget', labels: 'Sequence[str] | Mapping[object, str] | None' = None, *, loc: \"Literal['in', 'out', 'corner']\" = 'out', offset: 'tuple[float, float] | float | None' = None, xoffset: 'float | None' = None, yoffset: 'float | None' = None, size: 'float | str' = 'large', props: 'Mapping[str, object] | None' = None, **kwargs: 'Any') -> 'Text | tuple[Text, ...]'"
     },
     {
       "call_contract": {

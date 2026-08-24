@@ -446,6 +446,46 @@ def test_label_default_margins_when_limits_omitted() -> None:
         plt.close(fig)
 
 
+def test_index_corner_loc_reproduces_historical_placement() -> None:
+    """loc='corner' centers the text on the upper-left Axes corner like v0.2."""
+
+    figure, (corner_axis, plain_axis) = plt.subplots(1, 2)
+    try:
+        corner = index(corner_axis, loc="corner")
+        assert isinstance(corner, Text)
+        assert corner.get_text() == "(a)"
+        assert corner.get_ha() == "center"
+        assert corner.get_va() == "center"
+        assert corner.axes is corner_axis
+
+        figure.canvas.draw()
+        renderer = figure.canvas.get_renderer()
+        box = corner.get_window_extent(renderer)
+        axes_box = corner_axis.get_window_extent(renderer)
+        assert box.x0 <= axes_box.x0 <= box.x1
+        assert box.y0 <= axes_box.y1 <= box.y1
+
+        shifted = index(plain_axis, loc="corner", offset=(6, 4))
+        assert shifted.get_text() == "(a)"
+        assert shifted.axes is plain_axis
+
+        explicit = index(
+            corner_axis,
+            loc="corner",
+            props={"horizontalalignment": "left", "verticalalignment": "top"},
+        )
+        assert explicit.get_ha() == "left"
+        assert explicit.get_va() == "top"
+
+        label(corner_axis, "t", "y", index="corner")
+        assert corner_axis.texts[-1].get_text() == "(a)"
+
+        with pytest.raises(LayoutError, match="index: loc"):
+            index(corner_axis, loc="middle")  # type: ignore[arg-type]
+    finally:
+        plt.close(figure)
+
+
 def test_index_offset_and_coordinate_shifts() -> None:
     """index and label support point offsets via offset, xoffset, and yoffset."""
 

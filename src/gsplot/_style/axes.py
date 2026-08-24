@@ -1036,7 +1036,7 @@ def label(
     right: bool | None = None,
     direction: Literal["in", "out", "inout"] | None = None,
     square: bool = False,
-    index: bool | Literal["in", "out"] = False,
+    index: bool | Literal["in", "out", "corner"] = False,
 ) -> None: ...
 
 
@@ -1064,7 +1064,7 @@ def label(
     right: bool | None = None,
     direction: Literal["in", "out", "inout"] | None = None,
     square: bool = False,
-    index: bool | Literal["in", "out"] = False,
+    index: bool | Literal["in", "out", "corner"] = False,
     index_offset: tuple[float, float] | float | None = None,
     index_xoffset: float | None = None,
     index_yoffset: float | None = None,
@@ -1133,8 +1133,9 @@ def label(
     square
         Apply the same unit box aspect as :func:`square` when true.
     index
-        Add generated panel indexes outside, or at the selected ``in``/``out``
-        location.
+        Add generated panel indexes outside, at the selected ``in``/``out``
+        location, or ``"corner"`` centered on the upper-left Axes corner
+        (historical v0.2 placement).
     index_offset
         Optional point shift relative to baseline panel index placement.
         Accepts a scalar for equal shift in x/y or a 2-tuple ``(dx, dy)`` in points.
@@ -1205,10 +1206,10 @@ def label(
     selected_square = ensure_bool(square, "label: square", error=LayoutError)
     if isinstance(index, bool):
         index_loc = "out" if index else None
-    elif isinstance(index, str) and index in {"in", "out"}:
+    elif isinstance(index, str) and index in {"in", "out", "corner"}:
         index_loc = index
     else:
-        raise LayoutError("label: index must be False, True, 'in', or 'out'")
+        raise LayoutError("label: index must be False, True, 'in', 'out', or 'corner'")
 
     index_plan = None
     if index_loc is not None:
