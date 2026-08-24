@@ -314,10 +314,13 @@ def index(
     Parameters
     ----------
     target
-        One Axes or a deterministic same-Figure collection of Axes.
+        One Axes or a deterministic same-Figure collection of Axes. Mosaic
+        containers iterate in mosaic first-appearance (row-major) order, not
+        alphabetical order; see ``AxesDict``.
     labels
-        Optional ordered labels or an exact-key mapping. Omitted values are
-        generated as ``(a)`` through ``(z)``, then ``(aa)`` onward.
+        Optional ordered labels or an exact-key mapping. Ordered labels and
+        omitted generated values follow target iteration order: ``(a)``
+        through ``(z)``, then ``(aa)`` onward.
     loc
         ``"in"`` places text four points right/down from the upper-left Axes
         corner. ``"out"`` aligns the text's left edge with the rendered left
@@ -358,6 +361,16 @@ def index(
     >>> labels = gs.index(axes, loc="in", offset=(2, -2))
     >>> tuple(item.get_text() for item in labels)
     ('(a)', '(b)')
+    >>> figure.clear()
+
+    Non-alphabetical mosaics generate indexes in panel-name order:
+
+    >>> figure, axes = gs.subplots("ACE;BDE")
+    >>> labels = gs.index(axes)
+    >>> tuple(item.get_text() for item in labels)
+    ('(a)', '(b)', '(c)', '(d)', '(e)')
+    >>> labels[1].get_text() == "(b)" and axes[1] is axes["B"]
+    True
     >>> figure.clear()
     """
 

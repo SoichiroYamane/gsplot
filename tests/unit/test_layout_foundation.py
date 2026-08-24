@@ -10,6 +10,8 @@ from matplotlib.layout_engine import ConstrainedLayoutEngine, TightLayoutEngine
 from gsplot import subplots
 from gsplot._config import Config
 from gsplot._core import LayoutError
+from gsplot._style.axes import label
+from gsplot._style.panels import _label_for_index, index
 
 
 def test_subplots_defaults_are_concise_publication_defaults() -> None:
@@ -288,6 +290,99 @@ def test_axes_dict_indexing_supports_labels_integers_and_slices() -> None:
         _ = axes["UNKNOWN"]
 
     plt.close(figure)
+
+
+def test_mosaic_axes_iterate_in_panel_name_order() -> None:
+    """Mosaic containers follow panel-name order, not mosaic appearance order."""
+
+    figure, axes = subplots("ACE;BDE")
+    assert tuple(axes.keys()) == ("A", "B", "C", "D", "E")
+    assert tuple(axes.values()) == (
+        axes["A"],
+        axes["B"],
+        axes["C"],
+        axes["D"],
+        axes["E"],
+    )
+    assert axes[0] is axes["A"]
+    assert axes[1] is axes["B"]
+    assert axes[4] is axes["E"]
+    assert list(axes)[::-1] == ["E", "D", "C", "B", "A"]
+    plt.close(figure)
+
+
+def test_label_records_follow_panel_name_order() -> None:
+    """Positional label records map onto panel-name order.
+
+    ``"ACE;BDE"`` iterates as A, B, C, D, E, so the second record belongs to
+    panel B and the fourth record to panel D. Exact-key records stay keyed.
+    """
+
+    figure, axes = subplots("ACE;BDE")
+    try:
+        label(
+            axes,
+            (
+                ("ax-a", "ay-a"),
+                ("ax-b", "ay-b"),
+                ("ax-c", "ay-c"),
+                ("ax-d", "ay-d"),
+                ("ax-e", "ay-e"),
+            ),
+        )
+        for key in ("A", "B", "C", "D", "E"):
+            assert axes[key].get_xlabel() == f"ax-{key.lower()}"
+            assert axes[key].get_ylabel() == f"ay-{key.lower()}"
+
+        label(
+            axes,
+            {
+                "A": ("kx-a", "ky-a"),
+                "B": ("kx-b", "ky-b"),
+                "C": ("kx-c", "ky-c"),
+                "D": ("kx-d", "ky-d"),
+                "E": ("kx-e", "ky-e"),
+            },
+        )
+        for key in ("A", "B", "C", "D", "E"):
+            assert axes[key].get_xlabel() == f"kx-{key.lower()}"
+            assert axes[key].get_ylabel() == f"ky-{key.lower()}"
+    finally:
+        plt.close(figure)
+
+
+def test_index_labels_follow_panel_name_order() -> None:
+    """Generated and ordered index labels follow panel-name order."""
+
+    figure, axes = subplots("ACE;BDE")
+    try:
+        generated = index(axes)
+        assert tuple(item.get_text() for item in generated) == (
+            "(a)",
+            "(b)",
+            "(c)",
+            "(d)",
+            "(e)",
+        )
+        for position, key in enumerate(("A", "B", "C", "D", "E")):
+            text = generated[position]
+            assert text.get_text() == f"({_label_for_index(position).lower()})"
+            assert text.axes is axes[key]
+
+        keyed = index(
+            axes, {"A": "(z)", "B": "(y)", "C": "(x)", "D": "(w)", "E": "(v)"}
+        )
+        by_axis = {id(text.axes): text.get_text() for text in keyed}
+        expected_keyed = {"A": "(z)", "B": "(y)", "C": "(x)", "D": "(w)", "E": "(v)"}
+        for key in ("A", "B", "C", "D", "E"):
+            assert by_axis[id(axes[key])] == expected_keyed[key]
+
+        ordered = index(axes, ["(1)", "(2)", "(3)", "(4)", "(5)"])
+        by_axis = {id(text.axes): text.get_text() for text in ordered}
+        for position, key in enumerate(("A", "B", "C", "D", "E")):
+            assert by_axis[id(axes[key])] == f"({position + 1})"
+    finally:
+        plt.close(figure)
 
 
 def test_subplots_padding_and_spacing_options() -> None:

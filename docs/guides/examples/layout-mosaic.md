@@ -17,3 +17,16 @@ before Matplotlib creates the Figure.
 :width: 1000px
 :align: center
 ```
+
+## Mosaic iteration order
+
+Mosaic mappings iterate in panel-name (alphabetical) order, not in mosaic
+first-appearance order. `"ACE;BDE"` iterates as `('A', 'B', 'C', 'D', 'E')`
+even though the specification mentions C and E before B and D. Integer
+indexes and slices follow that same order.
+
+Per-target value sequences — label records, titles, limits, colors, or
+generated panel indexes — therefore line up with the panel letters: the first
+record belongs to A, the second to B, and so on. Exact-key dictionaries such
+as `{"A": ..., "B": ...}` also work when you want to be explicit. Keyed access
+such as `axes["B"]` never depends on position.
