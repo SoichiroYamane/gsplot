@@ -486,6 +486,53 @@ def test_index_corner_loc_reproduces_historical_placement() -> None:
         plt.close(figure)
 
 
+def test_index_per_target_offsets() -> None:
+    """index accepts ordered sequences and exact-key mappings of offsets."""
+
+    from gsplot._core.errors import PlotError
+
+    figure, axes = plt.subplots(1, 3)
+    try:
+        texts = index(
+            tuple(axes),
+            labels=("one", "two", "three"),
+            offset=[(0.0, 0.0), (10.0, 20.0), (-5.0, 5.0)],
+        )
+        assert [text.get_position() for text in texts] == [
+            (0.0, 6.0),
+            (10.0, 26.0),
+            (-5.0, 11.0),
+        ]
+
+        keyed = index(
+            {"first": axes[0], "second": axes[1], "third": axes[2]},
+            offset={"first": (1.0, 2.0), "third": (30.0, 40.0)},
+        )
+        positions = {id(text.axes): text.get_position() for text in keyed}
+        assert positions[id(axes[0])] == (1.0, 8.0)
+        assert positions[id(axes[1])] == (0.0, 6.0)
+        assert positions[id(axes[2])] == (30.0, 46.0)
+
+        shifted_x = index(tuple(axes), xoffset=[7.0, 0.0, 0.0])
+        x_positions = {id(text.axes): text.get_position() for text in shifted_x}
+        assert x_positions[id(axes[0])] == (7.0, 6.0)
+        assert x_positions[id(axes[1])] == (0.0, 6.0)
+
+        label(
+            {"first": axes[0], "second": axes[1], "third": axes[2]},
+            index=True,
+            index_offset={"first": (4.0, 4.0)},
+        )
+        assert axes[0].texts[-1].get_position() == (4.0, 10.0)
+
+        with pytest.raises(LayoutError, match="match the target length"):
+            index(tuple(axes), offset=[(1.0, 2.0)])
+        with pytest.raises(LayoutError, match="offset"):
+            index(tuple(axes), offset=[(float("nan"), 0.0), (1, 1), (1, 1)])
+    finally:
+        plt.close(figure)
+
+
 def test_index_offset_and_coordinate_shifts() -> None:
     """index and label support point offsets via offset, xoffset, and yoffset."""
 

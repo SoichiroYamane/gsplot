@@ -1068,9 +1068,15 @@ def label(
     direction: Literal["in", "out", "inout"] | None = None,
     square: bool = False,
     index: bool | Literal["in", "out", "corner"] = False,
-    index_offset: tuple[float, float] | float | None = None,
-    index_xoffset: float | None = None,
-    index_yoffset: float | None = None,
+    index_offset: (
+        float
+        | tuple[float, float]
+        | Sequence[float | tuple[float, float]]
+        | Mapping[Any, float | tuple[float, float]]
+        | None
+    ) = None,
+    index_xoffset: float | Mapping[Any, float] | Sequence[float] | None = None,
+    index_yoffset: float | Mapping[Any, float] | Sequence[float] | None = None,
     props: TextProps | None = None,
     **text_kwargs: Any,
 ) -> None: ...
@@ -1150,11 +1156,15 @@ def label(
         mapping by the public ``gsplot.label`` dispatcher.
     index_offset
         Optional point shift relative to baseline panel index placement.
-        Accepts a scalar for equal shift in x/y or a 2-tuple ``(dx, dy)`` in points.
+        Accepts a scalar for equal shift in x/y, a 2-tuple ``(dx, dy)`` in
+        points, an ordered sequence of scalars or 2-tuples matching the
+        target length, or an exact-key mapping for per-Axes shifts.
     index_xoffset
         Optional direct point shift along the x-axis for panel indexes.
+        Accepts a shared scalar or a per-target exact-key mapping.
     index_yoffset
         Optional direct point shift along the y-axis for panel indexes.
+        Accepts a shared scalar or a per-target exact-key mapping.
 
     Returns
     -------
@@ -1344,9 +1354,15 @@ def _label_signature(
     direction: Literal["in", "out", "inout"] | None = None,
     square: bool = False,
     index: bool | Literal["in", "out", "corner"] = False,
-    index_offset: tuple[float, float] | float | None = None,
-    index_xoffset: float | None = None,
-    index_yoffset: float | None = None,
+    index_offset: (
+        float
+        | tuple[float, float]
+        | Sequence[float | tuple[float, float]]
+        | Mapping[Any, float | tuple[float, float]]
+        | None
+    ) = None,
+    index_xoffset: float | Mapping[Any, float] | Sequence[float] | None = None,
+    index_yoffset: float | Mapping[Any, float] | Sequence[float] | None = None,
     props: Mapping[str, Any] | None = None,
 ) -> None:
     raise AssertionError("signature-only function")

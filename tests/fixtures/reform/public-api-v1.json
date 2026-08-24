@@ -1544,21 +1544,21 @@
             "required": false
           },
           {
-            "annotation": "'tuple[float, float] | float | None'",
+            "annotation": "'float | tuple[float, float] | Sequence[float | tuple[float, float]] | Mapping[Any, float | tuple[float, float]] | None'",
             "default": "None",
             "kind": "KEYWORD_ONLY",
             "name": "index_offset",
             "required": false
           },
           {
-            "annotation": "'float | None'",
+            "annotation": "'float | Mapping[Any, float] | Sequence[float] | None'",
             "default": "None",
             "kind": "KEYWORD_ONLY",
             "name": "index_xoffset",
             "required": false
           },
           {
-            "annotation": "'float | None'",
+            "annotation": "'float | Mapping[Any, float] | Sequence[float] | None'",
             "default": "None",
             "kind": "KEYWORD_ONLY",
             "name": "index_yoffset",
@@ -1575,14 +1575,14 @@
         "return_annotation": "'None'"
       },
       "docstring": {
-        "sha256": "19d936b562971e1559fd5e49a89b909987f498824bc28b3779ee2de8d375b515",
+        "sha256": "f4274501ebac7b260050d4cd882fc8dd572c2db27b06c3447b1b1d4ba08e9a4a",
         "summary": "Set publication labels and optional panel geometry on explicit Axes."
       },
       "kind": "function",
       "module": "gsplot._compat.root_api",
       "name": "label",
       "qualname": "label",
-      "signature": "(target: 'AxesTarget', xlabel: 'str | LabelRecords' = '', ylabel: 'str' = '', xlim: 'Limit | None' = None, ylim: 'Limit | None' = None, *, xscale: 'Scale' = 'linear', yscale: 'Scale' = 'linear', xticks: 'TickSpec | None' = None, yticks: 'TickSpec | None' = None, minor: 'bool' = True, xminor: 'bool | None' = None, yminor: 'bool | None' = None, pad: 'float' = 5, xpad: 'float | None' = None, ypad: 'float | None' = None, margin: 'float | tuple[float, float] | None' = None, xmargin: 'float | None' = None, ymargin: 'float | None' = None, top: 'bool | None' = None, bottom: 'bool | None' = None, left: 'bool | None' = None, right: 'bool | None' = None, direction: \"Literal['in', 'out', 'inout'] | None\" = None, square: 'bool' = False, index: \"bool | Literal['in', 'out', 'corner']\" = False, index_offset: 'tuple[float, float] | float | None' = None, index_xoffset: 'float | None' = None, index_yoffset: 'float | None' = None, props: 'Mapping[str, Any] | None' = None) -> 'None'"
+      "signature": "(target: 'AxesTarget', xlabel: 'str | LabelRecords' = '', ylabel: 'str' = '', xlim: 'Limit | None' = None, ylim: 'Limit | None' = None, *, xscale: 'Scale' = 'linear', yscale: 'Scale' = 'linear', xticks: 'TickSpec | None' = None, yticks: 'TickSpec | None' = None, minor: 'bool' = True, xminor: 'bool | None' = None, yminor: 'bool | None' = None, pad: 'float' = 5, xpad: 'float | None' = None, ypad: 'float | None' = None, margin: 'float | tuple[float, float] | None' = None, xmargin: 'float | None' = None, ymargin: 'float | None' = None, top: 'bool | None' = None, bottom: 'bool | None' = None, left: 'bool | None' = None, right: 'bool | None' = None, direction: \"Literal['in', 'out', 'inout'] | None\" = None, square: 'bool' = False, index: \"bool | Literal['in', 'out', 'corner']\" = False, index_offset: 'float | tuple[float, float] | Sequence[float | tuple[float, float]] | Mapping[Any, float | tuple[float, float]] | None' = None, index_xoffset: 'float | Mapping[Any, float] | Sequence[float] | None' = None, index_yoffset: 'float | Mapping[Any, float] | Sequence[float] | None' = None, props: 'Mapping[str, Any] | None' = None) -> 'None'"
     },
     {
       "call_contract": {
@@ -1959,21 +1959,21 @@
             "required": false
           },
           {
-            "annotation": "'tuple[float, float] | float | None'",
+            "annotation": "'float | tuple[float, float] | Sequence[float | tuple[float, float]] | Mapping[Any, float | tuple[float, float]] | None'",
             "default": "None",
             "kind": "KEYWORD_ONLY",
             "name": "offset",
             "required": false
           },
           {
-            "annotation": "'float | None'",
+            "annotation": "'float | Mapping[Any, float] | Sequence[float] | None'",
             "default": "None",
             "kind": "KEYWORD_ONLY",
             "name": "xoffset",
             "required": false
           },
           {
-            "annotation": "'float | None'",
+            "annotation": "'float | Mapping[Any, float] | Sequence[float] | None'",
             "default": "None",
             "kind": "KEYWORD_ONLY",
             "name": "yoffset",
@@ -2004,14 +2004,14 @@
         "return_annotation": "'Text | tuple[Text, ...]'"
       },
       "docstring": {
-        "sha256": "9f4310a5cf94ffde549102261bbe29646f25012f2f86ee9749fb98a93ac356d0",
+        "sha256": "0fba87311de28f1a40c4269c0ee72ac7dcafb549988e15251750783bd9948cec",
         "summary": "Add deterministic lowercase panel indexes to explicit Axes."
       },
       "kind": "function",
       "module": "gsplot._style.panels",
       "name": "index",
       "qualname": "index",
-      "signature": "(target: 'AxesTarget', labels: 'Sequence[str] | Mapping[object, str] | None' = None, *, loc: \"Literal['in', 'out', 'corner']\" = 'out', offset: 'tuple[float, float] | float | None' = None, xoffset: 'float | None' = None, yoffset: 'float | None' = None, size: 'float | str' = 'large', props: 'Mapping[str, object] | None' = None, **kwargs: 'Any') -> 'Text | tuple[Text, ...]'"
+      "signature": "(target: 'AxesTarget', labels: 'Sequence[str] | Mapping[object, str] | None' = None, *, loc: \"Literal['in', 'out', 'corner']\" = 'out', offset: 'float | tuple[float, float] | Sequence[float | tuple[float, float]] | Mapping[Any, float | tuple[float, float]] | None' = None, xoffset: 'float | Mapping[Any, float] | Sequence[float] | None' = None, yoffset: 'float | Mapping[Any, float] | Sequence[float] | None' = None, size: 'float | str' = 'large', props: 'Mapping[str, object] | None' = None, **kwargs: 'Any') -> 'Text | tuple[Text, ...]'"
     },
     {
       "call_contract": {
