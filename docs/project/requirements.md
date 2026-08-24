@@ -142,6 +142,10 @@ explicit compatibility classification.
   supporting validated size, unit, mosaic, clearing, and layout options.
 - Layout validation must reject invalid dimensions or mosaics with a clear
   error rather than silently producing an unusable figure.
+- Mosaic mappings iterate in panel-name (alphabetical) order instead of
+  Matplotlib's first-appearance order. Positional value sequences follow that
+  documented order so generated indexes and records match panel letters, and
+  keyed access remains exact.
 - `inset_axes` must create Matplotlib-compatible inset axes below an explicit
   parent Axes.
 - `inset` must validate tuple placement, optional labels, style, zoom corners,

@@ -570,7 +570,7 @@ def _create_axes(
             height_ratios=options["height_ratios"],
             subplot_kw=kwargs,
         )
-        return AxesDict(created)
+        return AxesDict(sorted(created.items()))
     return cast(
         AxesContainer,
         figure.subplots(
@@ -774,6 +774,8 @@ def subplots(
     -------
     tuple
         The native Figure and Matplotlib Axes, array, or mosaic dictionary.
+        Mosaic dictionaries iterate in panel-name (alphabetical) order rather
+        than Matplotlib insertion order; see ``AxesDict``.
 
     Raises
     ------

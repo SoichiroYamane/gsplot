@@ -910,6 +910,16 @@ class AxesDict(dict[str, Axes]):
     *args, **kwargs
         Dictionary initialization mapping label strings to Matplotlib Axes.
 
+    Notes
+    -----
+    Mosaic containers iterate in panel-name (alphabetical) order rather than
+    Matplotlib ``subplot_mosaic`` insertion order. ``"ACE;BDE"`` therefore
+    iterates as ``('A', 'B', 'C', 'D', 'E')`` even though ``C`` and ``E``
+    appear before ``B`` and ``D`` in the specification. Iteration, integer
+    indexes, slices, and positional value sequences all follow this order, so
+    generated panel indexes and positional label records land on the matching
+    panel letters, while keyed access such as ``axes["B"]`` is always exact.
+
     Examples
     --------
     >>> import gsplot as gs
@@ -917,6 +927,15 @@ class AxesDict(dict[str, Axes]):
     >>> isinstance(axes, gs.AxesDict)
     True
     >>> axes["A"] is axes[0]
+    True
+    >>> figure.clear()
+
+    Non-alphabetical mosaics still iterate in panel-name order:
+
+    >>> figure, axes = gs.subplots("ACE;BDE")
+    >>> tuple(axes)
+    ('A', 'B', 'C', 'D', 'E')
+    >>> axes[1] is axes["B"]
     True
     >>> figure.clear()
     """

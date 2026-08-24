@@ -671,7 +671,7 @@
         "return_annotation": "'tuple[Figure, AxesContainer]'"
       },
       "docstring": {
-        "sha256": "4562750fe792e2fef21daa8d19e2b2588b47a84e3e7f56e44121afab7d1aab8b",
+        "sha256": "2df78119d8878823d6a38c067b22ae858de493cdd7a0b377700a7c92154ab0f2",
         "summary": "Create or reuse a native Figure with concise publication defaults."
       },
       "kind": "function",
@@ -1997,7 +1997,7 @@
         "return_annotation": "'Text | tuple[Text, ...]'"
       },
       "docstring": {
-        "sha256": "f9fe82ee4c34747abbc507e2b97446e1067794cc4023ed209c609d20fafbee97",
+        "sha256": "31372765dbdccdf81ce90602699f2d8f03e85a0e4e0c1c37544a317fd57575fb",
         "summary": "Add deterministic lowercase panel indexes to explicit Axes."
       },
       "kind": "function",
@@ -3368,7 +3368,7 @@
     {
       "call_contract": null,
       "docstring": {
-        "sha256": "5e22f2176d15df83d3f0d6263a54fb359d52041ef88022689bdd5dc2dfe332af",
+        "sha256": "f2f861058e0b9f8ea593a41b6e19ae5451c0e77f3684d5b01468649aa1a20e85",
         "summary": "A dictionary of mosaic Axes supporting both label and integer index access."
       },
       "kind": "class",
