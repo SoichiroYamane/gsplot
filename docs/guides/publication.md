@@ -60,6 +60,26 @@ beside the values:
 fig, ax = gs.subplots(size=(90, 60), unit="mm")
 ```
 
+When an independent gsplot annotation is intentionally placed beyond an Axes,
+pass `figure_fit=True` to `subplots`. The policy keeps `index`, `panel_labels`,
+Axes titles, and Figure suptitles inside the fixed Figure canvas without
+resizing the Figure or moving Axes. Axis labels, tick labels, and legends
+remain under Matplotlib's layout rules:
+
+```python
+fig, ax = gs.subplots(
+    size=(246, 400),
+    unit="pt",
+    figure_fit=True,
+)
+gs.index(ax, loc="corner", offset=(-42, 0))
+gs.save(fig, "figure.pdf", crop=False, show=False)
+```
+
+`figure_fit=True` is a placement policy, not a tight-crop override. Use
+`crop=False` when the PDF or image media box must equal the requested Figure
+canvas; `crop=True` may change the physical output dimensions.
+
 ## Submission checklist
 
 - Design and inspect the figure at its final physical size.

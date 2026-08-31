@@ -30,6 +30,7 @@ from .._core.types import (
     _limits,
 )
 from .._core.validation import ensure_bool, ensure_finite_real, ensure_positive
+from .._figure.fit import register_figure_annotations
 
 _TEXT_PROPS = frozenset(
     {
@@ -466,6 +467,12 @@ def title(
     PlotError
         If the target, text, or property mapping is invalid.
 
+    Notes
+    -----
+    When the parent Figure was created with ``subplots(figure_fit=True)``, the
+    independent Axes title is shifted by the minimum required amount to remain
+    inside the fixed Figure canvas.
+
     Examples
     --------
     >>> import gsplot as gs
@@ -480,7 +487,10 @@ def title(
         raise PlotError("ax must be a Matplotlib Axes")
     merged_props = _merge_props(props, kwargs, "title")
     selected_props = _validate_props(merged_props, _TITLE_PROPS, "title")
-    return cast(Text, cast(Any, ax).set_title(_text(text, "text"), **selected_props))
+    result = cast(Text, cast(Any, ax).set_title(_text(text, "text"), **selected_props))
+    if isinstance(result.figure, Figure):
+        register_figure_annotations(result.figure, ((result, False),))
+    return result
 
 
 def suptitle(
@@ -515,6 +525,12 @@ def suptitle(
     PlotError
         If the Figure, text, or property mapping is invalid.
 
+    Notes
+    -----
+    When the Figure was created with ``subplots(figure_fit=True)``, the
+    independent Figure suptitle is shifted by the minimum required amount to
+    remain inside the fixed Figure canvas.
+
     Examples
     --------
     >>> import gsplot as gs
@@ -529,7 +545,9 @@ def suptitle(
         raise PlotError("fig must be a Matplotlib Figure")
     merged_props = _merge_props(props, kwargs, "suptitle")
     selected_props = _validate_props(merged_props, _TITLE_PROPS, "suptitle")
-    return fig.suptitle(_text(text, "text"), **selected_props)
+    result = fig.suptitle(_text(text, "text"), **selected_props)
+    register_figure_annotations(fig, ((result, False),))
+    return result
 
 
 def minor_ticks(
