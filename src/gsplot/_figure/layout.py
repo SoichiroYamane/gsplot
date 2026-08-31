@@ -28,6 +28,7 @@ from .._core.types import (
 from .._core.validation import ensure_bool, ensure_finite_real, ensure_pair
 from .._style.paper import paper
 from .backend import use_backend
+from .fit import configure_figure_fit
 
 AxesContainer = Axes | NDArray[Any] | AxesDict | dict[str, Axes]
 ShareMode = bool | Literal["none", "all", "row", "col"]
@@ -335,6 +336,7 @@ def _resolve_options(
     live: Any,
     layout: Any,
     style: Any,
+    figure_fit: Any,
     pad: Any = MISSING,
     xpad: Any = MISSING,
     ypad: Any = MISSING,
@@ -383,6 +385,7 @@ def _resolve_options(
             "live": live,
             "layout": legacy_mode if layout is MISSING else layout,
             "style": style,
+            "figure_fit": figure_fit,
             "pad": pad,
             "xpad": resolved_xpad,
             "ypad": resolved_ypad,
@@ -431,6 +434,11 @@ def _resolve_options(
         ),
         _option_spec("layout", "auto", _layout),
         _option_spec("style", "auto", _style),
+        _option_spec(
+            "figure_fit",
+            False,
+            lambda value, name: ensure_bool(value, name, error=LayoutError),
+        ),
         _option_spec("pad", None, _optional_nonnegative_float),
         _option_spec("xpad", None, _optional_nonnegative_float),
         _option_spec("ypad", None, _optional_nonnegative_float),
@@ -607,6 +615,7 @@ def subplots(
     live: bool = False,
     layout: LayoutMode = "auto",
     style: StyleMode = "auto",
+    figure_fit: bool = False,
     pad: float | None = None,
     xpad: float | None = None,
     ypad: float | None = None,
@@ -642,6 +651,7 @@ def subplots(
     live: bool = False,
     layout: LayoutMode = "auto",
     style: StyleMode = "auto",
+    figure_fit: bool = False,
     pad: float | None = None,
     xpad: float | None = None,
     ypad: float | None = None,
@@ -677,6 +687,7 @@ def subplots(
     live: bool = False,
     layout: LayoutMode = "auto",
     style: StyleMode = "auto",
+    figure_fit: bool = False,
     pad: float | None = None,
     xpad: float | None = None,
     ypad: float | None = None,
@@ -711,6 +722,7 @@ def subplots(
     live: bool = cast(bool, MISSING),
     layout: LayoutMode = cast(LayoutMode, MISSING),
     style: StyleMode = cast(StyleMode, MISSING),
+    figure_fit: bool = cast(bool, MISSING),
     pad: float | None = cast(Any, MISSING),
     xpad: float | None = cast(Any, MISSING),
     ypad: float | None = cast(Any, MISSING),
@@ -754,6 +766,11 @@ def subplots(
     style
         ``"auto"`` or ``"paper"`` for target-local publication styling, or
         ``None`` to retain Matplotlib styling.
+    figure_fit
+        Whether independent gsplot annotations are kept inside the fixed
+        Figure canvas. This affects ``index``, ``panel_labels``, ``title``, and
+        ``suptitle``; Axes-managed labels, tick labels, and legends retain
+        Matplotlib layout behavior.
     pad
         Optional non-negative figure padding scalar.
     xpad, ypad
@@ -786,8 +803,12 @@ def subplots(
     -----
     New automatic Figures use an 85 mm single-column or 170 mm multi-column
     canvas, constrained layout, and target-local paper styling. Reused Figures
-    retain size, layout, and existing Axes styling unless compatible explicit
-    values request otherwise.
+    retain size, layout, existing Axes styling, and an existing Figure-fit
+    policy when ``clear=False`` and ``figure_fit`` is omitted; an explicit
+    ``figure_fit=False`` disables that policy. Fitting runs when gsplot adds a
+    supported annotation and immediately before gsplot output helpers render.
+    Direct native ``Figure.canvas.draw()`` calls after later geometry changes
+    are not intercepted; gsplot does not install a global draw hook.
 
     Examples
     --------
@@ -813,6 +834,7 @@ def subplots(
         live=live,
         layout=layout,
         style=style,
+        figure_fit=figure_fit,
         pad=pad,
         xpad=xpad,
         ypad=ypad,
@@ -874,6 +896,15 @@ def subplots(
         elif options["layout"] in {"tight", "constrained"}:
             target.set_layout_engine(cast(Any, options["layout"]))
 
+    preserve_figure_fit = (
+        resolved_fig is not None and not selected_clear and figure_fit is MISSING
+    )
+    if not preserve_figure_fit:
+        configure_figure_fit(
+            target,
+            options["figure_fit"],
+            reset=new_figure or selected_clear,
+        )
     axes = _create_axes(target, shape_plan, options)
 
     from matplotlib.layout_engine import ConstrainedLayoutEngine, TightLayoutEngine
@@ -947,6 +978,7 @@ def _public_subplots_signature(
     live: bool = False,
     layout: LayoutMode = "auto",
     style: StyleMode = "auto",
+    figure_fit: bool = False,
     pad: float | None = None,
     xpad: float | None = None,
     ypad: float | None = None,

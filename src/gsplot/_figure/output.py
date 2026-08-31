@@ -16,9 +16,10 @@ from matplotlib import rc_context
 from matplotlib.backend_bases import FigureManagerBase
 from matplotlib.figure import Figure
 
-from .._core.errors import OptionError, OutputError, PlotError
+from .._core.errors import LayoutError, OptionError, OutputError, PlotError
 from .._core.targets import normalize_axes
 from .._core.types import AxesTarget
+from .fit import fit_figure_annotations
 
 _FORMATS = frozenset({"png", "pdf", "svg"})
 _SAVEFIG_PROPS = frozenset(
@@ -418,7 +419,8 @@ def save(
     -----
     Every format is rendered to a unique sibling first. Final paths are
     replaced only after all renders succeed. PDF and PostScript rendering uses
-    Type 42 fonts in a bounded Matplotlib configuration context. Tight crop
+    Type 42 fonts in a bounded Matplotlib configuration context. Registered
+    ``figure_fit`` annotations are re-fitted before rendering. Tight crop
     changes the exported media box; pass ``crop=False`` to preserve the exact
     Figure design canvas.
 
@@ -446,6 +448,10 @@ def save(
         transparent=transparent,
         metadata=metadata,
     )
+    try:
+        fit_figure_annotations(plan.figure)
+    except LayoutError as exc:
+        raise OutputError("save: Figure annotations could not be fitted") from exc
     _prepare_output_parent(plan)
     committed = _commit_outputs(plan, _render_outputs(plan))
     if plan.show:
@@ -646,6 +652,10 @@ def savefig(
     OutputError
         If validation, saving, display, or optional closing fails.
 
+    Notes
+    -----
+    Registered ``figure_fit`` annotations are re-fitted before rendering.
+
     Examples
     --------
     >>> import gsplot as gs
@@ -687,6 +697,10 @@ def savefig(
         existing = [item for item in destinations if item.exists()]
         if existing:
             raise OutputError("output already exists")
+    try:
+        fit_figure_annotations(fig)
+    except LayoutError as exc:
+        raise OutputError("savefig: Figure annotations could not be fitted") from exc
     if create_parent_value:
         try:
             for parent in parents:

@@ -39,7 +39,7 @@ window.
 
 | Surface | Historical 0.3 | Pre-concise 0.4 baseline | Current 0.4 / 1.x contract |
 | --- | --- | --- | --- |
-| Figure size | 5 x 5 in | Matplotlib default unless explicit | `auto`: 85 mm for one column, 170 mm for multiple columns; tuple/preset override |
+| Figure size | 5 x 5 in | Matplotlib default unless explicit | `auto`: 85 mm for one column, 170 mm for multiple columns; tuple/preset override; `figure_fit=True` preserves the fixed canvas while fitting independent gsplot annotations |
 | Layout | tight | none unless explicit | constrained for a new Figure; preserve a reused Figure |
 | Reused-Figure clearing | true | false | false |
 | Style ownership | process-global import/config effects | ambient or explicit target helpers | target-local `paper` on newly created Axes |

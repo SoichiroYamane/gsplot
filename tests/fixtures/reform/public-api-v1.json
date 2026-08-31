@@ -577,6 +577,13 @@
             "required": false
           },
           {
+            "annotation": "'bool'",
+            "default": "False",
+            "kind": "KEYWORD_ONLY",
+            "name": "figure_fit",
+            "required": false
+          },
+          {
             "annotation": "'float | None'",
             "default": "None",
             "kind": "KEYWORD_ONLY",
@@ -671,14 +678,14 @@
         "return_annotation": "'tuple[Figure, AxesContainer]'"
       },
       "docstring": {
-        "sha256": "2df78119d8878823d6a38c067b22ae858de493cdd7a0b377700a7c92154ab0f2",
+        "sha256": "3046015847e05536a80cbcfde26c73b223a8baa6e4a5561abbf209adcaa6300a",
         "summary": "Create or reuse a native Figure with concise publication defaults."
       },
       "kind": "function",
       "module": "gsplot._figure.layout",
       "name": "subplots",
       "qualname": "subplots",
-      "signature": "(*shape: 'int | MosaicSpec', nrows: 'int | None' = None, ncols: 'int | None' = None, mosaic: 'MosaicSpec | None' = None, size: 'SizeSpec' = 'auto', unit: 'Unit' = 'in', sharex: 'ShareMode' = False, sharey: 'ShareMode' = False, squeeze: 'bool' = True, width_ratios: 'Sequence[float] | None' = None, height_ratios: 'Sequence[float] | None' = None, subplot_kw: 'Mapping[str, Any] | None' = None, fig: 'Figure | None' = None, clear: 'bool' = False, live: 'bool' = False, layout: 'LayoutMode' = 'auto', style: 'StyleMode' = 'auto', pad: 'float | None' = None, xpad: 'float | None' = None, ypad: 'float | None' = None, xspace: 'float | None' = None, yspace: 'float | None' = None, w_pad: 'float | None' = None, h_pad: 'float | None' = None, wspace: 'float | None' = None, hspace: 'float | None' = None, config: 'Config | None' = None, figsize: 'tuple[float, float] | None' = None, tight_layout: 'bool | None' = None, constrained_layout: 'bool | None' = None) -> 'tuple[Figure, AxesContainer]'"
+      "signature": "(*shape: 'int | MosaicSpec', nrows: 'int | None' = None, ncols: 'int | None' = None, mosaic: 'MosaicSpec | None' = None, size: 'SizeSpec' = 'auto', unit: 'Unit' = 'in', sharex: 'ShareMode' = False, sharey: 'ShareMode' = False, squeeze: 'bool' = True, width_ratios: 'Sequence[float] | None' = None, height_ratios: 'Sequence[float] | None' = None, subplot_kw: 'Mapping[str, Any] | None' = None, fig: 'Figure | None' = None, clear: 'bool' = False, live: 'bool' = False, layout: 'LayoutMode' = 'auto', style: 'StyleMode' = 'auto', figure_fit: 'bool' = False, pad: 'float | None' = None, xpad: 'float | None' = None, ypad: 'float | None' = None, xspace: 'float | None' = None, yspace: 'float | None' = None, w_pad: 'float | None' = None, h_pad: 'float | None' = None, wspace: 'float | None' = None, hspace: 'float | None' = None, config: 'Config | None' = None, figsize: 'tuple[float, float] | None' = None, tight_layout: 'bool | None' = None, constrained_layout: 'bool | None' = None) -> 'tuple[Figure, AxesContainer]'"
     },
     {
       "call_contract": {
@@ -1649,7 +1656,7 @@
         "return_annotation": "'Text'"
       },
       "docstring": {
-        "sha256": "74166d1b09703cdd6fca2da650a877813517349ec6ad11dc611f19fef3c98fdf",
+        "sha256": "34a60f8941c45732399c4e215c8ed7369f933507fa44f295583d2757ea3c0caa",
         "summary": "Set an explicit Axes title and return its native Text artist."
       },
       "kind": "function",
@@ -1693,7 +1700,7 @@
         "return_annotation": "'Text'"
       },
       "docstring": {
-        "sha256": "079a68d91067c84868ba44c258c41d7bb8a8112ff1ba8f3137b5f7569fecb754",
+        "sha256": "cb2960c09de1036dd8c9f794b4c11f614bce9ccdb3e6dbf717a13b69a1541793",
         "summary": "Set an explicit Figure suptitle and return its native Text artist."
       },
       "kind": "function",
@@ -1925,7 +1932,7 @@
         "return_annotation": "'tuple[Text, ...]'"
       },
       "docstring": {
-        "sha256": "6ff4ee8668e0659b55a12edccce8bf6a8ce8a0b02bea0004a5b56176cb4a8d0f",
+        "sha256": "439401bea9c3679886ca91e9ad6d54968b6203519e1d054722c0530a0bf95b30",
         "summary": "Add deterministic labels to an explicit ordered panel collection."
       },
       "kind": "function",
@@ -2004,7 +2011,7 @@
         "return_annotation": "'Text | tuple[Text, ...]'"
       },
       "docstring": {
-        "sha256": "0fba87311de28f1a40c4269c0ee72ac7dcafb549988e15251750783bd9948cec",
+        "sha256": "d02b254dd7671bfad496fdf3848cfe2a62ead6b3cdfab3537f2da98f19eda427",
         "summary": "Add deterministic lowercase panel indexes to explicit Axes."
       },
       "kind": "function",
@@ -2454,7 +2461,7 @@
         "return_annotation": "'tuple[Path, ...]'"
       },
       "docstring": {
-        "sha256": "e9e1c2cba367a6adda813becd23ca5b66a1f45f6fb8142284f3b5a157a24075e",
+        "sha256": "a3787def2849a6b50ee4c4475b870c1d12f3510868755391f524a5c64ed353b8",
         "summary": "Save one explicit Figure through a concise transactional workflow."
       },
       "kind": "function",
@@ -2540,7 +2547,7 @@
         "return_annotation": "'tuple[Path, ...]'"
       },
       "docstring": {
-        "sha256": "aeceb16db3080f761ca12cc673cea26ce3c754cd1ee92f536b1818f5b84abf27",
+        "sha256": "bfd50991c969c0f0ff933799a30809e7921376ac2d02c981165f1700f7a30cf6",
         "summary": "Save an explicit Figure and optionally display it after all writes."
       },
       "kind": "function",

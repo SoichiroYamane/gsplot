@@ -5,11 +5,10 @@ from __future__ import annotations
 import inspect
 import math
 from collections.abc import Mapping, Sequence
-from typing import Any, Literal, Protocol, cast, get_type_hints, overload
+from typing import Any, Literal, cast, get_type_hints, overload
 
 import numpy as np
 from matplotlib.axes import Axes
-from matplotlib.backend_bases import RendererBase
 from matplotlib.figure import Figure
 from matplotlib.text import Text
 from matplotlib.transforms import ScaledTranslation
@@ -20,6 +19,7 @@ from .._core.plans import TargetPlan
 from .._core.targets import normalize_axes, resolve_target_mapping
 from .._core.types import AxesTarget
 from .._core.validation import ensure_positive
+from .._figure.fit import _get_figure_renderer, register_figure_annotations
 from .axes import _validate_props
 
 _PANEL_PROPS = frozenset(
@@ -51,14 +51,6 @@ _PANEL_PROPS = frozenset(
 
 _INDEX_INSIDE_GAP_POINTS = 4.0
 _INDEX_OUTSIDE_GAP_POINTS = 6.0
-
-
-class _RendererCanvas(Protocol):
-    """Canvas capability required after a synchronous draw."""
-
-    def get_renderer(self) -> RendererBase:
-        """Return the renderer used by the latest draw."""
-        ...
 
 
 def _label_for_index(index: int) -> str:
@@ -368,6 +360,10 @@ def _apply_index(
                     **props,
                 )
             created.append(artist)
+        register_figure_annotations(
+            target.figure,
+            ((artist, loc == "out") for artist in created),
+        )
     except Exception:
         for item in reversed(created):
             item.remove()
@@ -482,6 +478,13 @@ def index(
     LayoutError, PlotError
         If targets, labels, placement, size, or text properties are invalid.
 
+    Notes
+    -----
+    When the Figure was created with ``subplots(figure_fit=True)``, the
+    independent index annotations are shifted by the minimum required amount
+    to remain inside the fixed Figure canvas. Add indexes after finalizing
+    custom Axes positions; output helpers repeat the fit before rendering.
+
     Examples
     --------
     >>> import gsplot as gs
@@ -579,6 +582,13 @@ def panel_labels(
     LayoutError, PlotError
         If the target, labels, or property mapping is invalid.
 
+    Notes
+    -----
+    When the Figure was created with ``subplots(figure_fit=True)``, the
+    independent panel-label annotations are shifted by the minimum required
+    amount to remain inside the fixed Figure canvas. Axis labels, tick labels,
+    and legends retain Matplotlib layout behavior.
+
     Examples
     --------
     >>> import gsplot as gs
@@ -607,6 +617,7 @@ def panel_labels(
     selected_props = _validate_props(merged_props, _PANEL_PROPS, "panel_labels")
     selected_props.setdefault("ha", "left")
     selected_props.setdefault("va", "top")
+    figure = target_plan.figure
     if loc == "corner":
         texts = [
             cast(Any, axis).text(
@@ -618,11 +629,16 @@ def panel_labels(
             )
             for axis, label in zip(axes, selected_labels)
         ]
+        try:
+            register_figure_annotations(figure, ((text, False) for text in texts))
+        except Exception:
+            for text in reversed(texts):
+                text.remove()
+            raise
         return tuple(texts)
 
-    figure = target_plan.figure
     figure.canvas.draw()
-    renderer = cast(_RendererCanvas, figure.canvas).get_renderer()
+    renderer = _get_figure_renderer(figure)
     width, height = figure.bbox.width, figure.bbox.height
     padding = (30, -30) if loc == "in" else (0, -5)
     texts = []
@@ -645,6 +661,12 @@ def panel_labels(
                 **selected_props,
             )
         )
+    try:
+        register_figure_annotations(figure, ((text, False) for text in texts))
+    except Exception:
+        for text in reversed(texts):
+            text.remove()
+        raise
     return tuple(texts)
 
 

@@ -53,7 +53,11 @@ The concise defaults and ownership rules are:
   constrained layout, and target-local paper styling. Explicit size tuples
   support inches, centimetres, millimetres, and points. Reused Figures retain
   their size and existing style/layout unless an explicit compatible value is
-  supplied; `clear=False` remains the default.
+  supplied; `clear=False` remains the default. With `figure_fit=True`, the
+  fixed Figure canvas is preserved while independent gsplot annotations
+  (`index`, `panel_labels`, `title`, and `suptitle`) are translated inward by
+  the minimum required amount after rendering. Axes-managed labels, tick
+  labels, and legends retain Matplotlib layout behavior.
 - `paper()` styles only explicit Axes. It installs a frozen native property
   cycle but never changes global `rcParams`, registers future callbacks,
   creates a Legend, or retains target ownership.
@@ -64,8 +68,9 @@ The concise defaults and ownership rules are:
   otherwise the target Axes cycle supplies color.
 - `label()`, `square()`, `index()`, `inset()`, and `legend()` validate every
   target and per-target value before mutating the first Axes. Label styling
-  never triggers a Figure relayout. Index labels use deterministic lowercase
-  bijective Latin lettering. `legend()` defaults to `loc="best"`, a frameless
+  never triggers a Figure relayout unless the explicit `figure_fit=True`
+  policy is enabled for independent annotations. Index labels use deterministic
+  lowercase bijective Latin lettering. `legend()` defaults to `loc="best"`, a frameless
   non-fancy presentation, and label spacing 0.3. `inset()` accepts automatic
   zoom indicators or exactly two explicit Matplotlib corner pairs, defaults
   the child z-order to 5, and places every indicator component immediately
@@ -139,7 +144,20 @@ explicit compatibility classification.
 ### FR-2: Figure and layout helpers
 
 - `subplots` must create or reuse ordinary Matplotlib figures and axes while
-  supporting validated size, unit, mosaic, clearing, and layout options.
+  supporting validated size, unit, mosaic, clearing, layout, and the explicit
+  `figure_fit` annotation policy.
+- `figure_fit=True` must preserve the requested Figure canvas dimensions and
+  keep independent gsplot annotations inside that canvas without resizing
+  their font or changing Axes positions. The policy applies to `index`,
+  `panel_labels`, `title`, and `suptitle`; it must not move axis labels, tick
+  labels, or legends managed by Matplotlib. An annotation wider or taller than
+  the Figure must fail with a typed layout error rather than being silently
+  clipped or shrunk.
+- On a reused Figure with `clear=False`, omitting `figure_fit` preserves the
+  existing Figure-local policy, while explicit `figure_fit=False` disables it.
+  Fitting is guaranteed when gsplot registers supported annotations and before
+  gsplot output helpers render; gsplot does not intercept later native
+  `Figure.canvas.draw()` calls with a global hook.
 - Layout validation must reject invalid dimensions or mosaics with a clear
   error rather than silently producing an unusable figure.
 - Mosaic mappings iterate in panel-name (alphabetical) order instead of
@@ -358,10 +376,13 @@ build_info, use_backend
 `save(target, ..., show=True)` restores the concise publication workflow: a
 suffix-free path writes PNG and PDF, raster output uses 600 DPI, tight crop
 uses deterministic 0.1-inch padding, PDF/PS uses Type 42 fonts, and all formats
-render before ordered final replacement. `crop=False` preserves the Figure
-design canvas. `savefig(fig, ..., show=True)` remains the conservative advanced
-operation. `show(target)` is display-only, resolves one Figure, and never saves
-or closes. `close=True` is explicit and cannot be combined with display.
+render before ordered final replacement. Registered `figure_fit` annotations
+are re-fitted before `save` and `savefig` render. `crop=False` preserves the
+Figure design canvas; `crop=True` remains a tight-content crop and therefore
+does not promise the requested physical output dimensions. `savefig(fig, ...,
+show=True)` remains the conservative advanced operation. `show(target)` is
+display-only, resolves one Figure, and never saves or closes. `close=True` is
+explicit and cannot be combined with display.
 Output paths, parent-directory creation, overwrite behavior, supported
 formats, and output errors are validated before filesystem mutation.
 

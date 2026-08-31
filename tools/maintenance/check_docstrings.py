@@ -121,6 +121,7 @@ _REVIEWED_DEFAULTS: dict[str, dict[str, object]] = {
         "clear": False,
         "layout": "auto",
         "style": "auto",
+        "figure_fit": False,
         "config": None,
         "figsize": None,
         "tight_layout": None,
