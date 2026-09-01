@@ -76,7 +76,7 @@ def test_metadata_is_bounded_stable_and_no_replace_by_default(tmp_path) -> None:
     """Metadata writes use explicit destinations and stable public JSON."""
 
     snapshot = MetadataSnapshot(
-        "0.4.1",
+        "0.4.2",
         labels={"experiment": "demo"},
         config_digest="abc",
     )
@@ -85,7 +85,7 @@ def test_metadata_is_bounded_stable_and_no_replace_by_default(tmp_path) -> None:
     )
     assert destination.is_absolute()
     document = json.loads(destination.read_text(encoding="utf-8"))
-    assert document["package_version"] == "0.4.1"
+    assert document["package_version"] == "0.4.2"
     assert list(document) == [
         "commit",
         "config_digest",
@@ -107,7 +107,7 @@ def test_metadata_and_legend_value_inputs_are_defensively_normalized() -> None:
 
     labels = ["one"]
     handles = [object()]
-    snapshot = MetadataSnapshot("0.4.1", labels={"run": "one"})
+    snapshot = MetadataSnapshot("0.4.2", labels={"run": "one"})
     entries = LegendEntries(handles=handles, labels=labels)
     labels.append("two")
     assert snapshot.labels == {"run": "one"}
