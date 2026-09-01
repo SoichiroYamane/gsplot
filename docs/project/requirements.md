@@ -393,6 +393,20 @@ non-empty data and its segment/color requirements. Styling functions use
 typed `AxisSpec`, `Theme`, and related values and never rely on a global
 `rcParams` mutation for ordinary operation.
 
+`cmap_legend` is the canonical one-entry horizontal-gradient Legend operation.
+It samples `linspace(0, 1, N_effective)`, applies an optional validated
+normalizer with `clip=True`, and reverses the final RGBA sequence when
+requested. `N_effective` is bounded at 256. The deprecated
+`legend_colormap` function routes retain positional `num_stripes`, `vmin`, and
+`vmax` arguments and pass raw `linspace(vmin, vmax, N_effective)` values
+directly to the colormap; these semantics are not translated to canonical
+`norm`. Both routes use a local handler and native Legend attachment without
+mutating Matplotlib's default handler map or adding an Axes proxy patch.
+Canonical replacement is explicit; the legacy function always safely replaces
+because it has no `replace` argument. Automatic gradient Legends created by
+colored plotter helpers are a separate compatibility task and are not implied
+by this contract.
+
 The default-value contract is explicit:
 
 - `subplots()` defaults to one 85 mm publication subplot, `squeeze=True`,

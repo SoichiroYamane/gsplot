@@ -1,6 +1,8 @@
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, Callable
+
+from matplotlib.legend import Legend as _Legend
 
 from ._compat.config import load_config as load_config
 from ._config.model import Config as Config
@@ -105,7 +107,7 @@ legend_axes: Any
 legend_handlers: Any
 legend_reverse: Any
 legend_get_handlers: Any
-legend_colormap: Any
+legend_colormap: Callable[..., _Legend]
 ticks_off: Any
 ticks_on: Any
 ticks_on_axes: Any

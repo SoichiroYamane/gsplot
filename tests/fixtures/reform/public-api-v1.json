@@ -2301,8 +2301,8 @@
         "return_annotation": "'Legend'"
       },
       "docstring": {
-        "sha256": "63d060ccf6c386f158c910235c0539b086547a896cf3c201489c94c1a647b388",
-        "summary": "Create a local legend composed of finite colormap stripe proxies."
+        "sha256": "8956d084e534f99c3d1f59270ff307acceaae5bb8e25e8b5c2e2b43258d50b30",
+        "summary": "Create one native Legend entry containing a horizontal color gradient."
       },
       "kind": "function",
       "module": "gsplot._style.legends",
