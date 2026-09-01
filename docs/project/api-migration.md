@@ -227,7 +227,7 @@ The classification uses these terms:
 | `legend_handlers` | `legend` | adapter | Handler maps become local call arguments and are never global mutable state. |
 | `legend_reverse` | `legend` | adapter | Reversal is an explicit `reverse` option. |
 | `legend_get_handlers` | `legend_entries` | adapter + breaking name | The target returns a typed `LegendEntries` value. |
-| `legend_colormap` | `cmap_legend` | adapter + breaking name | Colormap legend construction uses explicit handles, labels, and color mapping. |
+| `legend_colormap` | `cmap_legend` | adapter + breaking name | The deprecated root and `gsplot.style.legend_colormap` functions preserve the old positional arguments and raw `vmin`/`vmax` sampling, but render one local horizontal gradient entry without the historical global handler-map or Axes-proxy side effects. Canonical `cmap_legend` uses `stripes`, optional `norm` over `[0, 1]`, explicit replacement, and a native `Legend` return. |
 | `ticks_off` | `minor_ticks` | adapter + breaking name | The target has one explicit `enabled` operation. |
 | `ticks_on` | `minor_ticks` | adapter + breaking name | The target has one explicit `enabled` operation. |
 | `ticks_on_axes` | `minor_ticks` | adapter | The target accepts explicit axes and an axis selector. |

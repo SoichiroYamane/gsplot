@@ -7,7 +7,7 @@ configuration, logging, metadata-file, or backend initialization.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Callable
 
 from ._compat.root import canonical_names as _canonical_names
 from ._compat.root import legacy_names as _legacy_names
@@ -20,6 +20,8 @@ if TYPE_CHECKING:
     # Runtime lookup stays lazy.  Static analyzers see the canonical source
     # objects instead of an ``Any``-typed dynamic facade, so the shipped
     # ``py.typed`` marker provides useful signatures to downstream callers.
+    from matplotlib.legend import Legend as _Legend
+
     from ._compat.config import load_config
     from ._config.model import Config
     from ._core.errors import (
@@ -115,7 +117,7 @@ if TYPE_CHECKING:
     legend_handlers: Any
     legend_reverse: Any
     legend_get_handlers: Any
-    legend_colormap: Any
+    legend_colormap: Callable[..., _Legend]
     ticks_off: Any
     ticks_on: Any
     ticks_on_axes: Any

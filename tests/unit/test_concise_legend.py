@@ -7,6 +7,7 @@ import pytest
 from matplotlib.legend import Legend
 from matplotlib.legend_handler import HandlerLine2D
 
+import gsplot._style.legends as legends_module
 from gsplot._core import LayoutError, PlotError
 from gsplot._style.legends import legend
 
@@ -153,14 +154,14 @@ def test_legend_attachment_failure_restores_replaced_legends(monkeypatch) -> Non
         for position, axis in enumerate(axes):
             axis.plot([0, 1], [position, position + 1], label=str(position))
         previous = (axes[0].legend(), axes[1].legend())
-        second_add_artist = axes[1].add_artist
+        original_attach = legends_module._attach_legend
 
-        def fail_new_legend(artist):
-            if artist is not previous[1]:
+        def fail_new_legend(axis, artist):
+            if axis is axes[1]:
                 raise RuntimeError("attachment failed")
-            return second_add_artist(artist)
+            return original_attach(axis, artist)
 
-        monkeypatch.setattr(axes[1], "add_artist", fail_new_legend)
+        monkeypatch.setattr(legends_module, "_attach_legend", fail_new_legend)
         with pytest.raises(RuntimeError, match="attachment failed"):
             legend(axes, replace=True)
 

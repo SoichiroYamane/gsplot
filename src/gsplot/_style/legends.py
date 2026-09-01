@@ -2,8 +2,10 @@
 
 from __future__ import annotations
 
+import copy
 import inspect
 from collections.abc import Mapping, Sequence
+from numbers import Integral
 from typing import Any, cast, get_type_hints, overload
 
 import matplotlib as mpl
@@ -15,14 +17,15 @@ from matplotlib.colors import Colormap, Normalize
 from matplotlib.figure import Figure
 from matplotlib.legend import Legend
 from matplotlib.legend_handler import HandlerBase
-from matplotlib.lines import Line2D
+from matplotlib.patches import Rectangle
+from matplotlib.transforms import Transform
 
 from .._core.errors import LayoutError, OptionError, PlotError
 from .._core.options import MISSING
 from .._core.plans import TargetPlan
 from .._core.targets import normalize_axes, resolve_target_mapping
 from .._core.types import AxesTarget, LegendEntries, NormalizeSpec
-from .._core.validation import ensure_bool, ensure_nonnegative
+from .._core.validation import ensure_bool, ensure_finite_real, ensure_nonnegative
 
 _LEGEND_PROPS = frozenset(
     {
@@ -53,6 +56,8 @@ _LEGEND_PROPS = frozenset(
         "title_fontsize",
     }
 )
+
+_MAX_NUM_STRIPES = 256
 
 
 def _props(
@@ -89,6 +94,92 @@ def _existing(ax: Any) -> tuple[Legend, ...]:
     if isinstance(current, Legend) and current not in found:
         found.append(current)
     return tuple(found)
+
+
+class _ColormapHandler(HandlerBase):
+    """Render one colormap proxy as a horizontal sequence of rectangles."""
+
+    def __init__(self, colors: Sequence[tuple[float, float, float, float]]) -> None:
+        super().__init__()
+        self.colors = tuple(colors)
+
+    def create_artists(
+        self,
+        legend: Legend,
+        orig_handle: Artist,
+        xdescent: float,
+        ydescent: float,
+        width: float,
+        height: float,
+        fontsize: float,
+        trans: Transform,
+    ) -> list[Rectangle]:
+        """Create adjacent, edge-free Rectangle artists for one proxy."""
+
+        del legend, orig_handle, fontsize
+        stripe_width = width / len(self.colors)
+        return [
+            Rectangle(
+                (xdescent + index * stripe_width, ydescent),
+                stripe_width,
+                height,
+                facecolor=color,
+                edgecolor="none",
+                linewidth=0,
+                transform=trans,
+            )
+            for index, color in enumerate(self.colors)
+        ]
+
+
+def _attach_legend(axis: Axes | _AxesBase, legend: Legend) -> None:
+    """Attach one Legend through Matplotlib's native legend slot."""
+
+    remove_legend = getattr(axis, "_remove_legend", None)
+    if remove_legend is None:
+        raise LayoutError("legend: target does not support native Legend removal")
+    legend._remove_method = remove_legend  # type: ignore[attr-defined]
+    axis.legend_ = legend
+
+
+def _snapshot_legend_state(
+    axis: Axes | _AxesBase,
+    existing: Sequence[Legend],
+) -> tuple[list[Any], dict[int, tuple[Any, Any, Any, Any]]]:
+    """Capture observable Axes and old Legend state for rollback."""
+
+    children = list(getattr(axis, "_children", ()))
+    state = {
+        id(old): (
+            old.axes,
+            old.figure,
+            getattr(old, "_remove_method", None),
+            old.stale_callback,
+        )
+        for old in existing
+    }
+    return children, state
+
+
+def _restore_legend_state(
+    axis: Axes | _AxesBase,
+    current: Legend | None,
+    children_before: list[Any],
+    state_before: Mapping[int, tuple[Any, Any, Any, Any]],
+    existing: Sequence[Legend],
+) -> None:
+    """Restore a Legend transaction without invoking the attach seam."""
+
+    children = getattr(axis, "_children", None)
+    if children is not None:
+        children[:] = children_before
+    for old in existing:
+        old_axes, old_figure, old_remove, old_stale = state_before[id(old)]
+        setattr(old, "axes", old_axes)
+        setattr(old, "figure", old_figure)
+        setattr(old, "_remove_method", old_remove)
+        setattr(old, "stale_callback", old_stale)
+    axis.legend_ = current
 
 
 def _entries(
@@ -240,6 +331,95 @@ def _entry_sets(
     return tuple(entries)
 
 
+def _create_single_legend(
+    axis: Axes | _AxesBase,
+    handles: Sequence[Artist],
+    labels: Sequence[str],
+    handler_map: Mapping[object, HandlerBase],
+    props: Mapping[str, Any],
+    *,
+    replace: bool,
+) -> Legend:
+    """Construct and atomically attach one Legend to one Axes target."""
+
+    existing = _existing(axis)
+    if existing and not replace:
+        raise LayoutError("legend: an existing legend requires replace=True")
+    current = axis.get_legend()
+    children_before, state_before = _snapshot_legend_state(axis, existing)
+    try:
+        created = Legend(
+            cast(Any, axis),
+            tuple(handles),
+            tuple(labels),
+            handler_map=cast(Any, dict(handler_map)),
+            **dict(props),
+        )
+    except (TypeError, ValueError) as exc:
+        raise PlotError("legend: invalid entries, handlers, or options") from exc
+    try:
+        if replace:
+            for old in existing:
+                old.remove()
+        _attach_legend(axis, created)
+    except Exception:
+        if created in getattr(axis, "_children", ()):
+            created.remove()
+        _restore_legend_state(axis, current, children_before, state_before, existing)
+        raise
+    return created
+
+
+def _create_cmap_legend(
+    ax: Axes,
+    colors: Sequence[tuple[float, float, float, float]],
+    label: str | None,
+    *,
+    replace: Any,
+    props: Mapping[str, Any] | None,
+    kwargs: Mapping[str, Any] | None = None,
+    ambient: bool = False,
+) -> Legend:
+    """Create one gradient Legend from precomputed colors."""
+
+    if not isinstance(ax, Axes):
+        raise LayoutError("cmap_legend: ax must be a matplotlib.axes.Axes instance")
+    if label is not None and not isinstance(label, str):
+        raise PlotError("label must be a string or None")
+    selected_replace = ensure_bool(replace, "legend: replace", error=LayoutError)
+    if ambient:
+        selected_props = _props(props, "legend_colormap", kwargs)
+    else:
+        selected_props = _legend_props(
+            props,
+            loc=MISSING,
+            frameon=MISSING,
+            fancybox=MISSING,
+            labelspacing=MISSING,
+            handlelength=MISSING,
+            kwargs=kwargs,
+        )
+    if label is None:
+        return _create_single_legend(
+            ax,
+            (),
+            (),
+            {},
+            selected_props,
+            replace=selected_replace,
+        )
+    proxy = Rectangle((0, 0), 1, 1)
+    handler = _ColormapHandler(colors)
+    return _create_single_legend(
+        ax,
+        (proxy,),
+        (label,),
+        {proxy: handler},
+        selected_props,
+        replace=selected_replace,
+    )
+
+
 @overload
 def legend(
     target: Axes,
@@ -358,7 +538,14 @@ def legend(
     entry_sets = _entry_sets(target_plan, handles, labels)
 
     planned: list[
-        tuple[Axes | _AxesBase, Legend, tuple[Legend, ...], Legend | None]
+        tuple[
+            Axes | _AxesBase,
+            Legend,
+            tuple[Legend, ...],
+            Legend | None,
+            list[Any],
+            dict[int, tuple[Any, Any, Any, Any]],
+        ]
     ] = []
     for axis, selected_handles, selected_labels in entry_sets:
         if selected_reverse:
@@ -378,31 +565,53 @@ def legend(
         except (TypeError, ValueError) as exc:
             raise PlotError("legend: invalid entries, handlers, or options") from exc
         current = axis.get_legend()
+        children_before, state_before = _snapshot_legend_state(axis, existing)
         planned.append(
-            (axis, created, existing, current if isinstance(current, Legend) else None)
+            (
+                axis,
+                created,
+                existing,
+                current if isinstance(current, Legend) else None,
+                children_before,
+                state_before,
+            )
         )
 
     attempted: list[
-        tuple[Axes | _AxesBase, Legend, tuple[Legend, ...], Legend | None]
+        tuple[
+            Axes | _AxesBase,
+            Legend,
+            tuple[Legend, ...],
+            Legend | None,
+            list[Any],
+            dict[int, tuple[Any, Any, Any, Any]],
+        ]
     ] = []
     try:
-        for axis, created, existing, current in planned:
-            attempted.append((axis, created, existing, current))
+        for axis, created, existing, current, children_before, state_before in planned:
+            attempted.append(
+                (axis, created, existing, current, children_before, state_before)
+            )
             if selected_replace:
                 for old in existing:
                     old.remove()
-            axis.add_artist(created)
-            axis.legend_ = created
+            _attach_legend(axis, created)
     except Exception:
-        for axis, created, existing, current in reversed(attempted):
-            if created in axis.get_children():
+        for (
+            axis,
+            created,
+            existing,
+            current,
+            children_before,
+            state_before,
+        ) in reversed(attempted):
+            if created in getattr(axis, "_children", ()):
                 created.remove()
-            for old in existing:
-                if old not in axis.get_children():
-                    axis.add_artist(old)
-            axis.legend_ = current
+            _restore_legend_state(
+                axis, current, children_before, state_before, existing
+            )
         raise
-    result = tuple(created for _, created, _, _ in planned)
+    result = tuple(created for _, created, _, _, _, _ in planned)
     return result[0] if target_plan.kind == "single" else result
 
 
@@ -497,18 +706,53 @@ def legends(
             raise LayoutError("an existing legend requires replace=True")
         entries.append((axis, tuple(handles), tuple(labels), existing))
     planned: list[tuple[Axes | _AxesBase, Legend, tuple[Legend, ...]]] = []
+    snapshots: list[
+        tuple[
+            Axes | _AxesBase,
+            Legend | None,
+            list[Any],
+            dict[int, tuple[Any, Any, Any, Any]],
+            tuple[Legend, ...],
+        ]
+    ] = []
     for axis, stored_handles, stored_labels, existing in entries:
-        item = Legend(cast(Any, axis), stored_handles, stored_labels, **selected_props)
+        current = axis.get_legend()
+        children_before, state_before = _snapshot_legend_state(axis, existing)
+        try:
+            item = Legend(
+                cast(Any, axis), stored_handles, stored_labels, **selected_props
+            )
+        except (TypeError, ValueError) as exc:
+            raise PlotError("legends: invalid entries or options") from exc
         planned.append((axis, item, existing))
-    created: list[Legend] = []
-    for axis, item, existing in planned:
-        if replace:
-            for old in existing:
-                old.remove()
-        axis.add_artist(item)
-        axis.legend_ = item
-        created.append(item)
-    return tuple(created)
+        snapshots.append(
+            (
+                axis,
+                current if isinstance(current, Legend) else None,
+                children_before,
+                state_before,
+                existing,
+            )
+        )
+    attempted: list[int] = []
+    try:
+        for index, (axis, item, existing) in enumerate(planned):
+            attempted.append(index)
+            if replace:
+                for old in existing:
+                    old.remove()
+            _attach_legend(axis, item)
+    except Exception:
+        for index in reversed(attempted):
+            axis, item, _ = planned[index]
+            if item in getattr(axis, "_children", ()):
+                item.remove()
+            _, current, children_before, state_before, existing = snapshots[index]
+            _restore_legend_state(
+                axis, current, children_before, state_before, existing
+            )
+        raise
+    return tuple(item for _, item, _ in planned)
 
 
 def legend_entries(
@@ -558,32 +802,80 @@ def legend_entries(
     )
 
 
+def _effective_stripes(value: Any, name: str) -> int:
+    """Validate a stripe count and apply the bounded legend limit."""
+
+    if isinstance(value, (bool, np.bool_)) or not isinstance(value, Integral):
+        raise PlotError(f"{name} must be a positive integer")
+    count = int(value)
+    if count < 1:
+        raise PlotError(f"{name} must be a positive integer")
+    return min(count, _MAX_NUM_STRIPES)
+
+
+def _resolve_colormap(cmap: str | Colormap) -> Colormap:
+    """Resolve a colormap name without mutating a caller-owned colormap."""
+
+    if isinstance(cmap, str):
+        if not cmap.strip():
+            raise PlotError("cmap must be a non-empty colormap name")
+        try:
+            return mpl.colormaps.get_cmap(cmap)
+        except (TypeError, ValueError) as exc:
+            raise PlotError(f"unknown Matplotlib colormap: {cmap!r}") from exc
+    if isinstance(cmap, Colormap):
+        return cmap
+    raise PlotError("cmap must be a colormap name or Colormap")
+
+
+def _sample_colormap(
+    selected: Colormap,
+    values: np.ndarray,
+    reverse: bool,
+) -> tuple[tuple[float, float, float, float], ...]:
+    """Sample RGBA colors and reverse the sampled rows when requested."""
+
+    try:
+        rgba = np.asarray(selected(values), dtype=float)
+    except Exception as exc:
+        raise PlotError("colormap must return RGBA values") from exc
+    if rgba.shape != (len(values), 4) or not np.all(np.isfinite(rgba)):
+        raise PlotError("colormap must return finite RGBA values")
+    if reverse:
+        rgba = rgba[::-1]
+    rows: list[tuple[float, float, float, float]] = []
+    for row in rgba:
+        rows.append((float(row[0]), float(row[1]), float(row[2]), float(row[3])))
+    return tuple(rows)
+
+
 def _colormap_values(
     cmap: str | Colormap,
     stripes: int,
     norm: NormalizeSpec | None,
     reverse: bool,
 ) -> tuple[tuple[float, float, float, float], ...]:
-    """Build deterministic RGBA stripe colors from a local colormap."""
+    """Build deterministic canonical RGBA stripe colors."""
 
-    if isinstance(cmap, str):
-        if not cmap.strip():
-            raise PlotError("cmap must be a non-empty colormap name")
-        try:
-            selected = mpl.colormaps.get_cmap(cmap)
-        except (TypeError, ValueError) as exc:
-            raise PlotError(f"unknown Matplotlib colormap: {cmap!r}") from exc
-    elif isinstance(cmap, Colormap):
-        selected = cmap
-    else:
-        raise PlotError("cmap must be a colormap name or Colormap")
+    stripes = _effective_stripes(stripes, "stripes")
     if not isinstance(reverse, bool):
         raise PlotError("reverse must be a boolean")
-    if reverse:
-        selected = selected.reversed()
+    selected = _resolve_colormap(cmap)
     positions = np.linspace(0.0, 1.0, stripes)
     if norm is not None:
-        if not callable(norm):
+        selected_norm: Any = norm
+        if isinstance(norm, Normalize):
+            try:
+                selected_norm = copy.copy(norm)
+            except Exception as exc:  # pragma: no cover - defensive boundary
+                raise PlotError("norm could not be copied safely") from exc
+            if selected_norm.vmin is None or selected_norm.vmax is None:
+                raise PlotError("norm bounds must be finite and increasing")
+            vmin = ensure_finite_real(selected_norm.vmin, "norm.vmin", error=PlotError)
+            vmax = ensure_finite_real(selected_norm.vmax, "norm.vmax", error=PlotError)
+            if vmin >= vmax:
+                raise PlotError("norm bounds must be finite and increasing")
+        elif not callable(norm):
             if isinstance(norm, (str, bytes)):
                 raise PlotError(
                     "norm must be a normalizer or a finite (vmin, vmax) pair"
@@ -598,27 +890,40 @@ def _colormap_values(
                 raise PlotError(
                     "norm must be a normalizer or a finite (vmin, vmax) pair"
                 )
-            try:
-                vmin, vmax = (float(bounds[0]), float(bounds[1]))
-            except (TypeError, ValueError) as exc:
-                raise PlotError("norm bounds must be finite") from exc
-            if not np.isfinite(vmin) or not np.isfinite(vmax) or vmin >= vmax:
+            vmin = ensure_finite_real(bounds[0], "norm.vmin", error=PlotError)
+            vmax = ensure_finite_real(bounds[1], "norm.vmax", error=PlotError)
+            if vmin >= vmax:
                 raise PlotError("norm bounds must be finite and increasing")
-            norm = Normalize(vmin=vmin, vmax=vmax, clip=True)
+            selected_norm = Normalize(vmin=vmin, vmax=vmax, clip=True)
         try:
-            positions = np.asarray(norm(positions, clip=True), dtype=float)
-        except (TypeError, ValueError) as exc:
+            positions = np.asarray(selected_norm(positions, clip=True), dtype=float)
+        except Exception as exc:
             raise PlotError("norm must return finite values") from exc
         if positions.shape != (stripes,) or not np.all(np.isfinite(positions)):
             raise PlotError("norm must return finite values with the stripe shape")
         positions = np.clip(positions, 0.0, 1.0)
-    return tuple(
-        cast(
-            tuple[float, float, float, float],
-            tuple(float(channel) for channel in rgba),
-        )
-        for rgba in selected(positions)
-    )
+    return _sample_colormap(selected, positions, reverse)
+
+
+def _legacy_colormap_values(
+    cmap: Any,
+    num_stripes: Any,
+    vmin: Any,
+    vmax: Any,
+    reverse: Any,
+) -> tuple[tuple[float, float, float, float], ...]:
+    """Build v0.2-compatible RGBA colors for the legacy function route."""
+
+    if not isinstance(cmap, str) or not cmap.strip():
+        raise PlotError("cmap must be a non-empty colormap name")
+    if not isinstance(reverse, bool):
+        raise PlotError("reverse must be a boolean")
+    stripes = _effective_stripes(num_stripes, "num_stripes")
+    selected_vmin = ensure_finite_real(vmin, "vmin", error=PlotError)
+    selected_vmax = ensure_finite_real(vmax, "vmax", error=PlotError)
+    selected = _resolve_colormap(cmap)
+    values = np.linspace(selected_vmin, selected_vmax, stripes)
+    return _sample_colormap(selected, values, reverse)
 
 
 def cmap_legend(
@@ -633,7 +938,7 @@ def cmap_legend(
     props: Mapping[str, Any] | None = None,
     **kwargs: Any,
 ) -> Legend:
-    """Create a local legend composed of finite colormap stripe proxies.
+    """Create one native Legend entry containing a horizontal color gradient.
 
     Parameters
     ----------
@@ -642,11 +947,18 @@ def cmap_legend(
     cmap
         Colormap name or native Colormap object.
     label
-        Optional label for the first stripe proxy.
+        Optional label for the gradient entry. ``None`` creates an empty
+        native Legend and does not render a gradient.
     stripes
-        Positive number of deterministic color proxies.
-    norm, reverse
-        Optional normalization and reversal controls.
+        Positive requested stripe count. Counts above 256 are clamped to 256
+        before sampling and rendering.
+    norm
+        Optional normalizer applied to ``linspace(0, 1, N_effective)`` with
+        ``clip=True``. A pair is interpreted as ``(vmin, vmax)`` for a
+        read-only ``Normalize`` operation; it is not a legacy raw-value
+        alias.
+    reverse
+        Reverse the final sampled RGBA sequence from left to right.
     replace
         Remove an existing legend only when explicitly set to ``True``.
     props
@@ -662,9 +974,17 @@ def cmap_legend(
 
     Raises
     ------
-    PlotError, LayoutError
-        If colormap, normalization, stripe count, target, or properties are
-        invalid.
+    PlotError, LayoutError, OptionError
+        If colormap, normalization, stripe count, target, replacement, or
+        properties are invalid.
+
+    Notes
+    -----
+    The gradient is rendered by one module-level local handler and one proxy
+    handle. It does not modify Matplotlib's default handler map or add a
+    colormap proxy to the Axes. When ``replace`` is false, an existing Legend
+    raises ``LayoutError``; when it is true, the existing Legend is replaced
+    transactionally.
 
     Examples
     --------
@@ -676,26 +996,17 @@ def cmap_legend(
     >>> figure.clear()
     """
 
-    if isinstance(stripes, bool) or not isinstance(stripes, int) or stripes < 1:
-        raise PlotError("stripes must be a positive integer")
+    stripes = _effective_stripes(stripes, "stripes")
     if label is not None and not isinstance(label, str):
         raise PlotError("label must be a string or None")
     colors = _colormap_values(cmap, stripes, norm, reverse)
-    handles = tuple(Line2D([], [], color=color, linewidth=4) for color in colors)
-    labels = tuple("" for _ in colors)
-    if label is not None:
-        labels = (label,) + labels[1:]
-    return cast(
-        Legend,
-        legend(
-            ax,
-            handles=handles,
-            labels=labels,
-            reverse=False,
-            replace=replace,
-            props=props,
-            **kwargs,
-        ),
+    return _create_cmap_legend(
+        ax,
+        colors,
+        label,
+        replace=replace,
+        props=props,
+        kwargs=kwargs,
     )
 
 

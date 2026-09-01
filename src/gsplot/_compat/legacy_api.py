@@ -22,6 +22,7 @@ from matplotlib import ticker
 from matplotlib.axes import Axes
 from matplotlib.axes._base import _AxesBase
 from matplotlib.figure import Figure
+from matplotlib.legend import Legend
 from mpl_toolkits.axes_grid1.inset_locator import inset_axes as _mpl_inset_axes
 from numpy.typing import ArrayLike, NDArray
 
@@ -42,7 +43,7 @@ from .._style.axes import box_aspect as _box_aspect
 from .._style.axes import minor_ticks as _minor_ticks
 from .._style.axes import style_axes as _style_axes
 from .._style.axes import title as _title
-from .._style.legends import cmap_legend as _cmap_legend
+from .._style.legends import _create_cmap_legend, _legacy_colormap_values
 from .._style.legends import legend as _legend
 from .._style.legends import legend_entries as _legend_entries
 from .._style.legends import legends as _legends
@@ -826,18 +827,47 @@ def legend_colormap(
     vmax: float = 1,
     reverse: bool = False,
     **props: Any,
-) -> Any:
-    """Adapt legacy colormap legends to :func:`gsplot.cmap_legend`."""
+) -> Legend:
+    """Create a v0.2-compatible horizontal gradient Legend.
+
+    Parameters
+    ----------
+    ax
+        Explicit target Axes.
+    cmap
+        Non-empty registered Matplotlib colormap name.
+    label
+        Optional gradient label. ``None`` returns an empty Legend.
+    num_stripes
+        Positive requested stripe count; values above 256 are clamped.
+    vmin, vmax
+        Finite raw values passed directly to the colormap through
+        ``linspace(vmin, vmax, N_effective)``. Equal and descending bounds are
+        valid and retain their sampled order.
+    reverse
+        Reverse the final sampled RGBA sequence from left to right.
+    **props
+        Finite Matplotlib Legend properties. If omitted, Matplotlib's
+        call-time rcParams provide the defaults.
+
+    Notes
+    -----
+    This deprecated adapter always replaces an existing Legend because the
+    historical function has no ``replace`` keyword. Its rendering helper is
+    shared with :func:`gsplot.cmap_legend`, but its raw ``vmin``/``vmax``
+    sampling is deliberately not translated to canonical ``norm`` semantics.
+    """
 
     _warn("legend_colormap", "cmap_legend")
-    return _cmap_legend(
+    colors = _legacy_colormap_values(cmap, num_stripes, vmin, vmax, reverse)
+    return _create_cmap_legend(
         ax,
-        cmap=cmap,
-        label=label,
-        stripes=num_stripes,
-        norm=(vmin, vmax),
-        reverse=reverse,
-        props=props or None,
+        colors,
+        label,
+        replace=True,
+        props=None,
+        kwargs=props,
+        ambient=True,
     )
 
 

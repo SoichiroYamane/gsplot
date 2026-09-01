@@ -239,7 +239,11 @@ def _type_checking_exports(path: Path) -> list[str]:
             continue
         for child in ast.walk(node):
             if isinstance(child, (ast.Import, ast.ImportFrom)):
-                names.update(alias.asname or alias.name for alias in child.names)
+                names.update(
+                    name
+                    for name in (alias.asname or alias.name for alias in child.names)
+                    if not name.startswith("_")
+                )
             elif isinstance(child, ast.AnnAssign) and isinstance(
                 child.target, ast.Name
             ):
