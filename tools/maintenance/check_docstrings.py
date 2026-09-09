@@ -39,6 +39,7 @@ _REVIEWED_DEFAULTS: dict[str, dict[str, object]] = {
         "pad": 5,
         "xpad": None,
         "ypad": None,
+        "align": "none",
         "square": False,
         "index": False,
     },

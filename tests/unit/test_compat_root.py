@@ -14,6 +14,7 @@ import gsplot as gs
 from gsplot._compat import root_api
 from gsplot._compat.legacy.figure.store import StoreSingleton
 from gsplot._compat.legacy.plot.line_base import NumLines
+from gsplot._core.errors import OptionError
 
 
 def test_root_canonical_signature_and_finite_line_options_are_available() -> None:
@@ -346,3 +347,22 @@ def test_root_title_supports_direct_kwargs() -> None:
         assert t.get_color() == "red"
     finally:
         plt.close(figure)
+
+
+def test_root_label_forwards_align_and_rejects_it_for_historical_records() -> None:
+    """The root adapter aligns concise targets but keeps records historical."""
+
+    figure, axes = plt.subplots(2, 1)
+    try:
+        gs.label(axes, "time", "signal", align="y")
+        axes[0].set_ylim(0, 2000)
+        axes[1].set_ylim(0, 2)
+        figure.canvas.draw()
+        positions = [axis.yaxis.label.get_window_extent().x0 for axis in axes]
+        assert max(positions) - min(positions) < 1e-6
+    finally:
+        plt.close(figure)
+
+    plt.close("all")
+    with pytest.raises(OptionError, match="concise target options"):
+        gs.label([["legacy x", "legacy y"]], align="y")

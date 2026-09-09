@@ -27,6 +27,7 @@ def test_concise_label_and_index_signatures_publish_frozen_defaults() -> None:
     assert label_signature.parameters["xmargin"].default is None
     assert label_signature.parameters["ymargin"].default is None
     assert label_signature.parameters["square"].default is False
+    assert label_signature.parameters["align"].default == "none"
     assert label_signature.parameters["index"].default is False
     assert label_signature.parameters["index_offset"].default is None
     assert label_signature.parameters["index_xoffset"].default is None
@@ -598,3 +599,118 @@ def test_label_with_string_and_none_limits() -> None:
         assert ax.get_xlim()[1] == 10.0
     finally:
         plt.close(fig)
+
+
+def test_label_align_defaults_to_none_and_rejects_unknown_modes() -> None:
+    """Alignment stays opt-in and an unknown mode changes no Axes."""
+
+    figure, axes = plt.subplots(2, 1)
+    try:
+        with pytest.raises(LayoutError, match="align must be one of"):
+            label(axes, "time", "signal", align="diagonal")  # type: ignore[arg-type]
+        with pytest.raises(LayoutError, match="align must be one of"):
+            label(axes, "time", "signal", align=True)  # type: ignore[arg-type]
+        assert all(axis.get_xlabel() == "" for axis in axes)
+        assert all(axis.get_ylabel() == "" for axis in axes)
+    finally:
+        plt.close(figure)
+
+
+def test_label_align_y_matches_stacked_ylabels_after_draw() -> None:
+    """align='y' removes the tick-width offset between stacked ylabels."""
+
+    figure, axes = plt.subplots(2, 1)
+    try:
+        label(axes, "time", "signal")
+        axes[0].set_ylim(0, 2000)
+        axes[1].set_ylim(0, 2)
+        figure.canvas.draw()
+        plain = [axis.yaxis.label.get_window_extent().x0 for axis in axes]
+        assert abs(plain[0] - plain[1]) > 1
+    finally:
+        plt.close(figure)
+
+    figure, axes = plt.subplots(2, 1)
+    try:
+        label(axes, "time", "signal", align="y")
+        axes[0].set_ylim(0, 2000)
+        axes[1].set_ylim(0, 2)
+        figure.canvas.draw()
+        aligned = [axis.yaxis.label.get_window_extent().x0 for axis in axes]
+        assert max(aligned) - min(aligned) < 1e-6
+    finally:
+        plt.close(figure)
+
+
+def test_label_align_x_matches_side_by_side_xlabels_after_draw() -> None:
+    """align='x' removes the tick-height offset between row-shared xlabels."""
+
+    figure, axes = plt.subplots(1, 2)
+    try:
+        label(axes, "time", "signal")
+        axes[0].tick_params(axis="x", labelrotation=30, labelsize=12)
+        figure.canvas.draw()
+        plain = [axis.xaxis.label.get_window_extent().y0 for axis in axes]
+        assert abs(plain[0] - plain[1]) > 1
+    finally:
+        plt.close(figure)
+
+    figure, axes = plt.subplots(1, 2)
+    try:
+        label(axes, "time", "signal", align="x")
+        axes[0].tick_params(axis="x", labelrotation=30, labelsize=12)
+        figure.canvas.draw()
+        aligned = [axis.xaxis.label.get_window_extent().y0 for axis in axes]
+        assert max(aligned) - min(aligned) < 1e-6
+    finally:
+        plt.close(figure)
+
+
+def test_label_align_both_applies_to_exact_key_records() -> None:
+    """align='both' synchronizes columns for y and rows for x in records."""
+
+    figure, axs = plt.subplots(2, 2)
+    try:
+        top_left, top_right, bottom_left, bottom_right = (
+            axs[0, 0],
+            axs[0, 1],
+            axs[1, 0],
+            axs[1, 1],
+        )
+        label(
+            (top_left, top_right, bottom_left, bottom_right),
+            {
+                top_left: ("time", "wide top"),
+                top_right: ("time", "narrow top"),
+                bottom_left: ("time", "wide bottom"),
+                bottom_right: ("time", "narrow bottom"),
+            },
+            align="both",
+        )
+        top_left.set_ylim(0, 2000)
+        bottom_left.set_ylim(0, 2)
+        top_right.set_ylim(0, 2000)
+        bottom_right.set_ylim(0, 2)
+        top_left.tick_params(axis="x", labelrotation=30, labelsize=12)
+        bottom_left.tick_params(axis="x", labelrotation=30, labelsize=12)
+        figure.canvas.draw()
+        left_x = [
+            axis.yaxis.label.get_window_extent().x0 for axis in (top_left, bottom_left)
+        ]
+        right_x = [
+            axis.yaxis.label.get_window_extent().x0
+            for axis in (top_right, bottom_right)
+        ]
+        top_y = [
+            axis.xaxis.label.get_window_extent().y0 for axis in (top_left, top_right)
+        ]
+        bottom_y = [
+            axis.xaxis.label.get_window_extent().y0
+            for axis in (bottom_left, bottom_right)
+        ]
+        assert max(left_x) - min(left_x) < 1e-6
+        assert max(right_x) - min(right_x) < 1e-6
+        assert max(top_y) - min(top_y) < 1e-6
+        assert max(bottom_y) - min(bottom_y) < 1e-6
+    finally:
+        plt.close(figure)
