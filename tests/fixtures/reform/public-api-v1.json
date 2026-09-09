@@ -1537,6 +1537,13 @@
             "required": false
           },
           {
+            "annotation": "\"Literal['none', 'x', 'y', 'both']\"",
+            "default": "'none'",
+            "kind": "KEYWORD_ONLY",
+            "name": "align",
+            "required": false
+          },
+          {
             "annotation": "'bool'",
             "default": "False",
             "kind": "KEYWORD_ONLY",
@@ -1582,14 +1589,14 @@
         "return_annotation": "'None'"
       },
       "docstring": {
-        "sha256": "f4274501ebac7b260050d4cd882fc8dd572c2db27b06c3447b1b1d4ba08e9a4a",
+        "sha256": "1afb906f5d74901676e5b7680b35481e7807b20a688ec171dd9a19ba8b7b16d2",
         "summary": "Set publication labels and optional panel geometry on explicit Axes."
       },
       "kind": "function",
       "module": "gsplot._compat.root_api",
       "name": "label",
       "qualname": "label",
-      "signature": "(target: 'AxesTarget', xlabel: 'str | LabelRecords' = '', ylabel: 'str' = '', xlim: 'Limit | None' = None, ylim: 'Limit | None' = None, *, xscale: 'Scale' = 'linear', yscale: 'Scale' = 'linear', xticks: 'TickSpec | None' = None, yticks: 'TickSpec | None' = None, minor: 'bool' = True, xminor: 'bool | None' = None, yminor: 'bool | None' = None, pad: 'float' = 5, xpad: 'float | None' = None, ypad: 'float | None' = None, margin: 'float | tuple[float, float] | None' = None, xmargin: 'float | None' = None, ymargin: 'float | None' = None, top: 'bool | None' = None, bottom: 'bool | None' = None, left: 'bool | None' = None, right: 'bool | None' = None, direction: \"Literal['in', 'out', 'inout'] | None\" = None, square: 'bool' = False, index: \"bool | Literal['in', 'out', 'corner']\" = False, index_offset: 'float | tuple[float, float] | Sequence[float | tuple[float, float]] | Mapping[Any, float | tuple[float, float]] | None' = None, index_xoffset: 'float | Mapping[Any, float] | Sequence[float] | None' = None, index_yoffset: 'float | Mapping[Any, float] | Sequence[float] | None' = None, props: 'Mapping[str, Any] | None' = None) -> 'None'"
+      "signature": "(target: 'AxesTarget', xlabel: 'str | LabelRecords' = '', ylabel: 'str' = '', xlim: 'Limit | None' = None, ylim: 'Limit | None' = None, *, xscale: 'Scale' = 'linear', yscale: 'Scale' = 'linear', xticks: 'TickSpec | None' = None, yticks: 'TickSpec | None' = None, minor: 'bool' = True, xminor: 'bool | None' = None, yminor: 'bool | None' = None, pad: 'float' = 5, xpad: 'float | None' = None, ypad: 'float | None' = None, margin: 'float | tuple[float, float] | None' = None, xmargin: 'float | None' = None, ymargin: 'float | None' = None, top: 'bool | None' = None, bottom: 'bool | None' = None, left: 'bool | None' = None, right: 'bool | None' = None, direction: \"Literal['in', 'out', 'inout'] | None\" = None, align: \"Literal['none', 'x', 'y', 'both']\" = 'none', square: 'bool' = False, index: \"bool | Literal['in', 'out', 'corner']\" = False, index_offset: 'float | tuple[float, float] | Sequence[float | tuple[float, float]] | Mapping[Any, float | tuple[float, float]] | None' = None, index_xoffset: 'float | Mapping[Any, float] | Sequence[float] | None' = None, index_yoffset: 'float | Mapping[Any, float] | Sequence[float] | None' = None, props: 'Mapping[str, Any] | None' = None) -> 'None'"
     },
     {
       "call_contract": {

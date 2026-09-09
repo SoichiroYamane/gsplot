@@ -60,6 +60,8 @@ _TEXT_PROPS = frozenset(
 )
 _TITLE_PROPS = _TEXT_PROPS | {"bbox", "fontdict", "loc", "pad", "y"}
 
+_LABEL_ALIGNMENTS = frozenset({"none", "x", "y", "both"})
+
 
 def axes_targets(target: AxesTarget) -> tuple[Axes | _AxesBase, ...]:
     """Validate and normalize an explicit Axes target collection."""
@@ -1054,6 +1056,7 @@ def label(
     left: bool | None = None,
     right: bool | None = None,
     direction: Literal["in", "out", "inout"] | None = None,
+    align: Literal["none", "x", "y", "both"] = "none",
     square: bool = False,
     index: bool | Literal["in", "out", "corner"] = False,
     props: TextProps | None = None,
@@ -1084,6 +1087,7 @@ def label(
     left: bool | None = None,
     right: bool | None = None,
     direction: Literal["in", "out", "inout"] | None = None,
+    align: Literal["none", "x", "y", "both"] = "none",
     square: bool = False,
     index: bool | Literal["in", "out", "corner"] = False,
     index_offset: (
@@ -1125,6 +1129,7 @@ def label(
     left: Any = None,
     right: Any = None,
     direction: Any = None,
+    align: Any = "none",
     square: Any = False,
     index: Any = False,
     index_offset: Any = None,
@@ -1161,6 +1166,13 @@ def label(
         Optional boolean flags for edge tick and label visibility.
     direction
         Optional tick direction: ``"in"``, ``"out"``, or ``"inout"``.
+    align
+        Optional axis-label alignment mode: ``"none"`` (default),
+        ``"x"``, ``"y"``, or ``"both"``. ``"x"`` aligns x-axis labels
+        and ``"y"`` aligns y-axis labels across the target Axes at
+        draw time through Matplotlib's label-alignment groups. Axes
+        without a subplot specification (for example inset axes)
+        are skipped.
     square
         Apply the same unit box aspect as :func:`square` when true.
     index
@@ -1213,6 +1225,7 @@ def label(
     """
 
     target_plan = normalize_axes(target, operation="label")
+    selected_align = _validate_alignment(align)
     try:
         specs = _label_specs(
             target_plan,
@@ -1282,6 +1295,30 @@ def label(
         from .panels import _apply_index
 
         _apply_index(target_plan, *index_plan)
+    if selected_align != "none":
+        _apply_alignment(target_plan, selected_align)
+
+
+def _validate_alignment(align: Any) -> Literal["none", "x", "y", "both"]:
+    """Validate one closed label-alignment mode before any Axes is changed."""
+
+    if not isinstance(align, str) or align not in _LABEL_ALIGNMENTS:
+        raise LayoutError(
+            f"label: align must be one of: {', '.join(sorted(_LABEL_ALIGNMENTS))}"
+        )
+    return cast(Literal["none", "x", "y", "both"], align)
+
+
+def _apply_alignment(
+    target_plan: TargetPlan, align: Literal["none", "x", "y", "both"]
+) -> None:
+    """Align axis labels across explicit same-Figure Axes at draw time."""
+
+    axes = cast(list[Axes], list(target_plan.axes))
+    if align in ("x", "both"):
+        target_plan.figure.align_xlabels(axes)
+    if align in ("y", "both"):
+        target_plan.figure.align_ylabels(axes)
 
 
 def _validate_label_text_props(
@@ -1370,6 +1407,7 @@ def _label_signature(
     left: bool | None = None,
     right: bool | None = None,
     direction: Literal["in", "out", "inout"] | None = None,
+    align: Literal["none", "x", "y", "both"] = "none",
     square: bool = False,
     index: bool | Literal["in", "out", "corner"] = False,
     index_offset: (

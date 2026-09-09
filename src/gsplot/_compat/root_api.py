@@ -439,6 +439,7 @@ def label(
     left: Any = _UNSET,
     right: Any = _UNSET,
     direction: Any = _UNSET,
+    align: Any = _UNSET,
     square: Any = _UNSET,
     index: Any = _UNSET,
     lab_lims: Any = _UNSET,
@@ -560,6 +561,7 @@ def label(
                 "left": left,
                 "right": right,
                 "direction": direction,
+                "align": align,
                 "square": square,
                 "index": index,
             }
@@ -595,6 +597,7 @@ def label(
             "left": left,
             "right": right,
             "direction": direction,
+            "align": align,
             "square": square,
             "index": index,
         }
