@@ -59,6 +59,15 @@ _LEGEND_PROPS = frozenset(
 
 _MAX_NUM_STRIPES = 256
 
+_CMAP_PROPS_ATTR = "_gsplot_cmap_props"
+"""Per-artist creation record marking a Legend as canonical cmap output.
+
+The recorded value is the resolved constructor-property mapping used for
+that Legend. A repeated labeled ``cmap_legend`` call appends to an existing
+Legend only when this record is present, so ordinary, native, or legacy
+Legends keep the explicit-replacement policy.
+"""
+
 
 def _props(
     props: Mapping[str, Any] | None,
@@ -370,6 +379,23 @@ def _create_single_legend(
     return created
 
 
+def _cmap_recorded_entries(
+    existing: Legend,
+) -> tuple[tuple[Any, ...], tuple[str, ...], dict[Any, HandlerBase]] | None:
+    """Return live (handles, labels, handlers) for a cmap-created Legend."""
+
+    if not isinstance(getattr(existing, _CMAP_PROPS_ATTR, None), dict):
+        return None
+    custom = getattr(existing, "_custom_handler_map", None)
+    if not isinstance(custom, dict):
+        return None
+    labels = tuple(text.get_text() for text in existing.get_texts())
+    handles = tuple(custom.keys())
+    if len(handles) != len(labels):
+        return None
+    return handles, labels, dict(custom)
+
+
 def _create_cmap_legend(
     ax: Axes,
     colors: Sequence[tuple[float, float, float, float]],
@@ -400,7 +426,7 @@ def _create_cmap_legend(
             kwargs=kwargs,
         )
     if label is None:
-        return _create_single_legend(
+        created = _create_single_legend(
             ax,
             (),
             (),
@@ -408,9 +434,36 @@ def _create_cmap_legend(
             selected_props,
             replace=selected_replace,
         )
+        if not ambient:
+            setattr(created, _CMAP_PROPS_ATTR, dict(selected_props))  # type: ignore[attr-defined]
+        return created
     proxy = Rectangle((0, 0), 1, 1)
     handler = _ColormapHandler(colors)
-    return _create_single_legend(
+    if not ambient and not selected_replace:
+        found = _existing(ax)
+        if found:
+            if len(found) != 1:
+                raise LayoutError("legend: an existing legend requires replace=True")
+            recorded = _cmap_recorded_entries(found[0])
+            recorded_props = getattr(found[0], _CMAP_PROPS_ATTR, None)
+            if recorded is None or not isinstance(recorded_props, dict):
+                raise LayoutError("legend: an existing legend requires replace=True")
+            explicit = _props(props, "legend", kwargs)
+            merged_props = _props({**recorded_props, **explicit}, "legend")
+            old_handles, old_labels, old_handlers = recorded
+            merged_handlers = dict(old_handlers)
+            merged_handlers[proxy] = handler
+            appended = _create_single_legend(
+                ax,
+                (*old_handles, proxy),
+                (*old_labels, label),
+                merged_handlers,
+                merged_props,
+                replace=True,
+            )
+            setattr(appended, _CMAP_PROPS_ATTR, dict(merged_props))  # type: ignore[attr-defined]
+            return appended
+    created = _create_single_legend(
         ax,
         (proxy,),
         (label,),
@@ -418,6 +471,9 @@ def _create_cmap_legend(
         selected_props,
         replace=selected_replace,
     )
+    if not ambient:
+        setattr(created, _CMAP_PROPS_ATTR, dict(selected_props))  # type: ignore[attr-defined]
+    return created
 
 
 @overload
@@ -960,7 +1016,9 @@ def cmap_legend(
     reverse
         Reverse the final sampled RGBA sequence from left to right.
     replace
-        Remove an existing legend only when explicitly set to ``True``.
+        Reset to a one-entry legend only when explicitly set to ``True``.
+        Without it, a repeated labeled call appends one gradient entry to
+        the existing canonical colormap Legend in call order.
     props
         Optional finite Matplotlib Legend constructor properties.
     **kwargs
@@ -980,11 +1038,16 @@ def cmap_legend(
 
     Notes
     -----
-    The gradient is rendered by one module-level local handler and one proxy
-    handle. It does not modify Matplotlib's default handler map or add a
-    colormap proxy to the Axes. When ``replace`` is false, an existing Legend
-    raises ``LayoutError``; when it is true, the existing Legend is replaced
-    transactionally.
+    Each labeled call adds one gradient entry with its own module-level
+    local handler and proxy handle. It does not modify Matplotlib's default
+    handler map or add a colormap proxy to the Axes. Without ``replace``,
+    a repeated labeled call appends to the existing canonical colormap
+    Legend: recorded entries keep their colors and order, recorded
+    properties are preserved unless explicitly overridden by new ``props``
+    or keyword arguments, and the combined Legend replaces the previous
+    one transactionally. An existing foreign Legend, multiple existing
+    Legends, or ``label=None`` still raise ``LayoutError``; with
+    ``replace=True``, any existing Legend is replaced transactionally.
 
     Examples
     --------

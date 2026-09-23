@@ -2308,7 +2308,7 @@
         "return_annotation": "'Legend'"
       },
       "docstring": {
-        "sha256": "8956d084e534f99c3d1f59270ff307acceaae5bb8e25e8b5c2e2b43258d50b30",
+        "sha256": "b6f3d3bf155ad30014acf5dfdbd412c059b186be871728b2552b415a44da0de0",
         "summary": "Create one native Legend entry containing a horizontal color gradient."
       },
       "kind": "function",
