@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import copy
 import inspect
-from collections.abc import Mapping, Sequence
+from collections.abc import Callable, Mapping, Sequence
 from numbers import Integral
 from typing import Any, cast, get_type_hints, overload
 
@@ -379,6 +379,92 @@ def _create_single_legend(
     return created
 
 
+def _is_row_sequence(value: Any, scalar: Callable[[Any], bool]) -> bool:
+    """Detect a per-row sequence without consuming invalid scalars."""
+
+    if scalar(value):
+        return False
+    if isinstance(value, (Mapping, str, bytes)):
+        return False
+    try:
+        list(value)
+    except TypeError:
+        return False
+    return True
+
+
+def _reject_cmap_scalar(name: str, value: Any) -> None:
+    """Raise the canonical single-row error for a non-sequence value."""
+
+    if name == "label":
+        raise PlotError("label must be a string or None")
+    if name == "cmap":
+        _resolve_colormap(value)
+    elif name == "stripes":
+        _effective_stripes(value, "stripes")
+    elif not isinstance(value, bool):
+        raise PlotError("reverse must be a boolean")
+
+
+def _expand_cmap_rows(
+    label: Any,
+    cmap: Any,
+    stripes: Any,
+    norm: NormalizeSpec | None,
+    reverse: Any,
+) -> tuple[tuple[str, tuple[tuple[float, float, float, float], ...]], ...] | None:
+    """Expand scalar-or-row arguments into labeled color rows.
+
+    Return None when every argument is scalar so the caller keeps the exact
+    single-row path; otherwise return one ``(label, colors)`` pair per row
+    using the shared normalizer.
+    """
+
+    candidates = (
+        ("label", label, lambda v: v is None or isinstance(v, str)),
+        ("cmap", cmap, lambda v: isinstance(v, (str, Colormap))),
+        ("stripes", stripes, lambda v: isinstance(v, Integral)),
+        ("reverse", reverse, lambda v: isinstance(v, bool)),
+    )
+    if not any(_is_row_sequence(value, scalar) for _, value, scalar in candidates):
+        return None
+    if label is None:
+        raise LayoutError("cmap_legend: multiple entries require labels")
+    parts: dict[str, tuple[bool, list[Any]]] = {}
+    widths: set[int] = set()
+    for name, value, scalar in candidates:
+        if _is_row_sequence(value, scalar):
+            items = list(value)
+            if not items:
+                raise LayoutError("cmap_legend: at least one entry is required")
+            parts[name] = (True, items)
+            widths.add(len(items))
+        else:
+            if not scalar(value):
+                _reject_cmap_scalar(name, value)
+            parts[name] = (False, [value])
+    if len(widths) > 1:
+        raise LayoutError("cmap_legend: row sequences must have the same length")
+    width = widths.pop()
+    broadcast = {
+        name: items if is_row else items * width
+        for name, (is_row, items) in parts.items()
+    }
+    rows: list[tuple[str, tuple[tuple[float, float, float, float], ...]]] = []
+    for index in range(width):
+        row_label = broadcast["label"][index]
+        if not isinstance(row_label, str):
+            raise PlotError("label must be a string or None")
+        colors = _colormap_values(
+            broadcast["cmap"][index],
+            broadcast["stripes"][index],
+            norm,
+            broadcast["reverse"][index],
+        )
+        rows.append((row_label, colors))
+    return tuple(rows)
+
+
 def _cmap_recorded_entries(
     existing: Legend,
 ) -> tuple[tuple[Any, ...], tuple[str, ...], dict[Any, HandlerBase]] | None:
@@ -398,20 +484,20 @@ def _cmap_recorded_entries(
 
 def _create_cmap_legend(
     ax: Axes,
-    colors: Sequence[tuple[float, float, float, float]],
-    label: str | None,
+    entries: Sequence[tuple[str, Sequence[tuple[float, float, float, float]]]],
     *,
     replace: Any,
     props: Mapping[str, Any] | None,
     kwargs: Mapping[str, Any] | None = None,
     ambient: bool = False,
 ) -> Legend:
-    """Create one gradient Legend from precomputed colors."""
+    """Create one gradient Legend from precomputed rows."""
 
     if not isinstance(ax, Axes):
         raise LayoutError("cmap_legend: ax must be a matplotlib.axes.Axes instance")
-    if label is not None and not isinstance(label, str):
-        raise PlotError("label must be a string or None")
+    for entry_label, _ in entries:
+        if not isinstance(entry_label, str):
+            raise PlotError("label must be a string or None")
     selected_replace = ensure_bool(replace, "legend: replace", error=LayoutError)
     if ambient:
         selected_props = _props(props, "legend_colormap", kwargs)
@@ -425,7 +511,7 @@ def _create_cmap_legend(
             handlelength=MISSING,
             kwargs=kwargs,
         )
-    if label is None:
+    if not entries:
         created = _create_single_legend(
             ax,
             (),
@@ -437,8 +523,14 @@ def _create_cmap_legend(
         if not ambient:
             setattr(created, _CMAP_PROPS_ATTR, dict(selected_props))  # type: ignore[attr-defined]
         return created
-    proxy = Rectangle((0, 0), 1, 1)
-    handler = _ColormapHandler(colors)
+    new_handles: list[Rectangle] = []
+    new_labels: list[str] = []
+    new_handlers: dict[Any, HandlerBase] = {}
+    for entry_label, entry_colors in entries:
+        proxy = Rectangle((0, 0), 1, 1)
+        new_handles.append(proxy)
+        new_labels.append(entry_label)
+        new_handlers[proxy] = _ColormapHandler(entry_colors)
     if not ambient and not selected_replace:
         found = _existing(ax)
         if found:
@@ -448,15 +540,19 @@ def _create_cmap_legend(
             recorded_props = getattr(found[0], _CMAP_PROPS_ATTR, None)
             if recorded is None or not isinstance(recorded_props, dict):
                 raise LayoutError("legend: an existing legend requires replace=True")
-            explicit = _props(props, "legend", kwargs)
-            merged_props = _props({**recorded_props, **explicit}, "legend")
+            if props is not None or kwargs:
+                raise LayoutError(
+                    "legend: an appended cmap_legend call accepts no properties; "
+                    "set them on the first call or use replace=True"
+                )
+            merged_props = dict(recorded_props)
             old_handles, old_labels, old_handlers = recorded
-            merged_handlers = dict(old_handlers)
-            merged_handlers[proxy] = handler
+            merged_handlers: dict[Any, HandlerBase] = dict(old_handlers)
+            merged_handlers.update(new_handlers)
             appended = _create_single_legend(
                 ax,
-                (*old_handles, proxy),
-                (*old_labels, label),
+                (*old_handles, *new_handles),
+                (*old_labels, *new_labels),
                 merged_handlers,
                 merged_props,
                 replace=True,
@@ -465,9 +561,9 @@ def _create_cmap_legend(
             return appended
     created = _create_single_legend(
         ax,
-        (proxy,),
-        (label,),
-        {proxy: handler},
+        tuple(new_handles),
+        tuple(new_labels),
+        new_handlers,
         selected_props,
         replace=selected_replace,
     )
@@ -982,43 +1078,77 @@ def _legacy_colormap_values(
     return _sample_colormap(selected, values, reverse)
 
 
+@overload
 def cmap_legend(
     ax: Axes,
     *,
-    cmap: str | Colormap = "viridis",
-    label: str | None = None,
-    stripes: int = 8,
+    cmap: str | Colormap = ...,
+    label: str | None = ...,
+    stripes: int = ...,
+    norm: NormalizeSpec | None = ...,
+    reverse: bool = ...,
+    replace: bool = ...,
+    props: Mapping[str, Any] | None = ...,
+    **kwargs: Any,
+) -> Legend: ...
+
+
+@overload
+def cmap_legend(
+    ax: Axes,
+    *,
+    cmap: str | Colormap | Sequence[str | Colormap] = ...,
+    label: str | Sequence[str] | None = ...,
+    stripes: int | Sequence[int] = ...,
+    norm: NormalizeSpec | None = ...,
+    reverse: bool | Sequence[bool] = ...,
+    replace: bool = ...,
+    props: Mapping[str, Any] | None = ...,
+    **kwargs: Any,
+) -> Legend: ...
+
+
+def cmap_legend(
+    ax: Axes,
+    *,
+    cmap: str | Colormap | Sequence[str | Colormap] = "viridis",
+    label: str | Sequence[str] | None = None,
+    stripes: int | Sequence[int] = 8,
     norm: NormalizeSpec | None = None,
-    reverse: bool = False,
+    reverse: bool | Sequence[bool] = False,
     replace: bool = False,
     props: Mapping[str, Any] | None = None,
     **kwargs: Any,
 ) -> Legend:
-    """Create one native Legend entry containing a horizontal color gradient.
+    """Create native Legend entries containing horizontal color gradients.
 
     Parameters
     ----------
     ax
         Explicit target Axes.
     cmap
-        Colormap name or native Colormap object.
+        Colormap name or native Colormap object, shared by every row or
+        supplied once per row.
     label
-        Optional label for the gradient entry. ``None`` creates an empty
-        native Legend and does not render a gradient.
+        Label for one gradient entry, or one label per row. ``None``
+        creates an empty native Legend and does not render a gradient.
     stripes
-        Positive requested stripe count. Counts above 256 are clamped to 256
-        before sampling and rendering.
+        Positive requested stripe count, shared by every row or supplied
+        once per row. Counts above 256 are clamped to 256 before sampling
+        and rendering.
     norm
-        Optional normalizer applied to ``linspace(0, 1, N_effective)`` with
-        ``clip=True``. A pair is interpreted as ``(vmin, vmax)`` for a
-        read-only ``Normalize`` operation; it is not a legacy raw-value
-        alias.
+        Optional normalizer shared by every row. It is applied to
+        ``linspace(0, 1, N_effective)`` with ``clip=True``. A pair is
+        interpreted as ``(vmin, vmax)`` for a read-only ``Normalize``
+        operation; it is not a legacy raw-value alias.
     reverse
-        Reverse the final sampled RGBA sequence from left to right.
+        Reverse the final sampled RGBA sequence from left to right,
+        shared by every row or supplied once per row.
     replace
-        Reset to a one-entry legend only when explicitly set to ``True``.
-        Without it, a repeated labeled call appends one gradient entry to
-        the existing canonical colormap Legend in call order.
+        Reset to the requested entries only when explicitly set to
+        ``True``. Without it, a repeated labeled call appends its rows to
+        the existing canonical colormap Legend in call order. Appended
+        calls accept no legend properties.
     props
         Optional finite Matplotlib Legend constructor properties.
     **kwargs
@@ -1034,18 +1164,21 @@ def cmap_legend(
     ------
     PlotError, LayoutError, OptionError
         If colormap, normalization, stripe count, target, replacement, or
-        properties are invalid.
+        properties are invalid. Row sequences with different lengths, an
+        empty row sequence, or row sequences combined with ``label=None``
+        raise ``LayoutError``.
 
     Notes
     -----
-    Each labeled call adds one gradient entry with its own module-level
-    local handler and proxy handle. It does not modify Matplotlib's default
+    Each row adds one gradient entry with its own module-level local
+    handler and proxy handle. It does not modify Matplotlib's default
     handler map or add a colormap proxy to the Axes. Without ``replace``,
     a repeated labeled call appends to the existing canonical colormap
     Legend: recorded entries keep their colors and order, recorded
-    properties are preserved unless explicitly overridden by new ``props``
-    or keyword arguments, and the combined Legend replaces the previous
-    one transactionally. An existing foreign Legend, multiple existing
+    properties are preserved, and the combined Legend replaces the previous
+    one transactionally. Presentation properties belong to the first call:
+    passing ``props`` or keyword arguments on an appended call raises
+    ``LayoutError``. An existing foreign Legend, multiple existing
     Legends, or ``label=None`` still raise ``LayoutError``; with
     ``replace=True``, any existing Legend is replaced transactionally.
 
@@ -1056,17 +1189,32 @@ def cmap_legend(
     >>> item = gs.cmap_legend(ax, label="intensity")
     >>> item.axes is ax
     True
+    >>> multi = gs.cmap_legend(
+    ...     ax,
+    ...     label=["4.7 K", "4.8 K"],
+    ...     cmap=["viridis", "plasma"],
+    ...     replace=True,
+    ... )
+    >>> [text.get_text() for text in multi.get_texts()]
+    ['4.7 K', '4.8 K']
     >>> figure.clear()
     """
 
-    stripes = _effective_stripes(stripes, "stripes")
-    if label is not None and not isinstance(label, str):
-        raise PlotError("label must be a string or None")
-    colors = _colormap_values(cmap, stripes, norm, reverse)
+    rows = _expand_cmap_rows(label, cmap, stripes, norm, reverse)
+    if rows is None:
+        selected_stripes = _effective_stripes(cast(Any, stripes), "stripes")
+        if label is not None and not isinstance(label, str):
+            raise PlotError("label must be a string or None")
+        colors = _colormap_values(
+            cast(Any, cmap), selected_stripes, norm, cast(Any, reverse)
+        )
+        entries: tuple[tuple[str, tuple[tuple[float, float, float, float], ...]], ...]
+        entries = () if label is None else ((label, colors),)
+    else:
+        entries = rows
     return _create_cmap_legend(
         ax,
-        colors,
-        label,
+        entries,
         replace=replace,
         props=props,
         kwargs=kwargs,

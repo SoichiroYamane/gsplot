@@ -860,10 +860,10 @@ def legend_colormap(
 
     _warn("legend_colormap", "cmap_legend")
     colors = _legacy_colormap_values(cmap, num_stripes, vmin, vmax, reverse)
+    entries = () if label is None else ((label, colors),)
     return _create_cmap_legend(
         ax,
-        colors,
-        label,
+        entries,
         replace=True,
         props=None,
         kwargs=props,

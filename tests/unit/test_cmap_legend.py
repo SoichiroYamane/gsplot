@@ -163,8 +163,8 @@ def test_cmap_legend_appends_to_an_empty_recorded_legend() -> None:
         plt.close(figure)
 
 
-def test_cmap_legend_append_preserves_properties_unless_overridden() -> None:
-    """Appended entries inherit recorded properties; explicit values win."""
+def test_cmap_legend_append_preserves_first_call_properties() -> None:
+    """Appended entries inherit the first call's recorded properties."""
 
     figure, axis = plt.subplots()
     try:
@@ -174,9 +174,9 @@ def test_cmap_legend_append_preserves_properties_unless_overridden() -> None:
         second = cmap_legend(axis, label="two")
         assert second._loc == first._loc
         assert [text.get_fontsize() for text in second.get_texts()] == [14.0, 14.0]
-        third = cmap_legend(axis, label="three", props={"fontsize": 20})
+        third = cmap_legend(axis, label="three")
         assert third._loc == first._loc
-        assert [text.get_fontsize() for text in third.get_texts()] == [20.0] * 3
+        assert [text.get_fontsize() for text in third.get_texts()] == [14.0] * 3
         assert [text.get_text() for text in third.get_texts()] == [
             "one",
             "two",
@@ -244,12 +244,16 @@ def test_cmap_legend_replace_resets_appended_entries() -> None:
         plt.close(figure)
 
 
-def test_cmap_legend_append_validates_new_properties_first() -> None:
-    """Invalid append properties leave the current gradient legend untouched."""
+def test_cmap_legend_append_rejects_properties() -> None:
+    """Properties on an appended call fail before touching the Axes."""
 
     figure, axis = plt.subplots()
     try:
         current = cmap_legend(axis, label="old")
+        with pytest.raises(LayoutError, match="appended"):
+            cmap_legend(axis, label="new", props={"fontsize": 20})
+        with pytest.raises(LayoutError, match="appended"):
+            cmap_legend(axis, label="new", frameon=True)
         with pytest.raises(OptionError, match="unknown"):
             cmap_legend(axis, label="new", props={"not_a_legend_property": True})
         assert axis.get_legend() is current
@@ -278,6 +282,148 @@ def test_cmap_legend_append_failure_preserves_previous_legend(
         assert axis.get_legend() is current
         assert tuple(axis.get_children()) == before_children
         assert [text.get_text() for text in current.get_texts()] == ["old"]
+    finally:
+        plt.close(figure)
+
+
+def test_cmap_legend_multi_row_call_builds_entries_in_order() -> None:
+    """One call with row sequences renders one entry per row."""
+
+    figure, axis = plt.subplots()
+    try:
+        item = cmap_legend(
+            axis,
+            label=["4.7 K", "4.8 K"],
+            cmap=["viridis", "plasma"],
+            stripes=[4, 5],
+        )
+        figure.canvas.draw()
+
+        assert axis.get_legend() is item
+        assert sum(isinstance(child, Legend) for child in axis.get_children()) == 1
+        assert [text.get_text() for text in item.get_texts()] == ["4.7 K", "4.8 K"]
+        assert len(_handler_rectangles(item)) == 9
+        expected = np.concatenate(
+            [
+                mpl.colormaps.get_cmap("viridis")(np.linspace(0.0, 1.0, 4)),
+                mpl.colormaps.get_cmap("plasma")(np.linspace(0.0, 1.0, 5)),
+            ]
+        )
+        np.testing.assert_allclose(
+            _sorted_rect_colors(item),
+            expected[np.lexsort(expected.T)],
+            rtol=0,
+            atol=1e-12,
+        )
+    finally:
+        plt.close(figure)
+
+
+def test_cmap_legend_multi_row_broadcasts_scalars() -> None:
+    """Scalar arguments apply to every requested row."""
+
+    figure, axis = plt.subplots()
+    try:
+        item = cmap_legend(
+            axis,
+            label=["a", "b"],
+            cmap="viridis",
+            stripes=3,
+            reverse=[False, True],
+            norm=(0.0, 2.0),
+        )
+        figure.canvas.draw()
+
+        assert [text.get_text() for text in item.get_texts()] == ["a", "b"]
+        assert len(_handler_rectangles(item)) == 6
+        forward = mpl.colormaps.get_cmap("viridis")([0.0, 0.25, 0.5])
+        expected = np.concatenate([forward, forward[::-1]])
+        np.testing.assert_allclose(
+            _sorted_rect_colors(item),
+            expected[np.lexsort(expected.T)],
+            rtol=0,
+            atol=1e-12,
+        )
+    finally:
+        plt.close(figure)
+
+
+@pytest.mark.parametrize(
+    "kwargs",
+    [
+        {"label": ["a", "b"], "cmap": ["viridis"]},
+        {"label": ["a"], "cmap": ["viridis", "plasma"], "stripes": [1, 2, 3]},
+        {"label": []},
+        {"label": ["a", "b"], "reverse": [False]},
+        {"label": None, "stripes": [3, 4]},
+    ],
+)
+def test_cmap_legend_multi_row_rejects_bad_shapes(kwargs: dict) -> None:
+    """Mismatched, empty, or unlabeled row sequences fail before mutation."""
+
+    figure, axis = plt.subplots()
+    try:
+        with pytest.raises(LayoutError, match="cmap_legend"):
+            cmap_legend(axis, **kwargs)
+        assert axis.get_legend() is None
+    finally:
+        plt.close(figure)
+
+
+@pytest.mark.parametrize(
+    "kwargs",
+    [
+        {"label": ["a", "b"], "cmap": ["viridis", object()]},
+        {"label": ["a", 1], "cmap": ["viridis", "plasma"]},
+        {"label": ["a", "b"], "stripes": ["3", 3]},
+        {"label": ["a", "b"], "reverse": [False, 1]},
+    ],
+)
+def test_cmap_legend_multi_row_rejects_bad_row_values(kwargs: dict) -> None:
+    """Invalid per-row values keep the single-row error taxonomy."""
+
+    figure, axis = plt.subplots()
+    try:
+        with pytest.raises(PlotError):
+            cmap_legend(axis, **kwargs)
+        assert axis.get_legend() is None
+    finally:
+        plt.close(figure)
+
+
+def test_cmap_legend_multi_row_appends_and_resets() -> None:
+    """A row batch appends onto a recorded legend and resets on replace."""
+
+    figure, axis = plt.subplots()
+    try:
+        cmap_legend(axis, label="solo", stripes=2)
+        batch = cmap_legend(
+            axis, label=["4.7 K", "4.8 K"], cmap=["viridis", "plasma"], stripes=3
+        )
+        figure.canvas.draw()
+
+        assert axis.get_legend() is batch
+        assert [text.get_text() for text in batch.get_texts()] == [
+            "solo",
+            "4.7 K",
+            "4.8 K",
+        ]
+        assert len(_handler_rectangles(batch)) == 8
+        reset = cmap_legend(axis, label=["x", "y"], replace=True)
+        assert [text.get_text() for text in reset.get_texts()] == ["x", "y"]
+        assert axis.get_legend() is reset
+    finally:
+        plt.close(figure)
+
+
+def test_cmap_legend_multi_row_mapping_cmap_stays_scalar_error() -> None:
+    """A mapping colormap is never interpreted as row entries."""
+
+    figure, axis = plt.subplots()
+    try:
+        with pytest.raises(PlotError, match="cmap"):
+            cmap_legend(axis, label="range", cmap={"viridis": 1})  # type: ignore[dict-item]
+        assert axis.get_legend() is None
     finally:
         plt.close(figure)
 

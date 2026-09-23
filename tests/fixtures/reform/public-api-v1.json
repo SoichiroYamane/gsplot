@@ -2249,21 +2249,21 @@
             "required": true
           },
           {
-            "annotation": "'str | Colormap'",
+            "annotation": "'str | Colormap | Sequence[str | Colormap]'",
             "default": "'viridis'",
             "kind": "KEYWORD_ONLY",
             "name": "cmap",
             "required": false
           },
           {
-            "annotation": "'str | None'",
+            "annotation": "'str | Sequence[str] | None'",
             "default": "None",
             "kind": "KEYWORD_ONLY",
             "name": "label",
             "required": false
           },
           {
-            "annotation": "'int'",
+            "annotation": "'int | Sequence[int]'",
             "default": "8",
             "kind": "KEYWORD_ONLY",
             "name": "stripes",
@@ -2277,7 +2277,7 @@
             "required": false
           },
           {
-            "annotation": "'bool'",
+            "annotation": "'bool | Sequence[bool]'",
             "default": "False",
             "kind": "KEYWORD_ONLY",
             "name": "reverse",
@@ -2308,14 +2308,14 @@
         "return_annotation": "'Legend'"
       },
       "docstring": {
-        "sha256": "b6f3d3bf155ad30014acf5dfdbd412c059b186be871728b2552b415a44da0de0",
-        "summary": "Create one native Legend entry containing a horizontal color gradient."
+        "sha256": "df5461f74da71a6b1ce2f4a7406f645a09bba60952e2a67e4eae54c81d38390a",
+        "summary": "Create native Legend entries containing horizontal color gradients."
       },
       "kind": "function",
       "module": "gsplot._style.legends",
       "name": "cmap_legend",
       "qualname": "cmap_legend",
-      "signature": "(ax: 'Axes', *, cmap: 'str | Colormap' = 'viridis', label: 'str | None' = None, stripes: 'int' = 8, norm: 'NormalizeSpec | None' = None, reverse: 'bool' = False, replace: 'bool' = False, props: 'Mapping[str, Any] | None' = None, **kwargs: 'Any') -> 'Legend'"
+      "signature": "(ax: 'Axes', *, cmap: 'str | Colormap | Sequence[str | Colormap]' = 'viridis', label: 'str | Sequence[str] | None' = None, stripes: 'int | Sequence[int]' = 8, norm: 'NormalizeSpec | None' = None, reverse: 'bool | Sequence[bool]' = False, replace: 'bool' = False, props: 'Mapping[str, Any] | None' = None, **kwargs: 'Any') -> 'Legend'"
     },
     {
       "call_contract": {
