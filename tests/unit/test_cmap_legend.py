@@ -107,6 +107,206 @@ def test_cmap_legend_label_none_returns_empty_legend_and_obeys_replacement() -> 
         plt.close(figure)
 
 
+def _sorted_rect_colors(item: Legend) -> np.ndarray:
+    """Return handler rectangle colors in deterministic lexicographic order."""
+
+    colors = np.asarray(
+        [np.asarray(artist.get_facecolor()) for artist in _handler_rectangles(item)]
+    )
+    return colors[np.lexsort(colors.T)]
+
+
+def test_cmap_legend_appends_sequential_entries_in_call_order() -> None:
+    """A repeated labeled call adds one gradient entry instead of replacing."""
+
+    figure, axis = plt.subplots()
+    try:
+        first = cmap_legend(axis, label="4.7 K", cmap="viridis", stripes=4)
+        second = cmap_legend(axis, label="4.8 K", cmap="plasma", stripes=5)
+        figure.canvas.draw()
+
+        assert second is not first
+        assert axis.get_legend() is second
+        assert sum(isinstance(child, Legend) for child in axis.get_children()) == 1
+        assert [text.get_text() for text in second.get_texts()] == ["4.7 K", "4.8 K"]
+        assert len(_handler_rectangles(second)) == 9
+        expected = np.concatenate(
+            [
+                mpl.colormaps.get_cmap("viridis")(np.linspace(0.0, 1.0, 4)),
+                mpl.colormaps.get_cmap("plasma")(np.linspace(0.0, 1.0, 5)),
+            ]
+        )
+        np.testing.assert_allclose(
+            _sorted_rect_colors(second),
+            expected[np.lexsort(expected.T)],
+            rtol=0,
+            atol=1e-12,
+        )
+    finally:
+        plt.close(figure)
+
+
+def test_cmap_legend_appends_to_an_empty_recorded_legend() -> None:
+    """An unlabeled placeholder adopts the first labeled entry on append."""
+
+    figure, axis = plt.subplots()
+    try:
+        empty = cmap_legend(axis, label=None)
+        assert empty.legend_handles == []
+        item = cmap_legend(axis, label="range", stripes=3)
+        figure.canvas.draw()
+
+        assert axis.get_legend() is item
+        assert [text.get_text() for text in item.get_texts()] == ["range"]
+        assert len(_handler_rectangles(item)) == 3
+    finally:
+        plt.close(figure)
+
+
+def test_cmap_legend_append_preserves_properties_unless_overridden() -> None:
+    """Appended entries inherit recorded properties; explicit values win."""
+
+    figure, axis = plt.subplots()
+    try:
+        first = cmap_legend(
+            axis, label="one", props={"loc": "lower right", "fontsize": 14}
+        )
+        second = cmap_legend(axis, label="two")
+        assert second._loc == first._loc
+        assert [text.get_fontsize() for text in second.get_texts()] == [14.0, 14.0]
+        third = cmap_legend(axis, label="three", props={"fontsize": 20})
+        assert third._loc == first._loc
+        assert [text.get_fontsize() for text in third.get_texts()] == [20.0] * 3
+        assert [text.get_text() for text in third.get_texts()] == [
+            "one",
+            "two",
+            "three",
+        ]
+    finally:
+        plt.close(figure)
+
+
+def test_cmap_legend_append_rejects_foreign_legends() -> None:
+    """Ordinary legends keep the explicit-replacement policy on cmap calls."""
+
+    figure, axis = plt.subplots()
+    try:
+        axis.plot([0, 1], [0, 1], label="signal")
+        foreign = legend(axis)
+        with pytest.raises(LayoutError, match="replace"):
+            cmap_legend(axis, label="range")
+        assert axis.get_legend() is foreign
+    finally:
+        plt.close(figure)
+
+
+def test_cmap_legend_append_requires_a_single_existing_legend() -> None:
+    """Ambiguous multi-legend state still requires an explicit replacement."""
+
+    figure, axis = plt.subplots()
+    try:
+        first = cmap_legend(axis, label="one")
+        axis.add_artist(Legend(axis, [], [], loc="upper left"))
+        with pytest.raises(LayoutError, match="replace"):
+            cmap_legend(axis, label="two")
+        assert axis.get_legend() is first
+    finally:
+        plt.close(figure)
+
+
+def test_cmap_legend_label_none_does_not_append() -> None:
+    """An unlabeled call never merges into an existing gradient legend."""
+
+    figure, axis = plt.subplots()
+    try:
+        current = cmap_legend(axis, label="range")
+        with pytest.raises(LayoutError, match="replace"):
+            cmap_legend(axis, label=None)
+        assert axis.get_legend() is current
+    finally:
+        plt.close(figure)
+
+
+def test_cmap_legend_replace_resets_appended_entries() -> None:
+    """Explicit replacement discards previously appended gradient entries."""
+
+    figure, axis = plt.subplots()
+    try:
+        cmap_legend(axis, label="4.7 K", cmap="viridis", stripes=4)
+        cmap_legend(axis, label="4.8 K", cmap="plasma", stripes=5)
+        replaced = cmap_legend(axis, label="solo", cmap="viridis", replace=True)
+        figure.canvas.draw()
+
+        assert axis.get_legend() is replaced
+        assert [text.get_text() for text in replaced.get_texts()] == ["solo"]
+        assert len(_handler_rectangles(replaced)) == 8
+    finally:
+        plt.close(figure)
+
+
+def test_cmap_legend_append_validates_new_properties_first() -> None:
+    """Invalid append properties leave the current gradient legend untouched."""
+
+    figure, axis = plt.subplots()
+    try:
+        current = cmap_legend(axis, label="old")
+        with pytest.raises(OptionError, match="unknown"):
+            cmap_legend(axis, label="new", props={"not_a_legend_property": True})
+        assert axis.get_legend() is current
+        assert [text.get_text() for text in current.get_texts()] == ["old"]
+    finally:
+        plt.close(figure)
+
+
+def test_cmap_legend_append_failure_preserves_previous_legend(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """A failed append restores the previous Legend and Axes state."""
+
+    figure, axis = plt.subplots()
+    try:
+        current = cmap_legend(axis, label="old", stripes=3)
+        before_children = tuple(axis.get_children())
+
+        def fail_attach(axis: object, item: object) -> None:
+            raise RuntimeError("injected append failure")
+
+        monkeypatch.setattr(legends_module, "_attach_legend", fail_attach)
+        with pytest.raises(RuntimeError, match="injected append"):
+            cmap_legend(axis, label="new", stripes=2)
+
+        assert axis.get_legend() is current
+        assert tuple(axis.get_children()) == before_children
+        assert [text.get_text() for text in current.get_texts()] == ["old"]
+    finally:
+        plt.close(figure)
+
+
+def test_cmap_legend_appended_entries_survive_pickle_round_trip() -> None:
+    """A pickled two-entry Figure redraws both local gradient handlers."""
+
+    figure, axis = plt.subplots()
+    restored = None
+    try:
+        cmap_legend(axis, label="one", stripes=3)
+        cmap_legend(axis, label="two", stripes=2)
+        figure.canvas.draw()
+        # Safe self-round-trip: bytes are produced from this in-memory Figure above.
+        restored = pickle.loads(pickle.dumps(figure))
+        restored.canvas.draw()
+        restored_legend = restored.axes[0].get_legend()
+        assert restored_legend is not None
+        assert [text.get_text() for text in restored_legend.get_texts()] == [
+            "one",
+            "two",
+        ]
+        assert len(_handler_rectangles(restored_legend)) == 5
+    finally:
+        plt.close(figure)
+        if restored is not None:
+            plt.close(restored)
+
+
 @pytest.mark.parametrize("value", [0, -1, True, 1.5, "3", None])
 def test_cmap_legend_rejects_invalid_stripe_counts(value: object) -> None:
     """Invalid stripe counts fail before creating a Legend."""

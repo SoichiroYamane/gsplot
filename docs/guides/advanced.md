@@ -51,21 +51,18 @@ Unknown options and duplicate short/long aliases fail before artist mutation.
 
 ## Colormap legends
 
-`cmap_legend` creates one native Matplotlib `Legend` entry whose handle is a
+`cmap_legend` adds one native Matplotlib `Legend` entry whose handle is a
 horizontal gradient of adjacent rectangles. `stripes` is clamped to 256, and
-`reverse=True` reverses the final left-to-right RGBA sequence. With
-`label=None`, the function returns an empty native Legend; `replace=True` is
-required when replacing an existing canonical Legend.
+`reverse=True` reverses the final left-to-right RGBA sequence. Repeated
+labeled calls on the same Axes append entries in call order, so two gradients
+stay visible in one Legend; `replace=True` resets to a single entry. With
+`label=None`, the function returns an empty native Legend. Appending to a
+foreign or ambiguous existing Legend still requires `replace=True`.
 
 ```python
 fig, ax = gs.subplots()
-gs.cmap_legend(
-    ax,
-    cmap="viridis",
-    label="intensity",
-    stripes=16,
-    norm=(0.0, 2.0),
-)
+gs.cmap_legend(ax, cmap="viridis", label="4.7 K", stripes=16)
+gs.cmap_legend(ax, cmap="plasma", label="4.8 K", stripes=16)
 ```
 
 The deprecated `gsplot.legend_colormap` and
