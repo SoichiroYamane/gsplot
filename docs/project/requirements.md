@@ -409,9 +409,10 @@ mutating Matplotlib's default handler map or adding an Axes proxy patch.
 Canonical reset is explicit (`replace=True`); presentation properties belong
 to the first call, so an appended call carrying `props` or keyword arguments
 fails. A later `legend`/`legends` call absorbs recorded gradient rows into
-one native Legend owned by that call: fresh ordinary entries first (with
-`legend` `reverse` applied to them only), then recorded gradient rows in
-recorded order. Merged Legends carry no row record, so extending gradient
+one native Legend owned by that call: fresh ordinary entries and gradient
+rows interleave in creation order, with each row following the labeled
+entries already present when its batch was created (`legend` `reverse`
+permutes the ordinary entries while rows stay pinned). Merged Legends carry no row record, so extending gradient
 rows afterwards means re-issuing the row batch. Appending to a foreign or ambiguous existing Legend still requires
 `replace=True`. The legacy function
 always safely replaces because it has no `replace` argument. Automatic gradient Legends created by

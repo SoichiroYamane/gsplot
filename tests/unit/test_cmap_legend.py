@@ -1037,7 +1037,7 @@ def test_legend_absorb_keeps_recorded_cmap_order_under_reverse() -> None:
 
 
 def test_legend_absorb_merges_explicit_entries_with_cmap_rows() -> None:
-    """Explicit handles/labels merge with recorded gradient rows."""
+    """Explicit entries slot by when they became labeled entries."""
 
     figure, axis = plt.subplots()
     try:
@@ -1045,7 +1045,7 @@ def test_legend_absorb_merges_explicit_entries_with_cmap_rows() -> None:
         cmap_legend(axis, label="4.7 K", stripes=3)
         item = legend(axis, handles=[line], labels=["signal"])
 
-        assert [text.get_text() for text in item.get_texts()] == ["signal", "4.7 K"]
+        assert [text.get_text() for text in item.get_texts()] == ["4.7 K", "signal"]
     finally:
         plt.close(figure)
 
@@ -1138,5 +1138,65 @@ def test_legend_absorb_construction_failure_preserves_cmap_legend(
         assert axis.get_legend() is current
         assert tuple(axis.get_children()) == before_children
         assert [text.get_text() for text in current.get_texts()] == ["4.7 K"]
+    finally:
+        plt.close(figure)
+
+
+def test_legend_absorb_places_row_before_later_line() -> None:
+    """A cmap row created before a line stays ahead of it."""
+
+    figure, axis = plt.subplots()
+    try:
+        cmap_legend(axis, label="4.7 K", stripes=3)
+        axis.plot([0, 1], [0, 1], label="Fit")
+        item = legend(axis)
+
+        assert [text.get_text() for text in item.get_texts()] == ["4.7 K", "Fit"]
+    finally:
+        plt.close(figure)
+
+
+def test_legend_absorb_interleaves_row_between_lines() -> None:
+    """Rows take creation-order slots between ordinary entries."""
+
+    figure, axis = plt.subplots()
+    try:
+        axis.plot([0, 1], [0, 1], label="a")
+        cmap_legend(axis, label="4.7 K", stripes=3)
+        axis.plot([0, 1], [1, 0], label="b")
+        item = legend(axis)
+
+        assert [text.get_text() for text in item.get_texts()] == ["a", "4.7 K", "b"]
+    finally:
+        plt.close(figure)
+
+
+def test_legend_absorb_orders_appended_rows_by_batch_time() -> None:
+    """Appended rows keep their own batch creation slots."""
+
+    figure, axis = plt.subplots()
+    try:
+        axis.plot([0, 1], [0, 1], label="a")
+        cmap_legend(axis, label="g1", cmap="viridis", stripes=2)
+        axis.plot([0, 1], [1, 0], label="b")
+        cmap_legend(axis, label="g2", cmap="plasma", stripes=2)
+        item = legend(axis)
+
+        assert [text.get_text() for text in item.get_texts()] == ["a", "g1", "b", "g2"]
+    finally:
+        plt.close(figure)
+
+
+def test_legend_absorb_reverse_pins_row_slot() -> None:
+    """reverse permutes ordinary entries while the row stays pinned."""
+
+    figure, axis = plt.subplots()
+    try:
+        axis.plot([0, 1], [0, 1], label="a")
+        cmap_legend(axis, label="4.7 K", stripes=3)
+        axis.plot([0, 1], [1, 0], label="b")
+        item = legend(axis, reverse=True)
+
+        assert [text.get_text() for text in item.get_texts()] == ["b", "4.7 K", "a"]
     finally:
         plt.close(figure)

@@ -67,6 +67,14 @@ that Legend. A repeated labeled ``cmap_legend`` call appends to an existing
 Legend only when this record is present, so ordinary, native, or legacy
 Legends keep the explicit-replacement policy.
 """
+_CMAP_ORDER_ATTR = "_gsplot_cmap_order"
+"""Per-row creation-order record parallel to the recorded cmap rows.
+
+Each entry is the tuple of labeled handles already on the Axes when that
+row batch was created. ``legend``/``legends`` absorb rows into
+creation-order slots derived from these snapshots; a missing or misshapen
+record degrades to appending rows after the ordinary entries.
+"""
 
 
 def _props(
@@ -475,6 +483,60 @@ def _absorbable_cmap_rows(
     return _cmap_recorded_entries(existing[0])
 
 
+def _cmap_creation_snapshot(ax: Axes) -> tuple[Any, ...]:
+    """Return labeled handles already on Axes; best-effort ordering hint."""
+
+    getter = getattr(ax, "get_legend_handles_labels", None)
+    if getter is None:
+        return ()
+    try:
+        handles, _ = getter()
+    except Exception:
+        return ()
+    return tuple(handles)
+
+
+def _cmap_recorded_order(existing: Legend, size: int) -> tuple[tuple[Any, ...], ...]:
+    """Return per-row snapshots, degrading to empty slots when unavailable."""
+
+    order = getattr(existing, _CMAP_ORDER_ATTR, None)
+    if (
+        not isinstance(order, list)
+        or len(order) != size
+        or not all(isinstance(item, tuple) for item in order)
+    ):
+        return ((),) * size
+    return tuple(order)
+
+
+def _interleave_cmap_rows(
+    ordinary: Sequence[tuple[Any, str]],
+    rows: Sequence[tuple[Any, str]],
+    order: Sequence[tuple[Any, ...]],
+) -> list[tuple[Any, str]]:
+    """Merge ordinary entries with cmap rows in creation-order slots.
+
+    Each row follows the ordinary entries already present when its batch
+    was created; rows sharing a slot keep recorded order.
+    """
+
+    counts: list[int] = []
+    for snapshot in order:
+        counts.append(
+            sum(1 for handle, _ in ordinary if any(handle is seen for seen in snapshot))
+        )
+    ranked = sorted(range(len(rows)), key=lambda index: counts[index])
+    by_count: dict[int, list[int]] = {}
+    for index in ranked:
+        by_count.setdefault(counts[index], []).append(index)
+    merged: list[tuple[Any, str]] = []
+    for position, entry in enumerate(ordinary):
+        merged.extend(rows[index] for index in by_count.get(position, []))
+        merged.append(entry)
+    merged.extend(rows[index] for index in by_count.get(len(ordinary), []))
+    return merged
+
+
 def _cmap_recorded_entries(
     existing: Legend,
 ) -> tuple[tuple[Any, ...], tuple[str, ...], dict[Any, HandlerBase]] | None:
@@ -532,6 +594,7 @@ def _create_cmap_legend(
         )
         if not ambient:
             setattr(created, _CMAP_PROPS_ATTR, dict(selected_props))  # type: ignore[attr-defined]
+            setattr(created, _CMAP_ORDER_ATTR, [])  # type: ignore[attr-defined]
         return created
     new_handles: list[Rectangle] = []
     new_labels: list[str] = []
@@ -541,6 +604,8 @@ def _create_cmap_legend(
         new_handles.append(proxy)
         new_labels.append(entry_label)
         new_handlers[proxy] = _ColormapHandler(entry_colors)
+    batch_snapshot = _cmap_creation_snapshot(ax)
+    new_order = [batch_snapshot for _ in entries]
     if not ambient and not selected_replace:
         found = _existing(ax)
         if found:
@@ -557,6 +622,7 @@ def _create_cmap_legend(
                 )
             merged_props = dict(recorded_props)
             old_handles, old_labels, old_handlers = recorded
+            old_order = _cmap_recorded_order(found[0], len(old_labels))
             merged_handlers: dict[Any, HandlerBase] = dict(old_handlers)
             merged_handlers.update(new_handlers)
             appended = _create_single_legend(
@@ -568,6 +634,7 @@ def _create_cmap_legend(
                 replace=True,
             )
             setattr(appended, _CMAP_PROPS_ATTR, dict(merged_props))  # type: ignore[attr-defined]
+            setattr(appended, _CMAP_ORDER_ATTR, [*old_order, *new_order])  # type: ignore[attr-defined]
             return appended
     created = _create_single_legend(
         ax,
@@ -579,6 +646,7 @@ def _create_cmap_legend(
     )
     if not ambient:
         setattr(created, _CMAP_PROPS_ATTR, dict(selected_props))  # type: ignore[attr-defined]
+        setattr(created, _CMAP_ORDER_ATTR, new_order)  # type: ignore[attr-defined]
     return created
 
 
@@ -652,8 +720,9 @@ def legend(
         ``False``, ``0.3``, and ``None`` respectively.
     reverse
         Reverse each selected entry sequence before construction. Recorded
-        colormap rows absorbed from a previous ``cmap_legend`` call keep
-        their recorded order and follow the reversed entries.
+        colormap rows absorbed from a previous ``cmap_legend`` call stay
+        pinned to their creation-order slots while the selected entries
+        reverse around them.
     replace
         Remove existing legends only when explicitly set to ``True``. Without
         ``replace``, a single recorded ``cmap_legend`` Legend is absorbed:
@@ -727,8 +796,14 @@ def legend(
             if absorbed is None:
                 raise LayoutError("legend: an existing legend requires replace=True")
             cmap_handles, cmap_labels, cmap_handlers = absorbed
-            selected_handles = (*selected_handles, *cmap_handles)
-            selected_labels = (*selected_labels, *cmap_labels)
+            order = _cmap_recorded_order(existing[0], len(cmap_labels))
+            merged = _interleave_cmap_rows(
+                list(zip(selected_handles, selected_labels)),
+                list(zip(cmap_handles, cmap_labels)),
+                order,
+            )
+            selected_handles = tuple(handle for handle, _ in merged)
+            selected_labels = tuple(label for _, label in merged)
             axis_handlers = {**selected_handlers, **cmap_handlers}
             absorbing = True
         try:
@@ -850,9 +925,9 @@ def legends(
     replace
         Remove existing legends only when explicitly set to ``True``. Without
         ``replace``, a single recorded ``cmap_legend`` Legend is absorbed:
-        its gradient rows follow the discovered entries in one native Legend
-        owned by this call. Any other existing legend still requires
-        ``replace``.
+        its gradient rows join the fresh entries at their creation-order
+        slots in one native Legend owned by this call. Any other existing
+        legend still requires ``replace``.
     props
         Optional finite Matplotlib Legend constructor properties.
     **kwargs
@@ -916,8 +991,14 @@ def legends(
             if absorbed is None:
                 raise LayoutError("an existing legend requires replace=True")
             cmap_handles, cmap_labels, cmap_handlers = absorbed
-            handles = (*handles, *cmap_handles)
-            labels = (*labels, *cmap_labels)
+            order = _cmap_recorded_order(existing[0], len(cmap_labels))
+            merged = _interleave_cmap_rows(
+                list(zip(tuple(handles), tuple(labels))),
+                list(zip(cmap_handles, cmap_labels)),
+                order,
+            )
+            handles = tuple(handle for handle, _ in merged)
+            labels = tuple(label for _, label in merged)
             axis_handlers = dict(cmap_handlers)
             absorbing = True
         entries.append(
