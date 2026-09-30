@@ -2155,7 +2155,7 @@
         "return_annotation": "'Legend | tuple[Legend, ...]'"
       },
       "docstring": {
-        "sha256": "2b98e39fe0a51f0b3593aff2571ed9a9d5c0a29b53ce2e01c7c7a0b0adf3c21f",
+        "sha256": "88b72188ee89f1bd6f1c2dc3d0fa78b8f6f60fda48dc6dca708a976ce5913956",
         "summary": "Create publication legends on one or more explicit Axes."
       },
       "kind": "function",
@@ -2199,7 +2199,7 @@
         "return_annotation": "'tuple[Legend, ...]'"
       },
       "docstring": {
-        "sha256": "39f2afcd5ea922f39fc3a082316387ea5ce3a4db1e5a4bb75b70480273dd3c5f",
+        "sha256": "7d519d160c2df905a9befbc4d52c365a7bad9044f2497858489e4fda84b31551",
         "summary": "Create legends for explicit axes with discoverable entries."
       },
       "kind": "function",
