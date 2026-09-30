@@ -59,7 +59,13 @@ row, so two gradients stay visible in one Legend after a single call;
 `norm` stays shared by every row. Repeated labeled calls on the same Axes
 append rows in call order instead; `replace=True` resets to the requested
 entries. Set presentation properties on the first call: appended calls
-accept none. With `label=None`, the function returns an empty native
+accept none. A later `gs.legend` call on the same Axes absorbs recorded
+gradient rows instead: fresh line entries come first (with `reverse`
+applied to them only), then the recorded gradient rows, in one native
+Legend owned by the `legend` call; `gs.legends` absorbs per Axes the same
+way. Extending gradient rows after such a merge means re-issuing the row
+batch, because merged Legends carry no row record and nothing is silently
+dropped. With `label=None`, the function returns an empty native
 Legend. Appending to a foreign or ambiguous existing Legend still requires
 `replace=True`.
 

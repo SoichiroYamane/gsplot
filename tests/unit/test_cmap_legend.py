@@ -979,3 +979,164 @@ def test_cmap_legend_attachment_failure_preserves_existing_legend(monkeypatch) -
         assert tuple(axis.patches) == before_patches
     finally:
         plt.close(figure)
+
+
+def test_legend_absorbs_cmap_rows_after_discovered_entries() -> None:
+    """legend() merges fresh line entries with recorded gradient rows."""
+
+    figure, axis = plt.subplots()
+    try:
+        axis.plot([0, 1], [0, 1], label="fit")
+        cmap_legend(axis, label="4.7 K", cmap="viridis", stripes=4)
+        item = legend(axis)
+
+        assert axis.get_legend() is item
+        assert [text.get_text() for text in item.get_texts()] == ["fit", "4.7 K"]
+        assert (
+            len([child for child in axis.get_children() if isinstance(child, Legend)])
+            == 1
+        )
+        gradient = _handler_rectangles(item)
+        assert len(gradient) == 4
+    finally:
+        plt.close(figure)
+
+
+def test_legend_absorb_uses_absorbing_call_presentation() -> None:
+    """The absorbing legend() call owns placement and text properties."""
+
+    figure, axis = plt.subplots()
+    try:
+        axis.plot([0, 1], [0, 1], label="fit")
+        cmap_legend(axis, label="4.7 K", stripes=3)
+        item = legend(axis, props={"title": "absorbed"})
+
+        assert item.get_title().get_text() == "absorbed"
+        assert [text.get_text() for text in item.get_texts()] == ["fit", "4.7 K"]
+    finally:
+        plt.close(figure)
+
+
+def test_legend_absorb_keeps_recorded_cmap_order_under_reverse() -> None:
+    """reverse applies to discovered entries; gradient rows stay last."""
+
+    figure, axis = plt.subplots()
+    try:
+        axis.plot([0, 1], [0, 1], label="first")
+        axis.plot([0, 1], [1, 0], label="second")
+        cmap_legend(axis, label="4.7 K", stripes=3)
+        item = legend(axis, reverse=True)
+
+        assert [text.get_text() for text in item.get_texts()] == [
+            "second",
+            "first",
+            "4.7 K",
+        ]
+    finally:
+        plt.close(figure)
+
+
+def test_legend_absorb_merges_explicit_entries_with_cmap_rows() -> None:
+    """Explicit handles/labels merge with recorded gradient rows."""
+
+    figure, axis = plt.subplots()
+    try:
+        (line,) = axis.plot([0, 1], [0, 1])
+        cmap_legend(axis, label="4.7 K", stripes=3)
+        item = legend(axis, handles=[line], labels=["signal"])
+
+        assert [text.get_text() for text in item.get_texts()] == ["signal", "4.7 K"]
+    finally:
+        plt.close(figure)
+
+
+def test_legend_absorb_accepts_empty_cmap_placeholder() -> None:
+    """An unlabeled cmap placeholder yields zero rows without error."""
+
+    figure, axis = plt.subplots()
+    try:
+        axis.plot([0, 1], [0, 1], label="fit")
+        cmap_legend(axis, label=None, stripes=3)
+        item = legend(axis)
+
+        assert [text.get_text() for text in item.get_texts()] == ["fit"]
+    finally:
+        plt.close(figure)
+
+
+def test_legend_absorb_rejects_ordinary_existing_legend() -> None:
+    """legend() over legend() still requires explicit replacement."""
+
+    figure, axis = plt.subplots()
+    try:
+        axis.plot([0, 1], [0, 1], label="fit")
+        current = legend(axis)
+        before_children = tuple(axis.get_children())
+        with pytest.raises(LayoutError, match="replace"):
+            legend(axis)
+
+        assert axis.get_legend() is current
+        assert tuple(axis.get_children()) == before_children
+    finally:
+        plt.close(figure)
+
+
+def test_legend_absorb_rejects_foreign_legend() -> None:
+    """A natively constructed legend is never absorbed."""
+
+    figure, axis = plt.subplots()
+    try:
+        axis.plot([0, 1], [0, 1], label="fit")
+        foreign = axis.legend(["native"])
+        with pytest.raises(LayoutError, match="replace"):
+            legend(axis)
+
+        assert axis.get_legend() is foreign
+    finally:
+        plt.close(figure)
+
+
+def test_legends_absorbs_cmap_rows_per_axes() -> None:
+    """legends() absorbs recorded rows on each axes independently."""
+
+    figure, (left, right) = plt.subplots(1, 2)
+    try:
+        left.plot([0, 1], [0, 1], label="left-line")
+        right.plot([0, 1], [0, 1], label="right-line")
+        cmap_legend(right, label="4.7 K", stripes=3)
+        items = legends(figure)
+
+        assert len(items) == 2
+        assert [text.get_text() for text in items[0].get_texts()] == ["left-line"]
+        assert [text.get_text() for text in items[1].get_texts()] == [
+            "right-line",
+            "4.7 K",
+        ]
+    finally:
+        plt.close(figure)
+
+
+def test_legend_absorb_construction_failure_preserves_cmap_legend(
+    monkeypatch,
+) -> None:
+    """Failed merged construction leaves the recorded Legend untouched."""
+
+    figure, axis = plt.subplots()
+    try:
+        axis.plot([0, 1], [0, 1], label="fit")
+        current = cmap_legend(axis, label="4.7 K", stripes=3)
+        before_children = tuple(axis.get_children())
+
+        class FailLegend(Legend):
+            def __init__(self, *args: object, **kwargs: object) -> None:
+                raise TypeError("injected merged construction failure")
+
+        monkeypatch.setattr(legends_module, "Legend", FailLegend)
+        with pytest.raises(PlotError, match="invalid entries"):
+            legend(axis)
+
+        assert axis.get_legend() is current
+        assert tuple(axis.get_children()) == before_children
+        assert [text.get_text() for text in current.get_texts()] == ["4.7 K"]
+    finally:
+        plt.close(figure)

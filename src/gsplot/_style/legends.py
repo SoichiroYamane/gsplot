@@ -465,6 +465,16 @@ def _expand_cmap_rows(
     return tuple(rows)
 
 
+def _absorbable_cmap_rows(
+    existing: tuple[Legend, ...],
+) -> tuple[tuple[Any, ...], tuple[str, ...], dict[Any, HandlerBase]] | None:
+    """Return recorded cmap rows when a single recorded legend may be absorbed."""
+
+    if len(existing) != 1:
+        return None
+    return _cmap_recorded_entries(existing[0])
+
+
 def _cmap_recorded_entries(
     existing: Legend,
 ) -> tuple[tuple[Any, ...], tuple[str, ...], dict[Any, HandlerBase]] | None:
@@ -641,9 +651,14 @@ def legend(
         Direct publication controls. Defaults are ``"best"``, ``False``,
         ``False``, ``0.3``, and ``None`` respectively.
     reverse
-        Reverse each selected entry sequence before construction.
+        Reverse each selected entry sequence before construction. Recorded
+        colormap rows absorbed from a previous ``cmap_legend`` call keep
+        their recorded order and follow the reversed entries.
     replace
-        Remove existing legends only when explicitly set to ``True``.
+        Remove existing legends only when explicitly set to ``True``. Without
+        ``replace``, a single recorded ``cmap_legend`` Legend is absorbed:
+        its gradient rows join the fresh entries in one native Legend owned
+        by this call. Any other existing legend still requires ``replace``.
     props
         Finite Matplotlib Legend constructor properties.
     **kwargs
@@ -697,6 +712,7 @@ def legend(
             Legend | None,
             list[Any],
             dict[int, tuple[Any, Any, Any, Any]],
+            bool,
         ]
     ] = []
     for axis, selected_handles, selected_labels in entry_sets:
@@ -704,14 +720,23 @@ def legend(
             selected_handles = selected_handles[::-1]
             selected_labels = selected_labels[::-1]
         existing = _existing(axis)
+        axis_handlers = selected_handlers
+        absorbing = False
         if existing and not selected_replace:
-            raise LayoutError("legend: an existing legend requires replace=True")
+            absorbed = _absorbable_cmap_rows(existing)
+            if absorbed is None:
+                raise LayoutError("legend: an existing legend requires replace=True")
+            cmap_handles, cmap_labels, cmap_handlers = absorbed
+            selected_handles = (*selected_handles, *cmap_handles)
+            selected_labels = (*selected_labels, *cmap_labels)
+            axis_handlers = {**selected_handlers, **cmap_handlers}
+            absorbing = True
         try:
             created = Legend(
                 cast(Any, axis),
                 selected_handles,
                 selected_labels,
-                handler_map=cast(Any, selected_handlers),
+                handler_map=cast(Any, axis_handlers),
                 **selected_props,
             )
         except (TypeError, ValueError) as exc:
@@ -726,6 +751,7 @@ def legend(
                 current if isinstance(current, Legend) else None,
                 children_before,
                 state_before,
+                absorbing,
             )
         )
 
@@ -737,14 +763,31 @@ def legend(
             Legend | None,
             list[Any],
             dict[int, tuple[Any, Any, Any, Any]],
+            bool,
         ]
     ] = []
     try:
-        for axis, created, existing, current, children_before, state_before in planned:
+        for (
+            axis,
+            created,
+            existing,
+            current,
+            children_before,
+            state_before,
+            absorbing,
+        ) in planned:
             attempted.append(
-                (axis, created, existing, current, children_before, state_before)
+                (
+                    axis,
+                    created,
+                    existing,
+                    current,
+                    children_before,
+                    state_before,
+                    absorbing,
+                )
             )
-            if selected_replace:
+            if selected_replace or absorbing:
                 for old in existing:
                     old.remove()
             _attach_legend(axis, created)
@@ -756,6 +799,7 @@ def legend(
             current,
             children_before,
             state_before,
+            _absorbing,
         ) in reversed(attempted):
             if created in getattr(axis, "_children", ()):
                 created.remove()
@@ -763,7 +807,7 @@ def legend(
                 axis, current, children_before, state_before, existing
             )
         raise
-    result = tuple(created for _, created, _, _, _, _ in planned)
+    result = tuple(created for _, created, _, _, _, _, _ in planned)
     return result[0] if target_plan.kind == "single" else result
 
 
@@ -804,7 +848,11 @@ def legends(
     target
         Figure, Axes sequence, or string-keyed Axes mapping to inspect.
     replace
-        Remove existing legends only when explicitly set to ``True``.
+        Remove existing legends only when explicitly set to ``True``. Without
+        ``replace``, a single recorded ``cmap_legend`` Legend is absorbed:
+        its gradient rows follow the discovered entries in one native Legend
+        owned by this call. Any other existing legend still requires
+        ``replace``.
     props
         Optional finite Matplotlib Legend constructor properties.
     **kwargs
@@ -844,7 +892,14 @@ def legends(
         target_plan = normalize_axes(target, operation="legends")
     axes = target_plan.axes
     entries: list[
-        tuple[Axes | _AxesBase, tuple[Any, ...], tuple[str, ...], tuple[Legend, ...]]
+        tuple[
+            Axes | _AxesBase,
+            tuple[Any, ...],
+            tuple[str, ...],
+            tuple[Legend, ...],
+            dict[Any, HandlerBase] | None,
+            bool,
+        ]
     ] = []
     for axis in axes:
         getter = getattr(axis, "get_legend_handles_labels", None)
@@ -854,10 +909,21 @@ def legends(
         if not handles:
             continue
         existing = _existing(axis)
+        axis_handlers: dict[Any, HandlerBase] | None = None
+        absorbing = False
         if existing and not replace:
-            raise LayoutError("an existing legend requires replace=True")
-        entries.append((axis, tuple(handles), tuple(labels), existing))
-    planned: list[tuple[Axes | _AxesBase, Legend, tuple[Legend, ...]]] = []
+            absorbed = _absorbable_cmap_rows(existing)
+            if absorbed is None:
+                raise LayoutError("an existing legend requires replace=True")
+            cmap_handles, cmap_labels, cmap_handlers = absorbed
+            handles = (*handles, *cmap_handles)
+            labels = (*labels, *cmap_labels)
+            axis_handlers = dict(cmap_handlers)
+            absorbing = True
+        entries.append(
+            (axis, tuple(handles), tuple(labels), existing, axis_handlers, absorbing)
+        )
+    planned: list[tuple[Axes | _AxesBase, Legend, tuple[Legend, ...], bool]] = []
     snapshots: list[
         tuple[
             Axes | _AxesBase,
@@ -867,16 +933,27 @@ def legends(
             tuple[Legend, ...],
         ]
     ] = []
-    for axis, stored_handles, stored_labels, existing in entries:
+    for (
+        axis,
+        stored_handles,
+        stored_labels,
+        existing,
+        axis_handlers,
+        absorbing,
+    ) in entries:
         current = axis.get_legend()
         children_before, state_before = _snapshot_legend_state(axis, existing)
         try:
             item = Legend(
-                cast(Any, axis), stored_handles, stored_labels, **selected_props
+                cast(Any, axis),
+                stored_handles,
+                stored_labels,
+                handler_map=cast(Any, axis_handlers),
+                **selected_props,
             )
         except (TypeError, ValueError) as exc:
             raise PlotError("legends: invalid entries or options") from exc
-        planned.append((axis, item, existing))
+        planned.append((axis, item, existing, absorbing))
         snapshots.append(
             (
                 axis,
@@ -888,15 +965,15 @@ def legends(
         )
     attempted: list[int] = []
     try:
-        for index, (axis, item, existing) in enumerate(planned):
+        for index, (axis, item, existing, absorbing) in enumerate(planned):
             attempted.append(index)
-            if replace:
+            if replace or absorbing:
                 for old in existing:
                     old.remove()
             _attach_legend(axis, item)
     except Exception:
         for index in reversed(attempted):
-            axis, item, _ = planned[index]
+            axis, item, _, _ = planned[index]
             if item in getattr(axis, "_children", ()):
                 item.remove()
             _, current, children_before, state_before, existing = snapshots[index]
@@ -904,7 +981,7 @@ def legends(
                 axis, current, children_before, state_before, existing
             )
         raise
-    return tuple(item for _, item, _ in planned)
+    return tuple(item for _, item, _, _ in planned)
 
 
 def legend_entries(

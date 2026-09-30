@@ -408,7 +408,11 @@ directly to the colormap; these semantics are not translated to canonical
 mutating Matplotlib's default handler map or adding an Axes proxy patch.
 Canonical reset is explicit (`replace=True`); presentation properties belong
 to the first call, so an appended call carrying `props` or keyword arguments
-fails. Appending to a foreign or ambiguous existing Legend still requires
+fails. A later `legend`/`legends` call absorbs recorded gradient rows into
+one native Legend owned by that call: fresh ordinary entries first (with
+`legend` `reverse` applied to them only), then recorded gradient rows in
+recorded order. Merged Legends carry no row record, so extending gradient
+rows afterwards means re-issuing the row batch. Appending to a foreign or ambiguous existing Legend still requires
 `replace=True`. The legacy function
 always safely replaces because it has no `replace` argument. Automatic gradient Legends created by
 colored plotter helpers are a separate compatibility task and are not implied
