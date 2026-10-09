@@ -72,7 +72,7 @@ _REVIEWED_DEFAULTS: dict[str, dict[str, object]] = {
         "config": None,
         "props": None,
     },
-    "paper": {"cycle": True},
+    "paper": {"cycle": True, "family": None},
     "read": {
         "loader": "genfromtxt",
         "delimiter": ",",

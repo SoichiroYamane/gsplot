@@ -42,6 +42,12 @@ For a complete data-backed recipe, see
 These values affect only explicit Figures, Axes, or output operations. gsplot
 does not change global `rcParams` during import.
 
+An explicit `family` passed to `paper()` replaces DejaVu Sans on the title,
+axis labels, offset texts, and tick labels. The paper baseline sets these
+families explicitly, so `rcParams["font.family"]` alone does not reach them;
+pass the same family to `paper()` (with `cycle=False` when re-styling
+populated Axes).
+
 ## Design canvas and tight crop
 
 The Figure size is the design canvas. The default tight crop removes unused

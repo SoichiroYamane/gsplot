@@ -151,6 +151,47 @@ def test_paper_applies_the_frozen_profile_without_global_state() -> None:
     plt.close(figure)
 
 
+def test_paper_family_override_applies_everywhere() -> None:
+    """An explicit paper family reaches every text artist it owns."""
+
+    before = mpl.rcParams.copy()
+    figure, axis = plt.subplots()
+    axis.set_title("title")
+    axis.set_xlabel("x")
+    axis.set_ylabel("y")
+    paper(axis, family="DejaVu Serif")
+    figure.canvas.draw()
+
+    assert axis.title.get_fontfamily() == ["DejaVu Serif"]
+    assert axis.xaxis.label.get_fontfamily() == ["DejaVu Serif"]
+    assert axis.yaxis.label.get_fontfamily() == ["DejaVu Serif"]
+    assert axis.xaxis.get_offset_text().get_fontfamily() == ["DejaVu Serif"]
+    assert axis.yaxis.get_offset_text().get_fontfamily() == ["DejaVu Serif"]
+    assert all(
+        label.get_fontfamily() == ["DejaVu Serif"]
+        for label in (
+            *axis.get_xticklabels(which="both"),
+            *axis.get_yticklabels(which="both"),
+        )
+    )
+    assert axis.title.get_fontsize() == 10
+    assert dict(mpl.rcParams) == dict(before)
+    plt.close(figure)
+
+
+def test_paper_family_validation_is_atomic() -> None:
+    """Invalid families fail before any Axes is mutated."""
+
+    figure, axis = plt.subplots()
+    axis.set_facecolor("red")
+    for bad in ("", "   ", 123, ["DejaVu Serif"]):
+        with pytest.raises(PlotError, match="family"):
+            paper(axis, family=bad)  # type: ignore[arg-type]
+    assert axis.get_facecolor() == (1.0, 0.0, 0.0, 1.0)
+    assert axis.title.get_fontfamily() != ["DejaVu Serif"]
+    plt.close(figure)
+
+
 def test_paper_validates_every_axis_before_mutating_any_axis() -> None:
     """Cycle conflicts and invalid targets fail atomically."""
 
