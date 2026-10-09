@@ -11,7 +11,7 @@ from matplotlib.transforms import nonsingular
 from .._core.errors import PlotError
 from .._core.targets import normalize_axes
 from .._core.types import AxesTarget
-from .._core.validation import ensure_bool
+from .._core.validation import ensure_bool, ensure_nonempty_text
 
 PAPER_CYCLE_RGBA = (
     (0.267004, 0.004874, 0.329415, 1.0),
@@ -33,8 +33,8 @@ class _RoundNumberAutoLocator(AutoLocator):
         return float(ticks[0]), float(ticks[-1])
 
 
-def _set_typography(axis: Axes) -> None:
-    """Apply the frozen 10-point DejaVu Sans baseline to one Axes."""
+def _set_typography(axis: Axes, *, family: str) -> None:
+    """Apply the 10-point baseline in one explicit family to one Axes."""
 
     text_objects = (
         axis.title,
@@ -44,11 +44,11 @@ def _set_typography(axis: Axes) -> None:
         axis.yaxis.get_offset_text(),
     )
     for text in text_objects:
-        text.set_fontfamily("DejaVu Sans")
+        text.set_fontfamily(family)
         text.set_fontsize(10)
 
 
-def _style_axis(axis: Any, *, cycle: bool) -> None:
+def _style_axis(axis: Any, *, cycle: bool, family: str) -> None:
     """Apply one already-validated paper plan."""
 
     axis.set_facecolor("white")
@@ -75,7 +75,7 @@ def _style_axis(axis: Any, *, cycle: bool) -> None:
         width=0.8,
         pad=6,
         labelsize=10,
-        labelfontfamily="DejaVu Sans",
+        labelfontfamily=family,
     )
     axis.tick_params(
         axis="both",
@@ -88,9 +88,9 @@ def _style_axis(axis: Any, *, cycle: bool) -> None:
         length=2,
         width=0.6,
         labelsize=10,
-        labelfontfamily="DejaVu Sans",
+        labelfontfamily=family,
     )
-    _set_typography(axis)
+    _set_typography(axis, family=family)
 
     if axis.get_xscale() == "linear" and isinstance(
         axis.xaxis.get_major_locator(), AutoLocator
@@ -104,7 +104,7 @@ def _style_axis(axis: Any, *, cycle: bool) -> None:
         axis.set_prop_cycle(color=PAPER_CYCLE_RGBA)
 
 
-def paper(target: AxesTarget, *, cycle: bool = True) -> None:
+def paper(target: AxesTarget, *, cycle: bool = True, family: str | None = None) -> None:
     """Apply the frozen publication baseline to explicit Axes only.
 
     Parameters
@@ -114,6 +114,12 @@ def paper(target: AxesTarget, *, cycle: bool = True) -> None:
     cycle
         Install the five-color paper property cycle. Populated Axes require
         ``False`` so an existing cycle is never restarted unpredictably.
+    family
+        Explicit font family for the title, axis labels, offset texts, and
+        major/minor tick labels. ``None`` keeps the frozen DejaVu Sans
+        baseline; an explicit family wins over ``rcParams`` for these
+        artists, so pass the same family here instead of relying on
+        ``rcParams["font.family"]`` alone.
 
     Returns
     -------
@@ -144,13 +150,17 @@ def paper(target: AxesTarget, *, cycle: bool = True) -> None:
 
     plan = normalize_axes(target, operation="paper")
     selected_cycle = ensure_bool(cycle, "cycle", error=PlotError)
+    if family is None:
+        selected_family = "DejaVu Sans"
+    else:
+        selected_family = ensure_nonempty_text(family, "family", error=PlotError)
     if selected_cycle and any(axis.lines or axis.collections for axis in plan.axes):
         raise PlotError(
             "paper: cycle=True requires Axes without existing lines or collections; "
             "use cycle=False to preserve the active cycle"
         )
     for axis in plan.axes:
-        _style_axis(axis, cycle=selected_cycle)
+        _style_axis(axis, cycle=selected_cycle, family=selected_family)
 
 
 __all__ = ["paper"]

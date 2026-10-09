@@ -2363,19 +2363,26 @@
             "kind": "KEYWORD_ONLY",
             "name": "cycle",
             "required": false
+          },
+          {
+            "annotation": "'str | None'",
+            "default": "None",
+            "kind": "KEYWORD_ONLY",
+            "name": "family",
+            "required": false
           }
         ],
         "return_annotation": "'None'"
       },
       "docstring": {
-        "sha256": "b4eb16fac1d3608cc1adcb3d2dd550e5ab4619460ed198b7a772d3884d842ef8",
+        "sha256": "84600fc10118ba14661941cbb919d7f7ad5d2d4962737940e1d6f523bd152b09",
         "summary": "Apply the frozen publication baseline to explicit Axes only."
       },
       "kind": "function",
       "module": "gsplot._style.paper",
       "name": "paper",
       "qualname": "paper",
-      "signature": "(target: 'AxesTarget', *, cycle: 'bool' = True) -> 'None'"
+      "signature": "(target: 'AxesTarget', *, cycle: 'bool' = True, family: 'str | None' = None) -> 'None'"
     },
     {
       "call_contract": {
