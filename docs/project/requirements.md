@@ -413,7 +413,11 @@ one native Legend owned by that call: fresh ordinary entries and gradient
 rows interleave in creation order, with each row following the labeled
 entries already present when its batch was created (`legend` `reverse`
 permutes the ordinary entries while rows stay pinned). Merged Legends carry no row record, so extending gradient
-rows afterwards means re-issuing the row batch. Appending to a foreign or ambiguous existing Legend still requires
+rows afterwards means re-issuing the row batch. A merged Legend replaces
+the absorbed one: previously returned Legend objects on that Axes are
+detached and only the newly returned object is live. Calling
+`cmap_legend` after an ordinary `legend` raises `LayoutError`; write
+`cmap_legend` calls before `legend`, or use `replace=True`. Appending to a foreign or ambiguous existing Legend still requires
 `replace=True`. The legacy function
 always safely replaces because it has no `replace` argument. Automatic gradient Legends created by
 colored plotter helpers are a separate compatibility task and are not implied

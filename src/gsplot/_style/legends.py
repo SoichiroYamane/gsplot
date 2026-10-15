@@ -614,7 +614,10 @@ def _create_cmap_legend(
             recorded = _cmap_recorded_entries(found[0])
             recorded_props = getattr(found[0], _CMAP_PROPS_ATTR, None)
             if recorded is None or not isinstance(recorded_props, dict):
-                raise LayoutError("legend: an existing legend requires replace=True")
+                raise LayoutError(
+                    "legend: an existing legend requires replace=True; "
+                    "write cmap_legend calls before legend, or use replace=True"
+                )
             if props is not None or kwargs:
                 raise LayoutError(
                     "legend: an appended cmap_legend call accepts no properties; "
@@ -728,6 +731,9 @@ def legend(
         ``replace``, a single recorded ``cmap_legend`` Legend is absorbed:
         its gradient rows join the fresh entries in one native Legend owned
         by this call. Any other existing legend still requires ``replace``.
+        A merged Legend replaces the absorbed one, so previously returned
+        Legend objects on that Axes are detached; only the newly returned
+        object is live.
     props
         Finite Matplotlib Legend constructor properties.
     **kwargs
@@ -927,7 +933,9 @@ def legends(
         ``replace``, a single recorded ``cmap_legend`` Legend is absorbed:
         its gradient rows join the fresh entries at their creation-order
         slots in one native Legend owned by this call. Any other existing
-        legend still requires ``replace``.
+        legend still requires ``replace``. A merged Legend replaces the
+        absorbed one, so previously returned Legend objects on that Axes
+        are detached; only the newly returned objects are live.
     props
         Optional finite Matplotlib Legend constructor properties.
     **kwargs
@@ -1337,8 +1345,13 @@ def cmap_legend(
     one transactionally. Presentation properties belong to the first call:
     passing ``props`` or keyword arguments on an appended call raises
     ``LayoutError``. An existing foreign Legend, multiple existing
-    Legends, or ``label=None`` still raise ``LayoutError``; with
+    Legends, an ordinary Legend created by ``legend``, or ``label=None``
+    still raise ``LayoutError``; write ``cmap_legend`` calls before
+    ``legend``, or use ``replace=True``. With
     ``replace=True``, any existing Legend is replaced transactionally.
+    A repeated or merged Legend replaces the previous one, so previously
+    returned Legend objects on that Axes are detached; measure and move
+    only the newly returned object.
 
     Examples
     --------

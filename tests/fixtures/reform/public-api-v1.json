@@ -2155,7 +2155,7 @@
         "return_annotation": "'Legend | tuple[Legend, ...]'"
       },
       "docstring": {
-        "sha256": "88b72188ee89f1bd6f1c2dc3d0fa78b8f6f60fda48dc6dca708a976ce5913956",
+        "sha256": "edf7abb72b31cdcf1989d9b8f5a04d5070e1355942d1566306174601cc539b24",
         "summary": "Create publication legends on one or more explicit Axes."
       },
       "kind": "function",
@@ -2199,7 +2199,7 @@
         "return_annotation": "'tuple[Legend, ...]'"
       },
       "docstring": {
-        "sha256": "7d519d160c2df905a9befbc4d52c365a7bad9044f2497858489e4fda84b31551",
+        "sha256": "dd2acb36a7e296372c35ec2c38c915d2148605d2ed4850c3f10e6905f7491328",
         "summary": "Create legends for explicit axes with discoverable entries."
       },
       "kind": "function",
@@ -2308,7 +2308,7 @@
         "return_annotation": "'Legend'"
       },
       "docstring": {
-        "sha256": "df5461f74da71a6b1ce2f4a7406f645a09bba60952e2a67e4eae54c81d38390a",
+        "sha256": "5825196d717cffb6a7c1a2583e77c8b0deee18d05b732d4074111efd9ab1fab4",
         "summary": "Create native Legend entries containing horizontal color gradients."
       },
       "kind": "function",

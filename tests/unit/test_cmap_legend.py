@@ -1200,3 +1200,36 @@ def test_legend_absorb_reverse_pins_row_slot() -> None:
         assert [text.get_text() for text in item.get_texts()] == ["b", "4.7 K", "a"]
     finally:
         plt.close(figure)
+
+
+def test_cmap_legend_after_ordinary_legend_guides_call_order() -> None:
+    """cmap_legend() after legend() fails loudly with ordering guidance."""
+
+    figure, axis = plt.subplots()
+    try:
+        axis.plot([0, 1], [0, 1], label="60-T")
+        current = legend(axis)
+        before_children = tuple(axis.get_children())
+        with pytest.raises(LayoutError, match="cmap_legend calls before legend"):
+            cmap_legend(axis, label="22-T shot", cmap="magma", stripes=3)
+
+        assert axis.get_legend() is current
+        assert tuple(axis.get_children()) == before_children
+    finally:
+        plt.close(figure)
+
+
+def test_legend_absorb_detaches_previously_returned_object() -> None:
+    """Only the merged Legend is live; the absorbed object is detached."""
+
+    figure, axis = plt.subplots()
+    try:
+        axis.plot([0, 1], [0, 1], label="60-T")
+        old = cmap_legend(axis, label="22-T shot", cmap="magma", stripes=3)
+        new = legend(axis)
+
+        assert axis.get_legend() is new
+        assert old not in axis.get_children()
+        assert [text.get_text() for text in new.get_texts()] == ["60-T", "22-T shot"]
+    finally:
+        plt.close(figure)
