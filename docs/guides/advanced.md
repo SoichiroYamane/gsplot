@@ -69,7 +69,10 @@ means re-issuing the row batch, because merged Legends carry no row record
 and nothing is silently dropped. With `label=None`, the function returns
 an empty native
 Legend. Appending to a foreign or ambiguous existing Legend still requires
-`replace=True`.
+`replace=True`: in particular `cmap_legend` after an ordinary `legend`
+raises, so write `cmap_legend` calls first. A merged Legend replaces the
+absorbed one, so only the newly returned Legend object is live; measure
+and move that object, never a previously returned one.
 
 ```python
 fig, ax = gs.subplots()
