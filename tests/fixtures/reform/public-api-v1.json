@@ -605,6 +605,13 @@
             "required": false
           },
           {
+            "annotation": "'tuple[float, float, float, float] | None'",
+            "default": "None",
+            "kind": "KEYWORD_ONLY",
+            "name": "margin",
+            "required": false
+          },
+          {
             "annotation": "'float | None'",
             "default": "None",
             "kind": "KEYWORD_ONLY",
@@ -678,14 +685,14 @@
         "return_annotation": "'tuple[Figure, AxesContainer]'"
       },
       "docstring": {
-        "sha256": "3046015847e05536a80cbcfde26c73b223a8baa6e4a5561abbf209adcaa6300a",
+        "sha256": "4df11b4f58f95410909522e415584b0c26eadaad5caeeaf5b92f799ddcff1cf0",
         "summary": "Create or reuse a native Figure with concise publication defaults."
       },
       "kind": "function",
       "module": "gsplot._figure.layout",
       "name": "subplots",
       "qualname": "subplots",
-      "signature": "(*shape: 'int | MosaicSpec', nrows: 'int | None' = None, ncols: 'int | None' = None, mosaic: 'MosaicSpec | None' = None, size: 'SizeSpec' = 'auto', unit: 'Unit' = 'in', sharex: 'ShareMode' = False, sharey: 'ShareMode' = False, squeeze: 'bool' = True, width_ratios: 'Sequence[float] | None' = None, height_ratios: 'Sequence[float] | None' = None, subplot_kw: 'Mapping[str, Any] | None' = None, fig: 'Figure | None' = None, clear: 'bool' = False, live: 'bool' = False, layout: 'LayoutMode' = 'auto', style: 'StyleMode' = 'auto', figure_fit: 'bool' = False, pad: 'float | None' = None, xpad: 'float | None' = None, ypad: 'float | None' = None, xspace: 'float | None' = None, yspace: 'float | None' = None, w_pad: 'float | None' = None, h_pad: 'float | None' = None, wspace: 'float | None' = None, hspace: 'float | None' = None, config: 'Config | None' = None, figsize: 'tuple[float, float] | None' = None, tight_layout: 'bool | None' = None, constrained_layout: 'bool | None' = None) -> 'tuple[Figure, AxesContainer]'"
+      "signature": "(*shape: 'int | MosaicSpec', nrows: 'int | None' = None, ncols: 'int | None' = None, mosaic: 'MosaicSpec | None' = None, size: 'SizeSpec' = 'auto', unit: 'Unit' = 'in', sharex: 'ShareMode' = False, sharey: 'ShareMode' = False, squeeze: 'bool' = True, width_ratios: 'Sequence[float] | None' = None, height_ratios: 'Sequence[float] | None' = None, subplot_kw: 'Mapping[str, Any] | None' = None, fig: 'Figure | None' = None, clear: 'bool' = False, live: 'bool' = False, layout: 'LayoutMode' = 'auto', style: 'StyleMode' = 'auto', figure_fit: 'bool' = False, pad: 'float | None' = None, xpad: 'float | None' = None, ypad: 'float | None' = None, margin: 'tuple[float, float, float, float] | None' = None, xspace: 'float | None' = None, yspace: 'float | None' = None, w_pad: 'float | None' = None, h_pad: 'float | None' = None, wspace: 'float | None' = None, hspace: 'float | None' = None, config: 'Config | None' = None, figsize: 'tuple[float, float] | None' = None, tight_layout: 'bool | None' = None, constrained_layout: 'bool | None' = None) -> 'tuple[Figure, AxesContainer]'"
     },
     {
       "call_contract": {
