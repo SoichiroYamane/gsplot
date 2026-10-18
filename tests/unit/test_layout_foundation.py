@@ -490,3 +490,40 @@ def test_subplots_live_mode_resets_layout_engine_parameters() -> None:
     assert w_pad_default != 1.0
 
     plt.close("all")
+
+
+def test_subplots_margin_sets_constrained_rect() -> None:
+    """A four-side pt margin reserves figure-edge space via engine rect."""
+
+    from matplotlib.layout_engine import ConstrainedLayoutEngine
+
+    figure = None
+    try:
+        figure, _ = subplots(
+            "AB",
+            size=(246, 300),
+            unit="pt",
+            xpad=0.0,
+            ypad=0.0,
+            margin=(0, 0.5, 1.5, 1.0),
+        )
+        engine = figure.get_layout_engine()
+        assert isinstance(engine, ConstrainedLayoutEngine)
+        rect = engine.get()["rect"]
+        assert rect == pytest.approx((0.0, 0.5 / 300, 1 - 1.5 / 246, 1 - 1.0 / 300))
+    finally:
+        if figure is not None:
+            plt.close(figure)
+
+
+def test_subplots_margin_rejects_bad_shapes() -> None:
+    """Margin validation fails before Figure mutation."""
+
+    with pytest.raises(LayoutError, match="exactly four"):
+        subplots("AB", margin=(1, 2, 3))
+    with pytest.raises(LayoutError, match="non-negative"):
+        subplots("AB", margin=(-1, 0, 0, 0))
+    with pytest.raises(LayoutError, match="positive figure area"):
+        subplots("AB", size=(246, 300), unit="pt", margin=(200, 0, 200, 0))
+    with pytest.raises(LayoutError, match="constrained"):
+        subplots("AB", layout="tight", margin=(0, 0, 1, 1))

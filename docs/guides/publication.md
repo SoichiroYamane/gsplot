@@ -86,6 +86,24 @@ gs.save(fig, "figure.pdf", crop=False, show=False)
 `crop=False` when the PDF or image media box must equal the requested Figure
 canvas; `crop=True` may change the physical output dimensions.
 
+When spines sit flush on the media box (for example `xpad=0.0, ypad=0.0`
+with `crop=False`), reserve figure-edge space with a four-side outer
+margin `(left, bottom, right, top)` in points, fixed regardless of `unit`:
+
+```python
+fig, axs = gs.subplots(
+    "A\nB\n",
+    size=(246, 300),
+    unit="pt",
+    xpad=0.0,
+    ypad=0.0,
+    margin=(0, 0.5, 1.5, 1.0),
+)
+```
+
+The margin coexists with `pad` and `xpad`/`ypad`; it is rejected under
+`layout="tight"` and when it covers the figure.
+
 ## Submission checklist
 
 - Design and inspect the figure at its final physical size.

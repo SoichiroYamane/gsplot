@@ -305,6 +305,28 @@ def _optional_nonnegative_float(value: Any, name: str) -> float | None:
     return val
 
 
+def _margin(value: Any, name: str) -> tuple[float, float, float, float] | None:
+    """Validate an optional four-side outer margin in points."""
+
+    if value is None or value is MISSING:
+        return None
+    if isinstance(value, (str, bytes)) or not isinstance(value, Sequence):
+        raise LayoutError(f"{name} must be (left, bottom, right, top) points")
+    selected = tuple(value)
+    if len(selected) != 4:
+        raise LayoutError(f"{name} must contain exactly four values")
+    sides = ("left", "bottom", "right", "top")
+    validated = tuple(
+        ensure_finite_real(item, f"{name}[{side}]", error=LayoutError)
+        for side, item in zip(sides, selected)
+    )
+    if len(validated) != 4 or any(item < 0 for item in validated):
+        if len(validated) != 4:  # pragma: no cover - length fixed above
+            raise LayoutError(f"{name} must contain exactly four values")
+        raise LayoutError(f"{name} values must be non-negative")
+    return (validated[0], validated[1], validated[2], validated[3])
+
+
 def _resolve_alias(primary: Any, alias: Any, primary_name: str, alias_name: str) -> Any:
     """Resolve an option and its alias while forbidding conflicting definitions."""
 
@@ -340,6 +362,7 @@ def _resolve_options(
     pad: Any = MISSING,
     xpad: Any = MISSING,
     ypad: Any = MISSING,
+    margin: Any = MISSING,
     xspace: Any = MISSING,
     yspace: Any = MISSING,
     w_pad: Any = MISSING,
@@ -389,6 +412,7 @@ def _resolve_options(
             "pad": pad,
             "xpad": resolved_xpad,
             "ypad": resolved_ypad,
+            "margin": margin,
             "xspace": resolved_xspace,
             "yspace": resolved_yspace,
         }
@@ -442,6 +466,7 @@ def _resolve_options(
         _option_spec("pad", None, _optional_nonnegative_float),
         _option_spec("xpad", None, _optional_nonnegative_float),
         _option_spec("ypad", None, _optional_nonnegative_float),
+        _option_spec("margin", None, _margin),
         _option_spec("xspace", None, _optional_nonnegative_float),
         _option_spec("yspace", None, _optional_nonnegative_float),
     )
@@ -619,6 +644,7 @@ def subplots(
     pad: float | None = None,
     xpad: float | None = None,
     ypad: float | None = None,
+    margin: tuple[float, float, float, float] | None = None,
     xspace: float | None = None,
     yspace: float | None = None,
     w_pad: float | None = None,
@@ -655,6 +681,7 @@ def subplots(
     pad: float | None = None,
     xpad: float | None = None,
     ypad: float | None = None,
+    margin: tuple[float, float, float, float] | None = None,
     xspace: float | None = None,
     yspace: float | None = None,
     w_pad: float | None = None,
@@ -691,6 +718,7 @@ def subplots(
     pad: float | None = None,
     xpad: float | None = None,
     ypad: float | None = None,
+    margin: tuple[float, float, float, float] | None = None,
     xspace: float | None = None,
     yspace: float | None = None,
     w_pad: float | None = None,
@@ -726,6 +754,7 @@ def subplots(
     pad: float | None = cast(Any, MISSING),
     xpad: float | None = cast(Any, MISSING),
     ypad: float | None = cast(Any, MISSING),
+    margin: tuple[float, float, float, float] | None = cast(Any, MISSING),
     xspace: float | None = cast(Any, MISSING),
     yspace: float | None = cast(Any, MISSING),
     w_pad: float | None = cast(Any, MISSING),
@@ -776,6 +805,12 @@ def subplots(
     xpad, ypad
         Optional non-negative horizontal and vertical subplot padding scalars
         (aliases for ``w_pad`` and ``h_pad``).
+    margin
+        Optional four-side outer margin ``(left, bottom, right, top)`` in
+        points, fixed regardless of ``unit``. It reserves figure-edge space
+        outside the constrained layout; it coexists with ``pad`` and
+        ``xpad``/``ypad``. Rejected under ``layout="tight"`` and when the
+        margin covers the figure.
     xspace, yspace
         Optional non-negative horizontal and vertical spacing fractions
         (aliases for ``wspace`` and ``hspace``).
@@ -838,6 +873,7 @@ def subplots(
         pad=pad,
         xpad=xpad,
         ypad=ypad,
+        margin=margin,
         xspace=xspace,
         yspace=yspace,
         w_pad=w_pad,
@@ -910,6 +946,8 @@ def subplots(
     from matplotlib.layout_engine import ConstrainedLayoutEngine, TightLayoutEngine
 
     engine = target.get_layout_engine()
+    if isinstance(engine, TightLayoutEngine) and options["margin"] is not None:
+        raise LayoutError('margin requires layout="constrained" or "none"')
     if isinstance(engine, ConstrainedLayoutEngine):
         engine_kwargs: dict[str, Any] = {}
         if options["xpad"] is not None:
@@ -926,6 +964,23 @@ def subplots(
             engine_kwargs["wspace"] = options["xspace"]
         if options["yspace"] is not None:
             engine_kwargs["hspace"] = options["yspace"]
+        selected_margin = options["margin"]
+        if selected_margin is not None:
+            if size_inches is None:
+                width_pt = target.get_figwidth() * 72.0
+                height_pt = target.get_figheight() * 72.0
+            else:
+                width_pt = size_inches[0] * 72.0
+                height_pt = size_inches[1] * 72.0
+            left, bottom, right, top = selected_margin
+            if left + right >= width_pt or bottom + top >= height_pt:
+                raise LayoutError("margin must leave a positive figure area")
+            engine_kwargs["rect"] = (
+                left / width_pt,
+                bottom / height_pt,
+                1.0 - right / width_pt,
+                1.0 - top / height_pt,
+            )
         if engine_kwargs:
             engine.set(**engine_kwargs)
     elif isinstance(engine, TightLayoutEngine):
@@ -982,6 +1037,7 @@ def _public_subplots_signature(
     pad: float | None = None,
     xpad: float | None = None,
     ypad: float | None = None,
+    margin: tuple[float, float, float, float] | None = None,
     xspace: float | None = None,
     yspace: float | None = None,
     w_pad: float | None = None,

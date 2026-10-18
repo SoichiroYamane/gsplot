@@ -160,6 +160,11 @@ explicit compatibility classification.
   `Figure.canvas.draw()` calls with a global hook.
 - Layout validation must reject invalid dimensions or mosaics with a clear
   error rather than silently producing an unusable figure.
+- `subplots` accepts an optional four-side outer `margin`
+  `(left, bottom, right, top)` in points, fixed regardless of `unit`. It is
+  applied as the constrained-layout engine rectangle, coexists with inner
+  `pad`/`xpad`/`ypad`, is rejected under `layout="tight"` and when it
+  covers the figure, and leaves the `crop=False` media box unchanged.
 - Mosaic mappings iterate in panel-name (alphabetical) order instead of
   Matplotlib's first-appearance order. Positional value sequences follow that
   documented order so generated indexes and records match panel letters, and
