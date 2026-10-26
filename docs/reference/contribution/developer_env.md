@@ -1,7 +1,7 @@
 # Set up gsplot for development
 
 This guide describes the supported local development workflow. The repository
-uses Poetry for dependency resolution and targets Python 3.10 or newer. Python
+uses Poetry for dependency resolution and targets Python 3.11 or newer. Python
 3.12 is recommended for the locked development environment and for CI.
 
 ```{important}

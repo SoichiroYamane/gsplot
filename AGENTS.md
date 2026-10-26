@@ -36,7 +36,7 @@ machine-specific operational details here.
 
 ## Architecture and invariants
 
-- The supported runtime is Python 3.10 or newer. Runtime dependencies are
+- The supported runtime is Python 3.11 or newer. Runtime dependencies are
   Matplotlib and NumPy; Rich, PyYAML, and `types-PyYAML` are not required by
   the canonical package or its compatibility shims.
 - Canonical plotting, styling, configuration, I/O, and layout functions use

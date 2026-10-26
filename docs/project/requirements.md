@@ -516,7 +516,7 @@ source, documentation, tests, Issues, PRs, or built distributions.
 
 ### NFR-1: Supported environment and dependencies
 
-- The supported Python range is Python 3.10 or newer, subject to the support
+- The supported Python range is Python 3.11 or newer, subject to the support
   policy of declared dependencies.
 - Runtime dependencies are Matplotlib and NumPy. Rich, PyYAML, and
   `types-PyYAML` are not required by the canonical package or its compatibility
