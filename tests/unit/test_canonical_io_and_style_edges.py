@@ -211,3 +211,20 @@ def test_colormap_and_colored_plot_controls_are_local() -> None:
             gs.cmap_scatter(axis, [0, 1], [0, 1], [0])
     finally:
         plt.close(figure)
+
+
+def test_set_theme_tick_color_covers_minor_ticks() -> None:
+    """Theme tick colors apply to both major and minor ticks."""
+
+    figure, axis = gs.subplots(1, 1)
+    try:
+        axis.minorticks_on()
+        gs.set_theme(axis, gs.Theme(tick_color="red"))
+        for axis_obj in (axis.xaxis, axis.yaxis):
+            ticks = (*axis_obj.get_major_ticks(), *axis_obj.get_minor_ticks())
+            assert ticks
+            for tick in ticks:
+                assert tick.tick1line.get_color() == "red"
+                assert tick.tick2line.get_color() == "red"
+    finally:
+        plt.close(figure)
