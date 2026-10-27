@@ -2,7 +2,7 @@
 
 ## Install
 
-`gsplot` supports Python 3.10 and newer. Install it from PyPI with:
+`gsplot` supports Python 3.11 and newer. Install it from PyPI with:
 
 ```bash
 python -m pip install gsplot

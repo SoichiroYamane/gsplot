@@ -24,7 +24,7 @@ License-File: LICENSE
 Keywords: matplotlib,plotting,publication,scientific
 Author: Giordano Mattoni
 Maintainer: Soichiro Yamane
-Requires-Python: >=3.10
+Requires-Python: >=3.11
 Requires-Dist: matplotlib (>=3.9.0)
 Requires-Dist: numpy (>=1.26.4)
 Project-URL: Documentation, https://soichiroyamane.github.io/gsplot/stable/

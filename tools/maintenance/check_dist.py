@@ -157,7 +157,7 @@ def _check_metadata(message: Message, *, version: str, label: str) -> list[str]:
         "License-Expression": "MIT",
         "Author": "Giordano Mattoni",
         "Maintainer": "Soichiro Yamane",
-        "Requires-Python": ">=3.10",
+        "Requires-Python": ">=3.11",
         "Description-Content-Type": "text/markdown",
     }
     for field, expected in expected_scalars.items():

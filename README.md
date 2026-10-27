@@ -4,7 +4,7 @@
 
 [![Documentation](https://github.com/SoichiroYamane/gsplot/actions/workflows/gh-pages-sphinx.yml/badge.svg)](https://soichiroyamane.github.io/gsplot/stable/)
 [![PyPI](https://img.shields.io/pypi/v/gsplot)](https://pypi.org/project/gsplot/)
-[![Python](https://img.shields.io/badge/python-3.10%2B-blue)](https://www.python.org/)
+[![Python](https://img.shields.io/badge/python-3.11%2B-blue)](https://www.python.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green)](https://github.com/SoichiroYamane/gsplot/blob/main/LICENSE)
 
 # gsplot
@@ -20,7 +20,7 @@ depending on behavior that is not covered by the public API.
 
 ## Install
 
-`gsplot` supports Python 3.10 and newer:
+`gsplot` supports Python 3.11 and newer:
 
 ```bash
 python -m pip install gsplot
@@ -76,7 +76,7 @@ for the supported schema, precedence, and backend notes.
 
 ## Development
 
-The repository uses Poetry and targets Python 3.10 or newer. With a compatible
+The repository uses Poetry and targets Python 3.11 or newer. With a compatible
 Python interpreter:
 
 ```bash
