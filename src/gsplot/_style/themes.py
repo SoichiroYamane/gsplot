@@ -69,7 +69,7 @@ def _apply_axes_theme(axis: Axes, theme: Theme) -> None:
         for spine in axis.spines.values():
             spine.set_color(theme.spine_color)
     if theme.tick_color is not None:
-        axis.tick_params(axis="both", colors=theme.tick_color)
+        axis.tick_params(axis="both", which="both", colors=theme.tick_color)
     if theme.grid is not None:
         grid_kwargs: dict[str, Any] = {"visible": theme.grid}
         if theme.grid_color is not None:
