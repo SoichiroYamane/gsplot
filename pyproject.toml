@@ -28,7 +28,7 @@ packages = [{ include = "gsplot", from = "src" }]
 [tool.poetry.group.dev.dependencies]
 flake8 = "^7.0.0"
 black = ">=26.3.1,<27.0.0"
-isort = ">=5.13.2,<9.0.0"
+isort = ">=5.13.2,<10.0.0"
 pre-commit = "^4.6.1"
 furo = "^2025.12.19"
 myst-parser = "^4.0.0"
