@@ -11,9 +11,7 @@ from typing import TYPE_CHECKING, Any, Callable
 
 from ._compat.root import canonical_names as _canonical_names
 from ._compat.root import legacy_names as _legacy_names
-from ._compat.root import (
-    resolve_export,
-)
+from ._compat.root import resolve_export
 from .version import __commit__, __version__
 
 if TYPE_CHECKING:
