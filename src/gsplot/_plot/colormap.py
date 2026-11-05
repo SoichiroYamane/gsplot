@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from collections.abc import Callable
 from copy import copy
-from typing import Any
+from typing import Any, cast
 
 import matplotlib as mpl
 import numpy as np
@@ -75,7 +75,9 @@ def _normalized(values: NDArray[np.float64], norm: Any) -> NDArray[np.float64]:
         raise PlotError("norm must be callable with a clip argument") from exc
     if result.shape != values.shape or not np.all(np.isfinite(result)):
         raise PlotError("norm must return finite values with the input shape")
-    return np.clip(result, 0.0, 1.0)
+    return cast(
+        "np.ndarray[tuple[Any, ...], np.dtype[np.float64]]", np.clip(result, 0.0, 1.0)
+    )
 
 
 def map_values(

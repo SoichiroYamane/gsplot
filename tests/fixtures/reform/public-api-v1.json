@@ -3438,26 +3438,20 @@
     },
     {
       "call_contract": null,
-      "docstring": {
-        "sha256": "6a2e4095a89de2369f4d426e76b3b5211acb3427ba3f8dd0f7ab254229a683b2",
-        "summary": "Represent a PEP 604 union type"
-      },
+      "docstring": null,
       "kind": "type_alias",
-      "module": "types",
+      "module": "typing",
       "name": "LineStyle",
-      "qualname": null,
+      "qualname": "Union",
       "signature": null
     },
     {
       "call_contract": null,
-      "docstring": {
-        "sha256": "6a2e4095a89de2369f4d426e76b3b5211acb3427ba3f8dd0f7ab254229a683b2",
-        "summary": "Represent a PEP 604 union type"
-      },
+      "docstring": null,
       "kind": "type_alias",
-      "module": "types",
+      "module": "typing",
       "name": "Marker",
-      "qualname": null,
+      "qualname": "Union",
       "signature": null
     },
     {

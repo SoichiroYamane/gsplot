@@ -62,7 +62,7 @@ def test_figure_fit_defaults_to_disabled() -> None:
         axis.set_position((0, 0, 1, 1))
         index = gs.index(axis, loc="corner", offset=(-100, 0), size=10)
         figure.canvas.draw()
-        assert index.get_window_extent(figure.canvas.get_renderer()).x0 < figure.bbox.x0
+        assert index.get_window_extent(figure._get_renderer()).x0 < figure.bbox.x0
     finally:
         plt.close(figure)
 
@@ -82,11 +82,11 @@ def test_figure_fit_leaves_axes_managed_labels_unchanged() -> None:
         axis.set_position((0, 0, 1, 1))
         axis.set_xlabel("x", labelpad=40)
         figure.canvas.draw()
-        before = axis.xaxis.label.get_window_extent(figure.canvas.get_renderer())
+        before = axis.xaxis.label.get_window_extent(figure._get_renderer())
 
         gs.index(axis, loc="corner", offset=(-100, 0), size=10)
         figure.canvas.draw()
-        after = axis.xaxis.label.get_window_extent(figure.canvas.get_renderer())
+        after = axis.xaxis.label.get_window_extent(figure._get_renderer())
 
         assert before.bounds == pytest.approx(after.bounds)
     finally:

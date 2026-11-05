@@ -15,6 +15,7 @@ from typing import Any, cast
 from matplotlib import rc_context
 from matplotlib.backend_bases import FigureManagerBase
 from matplotlib.figure import Figure
+from matplotlib.typing import RcKeyType
 
 from .._core.errors import LayoutError, OptionError, OutputError, PlotError
 from .._core.targets import normalize_axes
@@ -326,7 +327,9 @@ def _render_outputs(plan: _SavePlan) -> tuple[Path, ...]:
     if plan.metadata is not None:
         save_options["metadata"] = dict(plan.metadata)
     type42 = any(item in {"pdf", "ps"} for item in plan.formats)
-    context = {"pdf.fonttype": 42, "ps.fonttype": 42} if type42 else {}
+    context: dict[RcKeyType, Any] = (
+        {"pdf.fonttype": 42, "ps.fonttype": 42} if type42 else {}
+    )
     try:
         with rc_context(context):
             for destination, selected_format in zip(plan.destinations, plan.formats):
