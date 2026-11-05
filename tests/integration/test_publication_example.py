@@ -127,7 +127,7 @@ def test_publication_example_uses_balanced_canvas_and_closes_figure(
     ]
     assert square.xaxis.label.get_fontsize() == 7
     assert square.yaxis.label.get_fontsize() == 7
-    renderer = figure.canvas.get_renderer()
+    renderer = figure._get_renderer()
     parent_labels = (
         *axes["B"].get_xticklabels(),
         *axes["B"].get_yticklabels(),
